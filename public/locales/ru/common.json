@@ -1,0 +1,23 @@
+{
+  "appName": "Edmission",
+  "login": "Войти",
+  "register": "Регистрация",
+  "logout": "Выйти",
+  "profile": "Профиль",
+  "settings": "Настройки",
+  "theme": "Тема",
+  "language": "Язык",
+  "dark": "Тёмная",
+  "light": "Светлая",
+  "save": "Сохранить",
+  "cancel": "Отмена",
+  "loading": "Загрузка...",
+  "error": "Ошибка",
+  "success": "Успешно",
+  "search": "Поиск",
+  "filter": "Фильтр",
+  "actions": "Действия",
+  "back": "Назад",
+  "next": "Далее",
+  "submit": "Отправить"
+}

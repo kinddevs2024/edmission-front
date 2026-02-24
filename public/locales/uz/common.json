@@ -1,0 +1,23 @@
+{
+  "appName": "Edmission",
+  "login": "Kirish",
+  "register": "Ro'yxatdan o'tish",
+  "logout": "Chiqish",
+  "profile": "Profil",
+  "settings": "Sozlamalar",
+  "theme": "Mavzu",
+  "language": "Til",
+  "dark": "Qorong'u",
+  "light": "Yorug'",
+  "save": "Saqlash",
+  "cancel": "Bekor qilish",
+  "loading": "Yuklanmoqda...",
+  "error": "Xato",
+  "success": "Muvaffaqiyat",
+  "search": "Qidiruv",
+  "filter": "Filtr",
+  "actions": "Amallar",
+  "back": "Orqaga",
+  "next": "Keyingi",
+  "submit": "Yuborish"
+}

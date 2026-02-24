@@ -1,0 +1,23 @@
+{
+  "appName": "Edmission",
+  "login": "Log in",
+  "register": "Register",
+  "logout": "Log out",
+  "profile": "Profile",
+  "settings": "Settings",
+  "theme": "Theme",
+  "language": "Language",
+  "dark": "Dark",
+  "light": "Light",
+  "save": "Save",
+  "cancel": "Cancel",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "search": "Search",
+  "filter": "Filter",
+  "actions": "Actions",
+  "back": "Back",
+  "next": "Next",
+  "submit": "Submit"
+}

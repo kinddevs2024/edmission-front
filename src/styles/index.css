@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary-dark: #0f172a;
+  --color-primary-accent: #84cc16;
+  --color-secondary: #1e293b;
+  --color-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-status-accepted: #22c55e;
+  --color-status-under-review: #3b82f6;
+  --color-status-offer-sent: #84cc16;
+  --color-status-rejected: #64748b;
+}
+
+.dark {
+  --color-bg: #0f172a;
+  --color-card: #111827;
+  --color-border: #1f2937;
+  --color-text: #f9fafb;
+  --color-text-muted: #cbd5e1;
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-[var(--color-bg)] text-[var(--color-text)] font-sans text-base;
+  }
+  /* Focus visible for keyboard a11y (WCAG) */
+  :focus {
+    @apply outline-none;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary-accent;
+  }
+}
+
+.safe-area-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
