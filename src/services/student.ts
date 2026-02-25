@@ -11,24 +11,43 @@ export interface UniversitiesParams extends PaginationParams {
   sort?: 'match' | 'name' | 'rating'
 }
 
+function normalizeUniversityItem(u: UniversityListItem & { universityName?: string }): UniversityListItem {
+  return { ...u, name: u.name ?? u.universityName ?? '' }
+}
+
 export async function getUniversities(params?: UniversitiesParams): Promise<PaginatedResponse<UniversityListItem>> {
-  const { data } = await api.get<PaginatedResponse<UniversityListItem>>('/universities', { params })
-  return data
+  const res = await api.get<PaginatedResponse<UniversityListItem & { universityName?: string }>>('/student/universities', { params })
+  const body = res.data
+  if (!body) return { data: [], total: 0, page: 1 }
+  const list = (body as { data?: (UniversityListItem & { universityName?: string })[] }).data ?? []
+  const total = (body as { total?: number }).total ?? 0
+  const page = (body as { page?: number }).page ?? 1
+  return { data: list.map(normalizeUniversityItem), total, page }
 }
 
 export async function getRecommendations(params?: PaginationParams): Promise<PaginatedResponse<Recommendation>> {
-  const { data } = await api.get<PaginatedResponse<Recommendation>>('/student/recommendations', { params })
+  const { data } = await api.get<Recommendation[] | PaginatedResponse<Recommendation>>('/student/recommendations', { params })
+  if (Array.isArray(data)) {
+    const limit = params?.limit ?? 20
+    return { data, total: data.length, page: 1 }
+  }
   return data
 }
 
 export async function getApplications(params?: PaginationParams & { status?: string }): Promise<PaginatedResponse<Application>> {
-  const { data } = await api.get<PaginatedResponse<Application>>('/student/applications', { params })
-  return data
+  const { data } = await api.get<Application[] | PaginatedResponse<Application>>('/student/applications', { params })
+  if (Array.isArray(data)) {
+    return { data, total: data.length, page: 1 }
+  }
+  return data ?? { data: [], total: 0, page: 1 }
 }
 
 export async function getOffers(params?: PaginationParams): Promise<PaginatedResponse<Offer>> {
-  const { data } = await api.get<PaginatedResponse<Offer>>('/student/offers', { params })
-  return data
+  const { data } = await api.get<Offer[] | PaginatedResponse<Offer>>('/student/offers', { params })
+  if (Array.isArray(data)) {
+    return { data, total: data.length, page: 1 }
+  }
+  return data ?? { data: [], total: 0, page: 1 }
 }
 
 export async function showInterest(universityId: string): Promise<void> {
@@ -41,4 +60,15 @@ export async function acceptOffer(offerId: string): Promise<void> {
 
 export async function declineOffer(offerId: string): Promise<void> {
   await api.post(`/student/offers/${offerId}/decline`)
+}
+
+/** Fetch universities by ids (for compare or recommendations). Returns array. */
+export async function getCompareUniversities(ids: string[]): Promise<UniversityListItem[]> {
+  if (ids.length === 0) return []
+  const { data } = await api.get<UniversityListItem[] | { data: (UniversityListItem & { universityName?: string })[] }>(
+    '/student/compare',
+    { params: { ids: ids.join(',') } }
+  )
+  const list = Array.isArray(data) ? data : (data?.data ?? [])
+  return list.map((u) => normalizeUniversityItem(u as UniversityListItem & { universityName?: string }))
 }

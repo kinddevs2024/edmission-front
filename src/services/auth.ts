@@ -21,7 +21,11 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function register(payload: RegisterPayload): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/register', payload)
+  const { data } = await api.post<LoginResponse>('/auth/register', {
+    email: payload.email,
+    password: payload.password,
+    role: payload.role,
+  })
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   return data
 }
@@ -39,11 +43,11 @@ export async function forgotPassword(email: string): Promise<void> {
 }
 
 export async function verifyEmail(token: string): Promise<void> {
-  await api.post('/auth/verify-email', { token })
+  await api.get('/auth/verify-email', { params: { token } })
 }
 
-export async function resetPassword(token: string, password: string): Promise<void> {
-  await api.post('/auth/reset-password', { token, password })
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  await api.post('/auth/reset-password', { token, newPassword })
 }
 
 export async function getProfile(): Promise<User> {

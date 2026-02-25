@@ -3,8 +3,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
-import { getApplications, getOffers, getRecommendations } from '@/services/student'
-import { api } from '@/services/api'
+import { getApplications, getOffers, getRecommendations, getCompareUniversities } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
 import type { Application, Offer } from '@/types/student'
 
@@ -36,28 +35,18 @@ export function StudentDashboard() {
           setLoadingRecs(false)
           return
         }
-        const ids = recs.data.map((r) => r.universityId)
-        return api.get<{ data?: UniversityListItem[] }>('/universities', { params: { ids: ids.join(','), limit: 5 } })
-          .then((res) => {
-            if (cancelled) return
-            const data = res.data?.data ?? []
-            setRecommendations(
-              data.map((u) => ({
-                ...u,
-                matchScore: recs.data?.find((r) => r.universityId === u.id)?.matchScore ?? u.matchScore,
-                matchBreakdown: recs.data?.find((r) => r.universityId === u.id)?.breakdown,
-              }))
-            )
-          })
-          .catch(() => { if (!cancelled) setRecommendations(MOCK_RECOMMENDATIONS) })
-          .finally(() => { if (!cancelled) setLoadingRecs(false) })
+        const ids = recs.data.map((r) => r.universityId).slice(0, 5)
+        return getCompareUniversities(ids)
       })
-      .catch(() => {
-        if (!cancelled) {
-          setRecommendations(MOCK_RECOMMENDATIONS)
-          setLoadingRecs(false)
-        }
+      .then((list) => {
+        if (!list?.length) return
+        setRecommendations(list.map((u) => ({
+          ...u,
+          name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '',
+        })))
       })
+      .catch(() => { setRecommendations(MOCK_RECOMMENDATIONS) })
+      .finally(() => { setLoadingRecs(false) })
     return () => { cancelled = true }
   }, [])
 

@@ -3,8 +3,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/components/ui/Table'
 import { Select } from '@/components/ui/Select'
-import { getApplications } from '@/services/student'
-import { api } from '@/services/api'
+import { getApplications, getCompareUniversities } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
 
 const MAX_COMPARE = 4
@@ -23,11 +22,9 @@ export function Compare() {
           setAllOptions([])
           return
         }
-        return api.get<{ data?: UniversityListItem[] }>('/universities', { params: { ids: ids.join(','), limit: 50 } })
-          .then((r) => {
-            const list = r.data?.data ?? []
-            setAllOptions(list.map((u) => ({ value: u.id, label: u.name })))
-          })
+        return getCompareUniversities(ids.slice(0, 50)).then((list) => {
+          setAllOptions(list.map((u) => ({ value: u.id, label: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '' })))
+        })
       })
       .catch(() => setAllOptions([]))
       .finally(() => setLoading(false))
@@ -38,8 +35,8 @@ export function Compare() {
       setUniversities([])
       return
     }
-    api.get<{ data?: UniversityListItem[] }>('/universities', { params: { ids: selectedIds.join(',') } })
-      .then((r) => setUniversities(r.data?.data ?? []))
+    getCompareUniversities(selectedIds)
+      .then((list) => setUniversities(list.map((u) => ({ ...u, name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '' }))))
       .catch(() => setUniversities([]))
   }, [selectedIds])
 

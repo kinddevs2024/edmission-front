@@ -22,29 +22,20 @@ export function UniversityDetail() {
     if (!id) return
     let cancelled = false
     setLoading(true)
-    Promise.all([
-      api.get<UniversityProfile>(`/universities/${id}`),
-      api.get<{ data?: Program[] }>(`/universities/${id}/programs`).catch(() => ({ data: [] })),
-      api.get<{ data?: Scholarship[] }>(`/universities/${id}/scholarships`).catch(() => ({ data: [] })),
-      api.get<{ matchScore?: number; breakdown?: Record<string, number> }>(`/student/recommendations/${id}`).catch(() => ({ data: {} })),
-    ])
-      .then(([profileRes, programsRes, scholarshipsRes, recRes]) => {
+    api.get<UniversityProfile & { programs?: Program[]; scholarships?: Scholarship[]; matchScore?: number; breakdown?: Record<string, number> }>(`/student/universities/${id}`)
+      .then((res) => {
         if (cancelled) return
-        setUni(profileRes.data)
-        const progBody = (programsRes as { data?: Program[] | { data?: Program[] } }).data
-        setPrograms(Array.isArray(progBody) ? progBody : progBody?.data ?? [])
-        const scholBody = (scholarshipsRes as { data?: Scholarship[] | { data?: Scholarship[] } }).data
-        setScholarships(Array.isArray(scholBody) ? scholBody : scholBody?.data ?? [])
-        const rec = (recRes as { data?: { matchScore?: number; breakdown?: Record<string, number> } }).data
-        if (rec?.matchScore != null) {
-          setMatchScore(rec.matchScore)
-          setMatchBreakdown(rec.breakdown ?? null)
+        const u = res.data
+        setUni(u)
+        setPrograms(u.programs ?? [])
+        setScholarships(u.scholarships ?? [])
+        if (u.matchScore != null) {
+          setMatchScore(u.matchScore)
+          setMatchBreakdown(u.breakdown ?? null)
         }
       })
       .catch(() => {
-        if (!cancelled) {
-          setUni({ id: id!, userId: '', name: 'Sample University', country: 'USA', city: 'Boston', description: 'Example description.' })
-        }
+        if (!cancelled) setUni(null)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
