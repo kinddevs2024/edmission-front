@@ -18,7 +18,13 @@ export function Sidebar({ items }: { items: NavItem[] }) {
         collapsed ? 'w-[72px]' : 'w-sidebar'
       )}
     >
-      <div className="p-4 border-b border-dark-border flex items-center justify-between min-h-[64px]">
+      <div
+        className={cn(
+          'p-4 border-b border-dark-border flex items-center min-h-[64px] gap-2',
+          collapsed ? 'justify-center' : 'justify-start'
+        )}
+      >
+        <img src="/favicon.svg" alt="" className="h-8 w-8 shrink-0 rounded-lg" aria-hidden />
         {!collapsed && <span className="font-semibold text-primary-accent">Edmission</span>}
       </div>
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
