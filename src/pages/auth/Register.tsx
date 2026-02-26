@@ -52,8 +52,8 @@ export function Register() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input label={t('auth:name')} error={errors.name?.message} {...register('name')} />
         <Input label={t('auth:email')} type="email" autoComplete="email" error={errors.email?.message} {...register('email')} />
-        <Input label={t('auth:password')} type="password" error={errors.password?.message} {...register('password')} />
-        <Input label={t('auth:confirmPassword')} type="password" error={errors.confirmPassword?.message} {...register('confirmPassword')} />
+        <Input label={t('auth:password')} type="password" autoComplete="new-password" error={errors.password?.message} {...register('password')} />
+        <Input label={t('auth:confirmPassword')} type="password" autoComplete="new-password" error={errors.confirmPassword?.message} {...register('confirmPassword')} />
         <div>
           <span className="text-sm text-[var(--color-text-muted)] mr-2">{t('auth:registerAs')}</span>
           <label className="inline-flex items-center gap-2 mr-4">

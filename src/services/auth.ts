@@ -24,6 +24,7 @@ export async function register(payload: RegisterPayload): Promise<LoginResponse>
   const { data } = await api.post<LoginResponse>('/auth/register', {
     email: payload.email,
     password: payload.password,
+    name: payload.name,
     role: payload.role,
   })
   useAuthStore.getState().setAuth(data.user, data.accessToken)
