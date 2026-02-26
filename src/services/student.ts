@@ -28,7 +28,6 @@ export async function getUniversities(params?: UniversitiesParams): Promise<Pagi
 export async function getRecommendations(params?: PaginationParams): Promise<PaginatedResponse<Recommendation>> {
   const { data } = await api.get<Recommendation[] | PaginatedResponse<Recommendation>>('/student/recommendations', { params })
   if (Array.isArray(data)) {
-    const limit = params?.limit ?? 20
     return { data, total: data.length, page: 1 }
   }
   return data
