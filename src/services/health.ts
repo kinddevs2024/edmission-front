@@ -23,3 +23,12 @@ export async function checkBackendHealth(): Promise<{
     return { ok: false, error: message }
   }
 }
+
+let healthCheckDone = false
+
+/** Вызвать проверку бэкенда один раз за сессию (для провайдера при старте приложения). */
+export function checkBackendHealthOnce(): void {
+  if (healthCheckDone) return
+  healthCheckDone = true
+  checkBackendHealth().catch(() => {})
+}
