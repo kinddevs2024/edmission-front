@@ -37,6 +37,7 @@ import { AdminLogs } from '@/pages/admin/AdminLogs'
 import { SystemHealth } from '@/pages/admin/SystemHealth'
 
 import { Profile } from '@/pages/Profile'
+import { Landing } from '@/pages/Landing'
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: Role[] }) {
   const { isAuthenticated, role } = useAuth()
@@ -67,7 +68,7 @@ export function Router() {
       </Route>
 
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<Navigate to="/login" replace />} />
+        <Route index element={<Landing />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin']}><Profile /></ProtectedRoute>} />
 
         <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>

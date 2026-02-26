@@ -70,6 +70,9 @@ export function Register() {
         <Link to="/login" className="block text-sm text-[var(--color-text-muted)] hover:underline text-center">
           {t('auth:haveAccount')} {t('common:login')}
         </Link>
+        <Link to="/" className="block text-sm text-[var(--color-text-muted)] hover:underline text-center mt-1">
+          На главную
+        </Link>
       </form>
     </Card>
   )

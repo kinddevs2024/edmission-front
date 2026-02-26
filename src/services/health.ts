@@ -1,26 +1,25 @@
-/**
- * Проверка здоровья бэкенда. Вызывается один раз при первом заходе на сайт.
- */
+import { api } from './api'
 
-let checked = false
+export interface HealthResponse {
+  status: string
+  timestamp: string
+  ip?: string
+}
 
-export type HealthResult = { ok: boolean; ip?: string }
-
-/**
- * Проверяет /health на текущем хосте. Выполняется один раз за сессию (повторные вызовы не идут в сеть).
- */
-export async function checkBackendHealthOnce(): Promise<HealthResult> {
-  if (checked) {
-    return { ok: true }
-  }
-  checked = true
-  const url = `${window.location.origin}/health`
+/** Проверка доступности бэкенда. Не требует авторизации. */
+export async function checkBackendHealth(): Promise<{
+  ok: boolean
+  data?: HealthResponse
+  error?: string
+}> {
   try {
-    const res = await fetch(url, { method: 'GET', credentials: 'same-origin' })
-    const data = (await res.json().catch(() => ({}))) as { status?: string; ip?: string }
-    const ok = res.ok && data.status === 'ok'
-    return { ok, ip: data.ip }
-  } catch {
-    return { ok: false }
+    const { data } = await api.get<HealthResponse>('/health')
+    return { ok: true, data }
+  } catch (err) {
+    const message =
+      err && typeof err === 'object' && 'message' in err
+        ? String((err as { message: string }).message)
+        : 'Backend unreachable'
+    return { ok: false, error: message }
   }
 }
