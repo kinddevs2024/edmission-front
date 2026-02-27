@@ -44,3 +44,53 @@
 .safe-area-pb {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
+
+/* Landing page: scroll-in and self-animations */
+@keyframes landing-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes landing-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes landing-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.landing-animate-in {
+  animation: landing-fade-in 0.6s ease-out forwards;
+}
+.landing-animate-rotate {
+  animation: landing-rotate 20s linear infinite;
+}
+.landing-animate-float {
+  animation: landing-float 4s ease-in-out infinite;
+}
+.landing-animate-pulse {
+  animation: landing-pulse 2s ease-in-out infinite;
+}

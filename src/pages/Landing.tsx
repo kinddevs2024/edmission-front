@@ -1,41 +1,262 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
-import { Card, CardTitle } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { BackendStatus } from '@/components/BackendStatus'
+import { useInView } from '@/hooks/useInView'
+
+const SVG_BASE = '/svg%20elements'
+function svgPath(name: string) {
+  return `${SVG_BASE}/${encodeURIComponent(name)}`
+}
+
+const PROCESS_STEPS = [
+  {
+    id: '01',
+    title: 'Консультация',
+    body: 'На первичной консультации мы обсудим ваши цели по поступлению, целевую аудиторию и текущие заявки. Это позволит понять ваши потребности и подобрать подходящие вузы и программы.',
+  },
+  {
+    id: '02',
+    title: 'Исследование и стратегия',
+    body: 'Анализ программ, требований и стипендий. Формирование стратегии поступления и приоритетного списка вузов.',
+  },
+  {
+    id: '03',
+    title: 'Реализация',
+    body: 'Подача заявок, загрузка документов и отслеживание статусов через единую платформу Edmission.',
+  },
+  {
+    id: '04',
+    title: 'Мониторинг и оптимизация',
+    body: 'Отслеживание ответов вузов, чаты с приёмными комиссиями и при необходимости корректировка заявок.',
+  },
+  {
+    id: '05',
+    title: 'Отчётность и коммуникация',
+    body: 'Прозрачный статус по каждой заявке, уведомления о офферах и дедлайнах.',
+  },
+  {
+    id: '06',
+    title: 'Постоянное улучшение',
+    body: 'Рекомендации на основе данных, улучшение совпадений и сервиса для абитуриентов и вузов.',
+  },
+]
+
+function SectionInView({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  const [ref, inView] = useInView()
+  return (
+    <div ref={ref as React.RefObject<HTMLDivElement>} className={`transition-all duration-700 ${inView ? 'landing-animate-in opacity-100' : 'opacity-0'} ${className}`}>
+      {children}
+    </div>
+  )
+}
 
 export function Landing() {
   const { t } = useTranslation(['common', 'auth'])
+  const [openStep, setOpenStep] = useState<string | null>('01')
+  const [contactName, setContactName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSent, setContactSent] = useState(false)
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setContactSent(true)
+    setContactName('')
+    setContactEmail('')
+    setContactMessage('')
+  }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 py-8">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-[var(--color-text)] mb-2">
-          {t('common:appName')}
-        </h1>
-        <p className="text-[var(--color-text-muted)]">
-          Платформа для поступления в вузы
-        </p>
-      </div>
-
-      <Card className="p-6">
-        <CardTitle className="mb-4">Главная</CardTitle>
-        <p className="text-[var(--color-text-muted)] mb-6">
-          Вы можете войти в аккаунт или зарегистрироваться. Состояние бэкенда отображается ниже.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button to="/login" variant="primary" className="flex-1">
-            {t('common:login')}
-          </Button>
-          <Button to="/register" variant="secondary" className="flex-1">
-            {t('common:register')}
-          </Button>
+    <div className="min-h-screen">
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto py-12 px-4 text-center">
+        <div className="landing-animate-in">
+          <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-text)] mb-4">
+            {t('common:appName')}
+          </h1>
+          <p className="text-lg text-[var(--color-text-muted)] max-w-2xl mx-auto mb-8">
+            Платформа прямого взаимодействия абитуриентов и вузов — без посредников и скрытых комиссий. Прозрачное поступление, стипендии и приём в одном месте.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+            <Button to="/login" variant="primary" className="min-w-[140px]">
+              {t('common:login')}
+            </Button>
+            <Button to="/register" variant="secondary" className="min-w-[140px]">
+              {t('common:register')}
+            </Button>
+          </div>
         </div>
-      </Card>
+        <div className="flex justify-center">
+          <div className="landing-animate-rotate w-48 h-48 md:w-56 md:h-56 flex items-center justify-center">
+            <img
+              src={svgPath('Illustration.svg')}
+              alt=""
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+      </section>
 
-      <Card className="p-4">
-        <h3 className="font-semibold text-[var(--color-text)] mb-2">Состояние API</h3>
-        <BackendStatus />
-      </Card>
+      {/* CTA */}
+      <section className="max-w-4xl mx-auto py-16 px-4">
+        <SectionInView>
+          <Card className="p-8 md:p-10 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-1 text-left">
+              <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text)] mb-4">
+                Подключитесь к платформе
+              </h2>
+              <p className="text-[var(--color-text-muted)] mb-6">
+                Узнайте, как Edmission помогает абитуриентам находить вузы и стипендии, а вузам — привлекать подходящих кандидатов без лишних затрат.
+              </p>
+              <Button to="/register" variant="primary">
+                Получить доступ
+              </Button>
+            </div>
+            <div className="relative w-40 h-40 md:w-48 md:h-48 flex-shrink-0">
+              <img
+                src={svgPath('Ellipse 9.svg')}
+                alt=""
+                className="absolute inset-0 w-full h-full object-contain landing-animate-float"
+              />
+              <img
+                src={svgPath('Star 4.svg')}
+                alt=""
+                className="absolute bottom-0 right-0 w-12 h-12 object-contain landing-animate-pulse"
+              />
+            </div>
+          </Card>
+        </SectionInView>
+      </section>
+
+      {/* Process accordion */}
+      <section className="max-w-2xl mx-auto py-16 px-4">
+        <SectionInView>
+          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-8 text-center">
+            Как это работает
+          </h2>
+          <div className="space-y-3">
+            {PROCESS_STEPS.map((step) => {
+              const isOpen = openStep === step.id
+              return (
+                <Card
+                  key={step.id}
+                  className={`rounded-2xl border overflow-hidden transition-colors ${
+                    isOpen
+                      ? 'bg-[var(--color-primary-accent)]/15 border-[var(--color-primary-accent)]'
+                      : 'bg-[var(--color-card)] border-[var(--color-border)]'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenStep(isOpen ? null : step.id)}
+                    className="w-full flex items-center justify-between gap-4 p-4 text-left"
+                  >
+                    <span className="font-bold text-[var(--color-text)]">
+                      <span className="text-lg mr-2">{step.id}</span>
+                      {step.title}
+                    </span>
+                    <span className="flex-shrink-0 w-9 h-9 rounded-full border-2 border-[var(--color-text)] flex items-center justify-center bg-[var(--color-secondary)]">
+                      <img
+                        src={isOpen ? svgPath('Property 1=Minus.svg') : svgPath('Property 1=Plus.svg')}
+                        alt=""
+                        className="w-5 h-5"
+                      />
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-4 pt-0">
+                      <p className="text-sm text-[var(--color-text-muted)]">
+                        {step.body}
+                      </p>
+                    </div>
+                  )}
+                </Card>
+              )
+            })}
+          </div>
+        </SectionInView>
+      </section>
+
+      {/* Contact */}
+      <section className="max-w-2xl mx-auto py-16 px-4">
+        <SectionInView>
+          <Card className="p-6 md:p-8 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)]">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="px-3 py-1 rounded-lg bg-[var(--color-primary-accent)] text-[var(--color-primary-dark)] font-medium text-sm">
+                Связаться
+              </span>
+              <h2 className="text-xl font-bold text-[var(--color-text)]">
+                Напишите нам: обсудим ваши задачи
+              </h2>
+            </div>
+            {contactSent ? (
+              <p className="text-[var(--color-text-muted)] py-4">
+                Спасибо! Мы свяжемся с вами в ближайшее время.
+              </p>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="space-y-4 mt-6">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Имя</label>
+                  <input
+                    type="text"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    placeholder="Имя"
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="Email"
+                    required
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Сообщение *</label>
+                  <textarea
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder="Сообщение"
+                    required
+                    rows={4}
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)] resize-y"
+                  />
+                </div>
+                <div className="relative">
+                  <Button type="submit" variant="primary" className="w-full md:w-auto min-w-[160px]">
+                    Отправить
+                  </Button>
+                  <img
+                    src={svgPath('Star 2.svg')}
+                    alt=""
+                    className="absolute -right-2 -bottom-2 w-10 h-10 object-contain opacity-40 landing-animate-float"
+                  />
+                </div>
+              </form>
+            )}
+          </Card>
+        </SectionInView>
+      </section>
+
+      {/* Backend status */}
+      <section className="max-w-4xl mx-auto py-8 px-4 border-t border-[var(--color-border)]">
+        <div className="flex justify-center">
+          <BackendStatus />
+        </div>
+      </section>
     </div>
   )
 }

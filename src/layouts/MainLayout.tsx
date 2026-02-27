@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { TopBar } from '@/components/layout/TopBar'
 import { FloatingAIButton } from '@/components/ai/FloatingAIButton'
+import { VersionBadge } from '@/components/VersionBadge'
 
 export function MainLayout() {
   const { isAuthenticated } = useAuth()
@@ -13,6 +14,7 @@ export function MainLayout() {
         <Outlet />
       </main>
       {isAuthenticated && <FloatingAIButton />}
+      <VersionBadge />
     </div>
   )
 }
