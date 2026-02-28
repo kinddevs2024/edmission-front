@@ -10,6 +10,15 @@ function svgPath(name: string) {
   return `${SVG_BASE}/${encodeURIComponent(name)}`
 }
 
+/** Core Pillars из blueprint — Overview секции лендинга */
+const CORE_PILLARS = [
+  { title: 'Прямая связь', desc: 'Абитуриенты и вузы без посредников и скрытых комиссий' },
+  { title: 'Прозрачный матчинг', desc: 'Совпадение по программам, стипендиям и требованиям' },
+  { title: 'Стипендии', desc: 'Управление стипендиями и квотами в одном месте' },
+  { title: 'Структурированный приём', desc: 'Единый пайплайн заявок и офферов' },
+  { title: 'AI-помощник', desc: 'Рекомендации и подсказки на основе данных' },
+]
+
 const PROCESS_STEPS = [
   {
     id: '01',
@@ -94,7 +103,10 @@ export function Landing() {
             </Button>
           </div>
         </div>
-        <div className="flex justify-center">
+        <div className="relative flex justify-center">
+          <div className="absolute top-4 left-1/4 w-5 h-5 landing-animate-pulse opacity-80">
+            <img src={svgPath('Ellipse 16.svg')} alt="" className="w-full h-full" />
+          </div>
           <div className="landing-animate-rotate w-48 h-48 md:w-56 md:h-56 flex items-center justify-center">
             <img
               src={svgPath('Illustration.svg')}
@@ -102,7 +114,40 @@ export function Landing() {
               className="w-full h-full object-contain"
             />
           </div>
+          <div className="absolute bottom-8 right-1/4 w-6 h-6 landing-animate-float opacity-80">
+            <img src={svgPath('Ellipse 16.svg')} alt="" className="w-full h-full" />
+          </div>
         </div>
+      </section>
+
+      {/* Overview — опора платформы из blueprint, анимация при скролле */}
+      <section className="max-w-4xl mx-auto py-16 px-4">
+        <SectionInView>
+          <h2 className="text-2xl font-bold text-[var(--color-text)] mb-8 text-center">
+            Обзор платформы
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {CORE_PILLARS.map((pillar, i) => (
+              <div
+                key={pillar.title}
+                className="flex gap-3 p-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] hover:border-[var(--color-primary-accent)]/50 transition-colors"
+              >
+                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center landing-animate-float" style={{ animationDelay: `${i * 0.15}s` }}>
+                  <img src={svgPath('Frame.svg')} alt="" className="w-8 h-8 object-contain" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[var(--color-text)] mb-1">{pillar.title}</h3>
+                  <p className="text-sm text-[var(--color-text-muted)]">{pillar.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center mt-8">
+            <div className="landing-animate-rotate opacity-30 w-32 h-20">
+              <img src={svgPath('Ellipse 7.svg')} alt="" className="w-full h-full object-contain" />
+            </div>
+          </div>
+        </SectionInView>
       </section>
 
       {/* CTA */}
@@ -125,6 +170,12 @@ export function Landing() {
                 src={svgPath('Ellipse 9.svg')}
                 alt=""
                 className="absolute inset-0 w-full h-full object-contain landing-animate-float"
+              />
+              <img
+                src={svgPath('Ellipse 8.svg')}
+                alt=""
+                className="absolute top-0 right-0 w-24 h-24 object-contain landing-animate-rotate opacity-60"
+                style={{ animationDuration: '25s' }}
               />
               <img
                 src={svgPath('Star 4.svg')}
