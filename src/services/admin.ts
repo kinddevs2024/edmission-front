@@ -125,7 +125,7 @@ export async function getHealth(): Promise<{ status: string; services: ServiceHe
 
 export async function getScholarshipsSummary(): Promise<ScholarshipSummaryItem[]> {
   const { data } = await api.get<unknown>('/admin/scholarships')
-  const list = (Array.isArray(data) ? data : []) as Record<string, unknown>[]
+  const list: Record<string, unknown>[] = Array.isArray(data) ? data : []
   return list.map((s) => {
     const maxSlots = Number(s.maxSlots ?? 0)
     const remainingSlots = Number(s.remainingSlots ?? 0)
