@@ -10,11 +10,11 @@ type MessagesResponse = { data?: Array<Record<string, unknown>>; total?: number;
 
 export async function getMessages(chatId: string, params?: { page?: number; limit?: number }): Promise<Message[]> {
   const { data } = await api.get<Message[] | MessagesResponse>(`/chat/${chatId}/messages`, { params })
-  const list = Array.isArray(data) ? data : (data as MessagesResponse)?.data ?? []
-  return list.map((m: Record<string, unknown>) => ({
+  const list = (Array.isArray(data) ? data : (data as MessagesResponse)?.data ?? []) as Record<string, unknown>[]
+  return list.map((m) => ({
     ...m,
-    id: m.id ?? m._id,
-    text: (m.text ?? m.message) as string,
+    id: String(m.id ?? m._id),
+    text: String(m.text ?? m.message),
     createdAt: m.createdAt,
     read: m.isRead ?? m.read,
   })) as Message[]

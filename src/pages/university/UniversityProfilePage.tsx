@@ -26,7 +26,7 @@ export function UniversityProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [profile, setProfile] = useState<UniversityProfile | null>(null)
+  const [, setProfile] = useState<UniversityProfile | null>(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),

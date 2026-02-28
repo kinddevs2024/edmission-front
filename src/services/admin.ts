@@ -124,13 +124,17 @@ export async function getHealth(): Promise<{ status: string; services: ServiceHe
 }
 
 export async function getScholarshipsSummary(): Promise<ScholarshipSummaryItem[]> {
-  const { data } = await api.get<ScholarshipSummaryItem[] | Array<Record<string, unknown>>>('/admin/scholarships')
-  const list = data ?? []
-  return list.map((s: Record<string, unknown>) => ({
-    universityId: String((s.university as { _id?: string })?._id ?? s.universityId ?? ''),
-    universityName: (s.university as { universityName?: string })?.universityName ?? String(s.universityName ?? ''),
-    totalSlots: Number(s.maxSlots ?? 0),
-    usedSlots: Number(s.usedSlots ?? (s.maxSlots ?? 0) - (s.remainingSlots ?? 0)),
-    deadline: s.deadline as string | undefined,
-  }))
+  const { data } = await api.get<unknown>('/admin/scholarships')
+  const list = (Array.isArray(data) ? data : []) as Record<string, unknown>[]
+  return list.map((s) => {
+    const maxSlots = Number(s.maxSlots ?? 0)
+    const remainingSlots = Number(s.remainingSlots ?? 0)
+    return {
+      universityId: String((s.university as { _id?: string })?._id ?? s.universityId ?? ''),
+      universityName: (s.university as { universityName?: string })?.universityName ?? String(s.universityName ?? ''),
+      totalSlots: maxSlots,
+      usedSlots: Number(s.usedSlots ?? maxSlots - remainingSlots),
+      deadline: s.deadline as string | undefined,
+    }
+  })
 }
