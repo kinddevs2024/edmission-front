@@ -11,7 +11,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8, 'Минимум 8 символов'),
   confirmPassword: z.string(),
   name: z.string().min(1),
   role: z.enum(['student', 'university']),

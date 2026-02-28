@@ -1,7 +1,10 @@
 import axios, { type AxiosError } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 
-const baseURL = import.meta.env.VITE_API_URL ?? '/api'
+// Локально (dev): запросы сразу на бэкенд (порт 4000), без прокси. На проде — тот же домен /api (проксирует nginx).
+const baseURL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api')
 
 export const api = axios.create({
   baseURL,

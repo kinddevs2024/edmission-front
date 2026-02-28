@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getChats, getMessages, sendMessage, markAsRead } from '@/services/chat'
 import { useSocket } from '@/hooks/useSocket'
+import { useAuthStore } from '@/store/authStore'
 import { ChatList } from './ChatList'
 import { MessageThread } from './MessageThread'
 import { Button } from '@/components/ui/Button'
@@ -8,6 +9,7 @@ import { cn } from '@/utils/cn'
 import type { Chat, Message } from '@/types/chat'
 
 export function ChatView() {
+  const currentUserId = useAuthStore((s) => s.user?.id)
   const [chats, setChats] = useState<Chat[]>([])
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -35,7 +37,11 @@ export function ChatView() {
       .then((list) => {
         const withIsFromMe = list.map((m) => ({
           ...m,
-          isFromMe: m.isFromMe,
+          isFromMe: (() => {
+          const s = (m as { sender?: { id?: string; _id?: unknown } }).sender
+          const sid = s?.id ?? (s?._id != null ? String(s._id) : undefined)
+          return m.isFromMe ?? (currentUserId != null && sid === currentUserId)
+        })(),
         }))
         setMessages(withIsFromMe)
       })
@@ -44,7 +50,7 @@ export function ChatView() {
     return () => {
       leaveChat(selectedChat.id)
     }
-  }, [selectedChat?.id, joinChat, leaveChat])
+  }, [selectedChat?.id, currentUserId, joinChat, leaveChat])
 
   useEffect(() => {
     const unsub = onNewMessage(({ chatId, message }) => {

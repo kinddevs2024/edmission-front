@@ -6,9 +6,18 @@ export async function getChats(): Promise<Chat[]> {
   return data
 }
 
-export async function getMessages(chatId: string, params?: { before?: string }): Promise<Message[]> {
-  const { data } = await api.get<Message[]>(`/chat/${chatId}/messages`, { params })
-  return data
+type MessagesResponse = { data?: Array<Record<string, unknown>>; total?: number; page?: number; limit?: number; totalPages?: number }
+
+export async function getMessages(chatId: string, params?: { page?: number; limit?: number }): Promise<Message[]> {
+  const { data } = await api.get<Message[] | MessagesResponse>(`/chat/${chatId}/messages`, { params })
+  const list = Array.isArray(data) ? data : (data as MessagesResponse)?.data ?? []
+  return list.map((m: Record<string, unknown>) => ({
+    ...m,
+    id: m.id ?? m._id,
+    text: (m.text ?? m.message) as string,
+    createdAt: m.createdAt,
+    read: m.isRead ?? m.read,
+  })) as Message[]
 }
 
 export async function sendMessage(chatId: string, text: string): Promise<Message> {

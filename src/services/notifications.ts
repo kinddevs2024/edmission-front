@@ -7,9 +7,9 @@ export async function getNotifications(params?: { limit?: number }): Promise<Not
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  await api.post(`/notifications/${id}/read`)
+  await api.patch(`/notifications/${id}/read`)
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  await api.post('/notifications/read-all')
+  await api.patch('/notifications/read-all')
 }

@@ -6,7 +6,8 @@ import { z } from 'zod'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { api } from '@/services/api'
+import { updateProfile } from '@/services/university'
+import { getApiError } from '@/services/auth'
 
 const STEPS = [
   { id: 1, title: 'Overview' },
@@ -30,6 +31,7 @@ export function UniversityOnboarding() {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof step1Schema>>({
     resolver: zodResolver(step1Schema),
@@ -40,12 +42,20 @@ export function UniversityOnboarding() {
     else submitFull(data)
   }
 
-  const submitFull = async (data: unknown) => {
+  const submitFull = async (data: z.infer<typeof step1Schema>) => {
+    setError('')
     setSubmitting(true)
     try {
-      await api.post('/university/onboarding', data)
+      await updateProfile({
+        name: data.name,
+        slogan: data.slogan || undefined,
+        foundedYear: data.foundedYear ?? undefined,
+        studentCount: data.studentCount ?? undefined,
+        description: data.description || undefined,
+      })
       navigate('/university/dashboard')
-    } catch {
+    } catch (e) {
+      setError(getApiError(e).message)
       setSubmitting(false)
     }
   }
@@ -74,6 +84,7 @@ export function UniversityOnboarding() {
 
         {step === 1 && (
           <form onSubmit={handleSubmit(onStep1)} className="space-y-4 mt-4">
+            {error && <p className="text-sm text-red-500">{error}</p>}
             <Input label="University name" error={errors.name?.message} {...register('name')} />
             <Input label="Slogan" {...register('slogan')} />
             <Input label="Founded year" type="number" {...register('foundedYear')} />
@@ -85,7 +96,7 @@ export function UniversityOnboarding() {
               <textarea className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2" rows={4} {...register('description')} />
             </label>
             <div className="flex gap-2">
-              <Button type="submit">Next</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Next'}</Button>
               <Button type="button" variant="ghost" onClick={() => navigate('/university/dashboard')}>Skip</Button>
             </div>
           </form>
@@ -127,10 +138,11 @@ export function UniversityOnboarding() {
           <div className="space-y-4 mt-4">
             <Input label="Contact email" type="email" />
             <Input label="Phone" />
-            <p className="text-sm text-[var(--color-text-muted)]">Review and submit (TODO)</p>
+            <p className="text-sm text-[var(--color-text-muted)]">Review and submit. Data from step 1 will be saved.</p>
+            {error && <p className="text-sm text-red-500">{error}</p>}
             <div className="flex gap-2">
-              <Button onClick={() => submitFull({})} disabled={submitting}>{submitting ? 'Saving...' : 'Submit'}</Button>
-              <Button variant="secondary" onClick={() => setStep(4)}>Back</Button>
+              <Button type="button" onClick={() => handleSubmit(submitFull)()} disabled={submitting}>{submitting ? 'Saving…' : 'Submit'}</Button>
+              <Button type="button" variant="secondary" onClick={() => setStep(4)}>Back</Button>
             </div>
           </div>
         )}

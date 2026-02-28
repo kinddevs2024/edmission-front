@@ -6,6 +6,7 @@ import { cn } from '@/utils/cn'
 
 const navItems = [
   { to: '/university/dashboard', label: 'Dashboard' },
+  { to: '/university/profile', label: 'Профиль' },
   { to: '/university/students', label: 'Discovery' },
   { to: '/university/pipeline', label: 'Pipeline' },
   { to: '/university/scholarships', label: 'Scholarships' },
@@ -17,6 +18,7 @@ const bottomNavItems = [
   { to: '/university/dashboard', label: 'Home' },
   { to: '/university/students', label: 'Discovery' },
   { to: '/university/pipeline', label: 'Pipeline' },
+  { to: '/university/profile', label: 'Профиль' },
   { to: '/university/chat', label: 'Chat' },
 ]
 

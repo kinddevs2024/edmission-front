@@ -12,6 +12,8 @@ const getSocketUrl = () => {
       return window.location.origin
     }
   }
+  // Локально (dev): сокет на бэкенд (4000), как и API
+  if (import.meta.env.DEV) return 'http://localhost:4000'
   return window.location.origin
 }
 

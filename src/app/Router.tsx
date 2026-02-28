@@ -14,6 +14,7 @@ import { ForgotPassword } from '@/pages/auth/ForgotPassword'
 import { VerifyEmail } from '@/pages/auth/VerifyEmail'
 
 import { StudentDashboard } from '@/pages/student/StudentDashboard'
+import { StudentProfilePage } from '@/pages/student/StudentProfilePage'
 import { ExploreUniversities } from '@/pages/student/ExploreUniversities'
 import { UniversityDetail } from '@/pages/student/UniversityDetail'
 import { StudentApplications } from '@/pages/student/StudentApplications'
@@ -22,6 +23,7 @@ import { Compare } from '@/pages/student/Compare'
 import { StudentChat } from '@/pages/student/StudentChat'
 
 import { UniversityDashboard } from '@/pages/university/UniversityDashboard'
+import { UniversityProfilePage } from '@/pages/university/UniversityProfilePage'
 import { UniversityOnboarding } from '@/pages/university/UniversityOnboarding'
 import { Discovery } from '@/pages/university/Discovery'
 import { Pipeline } from '@/pages/university/Pipeline'
@@ -73,6 +75,7 @@ export function Router() {
 
         <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<StudentDashboard />} />
+          <Route path="profile" element={<StudentProfilePage />} />
           <Route path="universities" element={<ExploreUniversities />} />
           <Route path="universities/:id" element={<UniversityDetail />} />
           <Route path="applications" element={<StudentApplications />} />
@@ -83,6 +86,7 @@ export function Router() {
 
         <Route path="university" element={<ProtectedRoute allowedRoles={['university']}><UniversityLayout /></ProtectedRoute>}>
           <Route path="onboarding" element={<UniversityOnboarding />} />
+          <Route path="profile" element={<UniversityProfilePage />} />
           <Route path="dashboard" element={<UniversityDashboard />} />
           <Route path="students" element={<Discovery />} />
           <Route path="pipeline" element={<Pipeline />} />

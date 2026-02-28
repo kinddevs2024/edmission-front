@@ -27,10 +27,29 @@ export function Pipeline() {
   )
 
   useEffect(() => {
-    api.get<{ data?: PipelineStudent[] }>('/university/pipeline')
+    api.get<Array<{ id: string; status: string; student?: { firstName?: string; lastName?: string; _id?: unknown }; updatedAt?: string }>>('/university/pipeline')
       .then((res) => {
-        const list = res.data?.data ?? []
-        const next = COLUMNS.reduce((acc, { id }) => ({ ...acc, [id]: list.filter((s) => s.stage === id) }), {} as Record<PipelineStage, PipelineStudent[]>);
+        const raw = Array.isArray(res.data) ? res.data : []
+        const statusToStage: Record<string, PipelineStage> = {
+          interested: 'interested',
+          under_review: 'evaluating',
+          chat_opened: 'contacted',
+          offer_sent: 'offer_sent',
+          accepted: 'accepted',
+          rejected: 'rejected',
+        }
+        const list: PipelineStudent[] = raw.map((i) => {
+          const st = i.student as { firstName?: string; lastName?: string } | undefined
+          const name = st ? [st.firstName, st.lastName].filter(Boolean).join(' ') || 'Student' : 'Student'
+          return {
+            id: String(i.student?._id ?? i.id),
+            name,
+            applicationId: i.id,
+            stage: statusToStage[i.status] ?? 'interested',
+            updatedAt: i.updatedAt ?? new Date().toISOString(),
+          }
+        })
+        const next = COLUMNS.reduce((acc, { id }) => ({ ...acc, [id]: list.filter((s) => s.stage === id) }), {} as Record<PipelineStage, PipelineStudent[]>)
         setByStage(next)
       })
       .catch(() => {})

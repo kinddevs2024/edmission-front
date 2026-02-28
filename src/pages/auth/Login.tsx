@@ -8,7 +8,6 @@ import { login, getApiError } from '@/services/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
-import { BackendStatus } from '@/components/BackendStatus'
 
 const schema = z.object({
   email: z.string().email(),
@@ -41,7 +40,6 @@ export function Login() {
   return (
     <Card className="p-6">
       <CardTitle className="mb-4">{t('common:appName')} — {t('common:login')}</CardTitle>
-      <BackendStatus className="mb-4" />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={t('auth:email')}

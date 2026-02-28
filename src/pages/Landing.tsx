@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { BackendStatus } from '@/components/BackendStatus'
 import { useInView } from '@/hooks/useInView'
 
 const SVG_BASE = '/svg%20elements'
@@ -300,13 +299,6 @@ export function Landing() {
             )}
           </Card>
         </SectionInView>
-      </section>
-
-      {/* Backend status */}
-      <section className="max-w-4xl mx-auto py-8 px-4 border-t border-[var(--color-border)]">
-        <div className="flex justify-center">
-          <BackendStatus />
-        </div>
       </section>
     </div>
   )
