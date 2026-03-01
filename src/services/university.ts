@@ -38,7 +38,7 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
 
 export async function getScholarships(params?: PaginationParams): Promise<PaginatedResponse<Scholarship>> {
   const { data } = await api.get<Scholarship[] | PaginatedResponse<Scholarship>>('/university/scholarships', { params })
-  if (Array.isArray(data)) return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 }
+  if (Array.isArray(data)) return { data, total: data.length, page: 1, limit: data.length }
   return data
 }
 

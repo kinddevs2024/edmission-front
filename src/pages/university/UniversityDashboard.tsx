@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Badge } from '@/components/ui/Badge'
-import { getDashboard, getFunnelAnalytics, type UniversityDashboardData } from '@/services/university'
+import { getDashboard, type UniversityDashboardData } from '@/services/university'
 import { Bot, Users, BarChart3, MessageCircle, Send, ShieldCheck } from 'lucide-react'
 
 const STAGE_LABELS: Record<string, string> = {

@@ -7,7 +7,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { getStudentProfile, type FullStudentProfile } from '@/services/university'
 import { getImageUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
-import { ArrowLeft, MessageCircle, FileText, ExternalLink, User } from 'lucide-react'
+import { ArrowLeft, MessageCircle, FileText, ExternalLink } from 'lucide-react'
 
 export function UniversityStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
