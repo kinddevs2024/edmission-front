@@ -1,0 +1,15 @@
+{
+  "default": "Something went wrong. Please try again.",
+  "invalidCredentials": "Invalid email or password.",
+  "userExists": "An account with this email already exists.",
+  "emailNotVerified": "Please verify your email first.",
+  "invalidToken": "Invalid or expired link. Request a new one.",
+  "invalidEmail": "Please enter a valid email address.",
+  "passwordRequired": "Password is required.",
+  "nameRequired": "Name is required.",
+  "unauthorized": "Please log in again.",
+  "forbidden": "You don't have permission to do this.",
+  "notFound": "Not found.",
+  "serverError": "Server error. Please try again later.",
+  "networkError": "Connection problem. Check your internet."
+}

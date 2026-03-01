@@ -57,7 +57,7 @@ export async function getProfile(): Promise<User> {
   return data
 }
 
-export async function updateProfile(patch: Partial<Pick<User, 'name' | 'avatar'>>): Promise<User> {
+export async function updateProfile(patch: Partial<Pick<User, 'name' | 'avatar' | 'notificationPreferences'>>): Promise<User> {
   const { data } = await api.patch<User>('/auth/me', patch)
   useAuthStore.getState().setUser(data)
   return data

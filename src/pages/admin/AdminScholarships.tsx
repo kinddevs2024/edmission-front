@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/components/ui/Table'
 import { getScholarshipsSummary } from '@/services/admin'
 import { formatDate } from '@/utils/format'
@@ -17,7 +18,7 @@ export function AdminScholarships() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">Scholarship Monitoring</h1>
+      <PageTitle title="Scholarship Monitoring" icon="Wallet" />
 
       <Card>
         <CardTitle>Summary by university</CardTitle>

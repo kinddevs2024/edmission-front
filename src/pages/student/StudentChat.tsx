@@ -1,9 +1,10 @@
 import { ChatView } from '@/components/chat/ChatView'
+import { PageTitle } from '@/components/ui/PageTitle'
 
 export function StudentChat() {
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">Chat</h1>
+      <PageTitle title="Chat" icon="MessageCircle" />
       <ChatView />
     </div>
   )

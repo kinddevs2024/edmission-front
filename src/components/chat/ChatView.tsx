@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getChats, getMessages, sendMessage, markAsRead } from '@/services/chat'
+import { useSearchParams } from 'react-router-dom'
+import { getChats, getMessages, sendMessage, markAsRead, createChat, acceptStudent } from '@/services/chat'
 import { useSocket } from '@/hooks/useSocket'
 import { useAuthStore } from '@/store/authStore'
 import { ChatList } from './ChatList'
@@ -9,7 +10,9 @@ import { cn } from '@/utils/cn'
 import type { Chat, Message } from '@/types/chat'
 
 export function ChatView() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const currentUserId = useAuthStore((s) => s.user?.id)
+  const role = useAuthStore((s) => s.user?.role) as 'student' | 'university' | undefined
   const [chats, setChats] = useState<Chat[]>([])
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -20,11 +23,36 @@ export function ChatView() {
   const { joinChat, leaveChat, onNewMessage, onRead } = useSocket()
 
   useEffect(() => {
-    getChats()
+    const roleOrStudent = role ?? 'student'
+    getChats(roleOrStudent)
       .then(setChats)
       .catch(() => setChats([]))
       .finally(() => setChatsLoading(false))
-  }, [])
+  }, [role])
+
+  useEffect(() => {
+    const studentId = searchParams.get('studentId')
+    const universityId = searchParams.get('universityId')
+    if ((studentId || universityId) && role && chats.length >= 0 && !chatsLoading) {
+      const existing = chats.find((c) =>
+        studentId ? c.participant.id === studentId : universityId ? c.participant.id === universityId : false
+      )
+      if (existing) {
+        setSelectedChat(existing)
+        setMobileView('thread')
+        setSearchParams({}, { replace: true })
+      } else {
+        createChat(studentId ? { studentId } : { universityId: universityId! })
+          .then((chat) => {
+            setChats((prev) => (prev.some((c) => c.id === chat.id) ? prev : [...prev, chat]))
+            setSelectedChat(chat)
+            setMobileView('thread')
+            setSearchParams({}, { replace: true })
+          })
+          .catch(() => setSearchParams({}, { replace: true }))
+      }
+    }
+  }, [searchParams, role, chats, chatsLoading, setSearchParams])
 
   useEffect(() => {
     if (!selectedChat?.id) {
@@ -55,6 +83,7 @@ export function ChatView() {
   useEffect(() => {
     const unsub = onNewMessage(({ chatId, message }) => {
       const msg = message as Message
+      const preview = msg.type === 'voice' ? '🎤 Voice' : msg.type === 'emotion' ? (msg.metadata?.emotion ?? '👍') : (msg.text ?? '')
       setMessages((prev) => {
         if (chatId !== selectedChat?.id) return prev
         if (prev.some((m) => m.id === msg.id)) return prev
@@ -66,7 +95,7 @@ export function ChatView() {
             ? {
                 ...c,
                 lastMessage: {
-                  text: msg.text,
+                  text: preview,
                   createdAt: msg.createdAt,
                   isFromMe: false,
                 },
@@ -90,17 +119,18 @@ export function ChatView() {
   }, [onRead])
 
   const handleSend = useCallback(
-    (text: string) => {
+    (params: string | import('@/services/chat').SendMessageParams) => {
       if (!selectedChat) return
-      sendMessage(selectedChat.id, text)
+      sendMessage(selectedChat.id, params)
         .then((msg) => {
           setMessages((prev) => [...prev, { ...msg, isFromMe: true }])
+          const preview = typeof params === 'string' ? params : (params.type === 'voice' ? '🎤 Voice' : params.type === 'emotion' ? String(params.metadata?.emotion ?? '') : (params.text ?? ''))
           setChats((prev) =>
             prev.map((c) =>
               c.id === selectedChat.id
                 ? {
                     ...c,
-                    lastMessage: { text: msg.text, createdAt: msg.createdAt, isFromMe: true },
+                    lastMessage: { text: preview, createdAt: msg.createdAt, isFromMe: true },
                     updatedAt: msg.createdAt,
                   }
                 : c
@@ -108,6 +138,28 @@ export function ChatView() {
           )
         })
         .catch(() => {})
+    },
+    [selectedChat]
+  )
+
+  const handleAcceptStudent = useCallback(
+    (params: { positionType: 'budget' | 'grant' | 'other'; positionLabel?: string; congratulatoryMessage: string }) => {
+      if (!selectedChat) return Promise.reject()
+      return acceptStudent(selectedChat.id, params).then((res) => {
+        setMessages((prev) => [...prev, { ...res.message, isFromMe: false }])
+        setChats((prev) =>
+          prev.map((c) =>
+            c.id === selectedChat.id
+              ? { ...c, acceptedAt: res.chat.acceptedAt, acceptancePositionType: res.chat.acceptancePositionType, acceptancePositionLabel: res.chat.acceptancePositionLabel }
+              : c
+          )
+        )
+        setSelectedChat((prev) =>
+          prev && prev.id === selectedChat.id
+            ? { ...prev, acceptedAt: res.chat.acceptedAt, acceptancePositionType: res.chat.acceptancePositionType, acceptancePositionLabel: res.chat.acceptancePositionLabel }
+            : prev
+        )
+      })
     },
     [selectedChat]
   )
@@ -171,6 +223,8 @@ export function ChatView() {
             onSend={handleSend}
             onMarkRead={handleMarkRead}
             isTyping={false}
+            role={role}
+            onAcceptStudent={role === 'university' ? handleAcceptStudent : undefined}
           />
         </div>
       </div>

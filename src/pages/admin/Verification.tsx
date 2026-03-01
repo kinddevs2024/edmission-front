@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { getVerificationQueue, approveUniversity, rejectUniversity } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { VerificationItem } from '@/services/admin'
 
 export function Verification() {
+  const { t } = useTranslation(['common', 'admin'])
   const [list, setList] = useState<VerificationItem[]>([])
   const [loading, setLoading] = useState(true)
   const [actionModal, setActionModal] = useState<{ type: 'approve' | 'reject'; item: VerificationItem } | null>(null)
@@ -53,7 +56,7 @@ export function Verification() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">University Verification</h1>
+      <PageTitle title="University Verification" icon="ShieldCheck" />
 
       <Card>
         <CardTitle>Queue</CardTitle>
@@ -98,15 +101,15 @@ export function Verification() {
       <Modal
         open={!!actionModal}
         onClose={() => { setActionModal(null); setComment('') }}
-        title={actionModal?.type === 'approve' ? 'Approve university' : 'Reject university'}
+        title={actionModal?.type === 'approve' ? t('admin:approveUniversity') : t('admin:rejectUniversity')}
         footer={
           actionModal ? (
             <>
-              <Button variant="secondary" onClick={() => { setActionModal(null); setComment('') }}>Cancel</Button>
+              <Button variant="secondary" onClick={() => { setActionModal(null); setComment('') }}>{t('common:cancel')}</Button>
               {actionModal.type === 'approve' ? (
-                <Button onClick={handleApprove} disabled={submitting}>{submitting ? 'Saving...' : 'Approve'}</Button>
+                <Button onClick={handleApprove} disabled={submitting} loading={submitting}>{t('admin:approve')}</Button>
               ) : (
-                <Button variant="danger" onClick={handleReject} disabled={submitting}>{submitting ? 'Saving...' : 'Reject'}</Button>
+                <Button variant="danger" onClick={handleReject} disabled={submitting} loading={submitting}>{t('admin:reject')}</Button>
               )}
             </>
           ) : undefined
@@ -122,7 +125,7 @@ export function Verification() {
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Add a comment..."
+                placeholder={t('admin:addComment')}
               />
             </label>
           </div>

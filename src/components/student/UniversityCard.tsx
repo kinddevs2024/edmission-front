@@ -2,6 +2,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { MatchScore } from './MatchScore'
+import { getImageUrl } from '@/services/upload'
 import type { UniversityListItem } from '@/types/university'
 
 interface UniversityCardProps {
@@ -9,9 +10,10 @@ interface UniversityCardProps {
   showMatch?: boolean
   onInterest?: (id: string) => void
   interested?: boolean
+  interestDisabled?: boolean
 }
 
-export function UniversityCard({ university, showMatch = true, onInterest, interested }: UniversityCardProps) {
+export function UniversityCard({ university, showMatch = true, onInterest, interested, interestDisabled }: UniversityCardProps) {
   const {
     id,
     name,
@@ -29,7 +31,7 @@ export function UniversityCard({ university, showMatch = true, onInterest, inter
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-3 min-w-0">
           {logo ? (
-            <img src={logo} alt="" className="w-12 h-12 rounded-input object-cover flex-shrink-0" />
+            <img src={getImageUrl(logo)} alt="" className="w-12 h-12 rounded-input object-cover flex-shrink-0" />
           ) : (
             <div className="w-12 h-12 rounded-input bg-[var(--color-border)] flex-shrink-0" />
           )}
@@ -55,7 +57,7 @@ export function UniversityCard({ university, showMatch = true, onInterest, inter
               variant={interested ? 'secondary' : 'primary'}
               size="sm"
               onClick={() => onInterest(id)}
-              disabled={interested}
+              disabled={interested || interestDisabled}
             >
               {interested ? 'Interested' : 'Interest'}
             </Button>

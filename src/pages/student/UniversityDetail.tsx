@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { MatchScore } from '@/components/student/MatchScore'
 import { api } from '@/services/api'
-import { showInterest } from '@/services/student'
+import { showInterest, getApplications, getInterestLimit } from '@/services/student'
+import { getImageUrl } from '@/services/upload'
+import { MessageCircle } from 'lucide-react'
 import type { UniversityProfile, Program, Scholarship } from '@/types/university'
 
 export function UniversityDetail() {
@@ -16,7 +18,16 @@ export function UniversityDetail() {
   const [matchScore, setMatchScore] = useState<number | null>(null)
   const [matchBreakdown, setMatchBreakdown] = useState<Record<string, number> | null>(null)
   const [interested, setInterested] = useState(false)
+  const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; limit: number | null }>({ allowed: true, limit: 3 })
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getApplications({ limit: 500 }).then((res) => {
+      const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === id)
+      setInterested(hasId)
+    }).catch(() => {})
+    getInterestLimit().then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit })).catch(() => {})
+  }, [id])
 
   useEffect(() => {
     if (!id) return
@@ -44,7 +55,7 @@ export function UniversityDetail() {
   }, [id])
 
   const handleInterest = () => {
-    if (!id) return
+    if (!id || interested || !interestLimit.allowed) return
     showInterest(id).then(() => setInterested(true)).catch(() => {})
   }
 
@@ -73,7 +84,7 @@ export function UniversityDetail() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           {uni.logo ? (
-            <img src={uni.logo} alt="" className="w-20 h-20 rounded-card object-cover" />
+            <img src={getImageUrl(uni.logo)} alt="" className="w-20 h-20 rounded-card object-cover" />
           ) : (
             <div className="w-20 h-20 rounded-card bg-[var(--color-border)]" />
           )}
@@ -121,7 +132,7 @@ export function UniversityDetail() {
             {scholarships.map((s) => (
               <li key={s.id} className="flex justify-between items-center">
                 <span>{s.name}</span>
-                <Badge variant="success">{s.coveragePercent}% · {s.maxSlots - s.usedSlots} left</Badge>
+                <Badge variant="success">{s.coveragePercent}% · {s.remainingSlots ?? (s.maxSlots - (s.usedSlots ?? 0))} left</Badge>
               </li>
             ))}
           </ul>
@@ -129,10 +140,10 @@ export function UniversityDetail() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={handleInterest} disabled={interested}>
-          {interested ? 'Interested' : 'Show interest'}
+        <Button onClick={handleInterest} disabled={interested || !interestLimit.allowed}>
+          {interested ? 'Interested' : !interestLimit.allowed ? 'Interest limit reached' : 'Show interest'}
         </Button>
-        <Button to={`/student/chat`} variant="secondary">Message</Button>
+        <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>Message</Button>
         <Button to="/student/compare" variant="ghost">Add to compare</Button>
       </div>
     </div>

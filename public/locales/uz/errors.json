@@ -1,0 +1,15 @@
+{
+  "default": "Nimadir xato ketdi. Qaytadan urinib ko'ring.",
+  "invalidCredentials": "Email yoki parol noto'g'ri.",
+  "userExists": "Ushbu email bilan hisob allaqachon mavjud.",
+  "emailNotVerified": "Avval emailingizni tasdiqlang.",
+  "invalidToken": "Havola yaroqsiz yoki muddati o'tgan. Yangi so'rang.",
+  "invalidEmail": "To'g'ri email kiriting.",
+  "passwordRequired": "Parolni kiriting.",
+  "nameRequired": "Ismni kiriting.",
+  "unauthorized": "Qaytadan kiring.",
+  "forbidden": "Ruxsat yo'q.",
+  "notFound": "Topilmadi.",
+  "serverError": "Server xatosi. Keyinroq urinib ko'ring.",
+  "networkError": "Ulanish muammosi. Internetni tekshiring."
+}

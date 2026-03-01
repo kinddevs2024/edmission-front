@@ -1,6 +1,6 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import { supportedLngs, defaultNS, fallbackLng, namespaces } from './config'
+import { supportedLngs, defaultNS, fallbackLng, namespaces, getInitialLanguage } from './config'
 
 export async function initI18n() {
   const resources: Record<string, Record<string, object>> = {}
@@ -15,15 +15,21 @@ export async function initI18n() {
       }
     }
   }
+  const initialLng = getInitialLanguage()
   await i18n.use(initReactI18next).init({
     resources,
-    lng: fallbackLng,
+    lng: initialLng,
     fallbackLng,
     defaultNS,
     ns: [...namespaces],
     supportedLngs: [...supportedLngs],
     interpolation: { escapeValue: false },
   })
+  try {
+    localStorage.setItem('i18nextLng', initialLng)
+  } catch {
+    /* ignore */
+  }
   return i18n
 }
 

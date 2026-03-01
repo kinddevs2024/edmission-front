@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { updateProfile } from '@/services/university'
@@ -62,7 +63,7 @@ export function UniversityOnboarding() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-h1">University onboarding</h1>
+      <PageTitle title="University onboarding" icon="GraduationCap" />
 
       <div className="flex gap-2 overflow-x-auto pb-2">
         {STEPS.map((s) => (
@@ -96,7 +97,7 @@ export function UniversityOnboarding() {
               <textarea className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2" rows={4} {...register('description')} />
             </label>
             <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Next'}</Button>
+              <Button type="submit" disabled={submitting} loading={submitting}>Next</Button>
               <Button type="button" variant="ghost" onClick={() => navigate('/university/dashboard')}>Skip</Button>
             </div>
           </form>
@@ -141,7 +142,7 @@ export function UniversityOnboarding() {
             <p className="text-sm text-[var(--color-text-muted)]">Review and submit. Data from step 1 will be saved.</p>
             {error && <p className="text-sm text-red-500">{error}</p>}
             <div className="flex gap-2">
-              <Button type="button" onClick={() => handleSubmit(submitFull)()} disabled={submitting}>{submitting ? 'Saving…' : 'Submit'}</Button>
+              <Button type="button" onClick={() => handleSubmit(submitFull)()} disabled={submitting} loading={submitting}>Submit</Button>
               <Button type="button" variant="secondary" onClick={() => setStep(4)}>Back</Button>
             </div>
           </div>

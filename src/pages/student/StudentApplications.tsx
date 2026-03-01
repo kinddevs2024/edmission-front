@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/Button'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
 import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { getApplications } from '@/services/student'
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS } from '@/utils/constants'
+import { MessageCircle, Gift } from 'lucide-react'
 import { formatDate } from '@/utils/format'
 import type { Application, ApplicationStatus } from '@/types/student'
 
@@ -43,9 +45,9 @@ export function StudentApplications() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">My Applications</h1>
+      <PageTitle title="My Applications" icon="FileCheck" />
 
-      <Card>
+      <Card className="animate-card-enter">
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
             label="Status"
@@ -89,9 +91,9 @@ export function StudentApplications() {
                     <TableTd>{formatDate(a.updatedAt)}</TableTd>
                     <TableTd>
                       {['chat_opened', 'offer_sent', 'under_review'].includes(a.status) && (
-                        <Button to="/student/chat" variant="ghost" size="sm">Chat</Button>
+                        <Button to={`/student/chat?universityId=${encodeURIComponent(a.universityId)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>Chat</Button>
                       )}
-                      <Button to="/student/offers" variant="ghost" size="sm">Offers</Button>
+                      <Button to="/student/offers" variant="ghost" size="sm" icon={<Gift size={16} />}>Offers</Button>
                     </TableTd>
                   </TableRow>
                 ))}

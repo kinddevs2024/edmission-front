@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { getHealth } from '@/services/admin'
 import type { ServiceHealth } from '@/services/admin'
 
@@ -23,7 +24,7 @@ export function SystemHealth() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">System Health</h1>
+      <PageTitle title="System Health" icon="Activity" />
 
       <Card>
         <CardTitle>Overview</CardTitle>

@@ -4,22 +4,24 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { login, getApiError } from '@/services/auth'
+import { login } from '@/services/auth'
+import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
 
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-})
-
-type FormData = z.infer<typeof schema>
+type FormData = { email: string; password: string }
 
 export function Login() {
-  const { t } = useTranslation(['common', 'auth'])
+  const { t } = useTranslation(['common', 'auth', 'errors'])
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const schema = z.object({
+    email: z.string().email(t('auth:invalidEmail')),
+    password: z.string().min(1, t('auth:passwordRequired')),
+  })
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -27,13 +29,17 @@ export function Login() {
 
   const onSubmit = async (data: FormData) => {
     setSubmitError('')
+    setLoading(true)
     try {
       const { user } = await login(data)
       if (user.role === 'student') navigate('/student/dashboard')
       else if (user.role === 'university') navigate('/university/dashboard')
       else navigate('/admin')
     } catch (err) {
-      setSubmitError(getApiError(err).message)
+      const key = getApiErrorKey(err)
+      setSubmitError(t(`errors:${key}`))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -45,6 +51,7 @@ export function Login() {
           label={t('auth:email')}
           type="email"
           autoComplete="email"
+          placeholder={t('auth:emailPlaceholder')}
           error={errors.email?.message}
           {...register('email')}
         />
@@ -57,7 +64,7 @@ export function Login() {
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         <div className="flex flex-col gap-2">
-          <Button type="submit" className="w-full">{t('common:login')}</Button>
+          <Button type="submit" className="w-full" loading={loading} disabled={loading}>{t('common:login')}</Button>
           <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">
             {t('auth:forgotPassword')}
           </Link>
@@ -65,7 +72,7 @@ export function Login() {
             {t('auth:noAccount')} {t('common:register')}
           </Link>
           <Link to="/" className="text-sm text-[var(--color-text-muted)] hover:underline">
-            На главную
+            {t('common:home')}
           </Link>
         </div>
       </form>

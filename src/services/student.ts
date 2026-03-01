@@ -3,6 +3,24 @@ import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { Application, Offer, Recommendation } from '@/types/student'
 import type { UniversityListItem } from '@/types/university'
 
+export interface StudentExperience {
+  _id?: string
+  type: 'volunteer' | 'internship' | 'work'
+  title?: string
+  organization?: string
+  startDate?: string
+  endDate?: string
+  description?: string
+}
+
+export interface StudentPortfolioWork {
+  _id?: string
+  title?: string
+  description?: string
+  fileUrl?: string
+  linkUrl?: string
+}
+
 export interface StudentProfileData {
   id?: string
   userId?: string
@@ -10,11 +28,21 @@ export interface StudentProfileData {
   lastName?: string
   birthDate?: string
   country?: string
+  city?: string
   gradeLevel?: string
   gpa?: number
   languageLevel?: string
+  languages?: { language: string; level: string }[]
   bio?: string
   avatarUrl?: string
+  schoolCompleted?: boolean
+  schoolName?: string
+  graduationYear?: number
+  skills?: string[]
+  interests?: string[]
+  hobbies?: string[]
+  experiences?: StudentExperience[]
+  portfolioWorks?: StudentPortfolioWork[]
   portfolioCompletionPercent?: number
   user?: { email: string; emailVerified?: boolean }
 }
@@ -83,6 +111,18 @@ export async function getOffers(params?: PaginationParams): Promise<PaginatedRes
     coveragePercent: o.coveragePercent ?? o.scholarship?.coveragePercent,
   }))
   return { data: normalized, total, page }
+}
+
+export interface InterestLimit {
+  allowed: boolean
+  current: number
+  limit: number | null
+  trialExpired?: boolean
+}
+
+export async function getInterestLimit(): Promise<InterestLimit> {
+  const { data } = await api.get<InterestLimit>('/student/interests/limit')
+  return data ?? { allowed: false, current: 0, limit: 3 }
 }
 
 export async function showInterest(universityId: string): Promise<void> {

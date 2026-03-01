@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -44,7 +45,7 @@ export function AdminLogs() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">Audit Logs</h1>
+      <PageTitle title="Audit Logs" icon="Logs" />
 
       <Card>
         <div className="flex flex-wrap gap-4 mb-4">

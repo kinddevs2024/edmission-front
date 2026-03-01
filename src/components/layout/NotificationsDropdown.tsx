@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useNotificationStore } from '@/store/notificationStore'
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '@/services/notifications'
+import { useAuth } from '@/hooks/useAuth'
 import { formatDate } from '@/utils/format'
 import { cn } from '@/utils/cn'
 
@@ -10,13 +11,14 @@ const MAX_VISIBLE = 10
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { role } = useAuth()
   const { items, unreadCount, setNotifications, markAsRead, markAllAsRead } = useNotificationStore()
 
   useEffect(() => {
-    getNotifications({ limit: 30 })
-      .then(setNotifications)
+    getNotifications({ limit: 30 }, role)
+      .then((res) => setNotifications(res.data))
       .catch(() => {})
-  }, [setNotifications])
+  }, [setNotifications, role])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -77,7 +79,8 @@ export function NotificationsDropdown() {
                 No notifications
               </li>
             ) : (
-              items.slice(0, MAX_VISIBLE).map((n) => (
+              <>
+              {items.slice(0, MAX_VISIBLE).map((n) => (
                 <li key={n.id}>
                   <button
                     type="button"
@@ -105,7 +108,17 @@ export function NotificationsDropdown() {
                     )}
                   </button>
                 </li>
-              ))
+              ))}
+              <li className="border-t border-[var(--color-border)]">
+                <Link
+                  to="/notifications"
+                  className="block px-4 py-2.5 text-center text-sm text-primary-accent hover:bg-[var(--color-border)]/20"
+                  onClick={() => setOpen(false)}
+                >
+                  View all notifications
+                </Link>
+              </li>
+              </>
             )}
           </ul>
         </div>

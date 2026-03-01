@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/components/ui/Table'
 import { Select } from '@/components/ui/Select'
@@ -60,7 +61,7 @@ export function Compare() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">Compare Universities</h1>
+      <PageTitle title="Compare Universities" icon="GitCompare" />
 
       <Card>
         <CardTitle>Select up to {MAX_COMPARE} universities</CardTitle>

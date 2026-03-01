@@ -1,0 +1,23 @@
+{
+  "selectConversation": "Select a conversation",
+  "typeMessage": "Type a message...",
+  "send": "Send",
+  "typing": "typing...",
+  "emotions": "Send emotion",
+  "voiceMessage": "Voice message",
+  "stopRecording": "Stop",
+  "accept": "Accept student",
+  "acceptTooltip": "Accept this student (e.g. to budget, grant, or other position) and send a congratulatory message",
+  "acceptStudent": "Accept student",
+  "acceptHint": "Choose the position type and write a congratulatory message. The student will see it in the chat and receive a notification.",
+  "positionType": "Position type",
+  "positionBudget": "Budget",
+  "positionGrant": "Grant",
+  "positionOther": "Other",
+  "positionLabel": "Position label (optional)",
+  "positionLabelPlaceholder": "e.g. Computer Science, 100% coverage",
+  "congratulatoryMessage": "Congratulatory message",
+  "congratulatoryPlaceholder": "Congratulations! We are pleased to offer you...",
+  "acceptDefaultMessage": "Congratulations! You have been accepted.",
+  "accepted": "Accepted"
+}

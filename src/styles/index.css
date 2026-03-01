@@ -94,3 +94,11 @@
 .landing-animate-pulse {
   animation: landing-pulse 2s ease-in-out infinite;
 }
+
+/* Page and list animations */
+.animate-stagger-1 { animation-delay: 0.05s; }
+.animate-stagger-2 { animation-delay: 0.1s; }
+.animate-stagger-3 { animation-delay: 0.15s; }
+.animate-stagger-4 { animation-delay: 0.2s; }
+.animate-stagger-5 { animation-delay: 0.25s; }
+.animate-stagger-6 { animation-delay: 0.3s; }

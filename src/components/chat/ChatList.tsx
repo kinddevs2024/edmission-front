@@ -1,5 +1,6 @@
 import { cn } from '@/utils/cn'
 import { formatDate } from '@/utils/format'
+import { getImageUrl } from '@/services/upload'
 import type { Chat } from '@/types/chat'
 
 interface ChatListProps {
@@ -42,7 +43,7 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
           >
             {chat.participant.avatar ? (
               <img
-                src={chat.participant.avatar}
+                src={getImageUrl(chat.participant.avatar)}
                 alt=""
                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
               />
@@ -52,7 +53,14 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="font-medium truncate">{chat.participant.name}</p>
+              <p className="font-medium truncate flex items-center gap-1.5">
+                {chat.participant.name}
+                {chat.acceptedAt && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-accent/20 text-primary-accent font-medium shrink-0">
+                    Accepted
+                  </span>
+                )}
+              </p>
               {chat.lastMessage && (
                 <p className="text-xs text-[var(--color-text-muted)] truncate">
                   {chat.lastMessage.isFromMe ? 'You: ' : ''}{chat.lastMessage.text}

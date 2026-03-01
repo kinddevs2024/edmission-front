@@ -10,7 +10,7 @@ export function MainLayout() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       {isAuthenticated && <TopBar />}
-      <main className="p-4">
+      <main className="p-3 sm:p-4 min-h-[calc(100vh-4rem)]">
         <Outlet />
       </main>
       {isAuthenticated && <FloatingAIButton />}

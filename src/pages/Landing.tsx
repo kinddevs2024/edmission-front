@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -9,47 +10,8 @@ function svgPath(name: string) {
   return `${SVG_BASE}/${encodeURIComponent(name)}`
 }
 
-/** Core Pillars из blueprint — Overview секции лендинга */
-const CORE_PILLARS = [
-  { title: 'Прямая связь', desc: 'Абитуриенты и вузы без посредников и скрытых комиссий' },
-  { title: 'Прозрачный матчинг', desc: 'Совпадение по программам, стипендиям и требованиям' },
-  { title: 'Стипендии', desc: 'Управление стипендиями и квотами в одном месте' },
-  { title: 'Структурированный приём', desc: 'Единый пайплайн заявок и офферов' },
-  { title: 'AI-помощник', desc: 'Рекомендации и подсказки на основе данных' },
-]
-
-const PROCESS_STEPS = [
-  {
-    id: '01',
-    title: 'Консультация',
-    body: 'На первичной консультации мы обсудим ваши цели по поступлению, целевую аудиторию и текущие заявки. Это позволит понять ваши потребности и подобрать подходящие вузы и программы.',
-  },
-  {
-    id: '02',
-    title: 'Исследование и стратегия',
-    body: 'Анализ программ, требований и стипендий. Формирование стратегии поступления и приоритетного списка вузов.',
-  },
-  {
-    id: '03',
-    title: 'Реализация',
-    body: 'Подача заявок, загрузка документов и отслеживание статусов через единую платформу Edmission.',
-  },
-  {
-    id: '04',
-    title: 'Мониторинг и оптимизация',
-    body: 'Отслеживание ответов вузов, чаты с приёмными комиссиями и при необходимости корректировка заявок.',
-  },
-  {
-    id: '05',
-    title: 'Отчётность и коммуникация',
-    body: 'Прозрачный статус по каждой заявке, уведомления о офферах и дедлайнах.',
-  },
-  {
-    id: '06',
-    title: 'Постоянное улучшение',
-    body: 'Рекомендации на основе данных, улучшение совпадений и сервиса для абитуриентов и вузов.',
-  },
-]
+const PILLAR_KEYS = ['pillar1', 'pillar2', 'pillar3', 'pillar4', 'pillar5'] as const
+const STEP_IDS = ['01', '02', '03', '04', '05', '06'] as const
 
 function SectionInView({
   children,
@@ -67,8 +29,10 @@ function SectionInView({
 }
 
 export function Landing() {
-  const { t } = useTranslation(['common', 'auth'])
+  const { t } = useTranslation(['common', 'auth', 'landing'])
   const [openStep, setOpenStep] = useState<string | null>('01')
+  const pillars = PILLAR_KEYS.map((key) => ({ title: t(`landing:${key}Title`), desc: t(`landing:${key}Desc`) }))
+  const processSteps = STEP_IDS.map((id, i) => ({ id, title: t(`landing:step${i + 1}Title`), body: t(`landing:step${i + 1}Body`) }))
   const [contactName, setContactName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [contactMessage, setContactMessage] = useState('')
@@ -91,7 +55,7 @@ export function Landing() {
             {t('common:appName')}
           </h1>
           <p className="text-lg text-[var(--color-text-muted)] max-w-2xl mx-auto mb-8">
-            Платформа прямого взаимодействия абитуриентов и вузов — без посредников и скрытых комиссий. Прозрачное поступление, стипендии и приём в одном месте.
+            {t('landing:heroSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
             <Button to="/login" variant="primary" className="min-w-[140px]">
@@ -123,10 +87,10 @@ export function Landing() {
       <section className="max-w-4xl mx-auto py-16 px-4">
         <SectionInView>
           <h2 className="text-2xl font-bold text-[var(--color-text)] mb-8 text-center">
-            Обзор платформы
+            {t('landing:overviewTitle')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CORE_PILLARS.map((pillar, i) => (
+            {pillars.map((pillar, i) => (
               <div
                 key={pillar.title}
                 className="flex gap-3 p-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] hover:border-[var(--color-primary-accent)]/50 transition-colors"
@@ -155,13 +119,13 @@ export function Landing() {
           <Card className="p-8 md:p-10 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1 text-left">
               <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text)] mb-4">
-                Подключитесь к платформе
+                {t('landing:ctaTitle')}
               </h2>
               <p className="text-[var(--color-text-muted)] mb-6">
-                Узнайте, как Edmission помогает абитуриентам находить вузы и стипендии, а вузам — привлекать подходящих кандидатов без лишних затрат.
+                {t('landing:ctaText')}
               </p>
               <Button to="/register" variant="primary">
-                Получить доступ
+                {t('landing:ctaButton')}
               </Button>
             </div>
             <div className="relative w-40 h-40 md:w-48 md:h-48 flex-shrink-0">
@@ -190,10 +154,10 @@ export function Landing() {
       <section className="max-w-2xl mx-auto py-16 px-4">
         <SectionInView>
           <h2 className="text-2xl font-bold text-[var(--color-text)] mb-8 text-center">
-            Как это работает
+            {t('landing:howItWorks')}
           </h2>
           <div className="space-y-3">
-            {PROCESS_STEPS.map((step) => {
+            {processSteps.map((step) => {
               const isOpen = openStep === step.id
               return (
                 <Card
@@ -241,45 +205,45 @@ export function Landing() {
           <Card className="p-6 md:p-8 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)]">
             <div className="flex items-center gap-3 mb-2">
               <span className="px-3 py-1 rounded-lg bg-[var(--color-primary-accent)] text-[var(--color-primary-dark)] font-medium text-sm">
-                Связаться
+                {t('landing:contact')}
               </span>
               <h2 className="text-xl font-bold text-[var(--color-text)]">
-                Напишите нам: обсудим ваши задачи
+                {t('landing:contactTitle')}
               </h2>
             </div>
             {contactSent ? (
               <p className="text-[var(--color-text-muted)] py-4">
-                Спасибо! Мы свяжемся с вами в ближайшее время.
+                {t('landing:contactThanks')}
               </p>
             ) : (
               <form onSubmit={handleContactSubmit} className="space-y-4 mt-6">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Имя</label>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('landing:nameLabel')}</label>
                   <input
                     type="text"
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Имя"
+                    placeholder={t('landing:nameLabel')}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Email *</label>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('common:email')} *</label>
                   <input
                     type="email"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="Email"
+                    placeholder={t('common:email')}
                     required
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Сообщение *</label>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('landing:messageLabel')} *</label>
                   <textarea
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
-                    placeholder="Сообщение"
+                    placeholder={t('landing:messageLabel')}
                     required
                     rows={4}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)] resize-y"
@@ -287,7 +251,7 @@ export function Landing() {
                 </div>
                 <div className="relative">
                   <Button type="submit" variant="primary" className="w-full md:w-auto min-w-[160px]">
-                    Отправить
+                    {t('landing:sendButton')}
                   </Button>
                   <img
                     src={svgPath('Star 2.svg')}
@@ -300,6 +264,9 @@ export function Landing() {
           </Card>
         </SectionInView>
       </section>
+      <footer className="py-6 text-center text-sm text-[var(--color-text-muted)] border-t border-[var(--color-border)]">
+        <Link to="/privacy" className="hover:text-primary-accent hover:underline">Privacy Policy</Link>
+      </footer>
     </div>
   )
 }

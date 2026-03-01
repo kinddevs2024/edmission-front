@@ -1,0 +1,23 @@
+{
+  "selectConversation": "Suhbatni tanlang",
+  "typeMessage": "Xabar yozing...",
+  "send": "Yuborish",
+  "typing": "yozmoqda...",
+  "emotions": "Emotsiya yuborish",
+  "voiceMessage": "Ovozli xabar",
+  "stopRecording": "To'xtatish",
+  "accept": "Talabani qabul qilish",
+  "acceptTooltip": "Talabani qabul qiling (budjet, grant va h.k.) va tabriklov xabari yuboring",
+  "acceptStudent": "Talabani qabul qilish",
+  "acceptHint": "O'rin turini tanlang va tabriklov xabarini yozing. Talaba uni chatda ko'radi va bildirishnoma oladi.",
+  "positionType": "O'rin turi",
+  "positionBudget": "Budjet",
+  "positionGrant": "Grant",
+  "positionOther": "Boshqa",
+  "positionLabel": "Yorliq (ixtiyoriy)",
+  "positionLabelPlaceholder": "masalan: Kompyuter fanlari, 100% qoplash",
+  "congratulatoryMessage": "Tabriklov xabari",
+  "congratulatoryPlaceholder": "Tabriklaymiz! Sizga taklif qilamiz...",
+  "acceptDefaultMessage": "Tabriklaymiz! Siz qabul qilindingiz.",
+  "accepted": "Qabul qilindi"
+}

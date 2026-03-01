@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/components/ui/Table'
 import { Modal } from '@/components/ui/Modal'
+import { PageTitle } from '@/components/ui/PageTitle'
+import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { getScholarships, createScholarship } from '@/services/university'
 import { formatDate } from '@/utils/format'
 import type { Scholarship } from '@/types/university'
 
 export function Scholarships() {
+  const { t } = useTranslation(['common', 'university'])
   const [list, setList] = useState<Scholarship[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -21,7 +25,7 @@ export function Scholarships() {
 
   useEffect(() => {
     getScholarships({ limit: 100 })
-      .then((res) => setList(res.data ?? []))
+      .then((res) => setList(Array.isArray(res) ? res : (res?.data ?? [])))
       .catch(() => setList([]))
       .finally(() => setLoading(false))
   }, [])
@@ -44,12 +48,12 @@ export function Scholarships() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-h1">Scholarships</h1>
+      <PageTitle title="Scholarships" icon="Wallet" />
 
-      <Card>
+      <Card className="animate-card-enter">
         <div className="flex justify-between items-center mb-4">
           <CardTitle>Scholarship list</CardTitle>
-          <Button onClick={() => setModalOpen(true)}>Create scholarship</Button>
+          <Button onClick={() => setModalOpen(true)} icon={<Plus size={16} />}>Create scholarship</Button>
         </div>
         {loading ? (
           <p className="text-[var(--color-text-muted)]">Loading...</p>
@@ -72,7 +76,7 @@ export function Scholarships() {
                   <TableTd>{s.name}</TableTd>
                   <TableTd>{s.coveragePercent}%</TableTd>
                   <TableTd>{s.usedSlots} / {s.maxSlots}</TableTd>
-                  <TableTd>{formatDate(s.deadline)}</TableTd>
+                  <TableTd>{s.deadline ? formatDate(s.deadline) : '—'}</TableTd>
                   <TableTd className="max-w-xs truncate">{s.eligibility ?? '—'}</TableTd>
                 </TableRow>
               ))}
@@ -84,21 +88,21 @@ export function Scholarships() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Create scholarship"
+        title={t('university:createScholarship')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting}>{submitting ? 'Saving...' : 'Create'}</Button>
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>{t('common:cancel')}</Button>
+            <Button onClick={handleCreate} disabled={submitting} loading={submitting}>{t('common:create')}</Button>
           </>
         }
       >
         <div className="space-y-3">
-          <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input label="Coverage %" type="number" value={coveragePercent} onChange={(e) => setCoveragePercent(Number(e.target.value))} />
-          <Input label="Max slots" type="number" value={maxSlots} onChange={(e) => setMaxSlots(Number(e.target.value))} />
-          <Input label="Deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+          <Input label={t('common:name')} value={name} onChange={(e) => setName(e.target.value)} />
+          <Input label={t('university:coveragePercent')} type="number" value={coveragePercent} onChange={(e) => setCoveragePercent(Number(e.target.value))} />
+          <Input label={t('university:maxSlots')} type="number" value={maxSlots} onChange={(e) => setMaxSlots(Number(e.target.value))} />
+          <Input label={t('university:deadline')} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
           <label className="block">
-            <span className="block text-sm font-medium mb-1">Eligibility</span>
+            <span className="block text-sm font-medium mb-1">{t('university:eligibility')}</span>
             <textarea className="w-full rounded-input border px-3 py-2" rows={3} value={eligibility} onChange={(e) => setEligibility(e.target.value)} />
           </label>
         </div>

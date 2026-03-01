@@ -48,8 +48,9 @@ export interface Scholarship {
   name: string
   coveragePercent: number
   maxSlots: number
-  usedSlots: number
-  deadline: string
+  usedSlots?: number
+  remainingSlots?: number
+  deadline?: string
   eligibility?: string
   createdAt?: string
 }

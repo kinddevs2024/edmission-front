@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from './Button'
 
 interface ErrorStateProps {
@@ -8,18 +9,19 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Something went wrong',
-  message = 'Please try again or contact support.',
+  title,
+  message,
   onRetry,
   className = '',
 }: ErrorStateProps) {
+  const { t } = useTranslation('common')
   return (
     <div className={'flex flex-col items-center justify-center py-12 px-4 text-center ' + className} role="alert">
-      <p className="text-lg font-medium text-red-500">{title}</p>
-      <p className="mt-2 text-sm text-[var(--color-text-muted)] max-w-sm">{message}</p>
+      <p className="text-lg font-medium text-red-500">{title ?? t('somethingWentWrong')}</p>
+      <p className="mt-2 text-sm text-[var(--color-text-muted)] max-w-sm">{message ?? t('tryAgainContactSupport')}</p>
       {onRetry && (
         <Button variant="secondary" className="mt-4" onClick={onRetry}>
-          Try again
+          {t('tryAgain')}
         </Button>
       )}
     </div>

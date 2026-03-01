@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 interface MatchScoreProps {
@@ -10,12 +11,13 @@ interface MatchScoreProps {
 }
 
 export function MatchScore({ score, breakdown, variant = 'badge', size = 'md', className }: MatchScoreProps) {
+  const { t } = useTranslation('student')
   const [showTooltip, setShowTooltip] = useState(false)
   const clamped = Math.min(100, Math.max(0, Math.round(score)))
 
   const tooltipContent = breakdown && Object.keys(breakdown).length > 0 && (
     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-input bg-primary-dark text-white text-xs shadow-lg z-50 whitespace-nowrap">
-      <div className="font-medium mb-1">Match breakdown</div>
+      <div className="font-medium mb-1">{t('matchBreakdown')}</div>
       {Object.entries(breakdown).map(([key, value]) => (
         <div key={key} className="flex justify-between gap-4">
           <span className="text-dark-muted">{key}</span>

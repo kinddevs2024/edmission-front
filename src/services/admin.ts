@@ -7,6 +7,8 @@ export interface AdminDashboardResponse {
   universities: number
   pendingOffers: number
   pendingVerification: number
+  subscriptionsByPlan?: Record<string, number>
+  mrr?: number
 }
 
 export interface AdminStats {
@@ -14,6 +16,8 @@ export interface AdminStats {
   universitiesCount: number
   activeOffersCount: number
   healthStatus: 'ok' | 'degraded' | 'error'
+  subscriptionsByPlan?: Record<string, number>
+  mrr?: number
 }
 
 export interface AdminUser {
@@ -69,6 +73,29 @@ export interface ScholarshipSummaryItem {
   deadline?: string
 }
 
+export interface PendingDocumentItem {
+  id: string
+  type: string
+  fileUrl: string
+  status: string
+  studentId: unknown
+  studentName: string
+  createdAt?: string
+}
+
+export async function getPendingDocuments(): Promise<PendingDocumentItem[]> {
+  const { data } = await api.get<PendingDocumentItem[]>('/admin/documents/pending')
+  return data ?? []
+}
+
+export async function reviewDocument(
+  documentId: string,
+  decision: 'approved' | 'rejected',
+  rejectionReason?: string
+): Promise<void> {
+  await api.patch(`/admin/documents/${documentId}/review`, { decision, rejectionReason })
+}
+
 export async function getAdminStats(): Promise<AdminStats> {
   const { data } = await api.get<AdminDashboardResponse>('/admin/dashboard')
   return {
@@ -76,6 +103,8 @@ export async function getAdminStats(): Promise<AdminStats> {
     universitiesCount: data?.universities ?? 0,
     activeOffersCount: data?.pendingOffers ?? 0,
     healthStatus: 'ok',
+    subscriptionsByPlan: data?.subscriptionsByPlan,
+    mrr: data?.mrr,
   }
 }
 

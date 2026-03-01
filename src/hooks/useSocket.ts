@@ -91,6 +91,15 @@ export function useSocket() {
     }
   }, [])
 
+  const onNotification = useCallback(
+    (callback: (payload: { id: string; type: string; title: string; body?: string; link?: string; referenceId?: string; createdAt?: string }) => void) => {
+      if (!socketInstance) return () => {}
+      socketInstance.on('notification', callback)
+      return () => socketInstance?.off('notification', callback)
+    },
+    []
+  )
+
   const emitTyping = useCallback((chatId: string, isTyping: boolean) => {
     if (socketInstance?.connected) {
       socketInstance.emit('typing', { chatId, isTyping })
@@ -105,6 +114,7 @@ export function useSocket() {
     leaveChat,
     onNewMessage,
     onRead,
+    onNotification,
     emitTyping,
     isConnected,
   }

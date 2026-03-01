@@ -1,4 +1,5 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 function EyeIcon({ className }: { className?: string }) {
@@ -24,13 +25,15 @@ function EyeOffIcon({ className }: { className?: string }) {
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
+  hint?: string
   success?: boolean
   left?: ReactNode
   right?: ReactNode
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ label, error, success, left, right, className, id, type, ...props }, ref) {
+  function Input({ label, error, hint, success, left, right, className, id, type, ...props }, ref) {
+    const { t } = useTranslation('common')
     const [showPassword, setShowPassword] = useState(false)
     const isPassword = type === 'password'
     const effectiveType = isPassword ? (showPassword ? 'text' : 'password') : type
@@ -41,7 +44,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         tabIndex={-1}
         className="p-1 rounded hover:bg-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
         onClick={() => setShowPassword((v) => !v)}
-        aria-label={showPassword ? 'Hide password' : 'Show password'}
+        aria-label={showPassword ? t('hidePassword') : t('showPassword')}
       >
         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
       </button>
@@ -69,7 +72,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               className
             )}
             aria-invalid={!!error}
-            aria-describedby={error ? `${inputId}-error` : undefined}
+            aria-describedby={[error ? `${inputId}-error` : null, hint ? `${inputId}-hint` : null].filter(Boolean).join(' ') || undefined}
             {...props}
           />
           {rightContent && <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] flex items-center">{rightContent}</div>}
@@ -77,6 +80,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p id={`${inputId}-error`} className="mt-1 text-sm text-red-500">
             {error}
+          </p>
+        )}
+        {hint && !error && (
+          <p id={`${inputId}-hint`} className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {hint}
           </p>
         )}
       </div>
