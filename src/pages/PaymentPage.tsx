@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { getProfile } from '@/services/auth'
 import { createCheckoutSession } from '@/services/payment'
@@ -21,6 +22,7 @@ const UNIVERSITY_PLANS = [
 const getOrigin = () => typeof window !== 'undefined' ? window.location.origin : ''
 
 export function PaymentPage() {
+  const { t } = useTranslation('common')
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
@@ -58,9 +60,9 @@ export function PaymentPage() {
   if (!user || (user.role !== 'student' && user.role !== 'university')) {
     return (
       <div className="max-w-2xl mx-auto">
-        <PageTitle title="Subscription" icon="CreditCard" />
+        <PageTitle title={t('subscription')} icon="CreditCard" />
         <Card>
-          <p className="text-[var(--color-text-muted)]">Subscription plans are available for students and universities.</p>
+          <p className="text-[var(--color-text-muted)]">{t('subscriptionPlansHint')}</p>
         </Card>
       </div>
     )
@@ -68,7 +70,7 @@ export function PaymentPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <PageTitle title="Subscription & Payment" icon="CreditCard" />
+      <PageTitle title={t('subscriptionAndPayment')} icon="CreditCard" />
       {error && (
         <Card className="border-red-500/50 bg-red-500/5">
           <p className="text-sm text-red-600">{error}</p>
@@ -77,7 +79,7 @@ export function PaymentPage() {
 
       {sub && (
         <Card>
-          <CardTitle>Current plan</CardTitle>
+          <CardTitle>{t('currentPlan')}</CardTitle>
           <div className="mt-2 flex flex-wrap items-center gap-4">
             <span className="font-medium capitalize">{sub.plan.replace(/_/g, ' ')}</span>
             {sub.trialEndsAt && (
@@ -124,7 +126,7 @@ export function PaymentPage() {
                     disabled={sub?.plan === plan.id || checkoutLoading === plan.id}
                     loading={checkoutLoading === plan.id}
                   >
-                    {sub?.plan === plan.id ? 'Current plan' : 'Upgrade'}
+                    {sub?.plan === plan.id ? t('currentPlan') : t('upgrade', 'Upgrade')}
                   </Button>
                 </Card>
               ))}
@@ -150,7 +152,7 @@ export function PaymentPage() {
                     disabled={sub?.plan === plan.id || checkoutLoading === plan.id}
                     loading={checkoutLoading === plan.id}
                   >
-                    {sub?.plan === plan.id ? 'Current plan' : 'Upgrade'}
+                    {sub?.plan === plan.id ? t('currentPlan') : t('upgrade', 'Upgrade')}
                   </Button>
                 </Card>
               ))}

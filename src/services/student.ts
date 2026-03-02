@@ -25,6 +25,8 @@ export interface SchoolAttendedItem {
   _id?: string
   country?: string
   institutionName?: string
+  /** 'school' | 'university' — for labels and filtering */
+  institutionType?: 'school' | 'university'
   educationLevel?: string
   gradingScheme?: string
   gradeScale?: number
@@ -34,6 +36,8 @@ export interface SchoolAttendedItem {
   attendedTo?: string
   degreeName?: string
 }
+
+export type EducationStatus = 'in_school' | 'finished_school' | 'in_university' | 'finished_university'
 
 export interface StudentProfileData {
   id?: string
@@ -49,6 +53,7 @@ export interface StudentProfileData {
   languages?: { language: string; level: string }[]
   bio?: string
   avatarUrl?: string
+  educationStatus?: EducationStatus
   schoolCompleted?: boolean
   schoolName?: string
   graduationYear?: number

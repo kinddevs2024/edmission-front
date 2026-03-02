@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { PageTitle } from '@/components/ui/PageTitle'
@@ -31,6 +32,7 @@ const TYPE_OPTIONS: { value: '' | NotificationType; label: string }[] = [
 ]
 
 export function NotificationsPage() {
+  const { t } = useTranslation('common')
   const { role } = useAuth()
   const { removeNotification, removeNotifications, markAsRead, markAllAsRead, setNotifications } = useNotificationStore()
   const [items, setItems] = useState<NotificationItem[]>([])
@@ -135,7 +137,7 @@ export function NotificationsPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Notifications" icon="Bell" />
+      <PageTitle title={t('notifications')} icon="Bell" />
 
       <Card className="p-4 space-y-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -164,16 +166,16 @@ export function NotificationsPage() {
               }}
               className="rounded border-[var(--color-border)]"
             />
-            Unread only
+            {t('unreadOnly')}
           </label>
           <div className="flex-1" />
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={handleMarkAllRead}>
-              Mark all read
+              {t('markAllRead')}
             </Button>
             {hasRead && (
               <Button variant="secondary" size="sm" onClick={handleDeleteRead}>
-                Delete read
+                {t('deleteRead')}
               </Button>
             )}
             <Button
@@ -182,7 +184,7 @@ export function NotificationsPage() {
               onClick={handleDeleteAll}
               onBlur={() => setTimeout(() => setConfirmDeleteAll(false), 200)}
             >
-              {confirmDeleteAll ? 'Confirm delete all' : 'Delete all'}
+              {confirmDeleteAll ? t('confirmDeleteAll') : t('deleteAll')}
             </Button>
           </div>
         </div>
@@ -191,8 +193,8 @@ export function NotificationsPage() {
           <div className="h-48 animate-pulse rounded bg-[var(--color-border)]/30" />
         ) : items.length === 0 ? (
           <EmptyState
-            title="No notifications"
-            description="You have no notifications matching the current filters."
+            title={t('noNotifications')}
+            description={t('noNotificationsDesc')}
           />
         ) : (
           <ul className="divide-y divide-[var(--color-border)]">
@@ -235,8 +237,8 @@ export function NotificationsPage() {
                         onClick={() => handleMarkRead(n)}
                         disabled={loadingThis}
                         className="p-1.5 rounded hover:bg-[var(--color-border)]/30 text-[var(--color-text-muted)] disabled:opacity-50"
-                        aria-label="Mark as read"
-                        title="Mark as read"
+                        aria-label={t('markAsRead')}
+                        title={t('markAsRead')}
                       >
                         {getNavIcon('Check', 'size-4')}
                       </button>
@@ -246,8 +248,8 @@ export function NotificationsPage() {
                       onClick={() => handleDeleteOne(n.id)}
                       disabled={loadingThis}
                       className="p-1.5 rounded hover:bg-red-500/20 text-[var(--color-text-muted)] hover:text-red-600 disabled:opacity-50"
-                      aria-label="Delete"
-                      title="Delete"
+                      aria-label={t('delete')}
+                      title={t('delete')}
                     >
                       {getNavIcon('Trash2', 'size-4')}
                     </button>

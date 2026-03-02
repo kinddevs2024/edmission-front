@@ -82,5 +82,20 @@
   "date": "Дата",
   "updated": "Обновлено",
   "applications": "Заявки",
-  "verifiedStudent": "Подтверждённый студент"
+  "verifiedStudent": "Подтверждённый студент",
+  "optional": "необязательно",
+  "subscriptionAndPayment": "Подписка и оплата",
+  "subscriptionPlansHint": "Планы подписки доступны для студентов и университетов.",
+  "currentPlan": "Текущий план",
+  "newRequest": "Новая заявка",
+  "markAllRead": "Отметить все прочитанными",
+  "deleteRead": "Удалить прочитанные",
+  "deleteAll": "Удалить все",
+  "confirmDeleteAll": "Подтвердить удаление всех",
+  "unreadOnly": "Только непрочитанные",
+  "filterByType": "Фильтр по типу",
+  "noNotificationsDesc": "Нет уведомлений по текущим фильтрам.",
+  "subject": "Тема",
+  "describeIssue": "Опишите вашу проблему или вопрос...",
+  "upgrade": "Перейти на план"
 }

@@ -82,5 +82,20 @@
   "date": "Date",
   "updated": "Updated",
   "applications": "Applications",
-  "verifiedStudent": "Verified student"
+  "verifiedStudent": "Verified student",
+  "optional": "optional",
+  "subscriptionAndPayment": "Subscription & Payment",
+  "subscriptionPlansHint": "Subscription plans are available for students and universities.",
+  "currentPlan": "Current plan",
+  "newRequest": "New request",
+  "markAllRead": "Mark all read",
+  "deleteRead": "Delete read",
+  "deleteAll": "Delete all",
+  "confirmDeleteAll": "Confirm delete all",
+  "unreadOnly": "Unread only",
+  "filterByType": "Filter by type",
+  "noNotificationsDesc": "You have no notifications matching the current filters.",
+  "subject": "Subject",
+  "describeIssue": "Describe your issue or question...",
+  "upgrade": "Upgrade"
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -16,6 +17,7 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 export function SupportPage() {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -134,23 +136,23 @@ export function SupportPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <PageTitle title="Support" icon="HelpCircle" />
+      <PageTitle title={t('support')} icon="HelpCircle" />
 
       <Card>
-        <CardTitle>New request</CardTitle>
+        <CardTitle>{t('newRequest')}</CardTitle>
         <form onSubmit={handleCreate} className="mt-3 space-y-3">
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <input
             type="text"
             className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-            placeholder="Subject"
+            placeholder={t('subject')}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             disabled={submitting}
           />
           <textarea
             className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-sm min-h-[120px]"
-            placeholder="Describe your issue or question..."
+            placeholder={t('describeIssue')}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={submitting}

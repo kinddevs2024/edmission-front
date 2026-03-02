@@ -29,6 +29,7 @@ const schema = z.object({
   }, z.number().min(0).max(4).optional()),
   languageLevel: z.string().optional(),
   languages: z.array(z.object({ language: z.string(), level: z.string() })).optional(),
+  educationStatus: z.enum(['in_school', 'finished_school', 'in_university', 'finished_university']).optional(),
   schoolCompleted: z.boolean().optional(),
   schoolName: z.string().optional(),
   graduationYear: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(1950).max(2030).optional()),
@@ -39,6 +40,7 @@ const schema = z.object({
   schoolsAttended: z.array(z.object({
     country: z.string().optional(),
     institutionName: z.string().optional(),
+    institutionType: z.enum(['school', 'university']).optional(),
     educationLevel: z.string().optional(),
     gradingScheme: z.string().optional(),
     gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
@@ -106,6 +108,12 @@ const HIGHEST_EDUCATION_OPTIONS = [
   { value: 'Master', labelKey: 'highestMaster' as const },
   { value: 'PhD', labelKey: 'highestPhd' as const },
 ]
+const EDUCATION_STATUS_OPTIONS = [
+  { value: 'in_school' as const, labelKey: 'statusInSchool' as const },
+  { value: 'finished_school' as const, labelKey: 'statusFinishedSchool' as const },
+  { value: 'in_university' as const, labelKey: 'statusInUniversity' as const },
+  { value: 'finished_university' as const, labelKey: 'statusFinishedUniversity' as const },
+]
 
 export function StudentProfilePage() {
   const { t } = useTranslation(['student', 'common'])
@@ -130,6 +138,7 @@ export function StudentProfilePage() {
       experiences: [],
       portfolioWorks: [],
       schoolsAttended: [],
+      educationStatus: undefined,
     },
   })
 
@@ -139,6 +148,7 @@ export function StudentProfilePage() {
   const { fields: languageFields, append: appendLanguage, remove: removeLanguage } = useFieldArray({ control, name: 'languages' })
 
   const avatarUrl = watch('avatarUrl')
+  const educationStatus = watch('educationStatus')
 
   const STEPS = STEP_KEYS.map((key, i) => ({
     id: i + 1,
@@ -163,6 +173,7 @@ export function StudentProfilePage() {
           gpa: data.gpa ?? undefined,
           languageLevel: data.languageLevel ?? '',
           languages: (data.languages && data.languages.length > 0) ? data.languages : (data.languageLevel ? [{ language: 'English', level: data.languageLevel }] : []),
+          educationStatus: data.educationStatus ?? undefined,
           schoolCompleted: data.schoolCompleted ?? false,
           schoolName: data.schoolName ?? '',
           graduationYear: data.graduationYear ?? undefined,
@@ -173,6 +184,7 @@ export function StudentProfilePage() {
           schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
             country: s.country ?? '',
             institutionName: s.institutionName ?? '',
+            institutionType: s.institutionType ?? undefined,
             educationLevel: s.educationLevel ?? '',
             gradingScheme: s.gradingScheme ?? '',
             gradeScale: s.gradeScale,
@@ -221,6 +233,7 @@ export function StudentProfilePage() {
         gpa: Number.isFinite(data.gpa) ? data.gpa : undefined,
         languageLevel: data.languageLevel || undefined,
         languages: data.languages ?? [],
+        educationStatus: data.educationStatus || undefined,
         schoolCompleted: data.schoolCompleted,
         schoolName: data.schoolName || undefined,
         graduationYear: data.graduationYear != null ? data.graduationYear : undefined,
@@ -230,6 +243,7 @@ export function StudentProfilePage() {
         targetDegreeLevel: data.targetDegreeLevel || undefined,
         schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
           country: s.country || undefined,
+          institutionType: s.institutionType || undefined,
           institutionName: s.institutionName || undefined,
           educationLevel: s.educationLevel || undefined,
           gradingScheme: s.gradingScheme || undefined,
@@ -353,6 +367,15 @@ export function StudentProfilePage() {
           {step === 3 && (
             <>
               <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('educationStatusLabel')}</label>
+                <select {...register('educationStatus')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm mb-4">
+                  <option value="">—</option>
+                  {EDUCATION_STATUS_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('applyingForDegree')}</label>
                 <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
                   <option value="">—</option>
@@ -420,10 +443,10 @@ export function StudentProfilePage() {
                   </ul>
                 )}
                 <Card className="p-4 border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg)]">
-                  <p className="text-sm font-medium text-[var(--color-text)] mb-3">Добавить язык</p>
+                  <p className="text-sm font-medium text-[var(--color-text)] mb-3">{t('addLanguage')}</p>
                   <div className="flex flex-wrap gap-3 items-end">
                     <div className="min-w-[140px]">
-                      <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Язык</label>
+                      <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">{t('common:language')}</label>
                       <select
                         value={newLanguage}
                         onChange={(e) => {
@@ -502,27 +525,35 @@ export function StudentProfilePage() {
                   </>
                 )
               })()}
-              <p className="text-sm font-medium text-[var(--color-text)] mt-4">Schools / Universities attended</p>
+              <p className="text-sm font-medium text-[var(--color-text)] mt-4">{t('schoolsUniversitiesAttended')}</p>
               <div className="space-y-3">
                 {schoolsAttendedFields.map((field, i) => (
                   <Card key={field.id} className="p-4 space-y-2 border border-[var(--color-border)]">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Entry {i + 1}</span>
+                      <span className="text-sm font-medium">{t('entryNumber', { n: i + 1 })}</span>
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label="Remove"><Trash2 className="w-4 h-4" /></Button>
                     </div>
-                    <Input label="Country" {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
-                    <Input label="Institution name" {...register(`schoolsAttended.${i}.institutionName`)} placeholder="School or University name" />
-                    <Input label="Education level" {...register(`schoolsAttended.${i}.educationLevel`)} placeholder="e.g. Grade 12 / High School" />
-                    <Input label="Primary language of instruction" {...register(`schoolsAttended.${i}.primaryLanguage`)} placeholder="e.g. Uzbek" />
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input label="Attended from" type="date" {...register(`schoolsAttended.${i}.attendedFrom`)} />
-                      <Input label="Attended to" type="date" {...register(`schoolsAttended.${i}.attendedTo`)} />
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('institutionTypeLabel')}</label>
+                      <select {...register(`schoolsAttended.${i}.institutionType`)} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm mb-2">
+                        <option value="">—</option>
+                        <option value="school">{t('institutionTypeSchool')}</option>
+                        <option value="university">{t('institutionTypeUniversity')}</option>
+                      </select>
                     </div>
-                    <Input label="Degree name (optional)" {...register(`schoolsAttended.${i}.degreeName`)} placeholder="For university" />
+                    <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
+                    <Input label={t('schoolName')} {...register(`schoolsAttended.${i}.institutionName`)} placeholder={t('schoolName')} />
+                    <Input label={t('gradeLevel')} {...register(`schoolsAttended.${i}.educationLevel`)} placeholder={t('gradePlaceholder')} />
+                    <Input label={t('primaryLanguageOfInstruction', 'Primary language of instruction')} {...register(`schoolsAttended.${i}.primaryLanguage`)} placeholder="e.g. Uzbek" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input label={t('startDate')} type="date" {...register(`schoolsAttended.${i}.attendedFrom`)} />
+                      <Input label={t('endDate')} type="date" {...register(`schoolsAttended.${i}.attendedTo`)} />
+                    </div>
+                    <Input label={`${t('degreeNameOptional', 'Degree name')} (${t('common:optional', 'optional')})`} {...register(`schoolsAttended.${i}.degreeName`)} placeholder="For university" />
                   </Card>
                 ))}
-                <Button type="button" variant="secondary" size="sm" onClick={() => appendSchool({ country: '', institutionName: '', educationLevel: '', primaryLanguage: '', attendedFrom: '', attendedTo: '', degreeName: '' })} icon={<Plus className="w-4 h-4" />}>
-                  Add school / university
+                <Button type="button" variant="secondary" size="sm" onClick={() => appendSchool({ country: '', institutionName: '', institutionType: (educationStatus === 'in_university' || educationStatus === 'finished_university') ? 'university' : 'school', educationLevel: '', primaryLanguage: '', attendedFrom: '', attendedTo: '', degreeName: '' })} icon={<Plus className="w-4 h-4" />}>
+                  {t('addSchoolUniversity', 'Add school / university')}
                 </Button>
               </div>
             </>

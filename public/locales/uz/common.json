@@ -82,5 +82,20 @@
   "date": "Sana",
   "updated": "Yangilangan",
   "applications": "Arizalar",
-  "verifiedStudent": "Tasdiqlangan talaba"
+  "verifiedStudent": "Tasdiqlangan talaba",
+  "optional": "ixtiyoriy",
+  "subscriptionAndPayment": "Obuna va to'lov",
+  "subscriptionPlansHint": "Obuna rejalari talabalar va universitetlar uchun mavjud.",
+  "currentPlan": "Joriy reja",
+  "newRequest": "Yangi so'rov",
+  "markAllRead": "Barchasini o'qilgan deb belgilash",
+  "deleteRead": "O'qilganlarni o'chirish",
+  "deleteAll": "Barchasini o'chirish",
+  "confirmDeleteAll": "Barchasini o'chirishni tasdiqlash",
+  "unreadOnly": "Faqat o'qilmagan",
+  "filterByType": "Tur bo'yicha filtrlash",
+  "noNotificationsDesc": "Joriy filtrlarga mos bildirishnomalar yo'q.",
+  "subject": "Mavzu",
+  "describeIssue": "Muammo yoki savolingizni yozing...",
+  "upgrade": "Rejaga o'tish"
 }
