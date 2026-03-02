@@ -42,6 +42,16 @@ export interface Program {
   requirements?: string
 }
 
+export interface Faculty {
+  id: string
+  universityId: string
+  name: string
+  description: string
+  order?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Scholarship {
   id: string
   universityId: string

@@ -1,6 +1,6 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
-import type { UniversityProfile, Scholarship } from '@/types/university'
+import type { UniversityProfile, Scholarship, Faculty } from '@/types/university'
 
 type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number }
 
@@ -45,6 +45,25 @@ export async function getScholarships(params?: PaginationParams): Promise<Pagina
 export async function createScholarship(payload: Omit<Scholarship, 'id' | 'universityId' | 'usedSlots' | 'createdAt'>): Promise<Scholarship> {
   const { data } = await api.post<Scholarship>('/university/scholarships', payload)
   return data
+}
+
+export async function getFaculties(): Promise<Faculty[]> {
+  const { data } = await api.get<Faculty[]>('/university/faculties')
+  return data ?? []
+}
+
+export async function createFaculty(payload: { name: string; description: string; order?: number }): Promise<Faculty> {
+  const { data } = await api.post<Faculty>('/university/faculties', payload)
+  return data
+}
+
+export async function updateFaculty(id: string, payload: { name?: string; description?: string; order?: number }): Promise<Faculty> {
+  const { data } = await api.patch<Faculty>(`/university/faculties/${id}`, payload)
+  return data
+}
+
+export async function deleteFaculty(id: string): Promise<void> {
+  await api.delete(`/university/faculties/${id}`)
 }
 
 export interface FunnelAnalytics {

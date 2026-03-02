@@ -31,6 +31,7 @@ import { Discovery } from '@/pages/university/Discovery'
 import { UniversityStudentProfile } from '@/pages/university/UniversityStudentProfile'
 import { Pipeline } from '@/pages/university/Pipeline'
 import { Scholarships } from '@/pages/university/Scholarships'
+import { Faculties } from '@/pages/university/Faculties'
 import { UniversityAnalytics } from '@/pages/university/UniversityAnalytics'
 import { UniversityChat } from '@/pages/university/UniversityChat'
 import { UniversityPendingVerification } from '@/pages/university/UniversityPendingVerification'
@@ -117,6 +118,7 @@ export function Router() {
           <Route path="students" element={<Discovery />} />
           <Route path="pipeline" element={<Pipeline />} />
           <Route path="scholarships" element={<Scholarships />} />
+          <Route path="faculties" element={<Faculties />} />
           <Route path="analytics" element={<UniversityAnalytics />} />
           <Route path="chat" element={<UniversityChat />} />
           <Route path="ai" element={<AIChatPage />} />

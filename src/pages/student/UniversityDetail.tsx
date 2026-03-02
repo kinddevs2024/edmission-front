@@ -8,13 +8,14 @@ import { api } from '@/services/api'
 import { showInterest, getApplications, getInterestLimit } from '@/services/student'
 import { getImageUrl } from '@/services/upload'
 import { MessageCircle } from 'lucide-react'
-import type { UniversityProfile, Program, Scholarship } from '@/types/university'
+import type { UniversityProfile, Program, Scholarship, Faculty } from '@/types/university'
 
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
   const [uni, setUni] = useState<UniversityProfile | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [scholarships, setScholarships] = useState<Scholarship[]>([])
+  const [faculties, setFaculties] = useState<Faculty[]>([])
   const [matchScore, setMatchScore] = useState<number | null>(null)
   const [matchBreakdown, setMatchBreakdown] = useState<Record<string, number> | null>(null)
   const [interested, setInterested] = useState(false)
@@ -33,13 +34,14 @@ export function UniversityDetail() {
     if (!id) return
     let cancelled = false
     setLoading(true)
-    api.get<UniversityProfile & { programs?: Program[]; scholarships?: Scholarship[]; matchScore?: number; breakdown?: Record<string, number> }>(`/student/universities/${id}`)
+    api.get<UniversityProfile & { programs?: Program[]; scholarships?: Scholarship[]; faculties?: Faculty[]; matchScore?: number; breakdown?: Record<string, number> }>(`/student/universities/${id}`)
       .then((res) => {
         if (cancelled) return
         const u = res.data
         setUni(u)
         setPrograms(u.programs ?? [])
         setScholarships(u.scholarships ?? [])
+        setFaculties(u.faculties ?? [])
         if (u.matchScore != null) {
           setMatchScore(u.matchScore)
           setMatchBreakdown(u.breakdown ?? null)
@@ -133,6 +135,20 @@ export function UniversityDetail() {
               <li key={s.id} className="flex justify-between items-center">
                 <span>{s.name}</span>
                 <Badge variant="success">{s.coveragePercent}% · {s.remainingSlots ?? (s.maxSlots - (s.usedSlots ?? 0))} left</Badge>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {faculties.length > 0 && (
+        <Card>
+          <CardTitle>Faculties</CardTitle>
+          <ul className="space-y-4">
+            {faculties.map((f) => (
+              <li key={f.id} className="border-b border-[var(--color-border)] last:border-0 pb-4 last:pb-0 first:pt-0 pt-4 first:pt-0">
+                <h3 className="font-medium text-[var(--color-text)]">{f.name}</h3>
+                <p className="text-sm text-[var(--color-text-muted)] mt-1 whitespace-pre-wrap">{f.description}</p>
               </li>
             ))}
           </ul>

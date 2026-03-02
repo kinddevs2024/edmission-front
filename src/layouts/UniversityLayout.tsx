@@ -30,6 +30,7 @@ export function UniversityLayout() {
       { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
       { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
       { to: '/university/scholarships', label: t('navScholarships'), icon: 'Wallet' },
+      { to: '/university/faculties', label: t('navFaculties'), icon: 'Building2' },
       { to: '/university/analytics', label: t('navAnalytics'), icon: 'BarChart3' },
       { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
       { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },

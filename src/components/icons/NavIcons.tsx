@@ -23,6 +23,7 @@ import {
   Check,
   HelpCircle,
   CreditCard,
+  Building2,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -41,6 +42,7 @@ const iconMap: Record<string, LucideIcon> = {
   BarChart3,
   ShieldCheck,
   BookOpen,
+  Building2,
   ClipboardList,
   Heart,
   Logs,
