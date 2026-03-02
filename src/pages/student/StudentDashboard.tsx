@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +13,7 @@ import type { Application, Offer } from '@/types/student'
 import { CheckCircle, Circle } from 'lucide-react'
 
 export function StudentDashboard() {
+  const { t } = useTranslation('student')
   const [profilePercent, setProfilePercent] = useState(0)
   const [minimalComplete, setMinimalComplete] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
@@ -56,19 +58,19 @@ export function StudentDashboard() {
   const activeApplications = applications.filter((a) => !['rejected', 'accepted'].includes(a.status))
   const acceptedCount = applications.filter((a) => a.status === 'accepted').length
   const onboardingSteps = [
-    { label: 'Complete minimal profile (name, where born, where studied)', to: '/student/profile', done: minimalComplete },
-    { label: 'Upload a document', to: '/student/documents', done: docCount > 0 },
+    { label: t('stepMinimalProfile'), to: '/student/profile', done: minimalComplete },
+    { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
   ]
   const onboardingDone = onboardingSteps.every((s) => s.done)
 
   return (
     <div className="space-y-6">
-      <PageTitle title="Student Dashboard" icon="LayoutDashboard" />
+      <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
 
       {!onboardingDone && (
         <Card className="border-primary-accent/30">
-          <CardTitle>Get started</CardTitle>
-          <p className="text-sm text-[var(--color-text-muted)] mt-1">Complete these steps to get the most out of Edmission.</p>
+          <CardTitle>{t('getStarted')}</CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">{t('getStartedHint')}</p>
           <ul className="mt-3 space-y-2" role="list">
             {onboardingSteps.map((step) => (
               <li key={step.to} className="flex items-center gap-2">
@@ -88,7 +90,7 @@ export function StudentDashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="animate-card-enter">
-          <CardTitle>Profile completion</CardTitle>
+          <CardTitle>{t('profileCompletion')}</CardTitle>
           <div className="mt-2">
             <div className="h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
               <div
@@ -100,21 +102,21 @@ export function StudentDashboard() {
           </div>
         </Card>
         <Card className="animate-card-enter animate-stagger-1">
-          <CardTitle>Active applications</CardTitle>
+          <CardTitle>{t('activeApplications')}</CardTitle>
           <p className="text-2xl font-semibold">{activeApplications.length}</p>
         </Card>
         <Card className="animate-card-enter animate-stagger-2">
-          <CardTitle>Offers</CardTitle>
+          <CardTitle>{t('offers')}</CardTitle>
           <p className="text-2xl font-semibold">{offers.length}</p>
         </Card>
         <Card className="animate-card-enter animate-stagger-3">
-          <CardTitle>Accepted</CardTitle>
+          <CardTitle>{t('accepted')}</CardTitle>
           <p className="text-2xl font-semibold">{acceptedCount}</p>
         </Card>
       </div>
 
       <Card>
-        <CardTitle>Recommended universities</CardTitle>
+        <CardTitle>{t('recommendedUniversities')}</CardTitle>
         {loadingRecs ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
             <CardSkeleton /><CardSkeleton /><CardSkeleton />
@@ -126,51 +128,51 @@ export function StudentDashboard() {
             ))}
           </div>
         ) : (
-          <p className="text-[var(--color-text-muted)] mt-2">Complete your profile to get recommendations.</p>
+          <p className="text-[var(--color-text-muted)] mt-2">{t('completeProfileForRecs')}</p>
         )}
-        <Button to="/student/universities" className="mt-4">Explore universities</Button>
+        <Button to="/student/universities" className="mt-4">{t('exploreUniversities')}</Button>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardTitle>Active applications</CardTitle>
+          <CardTitle>{t('activeApplications')}</CardTitle>
           {activeApplications.length === 0 ? (
-            <p className="text-[var(--color-text-muted)]">No active applications.</p>
+            <p className="text-[var(--color-text-muted)]">{t('noActiveApplications')}</p>
           ) : (
             <ul className="space-y-2">
               {activeApplications.slice(0, 5).map((a) => (
                 <li key={a.id} className="flex justify-between items-center">
                   <span>{a.universityName ?? a.universityId}</span>
                   <span className="text-sm text-[var(--color-text-muted)]">{a.status}</span>
-                  <Button to={`/student/applications`} variant="ghost" size="sm">View</Button>
+                  <Button to={`/student/applications`} variant="ghost" size="sm">{t('view')}</Button>
                 </li>
               ))}
             </ul>
           )}
-          <Button to="/student/applications" variant="secondary" className="mt-3">All applications</Button>
+          <Button to="/student/applications" variant="secondary" className="mt-3">{t('allApplications')}</Button>
         </Card>
         <Card>
-          <CardTitle>Recent offers</CardTitle>
+          <CardTitle>{t('recentOffers')}</CardTitle>
           {offers.length === 0 ? (
-            <p className="text-[var(--color-text-muted)]">No offers yet.</p>
+            <p className="text-[var(--color-text-muted)]">{t('noOffersYet')}</p>
           ) : (
             <ul className="space-y-2">
               {offers.slice(0, 3).map((o) => (
                 <li key={o.id} className="flex justify-between items-center">
                   <span>{o.universityName ?? o.universityId}</span>
-                  <Button to="/student/offers" variant="ghost" size="sm">View</Button>
+                  <Button to="/student/offers" variant="ghost" size="sm">{t('view')}</Button>
                 </li>
               ))}
             </ul>
           )}
-          <Button to="/student/offers" variant="secondary" className="mt-3">All offers</Button>
+          <Button to="/student/offers" variant="secondary" className="mt-3">{t('allOffers')}</Button>
         </Card>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button to="/student/universities">Explore universities</Button>
-        <Button to="/student/applications" variant="secondary">My applications</Button>
-        <Button to="/student/chat" variant="ghost">Chats</Button>
+        <Button to="/student/universities">{t('exploreUniversities')}</Button>
+        <Button to="/student/applications" variant="secondary">{t('myApplications')}</Button>
+        <Button to="/student/chat" variant="ghost">{t('chats')}</Button>
       </div>
     </div>
   )

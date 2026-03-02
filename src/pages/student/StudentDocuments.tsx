@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { getProfile } from '@/services/auth'
 import { getMyDocuments, addDocument, type StudentDocumentItem, type DocumentType, type AddDocumentPayload } from '@/services/studentDocuments'
@@ -43,6 +44,7 @@ function getScoreStep(certType: string): number {
 }
 
 export function StudentDocuments() {
+  const { t } = useTranslation('common')
   const { user } = useAuth()
   const [docs, setDocs] = useState<StudentDocumentItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -117,11 +119,11 @@ export function StudentDocuments() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-4">
-        <PageTitle title="Documents" icon="FileText" />
+        <PageTitle title={t('common:documents')} icon="FileText" />
         {verified && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400" title="Verified student">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400" title={t('common:verifiedStudent')}>
             <ShieldCheck className="w-4 h-4" aria-hidden />
-            Verified
+            {t('common:verified')}
           </span>
         )}
       </div>

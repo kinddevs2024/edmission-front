@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -12,12 +13,12 @@ import { MessageCircle, Gift } from 'lucide-react'
 import { formatDate } from '@/utils/format'
 import type { Application, ApplicationStatus } from '@/types/student'
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  ...(Object.entries(APPLICATION_STATUS_LABELS).map(([value, label]) => ({ value, label }))),
-]
-
 export function StudentApplications() {
+  const { t } = useTranslation(['student', 'common'])
+  const STATUS_OPTIONS = [
+    { value: '', label: t('student:allStatuses') },
+    ...(Object.entries(APPLICATION_STATUS_LABELS).map(([value, label]) => ({ value, label }))),
+  ]
   const [applications, setApplications] = useState<Application[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -45,25 +46,25 @@ export function StudentApplications() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Universities" icon="FileCheck" />
+      <PageTitle title={t('student:navApplications')} icon="FileCheck" />
 
       <Card className="animate-card-enter">
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
-            label="Status"
+            label={t('common:status')}
             options={STATUS_OPTIONS}
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
           />
         </div>
-        <CardTitle className="mb-2">Applications</CardTitle>
+        <CardTitle className="mb-2">{t('common:applications')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={5} cols={5} />
         ) : applications.length === 0 ? (
           <EmptyState
-            title="No applications yet"
-            description="Explore universities and show interest to start applying."
-            actionLabel="Explore universities"
+            title={t('student:noApplications')}
+            description={t('student:noApplicationsDesc')}
+            actionLabel={t('student:exploreUniversities')}
             actionTo="/student/universities"
           />
         ) : (
@@ -71,11 +72,11 @@ export function StudentApplications() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>University</TableTh>
-                  <TableTh>Status</TableTh>
-                  <TableTh>Date</TableTh>
-                  <TableTh>Updated</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('common:university')}</TableTh>
+                  <TableTh>{t('common:status')}</TableTh>
+                  <TableTh>{t('common:date')}</TableTh>
+                  <TableTh>{t('common:updated')}</TableTh>
+                  <TableTh>{t('common:actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -91,9 +92,9 @@ export function StudentApplications() {
                     <TableTd>{formatDate(a.updatedAt)}</TableTd>
                     <TableTd>
                       {['chat_opened', 'offer_sent', 'under_review'].includes(a.status) && (
-                        <Button to={`/student/chat?universityId=${encodeURIComponent(a.universityId)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>Chat</Button>
+                        <Button to={`/student/chat?universityId=${encodeURIComponent(a.universityId)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>{t('student:navChat')}</Button>
                       )}
-                      <Button to="/student/offers" variant="ghost" size="sm" icon={<Gift size={16} />}>Offers</Button>
+                      <Button to="/student/offers" variant="ghost" size="sm" icon={<Gift size={16} />}>{t('student:navOffers')}</Button>
                     </TableTd>
                   </TableRow>
                 ))}

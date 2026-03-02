@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
@@ -10,6 +11,7 @@ import type { UniversityListItem } from '@/types/university'
 const MAX_COMPARE = 4
 
 export function Compare() {
+  const { t } = useTranslation(['student', 'common'])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [universities, setUniversities] = useState<UniversityListItem[]>([])
   const [allOptions, setAllOptions] = useState<{ value: string; label: string }[]>([])
@@ -51,29 +53,29 @@ export function Compare() {
   }
 
   const rows = [
-    { label: 'Name', key: 'name' as const },
-    { label: 'Country', key: 'country' as const },
-    { label: 'City', key: 'city' as const },
-    { label: 'Rating', key: 'rating' as const },
-    { label: 'Match %', key: 'matchScore' as const },
-    { label: 'Scholarship', key: 'hasScholarship' as const },
+    { label: t('student:compareName'), key: 'name' as const },
+    { label: t('student:compareCountry'), key: 'country' as const },
+    { label: t('student:compareCity'), key: 'city' as const },
+    { label: t('student:compareRating'), key: 'rating' as const },
+    { label: t('student:compareMatch'), key: 'matchScore' as const },
+    { label: t('student:compareScholarship'), key: 'hasScholarship' as const },
   ]
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Compare Universities" icon="GitCompare" />
+      <PageTitle title={t('student:compareTitle')} icon="GitCompare" />
 
       <Card>
-        <CardTitle>Select up to {MAX_COMPARE} universities</CardTitle>
-        <p className="text-sm text-[var(--color-text-muted)] mb-3">Choose from your interested universities.</p>
+        <CardTitle>{t('student:selectUpTo', { max: MAX_COMPARE })}</CardTitle>
+        <p className="text-sm text-[var(--color-text-muted)] mb-3">{t('student:chooseFromInterested')}</p>
         {loading ? (
-          <p className="text-[var(--color-text-muted)]">Loading...</p>
+          <p className="text-[var(--color-text-muted)]">{t('common:loading')}</p>
         ) : allOptions.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] mb-4">No universities in your list yet. Show interest on Explore page.</p>
+          <p className="text-[var(--color-text-muted)] mb-4">{t('student:noUniversitiesInList')}</p>
         ) : (
           <div className="flex flex-wrap gap-2 mb-4">
             <Select
-              options={[{ value: '', label: 'Add university...' }, ...allOptions.filter((o) => !selectedIds.includes(o.value))]}
+              options={[{ value: '', label: t('common:addUniversity') }, ...allOptions.filter((o) => !selectedIds.includes(o.value))]}
               value=""
               onChange={(e) => { const v = e.target.value; if (v) addId(v) }}
               className="max-w-xs"

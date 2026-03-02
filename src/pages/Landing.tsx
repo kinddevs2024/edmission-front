@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { useInView } from '@/hooks/useInView'
 
 const SVG_BASE = '/svg%20elements'
@@ -48,6 +49,9 @@ export function Landing() {
 
   return (
     <div className="min-h-screen">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+        <LanguageMenu />
+      </div>
       {/* Hero */}
       <section className="max-w-4xl mx-auto py-12 px-4 text-center">
         <div className="landing-animate-in">

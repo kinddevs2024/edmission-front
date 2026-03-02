@@ -42,7 +42,7 @@ export function StudentOffers() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <PageTitle title="My Offers" icon="Gift" />
+        <PageTitle title={t('common:myOffers')} icon="Gift" />
         <Card><div className="h-32 animate-pulse rounded bg-[var(--color-border)]" /></Card>
       </div>
     )
@@ -50,7 +50,7 @@ export function StudentOffers() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="My Offers" icon="Gift" />
+      <PageTitle title={t('common:myOffers')} icon="Gift" />
 
       {offers.length === 0 ? (
         <Card>

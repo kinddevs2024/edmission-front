@@ -88,13 +88,24 @@ const LANGUAGE_OPTIONS = [
 ]
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Native']
 const TARGET_DEGREE_OPTIONS = [
-  { value: 'bachelor', label: 'Bachelor' },
-  { value: 'master', label: 'Master' },
-  { value: 'phd', label: 'PhD' },
+  { value: 'bachelor', labelKey: 'degreeBachelor' as const },
+  { value: 'master', labelKey: 'degreeMaster' as const },
+  { value: 'phd', labelKey: 'degreePhd' as const },
 ]
-const GRADING_SCHEME_OPTIONS = ['Other', 'GCE Advanced Level Education', 'IB', 'National']
+const GRADING_SCHEME_OPTIONS = [
+  { value: 'Other', labelKey: 'gradingOther' as const },
+  { value: 'GCE Advanced Level Education', labelKey: 'gradingGCE' as const },
+  { value: 'IB', labelKey: 'gradingIB' as const },
+  { value: 'National', labelKey: 'gradingNational' as const },
+]
 const GRADE_SCALE_OPTIONS = [4, 5, 7, 10, 20, 100]
-const HIGHEST_EDUCATION_OPTIONS = ['Secondary', 'Grade 12 / High School', 'Bachelor', 'Master', 'PhD']
+const HIGHEST_EDUCATION_OPTIONS = [
+  { value: 'Secondary', labelKey: 'highestSecondary' as const },
+  { value: 'Grade 12 / High School', labelKey: 'highestGrade12' as const },
+  { value: 'Bachelor', labelKey: 'highestBachelor' as const },
+  { value: 'Master', labelKey: 'highestMaster' as const },
+  { value: 'PhD', labelKey: 'highestPhd' as const },
+]
 
 export function StudentProfilePage() {
   const { t } = useTranslation(['student', 'common'])
@@ -277,8 +288,8 @@ export function StudentProfilePage() {
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
         {verified && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400" title="Verified">
-            <span aria-hidden>✓</span> Verified
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400" title={t('common:verified')}>
+            <span aria-hidden>✓</span> {t('common:verified')}
           </span>
         )}
       </div>
@@ -342,25 +353,25 @@ export function StudentProfilePage() {
           {step === 3 && (
             <>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Applying for degree</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('applyingForDegree')}</label>
                 <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
                   <option value="">—</option>
                   {TARGET_DEGREE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
+                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Grading scheme</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradingScheme')}</label>
                 <select {...register('gradingScheme')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
                   <option value="">—</option>
                   {GRADING_SCHEME_OPTIONS.map((o) => (
-                    <option key={o} value={o}>{o}</option>
+                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Grade scale (out of)</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradeScaleOutOf')}</label>
                 <select {...register('gradeScale')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
                   <option value="">—</option>
                   {GRADE_SCALE_OPTIONS.map((n) => (
@@ -369,11 +380,11 @@ export function StudentProfilePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Highest level of education</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('highestLevelOfEducation')}</label>
                 <select {...register('highestEducationLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
                   <option value="">—</option>
                   {HIGHEST_EDUCATION_OPTIONS.map((o) => (
-                    <option key={o} value={o}>{o}</option>
+                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
                   ))}
                 </select>
               </div>
@@ -382,7 +393,7 @@ export function StudentProfilePage() {
               <div className="space-y-4">
                 <div>
                   <p className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('languageLevel')}</p>
-                  <p className="text-xs text-[var(--color-text-muted)] mb-3">Выберите язык и уровень, затем нажмите «Добавить». Можно добавить несколько языков.</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mb-3">{t('languageLevelHint')}</p>
                 </div>
                 {languageFields.length > 0 && (
                   <ul className="space-y-2" role="list">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
@@ -25,6 +26,7 @@ const SORT_OPTIONS = [
 ]
 
 export function ExploreUniversities() {
+  const { t } = useTranslation('student')
   const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [country, setCountry] = useState(searchParams.get('country') ?? '')
@@ -101,7 +103,7 @@ export function ExploreUniversities() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Explore Universities" icon="GraduationCap" />
+      <PageTitle title={t('exploreUniversities')} icon="GraduationCap" />
 
       <div className="flex flex-wrap items-end gap-2">
         <div className="w-[150px] shrink-0">
@@ -153,9 +155,9 @@ export function ExploreUniversities() {
       ) : list.length === 0 ? (
         <Card>
           <EmptyState
-            title="No universities found"
-            description="Try changing filters or search to see more results."
-            actionLabel="Clear filters"
+            title={t('noUniversitiesFound')}
+            description={t('tryChangingFiltersOrSearch')}
+            actionLabel={t('clearFilters')}
             onAction={() => { setSearch(''); setCountry(''); setCity(''); setSort('match'); setPage(1) }}
           />
         </Card>
