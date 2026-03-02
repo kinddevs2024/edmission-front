@@ -10,6 +10,8 @@ import { FileUpload } from '@/components/ui/FileUpload'
 import { ShieldCheck, FileText, Loader2 } from 'lucide-react'
 
 const DOC_TYPES: { value: DocumentType; label: string }[] = [
+  { value: 'passport', label: 'Passport' },
+  { value: 'id_card', label: 'ID card' },
   { value: 'transcript', label: 'Transcript' },
   { value: 'diploma', label: 'Diploma' },
   { value: 'language_certificate', label: 'Language certificate' },

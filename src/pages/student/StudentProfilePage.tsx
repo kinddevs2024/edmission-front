@@ -32,6 +32,22 @@ const schema = z.object({
   schoolCompleted: z.boolean().optional(),
   schoolName: z.string().optional(),
   graduationYear: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(1950).max(2030).optional()),
+  gradingScheme: z.string().optional(),
+  gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
+  highestEducationLevel: z.string().optional(),
+  targetDegreeLevel: z.enum(['bachelor', 'master', 'phd']).optional(),
+  schoolsAttended: z.array(z.object({
+    country: z.string().optional(),
+    institutionName: z.string().optional(),
+    educationLevel: z.string().optional(),
+    gradingScheme: z.string().optional(),
+    gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
+    gradeAverage: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
+    primaryLanguage: z.string().optional(),
+    attendedFrom: z.string().optional(),
+    attendedTo: z.string().optional(),
+    degreeName: z.string().optional(),
+  })).optional(),
   bio: z.string().optional(),
   avatarUrl: z.string().optional(),
   skills: z.array(z.string()).optional(),
@@ -71,6 +87,14 @@ const LANGUAGE_OPTIONS = [
   { value: 'Other', label: 'Другое' },
 ]
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Native']
+const TARGET_DEGREE_OPTIONS = [
+  { value: 'bachelor', label: 'Bachelor' },
+  { value: 'master', label: 'Master' },
+  { value: 'phd', label: 'PhD' },
+]
+const GRADING_SCHEME_OPTIONS = ['Other', 'GCE Advanced Level Education', 'IB', 'National']
+const GRADE_SCALE_OPTIONS = [4, 5, 7, 10, 20, 100]
+const HIGHEST_EDUCATION_OPTIONS = ['Secondary', 'Grade 12 / High School', 'Bachelor', 'Master', 'PhD']
 
 export function StudentProfilePage() {
   const { t } = useTranslation(['student', 'common'])
@@ -94,10 +118,12 @@ export function StudentProfilePage() {
       languages: [],
       experiences: [],
       portfolioWorks: [],
+      schoolsAttended: [],
     },
   })
 
   const { fields: experienceFields, append: appendExperience, remove: removeExperience } = useFieldArray({ control, name: 'experiences' })
+  const { fields: schoolsAttendedFields, append: appendSchool, remove: removeSchool } = useFieldArray({ control, name: 'schoolsAttended' })
   const { fields: workFields, append: appendWork, remove: removeWork } = useFieldArray({ control, name: 'portfolioWorks' })
   const { fields: languageFields, append: appendLanguage, remove: removeLanguage } = useFieldArray({ control, name: 'languages' })
 
@@ -129,6 +155,22 @@ export function StudentProfilePage() {
           schoolCompleted: data.schoolCompleted ?? false,
           schoolName: data.schoolName ?? '',
           graduationYear: data.graduationYear ?? undefined,
+          gradingScheme: data.gradingScheme ?? '',
+          gradeScale: data.gradeScale ?? undefined,
+          highestEducationLevel: data.highestEducationLevel ?? '',
+          targetDegreeLevel: data.targetDegreeLevel ?? undefined,
+          schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
+            country: s.country ?? '',
+            institutionName: s.institutionName ?? '',
+            educationLevel: s.educationLevel ?? '',
+            gradingScheme: s.gradingScheme ?? '',
+            gradeScale: s.gradeScale,
+            gradeAverage: s.gradeAverage,
+            primaryLanguage: s.primaryLanguage ?? '',
+            attendedFrom: s.attendedFrom ? (typeof s.attendedFrom === 'string' ? s.attendedFrom.slice(0, 10) : new Date(s.attendedFrom).toISOString().slice(0, 10)) : '',
+            attendedTo: s.attendedTo ? (typeof s.attendedTo === 'string' ? s.attendedTo.slice(0, 10) : new Date(s.attendedTo).toISOString().slice(0, 10)) : '',
+            degreeName: s.degreeName ?? '',
+          })),
           bio: data.bio ?? '',
           avatarUrl: data.avatarUrl ?? '',
           skills: data.skills ?? [],
@@ -171,6 +213,22 @@ export function StudentProfilePage() {
         schoolCompleted: data.schoolCompleted,
         schoolName: data.schoolName || undefined,
         graduationYear: data.graduationYear != null ? data.graduationYear : undefined,
+        gradingScheme: data.gradingScheme || undefined,
+        gradeScale: data.gradeScale != null ? data.gradeScale : undefined,
+        highestEducationLevel: data.highestEducationLevel || undefined,
+        targetDegreeLevel: data.targetDegreeLevel || undefined,
+        schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
+          country: s.country || undefined,
+          institutionName: s.institutionName || undefined,
+          educationLevel: s.educationLevel || undefined,
+          gradingScheme: s.gradingScheme || undefined,
+          gradeScale: s.gradeScale != null ? s.gradeScale : undefined,
+          gradeAverage: s.gradeAverage != null ? s.gradeAverage : undefined,
+          primaryLanguage: s.primaryLanguage || undefined,
+          attendedFrom: s.attendedFrom || undefined,
+          attendedTo: s.attendedTo || undefined,
+          degreeName: s.degreeName || undefined,
+        })),
         bio: data.bio || undefined,
         avatarUrl: data.avatarUrl || undefined,
         skills: data.skills ?? [],
@@ -283,6 +341,42 @@ export function StudentProfilePage() {
 
           {step === 3 && (
             <>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Applying for degree</label>
+                <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                  <option value="">—</option>
+                  {TARGET_DEGREE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Grading scheme</label>
+                <select {...register('gradingScheme')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                  <option value="">—</option>
+                  {GRADING_SCHEME_OPTIONS.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Grade scale (out of)</label>
+                <select {...register('gradeScale')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                  <option value="">—</option>
+                  {GRADE_SCALE_OPTIONS.map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Highest level of education</label>
+                <select {...register('highestEducationLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                  <option value="">—</option>
+                  {HIGHEST_EDUCATION_OPTIONS.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
               <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
               <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} />
               <div className="space-y-4">
@@ -380,13 +474,46 @@ export function StudentProfilePage() {
                 </Card>
               </div>
               <hr className="border-[var(--color-border)]" />
-              <p className="text-sm font-medium text-[var(--color-text)]">{t('schoolCompleted')}</p>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" {...register('schoolCompleted')} className="rounded border-[var(--color-border)]" />
-                <span className="text-sm">{t('schoolCompleted')}</span>
-              </label>
-              <Input label={t('schoolName')} {...register('schoolName')} placeholder={t('schoolName')} />
-              <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
+              {(() => {
+                const targetDegree = watch('targetDegreeLevel')
+                const isMasterOrPhd = targetDegree === 'master' || targetDegree === 'phd'
+                const institutionLabel = isMasterOrPhd ? (t('institutionName') || 'University / Institution name') : t('schoolName')
+                const completedLabel = isMasterOrPhd ? (t('institutionCompleted') || 'University / Institution completed') : t('schoolCompleted')
+                return (
+                  <>
+                    <p className="text-sm font-medium text-[var(--color-text)]">{completedLabel}</p>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" {...register('schoolCompleted')} className="rounded border-[var(--color-border)]" />
+                      <span className="text-sm">{completedLabel}</span>
+                    </label>
+                    <Input label={institutionLabel} {...register('schoolName')} placeholder={institutionLabel} />
+                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
+                  </>
+                )
+              })()}
+              <p className="text-sm font-medium text-[var(--color-text)] mt-4">Schools / Universities attended</p>
+              <div className="space-y-3">
+                {schoolsAttendedFields.map((field, i) => (
+                  <Card key={field.id} className="p-4 space-y-2 border border-[var(--color-border)]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Entry {i + 1}</span>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label="Remove"><Trash2 className="w-4 h-4" /></Button>
+                    </div>
+                    <Input label="Country" {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
+                    <Input label="Institution name" {...register(`schoolsAttended.${i}.institutionName`)} placeholder="School or University name" />
+                    <Input label="Education level" {...register(`schoolsAttended.${i}.educationLevel`)} placeholder="e.g. Grade 12 / High School" />
+                    <Input label="Primary language of instruction" {...register(`schoolsAttended.${i}.primaryLanguage`)} placeholder="e.g. Uzbek" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input label="Attended from" type="date" {...register(`schoolsAttended.${i}.attendedFrom`)} />
+                      <Input label="Attended to" type="date" {...register(`schoolsAttended.${i}.attendedTo`)} />
+                    </div>
+                    <Input label="Degree name (optional)" {...register(`schoolsAttended.${i}.degreeName`)} placeholder="For university" />
+                  </Card>
+                ))}
+                <Button type="button" variant="secondary" size="sm" onClick={() => appendSchool({ country: '', institutionName: '', educationLevel: '', primaryLanguage: '', attendedFrom: '', attendedTo: '', degreeName: '' })} icon={<Plus className="w-4 h-4" />}>
+                  Add school / university
+                </Button>
+              </div>
             </>
           )}
 

@@ -28,6 +28,7 @@ export interface User {
   subscription?: SubscriptionSummary
   notificationPreferences?: NotificationPreferences
   studentProfile?: { id: string; verifiedAt?: string | null }
+  universityProfile?: { id: string; verified?: boolean; universityName?: string }
   totpEnabled?: boolean
 }
 

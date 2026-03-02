@@ -1,6 +1,7 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -8,8 +9,13 @@ import { BottomNav } from '@/components/layout/BottomNav'
 import { cn } from '@/utils/cn'
 
 export function UniversityLayout() {
+  const { user } = useAuth()
   const { t } = useTranslation('university')
   const location = useLocation()
+  const verified = user?.role === 'university' ? user?.universityProfile?.verified : true
+  if (user?.role === 'university' && verified === false) {
+    return <Navigate to="/university/pending" replace />
+  }
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)

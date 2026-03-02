@@ -1,6 +1,6 @@
 import { api } from './api'
 
-export type DocumentType = 'transcript' | 'diploma' | 'language_certificate' | 'course_certificate' | 'other'
+export type DocumentType = 'transcript' | 'diploma' | 'language_certificate' | 'course_certificate' | 'passport' | 'id_card' | 'other'
 
 export interface StudentDocumentItem {
   id: string

@@ -21,6 +21,20 @@ export interface StudentPortfolioWork {
   linkUrl?: string
 }
 
+export interface SchoolAttendedItem {
+  _id?: string
+  country?: string
+  institutionName?: string
+  educationLevel?: string
+  gradingScheme?: string
+  gradeScale?: number
+  gradeAverage?: number
+  primaryLanguage?: string
+  attendedFrom?: string
+  attendedTo?: string
+  degreeName?: string
+}
+
 export interface StudentProfileData {
   id?: string
   userId?: string
@@ -38,12 +52,18 @@ export interface StudentProfileData {
   schoolCompleted?: boolean
   schoolName?: string
   graduationYear?: number
+  gradingScheme?: string
+  gradeScale?: number
+  highestEducationLevel?: string
+  targetDegreeLevel?: 'bachelor' | 'master' | 'phd'
+  schoolsAttended?: SchoolAttendedItem[]
   skills?: string[]
   interests?: string[]
   hobbies?: string[]
   experiences?: StudentExperience[]
   portfolioWorks?: StudentPortfolioWork[]
   portfolioCompletionPercent?: number
+  minimalPortfolioComplete?: boolean
   user?: { email: string; emailVerified?: boolean }
 }
 

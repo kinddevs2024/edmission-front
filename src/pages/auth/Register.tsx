@@ -41,7 +41,7 @@ export function Register() {
         role: data.role,
       })
       if (user.role === 'student') navigate('/student/dashboard')
-      else navigate('/university/dashboard')
+      else navigate('/university/pending')
     } catch (err) {
       const key = getApiErrorKey(err)
       setSubmitError(t(`errors:${key}`))

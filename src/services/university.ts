@@ -144,6 +144,13 @@ export async function getStudents(params?: StudentSearchParams): Promise<Student
   return data ?? { data: [], total: 0, page: 1, limit: 20, totalPages: 0 }
 }
 
+export interface ReadinessInfo {
+  profile: boolean
+  education: boolean
+  certificates: boolean
+  ready: boolean
+}
+
 export interface FullStudentProfile {
   id: string
   firstName?: string
@@ -160,6 +167,11 @@ export interface FullStudentProfile {
   schoolCompleted?: boolean
   schoolName?: string
   graduationYear?: number
+  gradingScheme?: string
+  gradeScale?: number
+  highestEducationLevel?: string
+  targetDegreeLevel?: 'bachelor' | 'master' | 'phd'
+  schoolsAttended?: { country?: string; institutionName?: string; educationLevel?: string; gradingScheme?: string; gradeScale?: number; gradeAverage?: number; primaryLanguage?: string; attendedFrom?: string; attendedTo?: string; degreeName?: string }[]
   skills?: string[]
   interests?: string[]
   hobbies?: string[]
@@ -168,6 +180,7 @@ export interface FullStudentProfile {
   portfolioCompletionPercent?: number
   verifiedAt?: string
   documents?: { id: string; type: string; name?: string; certificateType?: string; score?: string; fileUrl: string }[]
+  readiness?: ReadinessInfo
 }
 
 export async function getStudentProfile(studentId: string): Promise<FullStudentProfile> {

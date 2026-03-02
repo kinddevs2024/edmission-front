@@ -33,7 +33,10 @@ export function Login() {
     try {
       const { user } = await login(data)
       if (user.role === 'student') navigate('/student/dashboard')
-      else if (user.role === 'university') navigate('/university/dashboard')
+      else if (user.role === 'university') {
+        const verified = (user as { universityProfile?: { verified?: boolean } }).universityProfile?.verified
+        navigate(verified ? '/university/dashboard' : '/university/pending')
+      }
       else navigate('/admin')
     } catch (err) {
       const key = getApiErrorKey(err)

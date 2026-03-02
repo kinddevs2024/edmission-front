@@ -13,6 +13,7 @@ import { CheckCircle, Circle } from 'lucide-react'
 
 export function StudentDashboard() {
   const [profilePercent, setProfilePercent] = useState(0)
+  const [minimalComplete, setMinimalComplete] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
   const [offers, setOffers] = useState<Offer[]>([])
   const [recommendations, setRecommendations] = useState<UniversityListItem[]>([])
@@ -24,7 +25,10 @@ export function StudentDashboard() {
     getOffers({ limit: 100 }).then((r) => setOffers(r.data ?? [])).catch(() => {})
     getMyDocuments().then((d) => setDocCount(d.length)).catch(() => {})
     getStudentProfile()
-      .then((p) => setProfilePercent(p.portfolioCompletionPercent ?? 0))
+      .then((p) => {
+        setProfilePercent(p.portfolioCompletionPercent ?? 0)
+        setMinimalComplete(p.minimalPortfolioComplete ?? false)
+      })
       .catch(() => {})
   }, [])
 
@@ -52,9 +56,8 @@ export function StudentDashboard() {
   const activeApplications = applications.filter((a) => !['rejected', 'accepted'].includes(a.status))
   const acceptedCount = applications.filter((a) => a.status === 'accepted').length
   const onboardingSteps = [
-    { label: 'Complete your profile', to: '/student/profile', done: profilePercent >= 80 },
+    { label: 'Complete minimal profile (name, where born, where studied)', to: '/student/profile', done: minimalComplete },
     { label: 'Upload a document', to: '/student/documents', done: docCount > 0 },
-    { label: 'Apply to a university', to: '/student/universities', done: applications.length > 0 },
   ]
   const onboardingDone = onboardingSteps.every((s) => s.done)
 

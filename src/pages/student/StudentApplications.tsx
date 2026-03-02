@@ -45,7 +45,7 @@ export function StudentApplications() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="My Applications" icon="FileCheck" />
+      <PageTitle title="Universities" icon="FileCheck" />
 
       <Card className="animate-card-enter">
         <div className="flex flex-wrap gap-4 mb-4">

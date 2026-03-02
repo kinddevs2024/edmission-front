@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
 
@@ -33,6 +33,7 @@ import { Pipeline } from '@/pages/university/Pipeline'
 import { Scholarships } from '@/pages/university/Scholarships'
 import { UniversityAnalytics } from '@/pages/university/UniversityAnalytics'
 import { UniversityChat } from '@/pages/university/UniversityChat'
+import { UniversityPendingVerification } from '@/pages/university/UniversityPendingVerification'
 
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 import { UserManagement } from '@/pages/admin/UserManagement'
@@ -64,9 +65,9 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 }
 
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, role } = useAuth()
+  const { isAuthenticated, role, user } = useAuth()
   if (!isAuthenticated) return <>{children}</>
-  const redirect = role === 'student' ? '/student/dashboard' : role === 'university' ? '/university/dashboard' : '/admin'
+  const redirect = role === 'student' ? '/student/dashboard' : role === 'university' ? (user?.universityProfile?.verified ? '/university/dashboard' : '/university/pending') : '/admin'
   return <Navigate to={redirect} replace />
 }
 
@@ -106,7 +107,9 @@ export function Router() {
           <Route path="ai" element={<AIChatPage />} />
         </Route>
 
-        <Route path="university" element={<ProtectedRoute allowedRoles={['university']}><UniversityLayout /></ProtectedRoute>}>
+        <Route path="university" element={<ProtectedRoute allowedRoles={['university']}><Outlet /></ProtectedRoute>}>
+          <Route path="pending" element={<UniversityPendingVerification />} />
+          <Route element={<UniversityLayout />}>
           <Route path="onboarding" element={<UniversityOnboarding />} />
           <Route path="profile" element={<UniversityProfilePage />} />
           <Route path="dashboard" element={<UniversityDashboard />} />
@@ -117,6 +120,7 @@ export function Router() {
           <Route path="analytics" element={<UniversityAnalytics />} />
           <Route path="chat" element={<UniversityChat />} />
           <Route path="ai" element={<AIChatPage />} />
+          </Route>
         </Route>
 
         <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>

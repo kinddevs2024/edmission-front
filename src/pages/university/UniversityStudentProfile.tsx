@@ -68,6 +68,25 @@ export function UniversityStudentProfile() {
       </div>
 
       <PageTitle title={name} icon="User" />
+      {profile.readiness && (
+        <Card className="border-primary-accent/20">
+          <CardTitle>Readiness for university</CardTitle>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span className={profile.readiness.profile ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
+              {profile.readiness.profile ? '✓' : '○'} Profile (country, city)
+            </span>
+            <span className={profile.readiness.education ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
+              {profile.readiness.education ? '✓' : '○'} Education (grades)
+            </span>
+            <span className={profile.readiness.certificates ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
+              {profile.readiness.certificates ? '✓' : '○'} Certificates
+            </span>
+            {profile.readiness.ready && (
+              <span className="font-medium text-primary-accent">Ready</span>
+            )}
+          </div>
+        </Card>
+      )}
       {profile.avatarUrl && (
         <div className="flex justify-center sm:justify-start">
           <img src={getImageUrl(profile.avatarUrl)} alt="" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
@@ -94,12 +113,30 @@ export function UniversityStudentProfile() {
       <Card>
         <CardTitle>Education</CardTitle>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
+          {(profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd') && (
+            <><dt className="text-[var(--color-text-muted)]">Applying for</dt><dd>{profile.targetDegreeLevel === 'master' ? 'Master' : 'PhD'}</dd></>
+          )}
           <dt className="text-[var(--color-text-muted)]">Grade / level</dt><dd>{profile.gradeLevel ?? '—'}</dd>
           <dt className="text-[var(--color-text-muted)]">GPA</dt><dd>{profile.gpa != null ? profile.gpa : '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">School completed</dt><dd>{profile.schoolCompleted != null ? (profile.schoolCompleted ? 'Yes' : 'No') : '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">School name</dt><dd>{profile.schoolName ?? '—'}</dd>
+          <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University completed' : 'School completed'}</dt><dd>{profile.schoolCompleted != null ? (profile.schoolCompleted ? 'Yes' : 'No') : '—'}</dd>
+          <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University / Institution name' : 'School name'}</dt><dd>{profile.schoolName ?? '—'}</dd>
           <dt className="text-[var(--color-text-muted)]">Graduation year</dt><dd>{profile.graduationYear ?? '—'}</dd>
+          {profile.gradingScheme && <><dt className="text-[var(--color-text-muted)]">Grading scheme</dt><dd>{profile.gradingScheme}</dd></>}
+          {profile.gradeScale != null && <><dt className="text-[var(--color-text-muted)]">Grade scale (out of)</dt><dd>{profile.gradeScale}</dd></>}
+          {profile.highestEducationLevel && <><dt className="text-[var(--color-text-muted)]">Highest education level</dt><dd>{profile.highestEducationLevel}</dd></>}
         </dl>
+        {profile.schoolsAttended?.length ? (
+          <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
+            <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Schools / Universities attended</p>
+            <ul className="space-y-2">
+              {profile.schoolsAttended.map((s, i) => (
+                <li key={i} className="text-sm">
+                  {s.institutionName ?? '—'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` · ${s.attendedFrom.slice(0, 4)}–${s.attendedTo.slice(0, 4)}`}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </Card>
 
       <Card>
