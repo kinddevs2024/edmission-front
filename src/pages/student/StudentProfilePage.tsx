@@ -216,14 +216,17 @@ export function StudentProfilePage() {
           skills: data.skills ?? [],
           interests: data.interests ?? [],
           hobbies: data.hobbies ?? [],
-          experiences: (data.experiences ?? []).map((e: StudentExperience) => ({
-            type: e.type,
-            title: e.title ?? '',
-            organization: e.organization ?? '',
-            startDate: e.startDate ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate).toISOString().slice(0, 10)) : '',
-            endDate: e.endDate ? (typeof e.endDate === 'string' ? e.endDate.slice(0, 10) : new Date(e.endDate).toISOString().slice(0, 10)) : '',
-            description: e.description ?? '',
-          })),
+          experiences: (data.experiences ?? []).map((e: StudentExperience) => {
+            const type = (e.type === 'internship' || e.type === 'work' ? e.type : 'volunteer') as 'volunteer' | 'internship' | 'work'
+            return {
+              type,
+              title: e.title ?? '',
+              organization: e.organization ?? '',
+              startDate: e.startDate ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate).toISOString().slice(0, 10)) : '',
+              endDate: e.endDate ? (typeof e.endDate === 'string' ? e.endDate.slice(0, 10) : new Date(e.endDate).toISOString().slice(0, 10)) : '',
+              description: e.description ?? '',
+            }
+          }),
           portfolioWorks: (data.portfolioWorks ?? []).map((w: StudentPortfolioWork) => ({
             title: w.title ?? '',
             description: w.description ?? '',
@@ -367,7 +370,10 @@ export function StudentProfilePage() {
 
       <Card className="p-6">
         <CardTitle className="mb-4">{currentStepInfo.title}</CardTitle>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, (validationErrors) => {
+          const msg = Object.entries(validationErrors).map(([k, v]) => (v as { message?: string })?.message ?? k).filter(Boolean).join('. ')
+          setError(msg || 'Please fix the form errors below.')
+        })} className="space-y-4">
           {step === 1 && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
