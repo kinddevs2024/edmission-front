@@ -14,6 +14,7 @@ import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 
 const schema = z.object({
   firstName: z.string().optional(),
@@ -69,6 +70,8 @@ const schema = z.object({
     fileUrl: z.string().optional(),
     linkUrl: z.string().optional(),
   })).optional(),
+  interestedFaculties: z.array(z.string()).optional(),
+  preferredCountries: z.array(z.string()).optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -115,6 +118,17 @@ const EDUCATION_STATUS_OPTIONS = [
   { value: 'finished_university' as const, labelKey: 'statusFinishedUniversity' as const },
 ]
 
+const COUNTRY_CODE_OPTIONS = [
+  { code: 'UZ', label: 'Uzbekistan' },
+  { code: 'KZ', label: 'Kazakhstan' },
+  { code: 'TJ', label: 'Tajikistan' },
+  { code: 'KG', label: 'Kyrgyzstan' },
+  { code: 'TM', label: 'Turkmenistan' },
+  { code: 'TR', label: 'Turkey' },
+  { code: 'AE', label: 'UAE' },
+  { code: 'CN', label: 'China' },
+] as const
+
 export function StudentProfilePage() {
   const { t } = useTranslation(['student', 'common'])
   const { user } = useAuth()
@@ -127,6 +141,7 @@ export function StudentProfilePage() {
   const [newLanguage, setNewLanguage] = useState(LANGUAGE_OPTIONS[0].value)
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
+  const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
 
   const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -139,6 +154,8 @@ export function StudentProfilePage() {
       portfolioWorks: [],
       schoolsAttended: [],
       educationStatus: undefined,
+      interestedFaculties: [],
+      preferredCountries: [],
     },
   })
 
@@ -213,6 +230,8 @@ export function StudentProfilePage() {
             fileUrl: w.fileUrl ?? '',
             linkUrl: w.linkUrl ?? '',
           })),
+          interestedFaculties: data.interestedFaculties ?? [],
+          preferredCountries: data.preferredCountries ?? [],
         })
       })
       .catch((e) => setError(getApiError(e).message))
@@ -273,6 +292,8 @@ export function StudentProfilePage() {
           fileUrl: w.fileUrl || undefined,
           linkUrl: w.linkUrl || undefined,
         })),
+        interestedFaculties: data.interestedFaculties ?? [],
+        preferredCountries: data.preferredCountries ?? [],
       }
       const updated = await updateStudentProfile(payload)
       setProfile(updated)
@@ -358,10 +379,35 @@ export function StudentProfilePage() {
           )}
 
           {step === 2 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label={t('country')} error={errors.country?.message} {...register('country')} placeholder={t('country')} />
-              <Input label={t('city')} error={errors.city?.message} {...register('city')} placeholder={t('city')} />
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label={t('country')} error={errors.country?.message} {...register('country')} placeholder={t('country')} />
+                <Input label={t('city')} error={errors.city?.message} {...register('city')} placeholder={t('city')} />
+              </div>
+              <div className="mt-4 space-y-3">
+                <div>
+                  <p className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:preferredCountries', 'Preferred countries')}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mb-2">
+                    {t('student:preferredCountriesHint', 'Where would you like to study?')}
+                  </p>
+                  <ChipSelect
+                    options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
+                    value={(watch('preferredCountries') ?? []).map(
+                      (code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code
+                    )}
+                    onChange={(labels) => {
+                      const codes = labels
+                        .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
+                        .filter((v) => !!v)
+                        .map((v) => String(v))
+                      setValue('preferredCountries', codes, { shouldDirty: true })
+                    }}
+                    max={8}
+                    placeholder={t('student:preferredCountriesPlaceholder', 'Select countries')}
+                  />
+                </div>
+              </div>
+            </>
           )}
 
           {step === 3 && (
@@ -584,34 +630,83 @@ export function StudentProfilePage() {
               {!criteria ? (
                 <p className="text-[var(--color-text-muted)]">Loading options…</p>
               ) : (
-            <>
-              <CardTitle className="mb-2">{t('skillsPlaceholder')}</CardTitle>
-              <ChipSelect
-                options={criteria.skills}
-                value={watch('skills') ?? []}
-                onChange={(v) => setValue('skills', v)}
-                max={50}
-                placeholder={t('skillsPlaceholder')}
-                className="mb-6"
-              />
-              <CardTitle className="mb-2">Interests</CardTitle>
-              <ChipSelect
-                options={criteria.interests}
-                value={watch('interests') ?? []}
-                onChange={(v) => setValue('interests', v)}
-                max={30}
-                placeholder="Select your interests (e.g. IT, books, travel)"
-                className="mb-6"
-              />
-              <CardTitle className="mb-2">Hobbies & activities</CardTitle>
-              <ChipSelect
-                options={criteria.hobbies}
-                value={watch('hobbies') ?? []}
-                onChange={(v) => setValue('hobbies', v)}
-                max={30}
-                placeholder="Select hobbies and activities"
-              />
-            </>
+                <>
+                  <CardTitle className="mb-2">{t('skillsPlaceholder')}</CardTitle>
+                  <ChipSelect
+                    options={criteria.skills}
+                    value={watch('skills') ?? []}
+                    onChange={(v) => setValue('skills', v, { shouldDirty: true })}
+                    max={50}
+                    placeholder={t('skillsPlaceholder')}
+                    className="mb-6"
+                  />
+                  <CardTitle className="mb-2">Interests</CardTitle>
+                  <ChipSelect
+                    options={criteria.interests}
+                    value={watch('interests') ?? []}
+                    onChange={(v) => setValue('interests', v, { shouldDirty: true })}
+                    max={30}
+                    placeholder="Select your interests (e.g. IT, books, travel)"
+                    className="mb-6"
+                  />
+                  <CardTitle className="mb-2">Hobbies & activities</CardTitle>
+                  <ChipSelect
+                    options={criteria.hobbies}
+                    value={watch('hobbies') ?? []}
+                    onChange={(v) => setValue('hobbies', v, { shouldDirty: true })}
+                    max={30}
+                    placeholder="Select hobbies and activities"
+                  />
+                  <div className="mt-6">
+                    <CardTitle className="mb-2">{t('student:interestedFaculties', 'Interested faculties')}</CardTitle>
+                    <p className="text-xs text-[var(--color-text-muted)] mb-3">
+                      {t('student:interestedFacultiesHint', 'Choose faculties you are interested in. You can open each faculty to see what it includes.')}
+                    </p>
+                    <div className="space-y-2">
+                      {FIELD_OF_STUDY.map((cat) => {
+                        const selected = (watch('interestedFaculties') ?? []).includes(cat.id)
+                        const open = openFacultyId === cat.id
+                        return (
+                          <div key={cat.id} className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)]">
+                            <div className="flex items-center justify-between gap-3 px-3 py-2">
+                              <label className="flex items-center gap-2 min-w-0">
+                                <input
+                                  type="checkbox"
+                                  checked={selected}
+                                  onChange={(e) => {
+                                    const current = watch('interestedFaculties') ?? []
+                                    const next = e.target.checked
+                                      ? Array.from(new Set([...current, cat.id])).slice(0, 10)
+                                      : current.filter((x) => x !== cat.id)
+                                    setValue('interestedFaculties', next, { shouldDirty: true })
+                                  }}
+                                />
+                        <span className="text-sm font-medium truncate">{t(cat.titleKey)}</span>
+                              </label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setOpenFacultyId(open ? null : cat.id)}
+                              >
+                                {open ? t('common:hide', 'Hide') : t('common:view', 'View')}
+                              </Button>
+                            </div>
+                            {open && (
+                              <div className="px-3 pb-3">
+                                <ul className="text-sm text-[var(--color-text-muted)] list-disc list-inside space-y-0.5">
+                                  {cat.items.map((it) => (
+                                    <li key={it}>{it}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
               )}
             </>
           )}

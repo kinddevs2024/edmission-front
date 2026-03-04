@@ -70,6 +70,8 @@ export interface StudentProfileData {
   portfolioCompletionPercent?: number
   minimalPortfolioComplete?: boolean
   user?: { email: string; emailVerified?: boolean }
+  interestedFaculties?: string[]
+  preferredCountries?: string[]
 }
 
 export async function getStudentProfile(): Promise<StudentProfileData> {

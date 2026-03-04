@@ -29,6 +29,8 @@ export interface UniversityProfile {
   onboardingCompleted?: boolean
   createdAt?: string
   updatedAt?: string
+  facultyCodes?: string[]
+  targetStudentCountries?: string[]
 }
 
 export interface Program {

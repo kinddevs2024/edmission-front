@@ -11,6 +11,8 @@ export async function getProfile(): Promise<UniversityProfile> {
     name: data.name ?? data.universityName ?? '',
     slogan: data.slogan ?? data.tagline,
     foundedYear: data.foundedYear ?? data.establishedYear,
+    facultyCodes: (data as unknown as { facultyCodes?: string[] }).facultyCodes ?? [],
+    targetStudentCountries: (data as unknown as { targetStudentCountries?: string[] }).targetStudentCountries ?? [],
   }
 }
 
@@ -25,6 +27,8 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
   if (patch.description != null) body.description = patch.description
   const logoUrl = (patch as { logoUrl?: string }).logoUrl ?? patch.logo
   if (logoUrl != null) body.logoUrl = logoUrl
+  if (patch.facultyCodes != null) body.facultyCodes = patch.facultyCodes
+  if (patch.targetStudentCountries != null) body.targetStudentCountries = patch.targetStudentCountries
   const { data } = await api.put<UniversityProfileResponse | null>('/university/profile', body)
   const raw = data ?? {}
   return {
@@ -127,14 +131,7 @@ export interface DiscoverStudentItem {
     lastName?: string
     country?: string
     city?: string
-    gpa?: number
-    gradeLevel?: string
-    languages?: { language: string; level: string }[]
-    skills?: string[]
-    interests?: string[]
-    hobbies?: string[]
-    schoolName?: string
-    graduationYear?: number
+    avatarUrl?: string
   }
   inPipeline: boolean
 }
@@ -200,6 +197,8 @@ export interface FullStudentProfile {
   verifiedAt?: string
   documents?: { id: string; type: string; name?: string; certificateType?: string; score?: string; fileUrl: string }[]
   readiness?: ReadinessInfo
+  interestedFaculties?: string[]
+  preferredCountries?: string[]
 }
 
 export async function getStudentProfile(studentId: string): Promise<FullStudentProfile> {

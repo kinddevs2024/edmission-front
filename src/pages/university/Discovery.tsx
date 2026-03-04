@@ -231,40 +231,45 @@ export function Discovery() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {list.map((item) => {
-              const st = item.student
-              const name = [st?.firstName, st?.lastName].filter(Boolean).join(' ') || t('university:studentLabel')
-              const languagesStr = st?.languages?.map((l) => `${l.language} (${l.level})`).join(', ')
-              return (
-                <Card key={item.id} className="flex flex-col">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <CardTitle className="truncate">{name}</CardTitle>
-                    {item.inPipeline && (
-                      <Badge variant="success">{t('university:inPipeline', 'In pipeline')}</Badge>
-                    )}
-                  </div>
-                  <div className="text-sm text-[var(--color-text-muted)] space-y-1">
-                    {(st?.country || st?.city) && (
-                      <p>{[st.country, st.city].filter(Boolean).join(', ')}</p>
-                    )}
-                    {st?.gpa != null && <p>GPA: {st.gpa}</p>}
-                    {languagesStr && <p>{languagesStr}</p>}
-                    {st?.schoolName && <p>{st.schoolName}{st.graduationYear ? ` (${st.graduationYear})` : ''}</p>}
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-4 pt-2">
-                    <Button to={`/university/students/${encodeURIComponent(item.id)}`} variant="secondary" size="sm" icon={<User size={16} />}>
-                      {t('university:viewFullProfile', 'Full profile')}
-                    </Button>
-                    <Button to={`/university/chat?studentId=${encodeURIComponent(item.id)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>
-                      {t('university:navChat')}
-                    </Button>
-                    <Button to="/university/pipeline" variant="ghost" size="sm">
-                      {t('university:viewPipeline')}
-                    </Button>
-                  </div>
-                </Card>
-              )
-            })}
+              {list.map((item) => {
+                const st = item.student
+                const name = [st?.firstName, st?.lastName].filter(Boolean).join(' ') || t('university:studentLabel')
+                return (
+                  <Card key={item.id} className="flex flex-col">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {st?.avatarUrl && (
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)] flex-shrink-0">
+                            <img src={st.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <CardTitle className="truncate">{name}</CardTitle>
+                          {(st?.country || st?.city) && (
+                            <p className="text-xs text-[var(--color-text-muted)] truncate">
+                              {[st.country, st.city].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {item.inPipeline && (
+                        <Badge variant="success">{t('university:inPipeline', 'In pipeline')}</Badge>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-4 pt-2">
+                      <Button to={`/university/students/${encodeURIComponent(item.id)}`} variant="secondary" size="sm" icon={<User size={16} />}>
+                        {t('university:viewFullProfile', 'Full profile')}
+                      </Button>
+                      <Button to={`/university/chat?studentId=${encodeURIComponent(item.id)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>
+                        {t('university:navChat')}
+                      </Button>
+                      <Button to="/university/pipeline" variant="ghost" size="sm">
+                        {t('university:viewPipeline')}
+                      </Button>
+                    </div>
+                  </Card>
+                )
+              })}
           </div>
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 pt-2">

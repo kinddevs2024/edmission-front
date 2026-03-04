@@ -97,5 +97,18 @@
   "noNotificationsDesc": "You have no notifications matching the current filters.",
   "subject": "Subject",
   "describeIssue": "Describe your issue or question...",
-  "upgrade": "Upgrade"
+  "upgrade": "Upgrade",
+  "view": "View",
+  "hide": "Hide",
+  "fieldBusinessManagementEconomics": "Business, Management & Economics",
+  "fieldEngineeringTechnology": "Engineering & Technology",
+  "fieldComputerScienceDigitalTechnologies": "Computer Science & Digital Technologies",
+  "fieldNaturalSciences": "Natural Sciences",
+  "fieldHealthMedicalSciences": "Health & Medical Sciences",
+  "fieldSocialSciencesHumanities": "Social Sciences & Humanities",
+  "fieldCreativeArtsMediaDesign": "Creative Arts, Media & Design",
+  "fieldEducation": "Education",
+  "fieldEnvironmentAgricultureSustainability": "Environment, Agriculture & Sustainability",
+  "fieldHospitalityTourismService": "Hospitality, Tourism & Service Industry",
+  "fieldLawLegalStudies": "Law & Legal Studies"
 }

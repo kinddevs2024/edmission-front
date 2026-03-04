@@ -97,5 +97,18 @@
   "noNotificationsDesc": "Joriy filtrlarga mos bildirishnomalar yo'q.",
   "subject": "Mavzu",
   "describeIssue": "Muammo yoki savolingizni yozing...",
-  "upgrade": "Rejaga o'tish"
+  "upgrade": "Rejaga o'tish",
+  "view": "Ko'rish",
+  "hide": "Yashirish",
+  "fieldBusinessManagementEconomics": "Biznes, menejment va iqtisodiyot",
+  "fieldEngineeringTechnology": "Muhandislik va texnologiyalar",
+  "fieldComputerScienceDigitalTechnologies": "Kompyuter fanlari va raqamli texnologiyalar",
+  "fieldNaturalSciences": "Tabiiy fanlar",
+  "fieldHealthMedicalSciences": "Sog'liqni saqlash va tibbiyot fanlari",
+  "fieldSocialSciencesHumanities": "Ijtimoiy va gumanitar fanlar",
+  "fieldCreativeArtsMediaDesign": "Ijodiy sohalar, media va dizayn",
+  "fieldEducation": "Ta'lim",
+  "fieldEnvironmentAgricultureSustainability": "Atrof-muhit, qishloq xo'jaligi va barqarorlik",
+  "fieldHospitalityTourismService": "Mehmondo'stlik, turizm va servis",
+  "fieldLawLegalStudies": "Huquq va yuridik tadqiqotlar"
 }

@@ -5,6 +5,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getStudentProfile, type FullStudentProfile } from '@/services/university'
+import { getApiError } from '@/services/api'
 import { getImageUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
 import { ArrowLeft, MessageCircle, FileText, ExternalLink } from 'lucide-react'
@@ -23,7 +24,14 @@ export function UniversityStudentProfile() {
     setError('')
     getStudentProfile(studentId)
       .then(setProfile)
-      .catch(() => setError('Failed to load profile'))
+      .catch((e) => {
+        const err = getApiError(e)
+        if ((err as { code?: string }).code === 'FORBIDDEN') {
+          setError('You have reached the maximum number of student profiles for your current plan. Please upgrade your subscription to view more students.')
+        } else {
+          setError('Failed to load profile')
+        }
+      })
       .finally(() => setLoading(false))
   }, [studentId])
 

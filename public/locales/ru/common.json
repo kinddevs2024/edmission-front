@@ -97,5 +97,18 @@
   "noNotificationsDesc": "Нет уведомлений по текущим фильтрам.",
   "subject": "Тема",
   "describeIssue": "Опишите вашу проблему или вопрос...",
-  "upgrade": "Перейти на план"
+  "upgrade": "Перейти на план",
+  "view": "Смотреть",
+  "hide": "Скрыть",
+  "fieldBusinessManagementEconomics": "Бизнес, менеджмент и экономика",
+  "fieldEngineeringTechnology": "Инжиниринг и технологии",
+  "fieldComputerScienceDigitalTechnologies": "Компьютерные науки и цифровые технологии",
+  "fieldNaturalSciences": "Естественные науки",
+  "fieldHealthMedicalSciences": "Здравоохранение и медицинские науки",
+  "fieldSocialSciencesHumanities": "Общественные науки и гуманитарные направления",
+  "fieldCreativeArtsMediaDesign": "Творческие индустрии, медиа и дизайн",
+  "fieldEducation": "Образование",
+  "fieldEnvironmentAgricultureSustainability": "Экология, сельское хозяйство и устойчивое развитие",
+  "fieldHospitalityTourismService": "Гостеприимство, туризм и сервис",
+  "fieldLawLegalStudies": "Право и юридические исследования"
 }
