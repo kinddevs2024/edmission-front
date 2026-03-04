@@ -43,6 +43,9 @@ import { AdminDocuments } from '@/pages/admin/AdminDocuments'
 import { AdminScholarships } from '@/pages/admin/AdminScholarships'
 import { AdminLogs } from '@/pages/admin/AdminLogs'
 import { SystemHealth } from '@/pages/admin/SystemHealth'
+import { AdminOffers } from '@/pages/admin/AdminOffers'
+import { AdminInterests } from '@/pages/admin/AdminInterests'
+import { AdminChats } from '@/pages/admin/AdminChats'
 
 import { Profile } from '@/pages/Profile'
 import { Landing } from '@/pages/Landing'
@@ -131,6 +134,9 @@ export function Router() {
           <Route path="users" element={<UserManagement />} />
           <Route path="verification" element={<Verification />} />
           <Route path="documents" element={<AdminDocuments />} />
+          <Route path="offers" element={<AdminOffers />} />
+          <Route path="interests" element={<AdminInterests />} />
+          <Route path="chats" element={<AdminChats />} />
           <Route path="scholarships" element={<AdminScholarships />} />
           <Route path="support" element={<AdminSupport />} />
           <Route path="support/:id" element={<AdminSupport />} />

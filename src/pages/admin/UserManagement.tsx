@@ -7,9 +7,11 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { getUsers, suspendUser, unsuspendUser } from '@/services/admin'
+import { createUser, getUsers, suspendUser, unsuspendUser } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
+import { Modal } from '@/components/ui/Modal'
+import { Input } from '@/components/ui/Input'
 
 export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
@@ -31,6 +33,12 @@ export function UserManagement() {
   const [statusFilter, setStatusFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [actionUserId, setActionUserId] = useState<string | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createRole, setCreateRole] = useState<'student' | 'university' | 'admin'>('student')
+  const [createEmail, setCreateEmail] = useState('')
+  const [createPassword, setCreatePassword] = useState('')
+  const [createName, setCreateName] = useState('')
+  const [createSubmitting, setCreateSubmitting] = useState(false)
   const limit = 20
 
   useEffect(() => {
@@ -73,6 +81,9 @@ export function UserManagement() {
       <PageTitle title={t('admin:users')} icon="Users" />
 
       <Card>
+        <div className="flex justify-end mb-3">
+          <Button onClick={() => setCreateOpen(true)}>{t('common:create')}</Button>
+        </div>
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
             label={t('common:role')}
@@ -132,6 +143,57 @@ export function UserManagement() {
           </>
         )}
       </Card>
+
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title={t('admin:createUser', 'Create user')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCreateOpen(false)}>{t('common:cancel')}</Button>
+            <Button
+              onClick={() => {
+                setCreateSubmitting(true)
+                createUser({ role: createRole, email: createEmail, password: createPassword, name: createName || undefined })
+                  .then((newUser) => {
+                    setUsers((prev) => [newUser, ...prev])
+                    setTotal((x) => x + 1)
+                    setCreateOpen(false)
+                    setCreateEmail('')
+                    setCreatePassword('')
+                    setCreateName('')
+                    setCreateRole('student')
+                  })
+                  .catch(() => {})
+                  .finally(() => setCreateSubmitting(false))
+              }}
+              disabled={createSubmitting || !createEmail.trim() || !createPassword.trim()}
+              loading={createSubmitting}
+            >
+              {t('common:create')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Select
+            label={t('common:role')}
+            options={[
+              { value: 'student', label: t('auth:student') },
+              { value: 'university', label: t('auth:university') },
+              { value: 'admin', label: t('common:admin') },
+            ]}
+            value={createRole}
+            onChange={(e) => setCreateRole(e.target.value as 'student' | 'university' | 'admin')}
+          />
+          <Input label={t('common:email')} value={createEmail} onChange={(e) => setCreateEmail(e.target.value)} />
+          <Input label={t('auth:password')} type="password" value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} />
+          <Input label={t('common:name')} value={createName} onChange={(e) => setCreateName(e.target.value)} />
+          <p className="text-xs text-[var(--color-text-muted)]">
+            {t('admin:createUserHint', 'Users created by admin are verified by default.')}
+          </p>
+        </div>
+      </Modal>
     </div>
   )
 }

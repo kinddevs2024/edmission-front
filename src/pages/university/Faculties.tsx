@@ -4,28 +4,25 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { getFaculties, createFaculty, updateFaculty, deleteFaculty } from '@/services/university'
 import type { Faculty } from '@/types/university'
-
-const DESCRIPTION_PREVIEW_LEN = 120
+import { Pencil, Trash2, Plus } from 'lucide-react'
 
 export function Faculties() {
   const { t } = useTranslation(['common', 'university'])
   const [list, setList] = useState<Faculty[]>([])
   const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [modal, setModal] = useState<{ mode: 'create' | 'edit'; faculty?: Faculty } | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   const load = () => {
     setLoading(true)
     getFaculties()
-      .then(setList)
+      .then((data) => setList((data ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0))))
       .catch(() => setList([]))
       .finally(() => setLoading(false))
   }
@@ -35,90 +32,69 @@ export function Faculties() {
   }, [])
 
   const openCreate = () => {
-    setEditingId(null)
     setName('')
     setDescription('')
-    setModalOpen(true)
+    setModal({ mode: 'create' })
   }
 
   const openEdit = (f: Faculty) => {
-    setEditingId(f.id)
-    setName(f.name)
-    setDescription(f.description)
-    setModalOpen(true)
+    setName(f.name ?? '')
+    setDescription(f.description ?? '')
+    setModal({ mode: 'edit', faculty: f })
   }
 
-  const handleSave = () => {
-    const trimmedName = name.trim()
-    const trimmedDesc = description.trim()
-    if (!trimmedName || !trimmedDesc) return
+  const handleSubmit = () => {
+    if (!modal) return
     setSubmitting(true)
-    if (editingId) {
-      updateFaculty(editingId, { name: trimmedName, description: trimmedDesc })
-        .then((updated) => {
-          setList((prev) => prev.map((x) => (x.id === updated.id ? updated : x)))
-          setModalOpen(false)
-        })
-        .finally(() => setSubmitting(false))
-    } else {
-      createFaculty({ name: trimmedName, description: trimmedDesc })
-        .then((newOne) => {
-          setList((prev) => [newOne, ...prev])
-          setModalOpen(false)
-        })
-        .finally(() => setSubmitting(false))
-    }
-  }
-
-  const handleDelete = (id: string) => {
-    setSubmitting(true)
-    deleteFaculty(id)
+    const req =
+      modal.mode === 'create'
+        ? createFaculty({ name: name.trim(), description: description.trim() })
+        : updateFaculty(modal.faculty!.id, { name: name.trim(), description: description.trim() })
+    req
       .then(() => {
-        setList((prev) => prev.filter((x) => x.id !== id))
-        setDeleteConfirmId(null)
+        setModal(null)
+        load()
       })
+      .catch(() => {})
       .finally(() => setSubmitting(false))
+  }
+
+  const handleDelete = (f: Faculty) => {
+    if (!confirm(t('common:confirmDelete', 'Delete?'))) return
+    deleteFaculty(f.id)
+      .then(() => setList((prev) => prev.filter((x) => x.id !== f.id)))
+      .catch(() => {})
   }
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('university:navFaculties')} icon="Building2" />
+      <PageTitle title={t('university:facultiesListTitle')} icon="Building2">
+        <Button onClick={openCreate} icon={<Plus size={16} />}>
+          {t('university:addFaculty')}
+        </Button>
+      </PageTitle>
 
-      <Card className="animate-card-enter">
-        <div className="flex justify-between items-center mb-4">
-          <CardTitle>{t('university:facultiesListTitle')}</CardTitle>
-          <Button onClick={openCreate} icon={<Plus size={16} />}>
-            {t('university:addFaculty')}
-          </Button>
-        </div>
+      <Card>
+        <CardTitle>{t('university:facultiesListTitle')}</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)]">{t('common:loading')}</p>
+          <p className="text-[var(--color-text-muted)] py-6">Loading...</p>
         ) : list.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] py-8">{t('university:noFacultiesYet')}</p>
+          <EmptyState title={t('university:noFacultiesYet')} />
         ) : (
-          <ul className="divide-y divide-[var(--color-border)]">
+          <ul className="mt-3 divide-y divide-[var(--color-border)]">
             {list.map((f) => (
-              <li key={f.id} className="py-4 first:pt-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-[var(--color-text)]">{f.name}</h3>
-                  <p className="text-sm text-[var(--color-text-muted)] mt-1 line-clamp-2">
-                    {f.description.length > DESCRIPTION_PREVIEW_LEN
-                      ? `${f.description.slice(0, DESCRIPTION_PREVIEW_LEN)}…`
-                      : f.description}
-                  </p>
+              <li key={f.id} className="py-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{f.name}</p>
+                  {f.description && <p className="text-sm text-[var(--color-text-muted)] mt-1 line-clamp-2">{f.description}</p>}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(f)} icon={<Pencil size={14} />} aria-label={t('common:actions')}>{t('common:actions')}</Button>
-                  {deleteConfirmId === f.id ? (
-                    <>
-                      <Button variant="secondary" size="sm" onClick={() => handleDelete(f.id)} disabled={submitting}>
-                        {t('common:yes')}
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(null)}>{t('common:no')}</Button>
-                    </>
-                  ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(f.id)} icon={<Trash2 size={14} />} className="text-red-600 hover:text-red-700" aria-label={t('common:delete')}>{t('common:delete')}</Button>
-                  )}
+                <div className="flex gap-2 shrink-0">
+                  <Button variant="secondary" size="sm" onClick={() => openEdit(f)} icon={<Pencil size={16} />}>
+                    {t('university:editFaculty')}
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(f)} icon={<Trash2 size={16} />}>
+                    {t('common:delete')}
+                  </Button>
                 </div>
               </li>
             ))}
@@ -127,36 +103,36 @@ export function Faculties() {
       </Card>
 
       <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editingId ? t('university:editFaculty') : t('university:addFaculty')}
+        open={!!modal}
+        onClose={() => setModal(null)}
+        title={modal?.mode === 'edit' ? t('university:editFaculty') : t('university:addFaculty')}
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>{t('common:cancel')}</Button>
-            <Button onClick={handleSave} disabled={submitting || !name.trim() || !description.trim()} loading={submitting}>
-              {t('common:save')}
-            </Button>
-          </>
+          modal ? (
+            <>
+              <Button variant="secondary" onClick={() => setModal(null)}>{t('common:cancel')}</Button>
+              <Button onClick={handleSubmit} disabled={submitting || !name.trim()} loading={submitting}>
+                {t('common:save', 'Save')}
+              </Button>
+            </>
+          ) : undefined
         }
       >
         <div className="space-y-3">
           <Input
             label={t('university:facultyName')}
+            placeholder={t('university:facultyNamePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('university:facultyNamePlaceholder')}
           />
-          <label className="block">
-            <span className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('university:facultyDescription')}</span>
-            <textarea
-              className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] min-h-[140px] focus:outline-none focus:ring-2 focus:ring-primary-accent"
-              placeholder={t('university:facultyDescriptionPlaceholder')}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </label>
+          <Input
+            label={t('university:facultyDescription')}
+            placeholder={t('university:facultyDescriptionPlaceholder')}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </div>
       </Modal>
     </div>
   )
 }
+

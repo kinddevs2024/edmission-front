@@ -29,6 +29,26 @@ export interface AdminUser {
   status: 'active' | 'suspended'
 }
 
+export interface CreateAdminUserPayload {
+  role: 'student' | 'university' | 'admin'
+  email: string
+  password: string
+  name?: string
+}
+
+export async function createUser(payload: CreateAdminUserPayload): Promise<AdminUser> {
+  const { data } = await api.post<unknown>('/admin/users', payload)
+  const raw = (data ?? {}) as Record<string, unknown>
+  return {
+    id: String(raw.id ?? raw._id ?? ''),
+    email: String(raw.email ?? ''),
+    role: String(raw.role ?? ''),
+    name: (raw.name as string | undefined) ?? undefined,
+    createdAt: String(raw.createdAt ?? new Date().toISOString()),
+    status: (raw.suspended ? 'suspended' : 'active') as 'active' | 'suspended',
+  }
+}
+
 export interface VerificationItem {
   id: string
   universityId: string
@@ -119,6 +139,69 @@ export async function suspendUser(userId: string): Promise<void> {
 
 export async function unsuspendUser(userId: string): Promise<void> {
   await api.patch(`/admin/users/${userId}/suspend`, { suspend: false })
+}
+
+export interface AdminOffer {
+  id: string
+  studentId: string
+  universityId: string
+  scholarshipId?: string | null
+  coveragePercent: number
+  status: 'pending' | 'accepted' | 'declined'
+  createdAt?: string
+}
+
+export async function getOffers(params?: PaginationParams & { status?: string }): Promise<PaginatedResponse<AdminOffer>> {
+  const { data } = await api.get<PaginatedResponse<AdminOffer>>('/admin/offers', { params })
+  return data
+}
+
+export async function updateOfferStatus(offerId: string, status: 'pending' | 'accepted' | 'declined'): Promise<void> {
+  await api.patch(`/admin/offers/${offerId}/status`, { status })
+}
+
+export interface AdminInterest {
+  id: string
+  studentId: string
+  universityId: string
+  status: string
+  createdAt?: string
+}
+
+export async function getInterests(params?: PaginationParams & { status?: string }): Promise<PaginatedResponse<AdminInterest>> {
+  const { data } = await api.get<PaginatedResponse<AdminInterest>>('/admin/interests', { params })
+  return data
+}
+
+export async function updateInterestStatus(interestId: string, status: string): Promise<void> {
+  await api.patch(`/admin/interests/${interestId}/status`, { status })
+}
+
+export interface AdminChat {
+  id: string
+  studentId: string
+  universityId: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export async function getChats(params?: PaginationParams): Promise<PaginatedResponse<AdminChat>> {
+  const { data } = await api.get<PaginatedResponse<AdminChat>>('/admin/chats', { params })
+  return data
+}
+
+export interface AdminChatMessage {
+  id: string
+  chatId: string
+  senderId: string
+  type: string
+  message: string
+  createdAt: string
+}
+
+export async function getChatMessages(chatId: string, params?: { limit?: number }) {
+  const { data } = await api.get<{ chat: AdminChat; messages: AdminChatMessage[] }>(`/admin/chats/${chatId}/messages`, { params })
+  return data
 }
 
 export async function getVerificationQueue(): Promise<VerificationItem[]> {

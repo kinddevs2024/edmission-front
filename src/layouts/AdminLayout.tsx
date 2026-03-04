@@ -10,6 +10,9 @@ const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
   { to: '/admin/users', label: 'Users', icon: 'Users' },
   { to: '/admin/verification', label: 'Verification', icon: 'ShieldCheck' },
+  { to: '/admin/offers', label: 'Offers', icon: 'Gift' },
+  { to: '/admin/interests', label: 'Interests', icon: 'Heart' },
+  { to: '/admin/chats', label: 'Chats', icon: 'MessageCircle' },
   { to: '/admin/scholarships', label: 'Scholarships', icon: 'Wallet' },
   { to: '/admin/support', label: 'Support', icon: 'HelpCircle' },
   { to: '/admin/logs', label: 'Logs', icon: 'Logs' },
@@ -19,6 +22,7 @@ const navItems = [
 const bottomNavItems = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
   { to: '/admin/users', label: 'Users', icon: 'Users' },
+  { to: '/admin/offers', label: 'Offers', icon: 'Gift' },
   { to: '/admin/verification', label: 'Verify', icon: 'ShieldCheck' },
   { to: '/admin/logs', label: 'Logs', icon: 'Logs' },
 ]
