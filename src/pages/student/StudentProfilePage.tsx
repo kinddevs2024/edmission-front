@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Card, CardTitle } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { FileUpload } from '@/components/ui/FileUpload'
@@ -13,7 +13,7 @@ import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -78,7 +78,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'experience' | 'works'
+type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works'
 
 const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
@@ -86,6 +86,7 @@ const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User }[] = [
   { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
   { id: 'about', titleKey: 'stepAbout', icon: FileText },
   { id: 'skills', titleKey: 'stepSkills', icon: Sparkles },
+  { id: 'faculties', titleKey: 'stepFaculties', icon: BookOpen },
   { id: 'experience', titleKey: 'stepExperience', icon: Briefcase },
   { id: 'works', titleKey: 'stepWorks', icon: FolderOpen },
 ]
@@ -110,9 +111,8 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
         (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') || Number.isFinite(profile.gpa),
         (Array.isArray(profile.languages) && profile.languages.length > 0) || (profile.languageLevel != null && String(profile.languageLevel).trim() !== ''),
         (profile.schoolName != null && String(profile.schoolName).trim() !== '') || (Array.isArray(profile.schoolsAttended) && profile.schoolsAttended.length > 0),
-        Array.isArray(profile.interestedFaculties) && profile.interestedFaculties.length > 0,
       ]
-      return Math.round((checks.filter(Boolean).length / 6) * 100)
+      return Math.round((checks.filter(Boolean).length / 5) * 100)
     }
     case 'about': {
       const bio = profile.bio != null && String(profile.bio).trim() !== ''
@@ -126,6 +126,10 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
         Array.isArray(profile.hobbies) && profile.hobbies.length > 0,
       ].filter(Boolean).length
       return Math.round((n / 3) * 100)
+    }
+    case 'faculties': {
+      const count = Array.isArray(profile.interestedFaculties) ? profile.interestedFaculties.length : 0
+      return Math.min(100, Math.round((count / 10) * 100))
     }
     case 'experience':
       return Array.isArray(profile.experiences) && profile.experiences.length > 0 ? 100 : 0
@@ -200,6 +204,7 @@ export function StudentProfilePage() {
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
+  const [expandedSkillsBlock, setExpandedSkillsBlock] = useState<'skills' | 'interests' | 'hobbies'>('skills')
 
   const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -228,6 +233,10 @@ export function StudentProfilePage() {
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
   }, [])
+
+  useEffect(() => {
+    if (openSection === 'skills') setExpandedSkillsBlock('skills')
+  }, [openSection])
 
   useEffect(() => {
     getStudentProfile()
@@ -735,84 +744,110 @@ export function StudentProfilePage() {
               {!criteria ? (
                 <p className="text-[var(--color-text-muted)]">Loading options…</p>
               ) : (
-                <>
-                  <CardTitle className="mb-2">{t('skillsPlaceholder')}</CardTitle>
-                  <ChipSelect
-                    options={criteria.skills}
-                    value={watch('skills') ?? []}
-                    onChange={(v) => setValue('skills', v, { shouldDirty: true })}
-                    max={50}
-                    placeholder={t('skillsPlaceholder')}
-                    className="mb-6"
-                  />
-                  <CardTitle className="mb-2">Interests</CardTitle>
-                  <ChipSelect
-                    options={criteria.interests}
-                    value={watch('interests') ?? []}
-                    onChange={(v) => setValue('interests', v, { shouldDirty: true })}
-                    max={30}
-                    placeholder="Select your interests (e.g. IT, books, travel)"
-                    className="mb-6"
-                  />
-                  <CardTitle className="mb-2">Hobbies & activities</CardTitle>
-                  <ChipSelect
-                    options={criteria.hobbies}
-                    value={watch('hobbies') ?? []}
-                    onChange={(v) => setValue('hobbies', v, { shouldDirty: true })}
-                    max={30}
-                    placeholder="Select hobbies and activities"
-                  />
-                  <div className="mt-6">
-                    <CardTitle className="mb-2">{t('student:interestedFaculties', 'Interested faculties')}</CardTitle>
-                    <p className="text-xs text-[var(--color-text-muted)] mb-3">
-                      {t('student:interestedFacultiesHint', 'Choose faculties you are interested in. You can open each faculty to see what it includes.')}
-                    </p>
-                    <div className="space-y-2">
-                      {FIELD_OF_STUDY.map((cat) => {
-                        const selected = (watch('interestedFaculties') ?? []).includes(cat.id)
-                        const open = openFacultyId === cat.id
-                        return (
-                          <div key={cat.id} className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)]">
-                            <div className="flex items-center justify-between gap-3 px-3 py-2">
-                              <label className="flex items-center gap-2 min-w-0">
-                                <input
-                                  type="checkbox"
-                                  checked={selected}
-                                  onChange={(e) => {
-                                    const current = watch('interestedFaculties') ?? []
-                                    const next = e.target.checked
-                                      ? Array.from(new Set([...current, cat.id])).slice(0, 10)
-                                      : current.filter((x) => x !== cat.id)
-                                    setValue('interestedFaculties', next, { shouldDirty: true })
-                                  }}
-                                />
-                        <span className="text-sm font-medium truncate">{t(cat.titleKey)}</span>
-                              </label>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setOpenFacultyId(open ? null : cat.id)}
-                              >
-                                {open ? t('common:hide', 'Hide') : t('common:view', 'View')}
-                              </Button>
-                            </div>
-                            {open && (
-                              <div className="px-3 pb-3">
-                                <ul className="text-sm text-[var(--color-text-muted)] list-disc list-inside space-y-0.5">
-                                  {cat.items.map((it) => (
-                                    <li key={it}>{it}</li>
-                                  ))}
-                                </ul>
-                              </div>
+                <div className="space-y-2">
+                  {(['skills', 'interests', 'hobbies'] as const).map((block) => {
+                    const isOpen = expandedSkillsBlock === block
+                    const label = block === 'skills' ? t('skillsPlaceholder') : block === 'interests' ? t('student:interestsBlock', 'Interests') : t('student:hobbiesBlock', 'Hobbies & activities')
+                    return (
+                      <div key={block} className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedSkillsBlock(block)}
+                          className="w-full flex items-center justify-between gap-2 px-3 py-3 text-left text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-bg)] transition-colors"
+                        >
+                          <span>{label}</span>
+                          {isOpen ? <ChevronDown className="w-4 h-4 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+                        </button>
+                        {isOpen && (
+                          <div className="px-3 pb-3 pt-0 border-t border-[var(--color-border)]">
+                            {block === 'skills' && (
+                              <ChipSelect
+                                options={criteria.skills}
+                                value={watch('skills') ?? []}
+                                onChange={(v) => setValue('skills', v, { shouldDirty: true })}
+                                max={50}
+                                placeholder={t('skillsPlaceholder')}
+                                className="mt-3"
+                              />
+                            )}
+                            {block === 'interests' && (
+                              <ChipSelect
+                                options={criteria.interests}
+                                value={watch('interests') ?? []}
+                                onChange={(v) => setValue('interests', v, { shouldDirty: true })}
+                                max={30}
+                                placeholder={t('student:interestsPlaceholder', 'Select interests (e.g. IT, books, travel)')}
+                                className="mt-3"
+                              />
+                            )}
+                            {block === 'hobbies' && (
+                              <ChipSelect
+                                options={criteria.hobbies}
+                                value={watch('hobbies') ?? []}
+                                onChange={(v) => setValue('hobbies', v, { shouldDirty: true })}
+                                max={30}
+                                placeholder={t('student:hobbiesPlaceholder', 'Select hobbies and activities')}
+                                className="mt-3"
+                              />
                             )}
                           </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               )}
+            </>
+          )}
+
+          {openSection === 'faculties' && (
+            <>
+              <p className="text-xs text-[var(--color-text-muted)] mb-3">
+                {t('student:interestedFacultiesHint', 'Choose faculties you are interested in. You can open each faculty to see what it includes.')}
+              </p>
+              <div className="space-y-2">
+                {FIELD_OF_STUDY.map((cat) => {
+                  const selected = (watch('interestedFaculties') ?? []).includes(cat.id)
+                  const open = openFacultyId === cat.id
+                  return (
+                    <div key={cat.id} className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)]">
+                      <div className="flex items-center justify-between gap-3 px-3 py-2">
+                        <label className="flex items-center gap-2 min-w-0 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const current = watch('interestedFaculties') ?? []
+                              const next = e.target.checked
+                                ? Array.from(new Set([...current, cat.id])).slice(0, 10)
+                                : current.filter((x) => x !== cat.id)
+                              setValue('interestedFaculties', next, { shouldDirty: true })
+                            }}
+                          />
+                          <span className="text-sm font-medium truncate">{t(cat.titleKey)}</span>
+                        </label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setOpenFacultyId(open ? null : cat.id)}
+                        >
+                          {open ? t('common:hide', 'Hide') : t('common:view', 'View')}
+                        </Button>
+                      </div>
+                      {open && (
+                        <div className="px-3 pb-3">
+                          <ul className="text-sm text-[var(--color-text-muted)] list-disc list-inside space-y-0.5">
+                            {cat.items.map((it) => (
+                              <li key={it}>{it}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </>
           )}
 
