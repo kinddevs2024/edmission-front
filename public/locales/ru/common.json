@@ -55,6 +55,7 @@
   "backendError": "Сервер недоступен",
   "aiChatTitle": "Edmission AI",
   "aiPoweredByDeepSeek": "На базе DeepSeek · Ассистент подключён",
+  "aiPoweredByChatGPT": "На базе ChatGPT · Ассистент подключён",
   "aiAssistantUnavailable": "Ассистент временно недоступен",
   "aiSuggestedIntro": "Спросите об университетах, заявках или стипендиях.",
   "aiSuggestedLabel": "Примеры вопросов:",

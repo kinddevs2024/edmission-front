@@ -160,7 +160,13 @@ export function AIChatPage() {
           <PageTitle title={t('aiChatTitle')} icon="Bot" />
         </div>
         <p className="text-xs text-[var(--color-text-muted)] pl-11">
-          {aiStatus?.ok ? t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected') : aiStatus ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable') : null}
+          {aiStatus?.ok
+            ? (aiStatus.model?.toLowerCase().includes('gpt')
+              ? t('aiPoweredByChatGPT', 'Powered by ChatGPT · Assistant connected')
+              : t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected'))
+            : aiStatus
+              ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable')
+              : null}
         </p>
       </div>
 

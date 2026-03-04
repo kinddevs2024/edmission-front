@@ -178,7 +178,13 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               <h2 className="font-semibold text-lg truncate">{t('aiChatTitle')}</h2>
             </div>
             <p className="text-xs text-[var(--color-text-muted)]">
-              {aiStatus?.ok ? t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected') : aiStatus ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable') : null}
+              {aiStatus?.ok
+                ? (aiStatus.model?.toLowerCase().includes('gpt')
+                  ? t('aiPoweredByChatGPT', 'Powered by ChatGPT · Assistant connected')
+                  : t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected'))
+                : aiStatus
+                  ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable')
+                  : null}
             </p>
           </div>
           <div className="flex items-center gap-1 shrink-0">

@@ -55,6 +55,7 @@
   "backendError": "Backend unavailable",
   "aiChatTitle": "Edmission AI",
   "aiPoweredByDeepSeek": "Powered by DeepSeek · Assistant connected",
+  "aiPoweredByChatGPT": "Powered by ChatGPT · Assistant connected",
   "aiAssistantUnavailable": "Assistant temporarily unavailable",
   "aiSuggestedIntro": "Ask me about universities, applications, or scholarships.",
   "aiSuggestedLabel": "Suggested questions:",
