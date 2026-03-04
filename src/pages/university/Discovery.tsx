@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { MessageCircle, User, SlidersHorizontal } from 'lucide-react'
 import { getStudents, type DiscoverStudentItem } from '@/services/university'
+import { getStudentAvatarUrl } from '@/services/upload'
 import { getProfileCriteria } from '@/services/options'
 
 const COUNTRY_OPTIONS = [
@@ -238,11 +239,9 @@ export function Discovery() {
                   <Card key={item.id} className="flex flex-col">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-3 min-w-0">
-                        {st?.avatarUrl && (
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)] flex-shrink-0">
-                            <img src={st.avatarUrl} alt="" className="w-full h-full object-cover" />
+                        <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]">
+                            <img src={getStudentAvatarUrl(st?.avatarUrl)} alt="" className="w-full h-full object-cover" />
                           </div>
-                        )}
                         <div className="min-w-0">
                           <CardTitle className="truncate">{name}</CardTitle>
                           {(st?.country || st?.city) && (

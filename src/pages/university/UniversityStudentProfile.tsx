@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getStudentProfile, type FullStudentProfile } from '@/services/university'
 import { getApiError } from '@/services/api'
-import { getImageUrl } from '@/services/upload'
+import { getStudentAvatarUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
 import { ArrowLeft, MessageCircle, FileText, ExternalLink } from 'lucide-react'
 
@@ -95,11 +95,9 @@ export function UniversityStudentProfile() {
           </div>
         </Card>
       )}
-      {profile.avatarUrl && (
-        <div className="flex justify-center sm:justify-start">
-          <img src={getImageUrl(profile.avatarUrl)} alt="" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
-        </div>
-      )}
+      <div className="flex justify-center sm:justify-start">
+        <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
+      </div>
 
       <Card>
         <CardTitle>Personal</CardTitle>

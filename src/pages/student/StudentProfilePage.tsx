@@ -12,9 +12,11 @@ import { getStudentProfile, updateStudentProfile, type StudentProfileData, type 
 import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
-import { Plus, Trash2 } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { getStudentAvatarUrl } from '@/services/upload'
 
 const schema = z.object({
   firstName: z.string().optional(),
@@ -30,18 +32,18 @@ const schema = z.object({
   }, z.number().min(0).max(4).optional()),
   languageLevel: z.string().optional(),
   languages: z.array(z.object({ language: z.string(), level: z.string() })).optional(),
-  educationStatus: z.enum(['in_school', 'finished_school', 'in_university', 'finished_university']).optional(),
+  educationStatus: z.preprocess((v) => (v === '' ? undefined : v), z.enum(['in_school', 'finished_school', 'in_university', 'finished_university']).optional()),
   schoolCompleted: z.boolean().optional(),
   schoolName: z.string().optional(),
   graduationYear: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(1950).max(2030).optional()),
   gradingScheme: z.string().optional(),
   gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
   highestEducationLevel: z.string().optional(),
-  targetDegreeLevel: z.enum(['bachelor', 'master', 'phd']).optional(),
+  targetDegreeLevel: z.preprocess((v) => (v === '' ? undefined : v), z.enum(['bachelor', 'master', 'phd']).optional()),
   schoolsAttended: z.array(z.object({
     country: z.string().optional(),
     institutionName: z.string().optional(),
-    institutionType: z.enum(['school', 'university']).optional(),
+    institutionType: z.preprocess((v) => (v === '' ? undefined : v), z.enum(['school', 'university']).optional()),
     educationLevel: z.string().optional(),
     gradingScheme: z.string().optional(),
     gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
@@ -77,6 +79,64 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const STEP_KEYS = ['stepPersonal', 'stepLocation', 'stepEducation', 'stepAbout', 'stepSkills', 'stepExperience', 'stepWorks'] as const
+
+type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'experience' | 'works'
+
+const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User }[] = [
+  { id: 'personal', titleKey: 'stepPersonal', icon: User },
+  { id: 'location', titleKey: 'stepLocation', icon: MapPin },
+  { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
+  { id: 'about', titleKey: 'stepAbout', icon: FileText },
+  { id: 'skills', titleKey: 'stepSkills', icon: Sparkles },
+  { id: 'experience', titleKey: 'stepExperience', icon: Briefcase },
+  { id: 'works', titleKey: 'stepWorks', icon: FolderOpen },
+]
+
+function getSectionPercent(profile: StudentProfileData | null, sectionId: SectionId): number {
+  if (!profile) return 0
+  switch (sectionId) {
+    case 'personal': {
+      const n = [profile.firstName, profile.lastName, profile.birthDate].filter((v) => v != null && String(v).trim() !== '').length
+      return Math.round((n / 3) * 100)
+    }
+    case 'location': {
+      const hasCountry = profile.country != null && String(profile.country).trim() !== ''
+      const hasCity = profile.city != null && String(profile.city).trim() !== ''
+      const hasPreferred = Array.isArray(profile.preferredCountries) && profile.preferredCountries.length > 0
+      return Math.round(([hasCountry, hasCity, hasPreferred].filter(Boolean).length / 3) * 100)
+    }
+    case 'education': {
+      const checks = [
+        profile.educationStatus,
+        profile.targetDegreeLevel,
+        (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') || Number.isFinite(profile.gpa),
+        (Array.isArray(profile.languages) && profile.languages.length > 0) || (profile.languageLevel != null && String(profile.languageLevel).trim() !== ''),
+        (profile.schoolName != null && String(profile.schoolName).trim() !== '') || (Array.isArray(profile.schoolsAttended) && profile.schoolsAttended.length > 0),
+        Array.isArray(profile.interestedFaculties) && profile.interestedFaculties.length > 0,
+      ]
+      return Math.round((checks.filter(Boolean).length / 6) * 100)
+    }
+    case 'about': {
+      const bio = profile.bio != null && String(profile.bio).trim() !== ''
+      const avatar = profile.avatarUrl != null && String(profile.avatarUrl).trim() !== ''
+      return Math.round(([bio, avatar].filter(Boolean).length / 2) * 100)
+    }
+    case 'skills': {
+      const n = [
+        Array.isArray(profile.skills) && profile.skills.length > 0,
+        Array.isArray(profile.interests) && profile.interests.length > 0,
+        Array.isArray(profile.hobbies) && profile.hobbies.length > 0,
+      ].filter(Boolean).length
+      return Math.round((n / 3) * 100)
+    }
+    case 'experience':
+      return Array.isArray(profile.experiences) && profile.experiences.length > 0 ? 100 : 0
+    case 'works':
+      return Array.isArray(profile.portfolioWorks) && profile.portfolioWorks.length > 0 ? 100 : 0
+    default:
+      return 0
+  }
+}
 
 const LANGUAGE_OPTIONS = [
   { value: 'English', label: 'English' },
@@ -136,14 +196,14 @@ export function StudentProfilePage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [profile, setProfile] = useState<StudentProfileData | null>(null)
-  const [step, setStep] = useState(1)
+  const [openSection, setOpenSection] = useState<SectionId | null>(null)
   const [criteria, setCriteria] = useState<{ skills: string[]; interests: string[]; hobbies: string[] } | null>(null)
   const [newLanguage, setNewLanguage] = useState(LANGUAGE_OPTIONS[0].value)
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
 
-  const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       skills: [],
@@ -166,11 +226,6 @@ export function StudentProfilePage() {
 
   const avatarUrl = watch('avatarUrl')
   const educationStatus = watch('educationStatus')
-
-  const STEPS = STEP_KEYS.map((key, i) => ({
-    id: i + 1,
-    title: t(key),
-  }))
 
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
@@ -241,64 +296,67 @@ export function StudentProfilePage() {
       .finally(() => setLoading(false))
   }, [reset, t])
 
+  function buildPayload(data: FormData) {
+    return {
+      firstName: data.firstName || undefined,
+      lastName: data.lastName || undefined,
+      birthDate: data.birthDate || undefined,
+      country: data.country || undefined,
+      city: data.city || undefined,
+      gradeLevel: data.gradeLevel || undefined,
+      gpa: Number.isFinite(data.gpa) ? data.gpa : undefined,
+      languageLevel: data.languageLevel || undefined,
+      languages: data.languages ?? [],
+      educationStatus: data.educationStatus || undefined,
+      schoolCompleted: data.schoolCompleted,
+      schoolName: data.schoolName || undefined,
+      graduationYear: data.graduationYear != null ? data.graduationYear : undefined,
+      gradingScheme: data.gradingScheme || undefined,
+      gradeScale: data.gradeScale != null ? data.gradeScale : undefined,
+      highestEducationLevel: data.highestEducationLevel || undefined,
+      targetDegreeLevel: data.targetDegreeLevel || undefined,
+      schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
+        country: s.country || undefined,
+        institutionType: s.institutionType || undefined,
+        institutionName: s.institutionName || undefined,
+        educationLevel: s.educationLevel || undefined,
+        gradingScheme: s.gradingScheme || undefined,
+        gradeScale: s.gradeScale != null ? s.gradeScale : undefined,
+        gradeAverage: s.gradeAverage != null ? s.gradeAverage : undefined,
+        primaryLanguage: s.primaryLanguage || undefined,
+        attendedFrom: s.attendedFrom || undefined,
+        attendedTo: s.attendedTo || undefined,
+        degreeName: s.degreeName || undefined,
+      })),
+      bio: data.bio || undefined,
+      avatarUrl: data.avatarUrl || undefined,
+      skills: data.skills ?? [],
+      interests: data.interests ?? [],
+      hobbies: data.hobbies ?? [],
+      experiences: (data.experiences ?? []).map((e) => ({
+        type: e.type,
+        title: e.title || undefined,
+        organization: e.organization || undefined,
+        startDate: e.startDate || undefined,
+        endDate: e.endDate || undefined,
+        description: e.description || undefined,
+      })),
+      portfolioWorks: (data.portfolioWorks ?? []).map((w) => ({
+        title: w.title || undefined,
+        description: w.description || undefined,
+        fileUrl: w.fileUrl || undefined,
+        linkUrl: w.linkUrl || undefined,
+      })),
+      interestedFaculties: data.interestedFaculties ?? [],
+      preferredCountries: data.preferredCountries ?? [],
+    }
+  }
+
   const onSubmit = async (data: FormData) => {
     setError('')
     setSaving(true)
     try {
-      const payload = {
-        firstName: data.firstName || undefined,
-        lastName: data.lastName || undefined,
-        birthDate: data.birthDate || undefined,
-        country: data.country || undefined,
-        city: data.city || undefined,
-        gradeLevel: data.gradeLevel || undefined,
-        gpa: Number.isFinite(data.gpa) ? data.gpa : undefined,
-        languageLevel: data.languageLevel || undefined,
-        languages: data.languages ?? [],
-        educationStatus: data.educationStatus || undefined,
-        schoolCompleted: data.schoolCompleted,
-        schoolName: data.schoolName || undefined,
-        graduationYear: data.graduationYear != null ? data.graduationYear : undefined,
-        gradingScheme: data.gradingScheme || undefined,
-        gradeScale: data.gradeScale != null ? data.gradeScale : undefined,
-        highestEducationLevel: data.highestEducationLevel || undefined,
-        targetDegreeLevel: data.targetDegreeLevel || undefined,
-        schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
-          country: s.country || undefined,
-          institutionType: s.institutionType || undefined,
-          institutionName: s.institutionName || undefined,
-          educationLevel: s.educationLevel || undefined,
-          gradingScheme: s.gradingScheme || undefined,
-          gradeScale: s.gradeScale != null ? s.gradeScale : undefined,
-          gradeAverage: s.gradeAverage != null ? s.gradeAverage : undefined,
-          primaryLanguage: s.primaryLanguage || undefined,
-          attendedFrom: s.attendedFrom || undefined,
-          attendedTo: s.attendedTo || undefined,
-          degreeName: s.degreeName || undefined,
-        })),
-        bio: data.bio || undefined,
-        avatarUrl: data.avatarUrl || undefined,
-        skills: data.skills ?? [],
-        interests: data.interests ?? [],
-        hobbies: data.hobbies ?? [],
-        experiences: (data.experiences ?? []).map((e) => ({
-          type: e.type,
-          title: e.title || undefined,
-          organization: e.organization || undefined,
-          startDate: e.startDate || undefined,
-          endDate: e.endDate || undefined,
-          description: e.description || undefined,
-        })),
-        portfolioWorks: (data.portfolioWorks ?? []).map((w) => ({
-          title: w.title || undefined,
-          description: w.description || undefined,
-          fileUrl: w.fileUrl || undefined,
-          linkUrl: w.linkUrl || undefined,
-        })),
-        interestedFaculties: data.interestedFaculties ?? [],
-        preferredCountries: data.preferredCountries ?? [],
-      }
-      const updated = await updateStudentProfile(payload)
+      const updated = await updateStudentProfile(buildPayload(data))
       setProfile(updated)
     } catch (e) {
       setError(getApiError(e).message)
@@ -307,9 +365,20 @@ export function StudentProfilePage() {
     }
   }
 
-  const currentStepInfo = STEPS[step - 1]
-  const isFirstStep = step === 1
-  const isLastStep = step === STEPS.length
+  const handleModalSave = async () => {
+    setError('')
+    setSaving(true)
+    try {
+      const data = getValues()
+      const updated = await updateStudentProfile(buildPayload(data))
+      setProfile(updated)
+      setOpenSection(null)
+    } catch (e) {
+      setError(getApiError(e).message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const verified = user?.studentProfile?.verifiedAt
 
@@ -322,14 +391,21 @@ export function StudentProfilePage() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
-        {verified && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400" title={t('common:verified')}>
-            <span aria-hidden>✓</span> {t('common:verified')}
-          </span>
-        )}
+    <div className="p-4 max-w-3xl mx-auto space-y-6">
+      <div className="flex flex-wrap items-center gap-4">
+        <img
+          src={getStudentAvatarUrl(profile?.avatarUrl)}
+          alt=""
+          className="w-16 h-16 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
+        />
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
+          {verified && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400 mt-1" title={t('common:verified')}>
+              <span aria-hidden>✓</span> {t('common:verified')}
+            </span>
+          )}
+        </div>
       </div>
       <p className="text-sm text-[var(--color-text-muted)]">
         {t('portfolioIntro')}
@@ -352,29 +428,67 @@ export function StudentProfilePage() {
         </div>
       </Card>
 
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {STEPS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => setStep(s.id)}
-            className={cn(
-              'px-3 py-1.5 rounded-input text-sm font-medium whitespace-nowrap transition-colors',
-              step === s.id ? 'bg-[var(--color-primary-accent)] text-[var(--color-primary-dark)]' : 'bg-[var(--color-border)] text-[var(--color-text)]'
-            )}
-          >
-            {s.id}. {s.title}
-          </button>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {SECTIONS.map((sec) => {
+          const pct = getSectionPercent(profile, sec.id)
+          const Icon = sec.icon
+          return (
+            <button
+              key={sec.id}
+              type="button"
+              onClick={() => setOpenSection(sec.id)}
+              className={cn(
+                'flex flex-col items-center gap-3 p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] transition-colors text-center'
+              )}
+            >
+              <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-[var(--color-border)] overflow-hidden">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-[var(--color-border)]"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    fill="none"
+                    d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                  />
+                  <path
+                    className="text-[var(--color-primary-accent)] transition-all duration-500"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    fill="none"
+                    strokeDasharray={`${(pct / 100) * 97.4}, 97.4`}
+                    d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                  />
+                </svg>
+                <span className="relative text-sm font-semibold text-[var(--color-text)]">{pct}%</span>
+              </div>
+              <div className="flex items-center gap-2 text-[var(--color-text)]">
+                <Icon className="w-4 h-4 flex-shrink-0 text-[var(--color-text-muted)]" />
+                <span className="text-sm font-medium truncate">{t(sec.titleKey)}</span>
+              </div>
+            </button>
+          )
+        })}
       </div>
 
-      <Card className="p-6">
-        <CardTitle className="mb-4">{currentStepInfo.title}</CardTitle>
-        <form onSubmit={handleSubmit(onSubmit, (validationErrors) => {
-          const msg = Object.entries(validationErrors).map(([k, v]) => (v as { message?: string })?.message ?? k).filter(Boolean).join('. ')
-          setError(msg || 'Please fix the form errors below.')
-        })} className="space-y-4">
-          {step === 1 && (
+      {error && <p className="text-sm text-red-500">{error}</p>}
+
+      <Modal
+        open={!!openSection}
+        onClose={() => setOpenSection(null)}
+        title={openSection ? t(SECTIONS.find((s) => s.id === openSection)!.titleKey) : ''}
+        footer={openSection ? (
+          <>
+            <Button type="button" variant="secondary" onClick={() => setOpenSection(null)}>
+              {t('common:cancel', 'Cancel')}
+            </Button>
+            <Button type="button" onClick={handleModalSave} disabled={saving} loading={saving}>
+              {t('common:save')}
+            </Button>
+          </>
+        ) : undefined}
+      >
+        <div className="space-y-4">
+          {openSection === 'personal' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label={t('firstName')} error={errors.firstName?.message} {...register('firstName')} />
@@ -384,7 +498,7 @@ export function StudentProfilePage() {
             </>
           )}
 
-          {step === 2 && (
+          {openSection === 'location' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label={t('country')} error={errors.country?.message} {...register('country')} placeholder={t('country')} />
@@ -416,7 +530,7 @@ export function StudentProfilePage() {
             </>
           )}
 
-          {step === 3 && (
+          {openSection === 'education' && (
             <>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('educationStatusLabel')}</label>
@@ -611,7 +725,7 @@ export function StudentProfilePage() {
             </>
           )}
 
-          {step === 4 && (
+          {openSection === 'about' && (
             <>
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('bio')}</label>
@@ -631,7 +745,7 @@ export function StudentProfilePage() {
             </>
           )}
 
-          {step === 5 && (
+          {openSection === 'skills' && (
             <>
               {!criteria ? (
                 <p className="text-[var(--color-text-muted)]">Loading options…</p>
@@ -717,7 +831,7 @@ export function StudentProfilePage() {
             </>
           )}
 
-          {step === 6 && (
+          {openSection === 'experience' && (
             <>
               <div className="space-y-4">
                 {experienceFields.map((field, i) => (
@@ -752,7 +866,7 @@ export function StudentProfilePage() {
             </>
           )}
 
-          {step === 7 && (
+          {openSection === 'works' && (
             <>
               <div className="space-y-4">
                 {workFields.map((field, i) => (
@@ -783,26 +897,8 @@ export function StudentProfilePage() {
               </div>
             </>
           )}
-
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div className="flex gap-2 pt-2">
-            {!isFirstStep && (
-              <Button type="button" variant="secondary" onClick={() => setStep((s) => s - 1)}>
-                {t('common:back')}
-              </Button>
-            )}
-            <Button type="submit" disabled={saving} loading={saving}>
-              {t('common:save')}
-            </Button>
-            {!isLastStep && (
-              <Button type="button" variant="secondary" onClick={() => setStep((s) => s + 1)}>
-                {t('common:next')}
-              </Button>
-            )}
-          </div>
-        </form>
-      </Card>
+        </div>
+      </Modal>
     </div>
   )
 }
