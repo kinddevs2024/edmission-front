@@ -54,6 +54,8 @@
   "backendOk": "Server: OK",
   "backendError": "Server mavjud emas",
   "aiChatTitle": "Edmission AI",
+  "aiPoweredByDeepSeek": "DeepSeek asosida · Yordamchi ulangan",
+  "aiAssistantUnavailable": "Yordamchi vaqtincha mavjud emas",
   "aiSuggestedIntro": "Universitetlar, arizalar yoki stipendiyalar haqida so'rang.",
   "aiSuggestedLabel": "Savol namunalari:",
   "aiPlaceholder": "Savolingizni yozing...",

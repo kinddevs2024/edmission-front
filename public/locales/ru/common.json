@@ -54,6 +54,8 @@
   "backendOk": "Сервер: OK",
   "backendError": "Сервер недоступен",
   "aiChatTitle": "Edmission AI",
+  "aiPoweredByDeepSeek": "На базе DeepSeek · Ассистент подключён",
+  "aiAssistantUnavailable": "Ассистент временно недоступен",
   "aiSuggestedIntro": "Спросите об университетах, заявках или стипендиях.",
   "aiSuggestedLabel": "Примеры вопросов:",
   "aiPlaceholder": "Введите вопрос...",

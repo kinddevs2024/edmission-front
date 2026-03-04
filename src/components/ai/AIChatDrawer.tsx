@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Send, Maximize2, Bot, User } from 'lucide-react'
-import { sendAIChat } from '@/services/ai'
+import { sendAIChat, getAIStatus, type AIStatus } from '@/services/ai'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 
@@ -33,8 +33,17 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
   const [selectionAsk, setSelectionAsk] = useState<{ text: string; messageId: string } | null>(null)
+  const [aiStatus, setAIStatus] = useState<AIStatus | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      getAIStatus()
+        .then(setAIStatus)
+        .catch(() => setAIStatus({ ok: false, model: '' }))
+    }
+  }, [open])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -163,9 +172,14 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         aria-label={t('openAIChat')}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <Bot className="w-5 h-5 text-primary-accent shrink-0" aria-hidden />
-            <h2 className="font-semibold text-lg truncate">{t('aiChatTitle')}</h2>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-primary-accent shrink-0" aria-hidden />
+              <h2 className="font-semibold text-lg truncate">{t('aiChatTitle')}</h2>
+            </div>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {aiStatus?.ok ? t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected') : aiStatus ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable') : null}
+            </p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Link

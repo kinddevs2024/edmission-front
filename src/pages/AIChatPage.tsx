@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Send, Bot, User, ArrowLeft } from 'lucide-react'
-import { sendAIChat } from '@/services/ai'
+import { sendAIChat, getAIStatus, type AIStatus } from '@/services/ai'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { cn } from '@/utils/cn'
@@ -33,7 +33,14 @@ export function AIChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
   const [selectionAsk, setSelectionAsk] = useState<{ text: string; messageId: string } | null>(null)
+  const [aiStatus, setAIStatus] = useState<AIStatus | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    getAIStatus()
+      .then(setAIStatus)
+      .catch(() => setAIStatus({ ok: false, model: '' }))
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -140,16 +147,21 @@ export function AIChatPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] min-h-[400px]">
-      <div className="flex items-center gap-3 mb-4">
-        <button
-          type="button"
-          onClick={() => navigate(backTo)}
-          className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
-          aria-label={t('back')}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <PageTitle title={t('aiChatTitle')} icon="Bot" />
+      <div className="flex flex-col gap-1 mb-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(backTo)}
+            className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
+            aria-label={t('back')}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <PageTitle title={t('aiChatTitle')} icon="Bot" />
+        </div>
+        <p className="text-xs text-[var(--color-text-muted)] pl-11">
+          {aiStatus?.ok ? t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected') : aiStatus ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable') : null}
+        </p>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
