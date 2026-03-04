@@ -13,7 +13,7 @@ import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -424,6 +424,8 @@ export function StudentProfilePage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {SECTIONS.map((sec) => {
+          const isFaculties = sec.id === 'faculties'
+          const facultiesSelected = (profile?.interestedFaculties?.length ?? 0) > 0
           const pct = getSectionPercent(profile, sec.id)
           const Icon = sec.icon
           return (
@@ -435,25 +437,51 @@ export function StudentProfilePage() {
                 'flex flex-col items-center gap-3 p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] transition-colors text-center'
               )}
             >
-              <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-[var(--color-border)] overflow-hidden">
-                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    className="text-[var(--color-border)]"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    fill="none"
-                    d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                  />
-                  <path
-                    className="text-[var(--color-primary-accent)] transition-all duration-500"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    fill="none"
-                    strokeDasharray={`${(pct / 100) * 97.4}, 97.4`}
-                    d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                  />
-                </svg>
-                <span className="relative text-sm font-semibold text-[var(--color-text)]">{pct}%</span>
+              <div className={cn(
+                'relative w-20 h-20 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)]',
+                isFaculties && facultiesSelected && 'ring-2 ring-green-500/50 !bg-green-500/10'
+              )}>
+                {isFaculties ? (
+                  <>
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
+                      <path
+                        className={facultiesSelected ? 'text-green-500' : 'text-[var(--color-border)]'}
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        fill="none"
+                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                      />
+                    </svg>
+                    <span className="relative flex items-center justify-center">
+                      {facultiesSelected ? (
+                        <Check className="w-8 h-8 text-green-600 dark:text-green-400" strokeWidth={2.5} />
+                      ) : (
+                        <Icon className="w-8 h-8 text-[var(--color-text-muted)]" />
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
+                      <path
+                        className="text-[var(--color-border)]"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        fill="none"
+                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                      />
+                      <path
+                        className="text-[var(--color-primary-accent)] transition-all duration-500"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        fill="none"
+                        strokeDasharray={`${(pct / 100) * 97.4}, 97.4`}
+                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
+                      />
+                    </svg>
+                    <span className="relative text-sm font-semibold text-[var(--color-text)]">{pct}%</span>
+                  </>
+                )}
               </div>
               <div className="flex items-center gap-2 text-[var(--color-text)]">
                 <Icon className="w-4 h-4 flex-shrink-0 text-[var(--color-text-muted)]" />
