@@ -78,8 +78,6 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const STEP_KEYS = ['stepPersonal', 'stepLocation', 'stepEducation', 'stepAbout', 'stepSkills', 'stepExperience', 'stepWorks'] as const
-
 type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'experience' | 'works'
 
 const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User }[] = [
@@ -203,7 +201,7 @@ export function StudentProfilePage() {
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
 
-  const { register, handleSubmit, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
+  const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       skills: [],
@@ -349,19 +347,6 @@ export function StudentProfilePage() {
       })),
       interestedFaculties: data.interestedFaculties ?? [],
       preferredCountries: data.preferredCountries ?? [],
-    }
-  }
-
-  const onSubmit = async (data: FormData) => {
-    setError('')
-    setSaving(true)
-    try {
-      const updated = await updateStudentProfile(buildPayload(data))
-      setProfile(updated)
-    } catch (e) {
-      setError(getApiError(e).message)
-    } finally {
-      setSaving(false)
     }
   }
 
