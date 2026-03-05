@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Edmission - Direct Admission Platform">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+
+  <g opacity="0.25" stroke="#E5E7EB" fill="none">
+    <path d="M0 140 C220 40 360 40 620 140 C880 240 1020 240 1200 130" />
+    <path d="M0 300 C240 220 420 220 620 300 C820 380 1000 380 1200 300" />
+    <path d="M0 480 C240 400 420 400 620 480 C820 560 1000 560 1200 470" />
+  </g>
+
+  <rect x="88" y="92" width="154" height="36" rx="18" fill="#84CC16" opacity="0.18" />
+  <text x="165" y="116" fill="#D9F99D" font-size="16" text-anchor="middle" font-family="Inter, Arial, sans-serif">EDMISSION</text>
+
+  <text x="88" y="232" fill="#F8FAFC" font-size="64" font-weight="700" font-family="Inter, Arial, sans-serif">
+    Direct Admission
+  </text>
+  <text x="88" y="302" fill="#F8FAFC" font-size="64" font-weight="700" font-family="Inter, Arial, sans-serif">
+    Platform
+  </text>
+
+  <text x="88" y="362" fill="#CBD5E1" font-size="30" font-family="Inter, Arial, sans-serif">
+    Connecting Students and Universities Without Intermediaries
+  </text>
+
+  <rect x="88" y="408" width="312" height="54" rx="10" fill="#84CC16" />
+  <text x="244" y="443" fill="#0F172A" font-size="24" font-weight="700" text-anchor="middle" font-family="Inter, Arial, sans-serif">
+    Transparent Matching
+  </text>
+
+  <rect x="760" y="118" width="340" height="176" rx="18" fill="#FFFFFF" opacity="0.96" />
+  <text x="790" y="156" fill="#334155" font-size="20" font-family="Inter, Arial, sans-serif">University Discovery</text>
+  <text x="790" y="190" fill="#0F172A" font-size="28" font-weight="700" font-family="Inter, Arial, sans-serif">92% Match</text>
+  <rect x="790" y="214" width="280" height="16" rx="8" fill="#E5E7EB" />
+  <rect x="790" y="214" width="258" height="16" rx="8" fill="#84CC16" />
+
+  <rect x="796" y="354" width="300" height="176" rx="18" fill="#111827" stroke="#1F2937" />
+  <text x="826" y="394" fill="#CBD5E1" font-size="20" font-family="Inter, Arial, sans-serif">AI Admission Copilot</text>
+  <text x="826" y="430" fill="#F8FAFC" font-size="18" font-family="Inter, Arial, sans-serif">
+    6 strong options match your profile.
+  </text>
+  <text x="826" y="460" fill="#F8FAFC" font-size="18" font-family="Inter, Arial, sans-serif">
+    Want a comparison table?
+  </text>
+
+  <circle cx="1140" cy="70" r="34" fill="#84CC16" />
+  <text x="1140" y="78" fill="#0F172A" text-anchor="middle" font-size="18" font-weight="700" font-family="Inter, Arial, sans-serif">
+    AI
+  </text>
+</svg>

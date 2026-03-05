@@ -1,39 +1,24 @@
 import { ArrowLeftRight, Database, GraduationCap, GitBranch } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card, CardTitle } from '@/components/ui/Card'
 
-const CAPABILITIES = [
-  {
-    title: 'Direct Connection',
-    desc: 'Students and universities communicate directly in a secure environment.',
-    icon: ArrowLeftRight,
-  },
-  {
-    title: 'Transparent Matching',
-    desc: 'Each recommendation includes explicit factor-level score breakdown.',
-    icon: Database,
-  },
-  {
-    title: 'Scholarship Allocation',
-    desc: 'Universities allocate, track, and govern scholarship slots in one workflow.',
-    icon: GraduationCap,
-  },
-  {
-    title: 'Structured Admission Pipeline',
-    desc: 'Progress flows through a clear pipeline from discovery to accepted offer.',
-    icon: GitBranch,
-  },
-]
-
 export function InfrastructureSection() {
+  const { t } = useTranslation('landing')
+  const CAPABILITIES = [
+    { title: t('infrastructure.cards.0.title'), desc: t('infrastructure.cards.0.desc'), icon: ArrowLeftRight },
+    { title: t('infrastructure.cards.1.title'), desc: t('infrastructure.cards.1.desc'), icon: Database },
+    { title: t('infrastructure.cards.2.title'), desc: t('infrastructure.cards.2.desc'), icon: GraduationCap },
+    { title: t('infrastructure.cards.3.title'), desc: t('infrastructure.cards.3.desc'), icon: GitBranch },
+  ]
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
       <Reveal>
         <SectionHeading
-          eyebrow="Platform Infrastructure"
+          eyebrow={t('infrastructure.eyebrow')}
           align="center"
-          title="A Transparent Admission Ecosystem"
+          title={t('infrastructure.title')}
         />
       </Reveal>
       <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

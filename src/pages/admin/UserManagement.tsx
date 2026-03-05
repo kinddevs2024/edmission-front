@@ -12,6 +12,24 @@ import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { ChipSelect } from '@/components/ui/ChipSelect'
+import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+
+const COUNTRY_CODE_OPTIONS = [
+  { code: 'UZ', label: 'Uzbekistan' },
+  { code: 'KZ', label: 'Kazakhstan' },
+  { code: 'TJ', label: 'Tajikistan' },
+  { code: 'KG', label: 'Kyrgyzstan' },
+  { code: 'TM', label: 'Turkmenistan' },
+  { code: 'TR', label: 'Turkey' },
+  { code: 'AE', label: 'UAE' },
+  { code: 'CN', label: 'China' },
+] as const
+
+const COUNTRY_OPTIONS = [
+  { value: '', label: 'Select country' },
+  ...COUNTRY_CODE_OPTIONS.map((c) => ({ value: c.label, label: c.label })),
+]
 
 export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
@@ -53,8 +71,8 @@ export function UserManagement() {
   const [uniCity, setUniCity] = useState('')
   const [uniDescription, setUniDescription] = useState('')
   const [uniLogoUrl, setUniLogoUrl] = useState('')
-  const [uniFacultyCodes, setUniFacultyCodes] = useState('')
-  const [uniTargetCountries, setUniTargetCountries] = useState('')
+  const [uniFacultyCodes, setUniFacultyCodes] = useState<string[]>([])
+  const [uniTargetCountries, setUniTargetCountries] = useState<string[]>([])
   const limit = 20
 
   useEffect(() => {
@@ -119,8 +137,8 @@ export function UserManagement() {
         setUniCity(p.city ?? '')
         setUniDescription(p.description ?? '')
         setUniLogoUrl(p.logoUrl ?? '')
-        setUniFacultyCodes((p.facultyCodes ?? []).join(', '))
-        setUniTargetCountries((p.targetStudentCountries ?? []).join(', '))
+        setUniFacultyCodes(p.facultyCodes ?? [])
+        setUniTargetCountries(p.targetStudentCountries ?? [])
       })
       .catch(() => {
         setEditUniError(t('common:error', 'Error'))
@@ -140,8 +158,8 @@ export function UserManagement() {
     setUniCity('')
     setUniDescription('')
     setUniLogoUrl('')
-    setUniFacultyCodes('')
-    setUniTargetCountries('')
+    setUniFacultyCodes([])
+    setUniTargetCountries([])
   }
 
   const handleUniversitySave = () => {
@@ -153,12 +171,12 @@ export function UserManagement() {
       tagline: uniTagline.trim() || undefined,
       establishedYear: uniEstablishedYear.trim() ? Number(uniEstablishedYear) : undefined,
       studentCount: uniStudentCount.trim() ? Number(uniStudentCount) : undefined,
-      country: uniCountry.trim() || undefined,
+      country: uniCountry || undefined,
       city: uniCity.trim() || undefined,
       description: uniDescription.trim() || undefined,
       logoUrl: uniLogoUrl.trim() || undefined,
-      facultyCodes: uniFacultyCodes.split(',').map((x) => x.trim()).filter(Boolean),
-      targetStudentCountries: uniTargetCountries.split(',').map((x) => x.trim()).filter(Boolean),
+      facultyCodes: uniFacultyCodes,
+      targetStudentCountries: uniTargetCountries,
     })
       .then(() => {
         closeUniversityEditor()
@@ -318,7 +336,12 @@ export function UserManagement() {
             <Input label={t('university:slogan', 'Slogan')} value={uniTagline} onChange={(e) => setUniTagline(e.target.value)} />
             <Input label={t('university:foundedYear', 'Founded year')} type="number" value={uniEstablishedYear} onChange={(e) => setUniEstablishedYear(e.target.value)} />
             <Input label={t('university:studentCount', 'Student count')} type="number" value={uniStudentCount} onChange={(e) => setUniStudentCount(e.target.value)} />
-            <Input label={t('university:country', 'Country')} value={uniCountry} onChange={(e) => setUniCountry(e.target.value)} />
+            <Select
+              label={t('university:country', 'Country')}
+              options={COUNTRY_OPTIONS}
+              value={uniCountry}
+              onChange={(e) => setUniCountry(e.target.value)}
+            />
             <Input label={t('university:city', 'City')} value={uniCity} onChange={(e) => setUniCity(e.target.value)} />
             <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} />
             <label className="block">
@@ -330,18 +353,41 @@ export function UserManagement() {
                 className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
               />
             </label>
-            <Input
-              label={t('admin:facultyCodes', 'Faculty codes (comma-separated)')}
-              value={uniFacultyCodes}
-              onChange={(e) => setUniFacultyCodes(e.target.value)}
-              placeholder="computer_science, business, medicine"
-            />
-            <Input
-              label={t('university:targetStudentCountries', 'Target student countries (comma-separated codes)')}
-              value={uniTargetCountries}
-              onChange={(e) => setUniTargetCountries(e.target.value)}
-              placeholder="UZ, KZ, TJ"
-            />
+            <div>
+              <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
+                {t('university:facultiesListTitle', 'Faculties')}
+              </p>
+              <ChipSelect
+                options={FIELD_OF_STUDY.map((f) => t(f.titleKey))}
+                value={uniFacultyCodes.map((id) => t(FIELD_OF_STUDY.find((f) => f.id === id)?.titleKey ?? id))}
+                onChange={(labels) => {
+                  const ids = labels
+                    .map((label) => FIELD_OF_STUDY.find((f) => t(f.titleKey) === label)?.id)
+                    .filter((v): v is string => Boolean(v))
+                  setUniFacultyCodes(ids)
+                }}
+                max={50}
+                placeholder={t('university:facultiesHint', 'Select faculties that exist in your university.')}
+              />
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
+                {t('university:targetStudentCountries', 'Preferred student countries')}
+              </p>
+              <ChipSelect
+                options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
+                value={uniTargetCountries.map((code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code)}
+                onChange={(labels) => {
+                  const codes = labels
+                    .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
+                    .filter((v): v is NonNullable<typeof v> => Boolean(v))
+                    .map((v) => String(v))
+                  setUniTargetCountries(codes)
+                }}
+                max={10}
+                placeholder={t('university:targetStudentCountriesPlaceholder', 'Select countries')}
+              />
+            </div>
           </div>
         )}
       </Modal>

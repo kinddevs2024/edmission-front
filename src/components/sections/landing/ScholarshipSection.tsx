@@ -1,4 +1,5 @@
 import { BadgePercent, CalendarClock, CircleDollarSign } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
@@ -10,15 +11,16 @@ const SCHOLARSHIPS = [
 ]
 
 export function ScholarshipSection() {
+  const { t } = useTranslation('landing')
   return (
     <section className="border-y border-[var(--color-border)] bg-[var(--color-card)]/45">
       <div className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
         <Reveal>
           <SectionHeading
-            eyebrow="Scholarship System"
+            eyebrow={t('scholarship.eyebrow')}
             align="center"
-            title="Scholarship Infrastructure"
-            description="Universities allocate scholarship coverage through a structured and trackable pipeline."
+            title={t('scholarship.title')}
+            description={t('scholarship.description')}
           />
         </Reveal>
         <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -35,7 +37,7 @@ export function ScholarshipSection() {
                 </div>
                 <div className="mt-4 space-y-2 text-sm text-[var(--color-text-muted)]">
                   <p className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4" aria-hidden />{item.slots}</p>
-                  <p className="flex items-center gap-2"><CalendarClock className="h-4 w-4" aria-hidden />Deadline: {item.deadline}</p>
+                  <p className="flex items-center gap-2"><CalendarClock className="h-4 w-4" aria-hidden />{t('scholarship.deadline')}: {item.deadline}</p>
                 </div>
               </Card>
             </Reveal>

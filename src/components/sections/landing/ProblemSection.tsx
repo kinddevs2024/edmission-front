@@ -1,22 +1,9 @@
 import { AlertTriangle, BadgeDollarSign, EyeOff, Filter, Layers3, SearchX } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
-const STUDENT_PAIN = [
-  { icon: BadgeDollarSign, text: 'Expensive admission agencies' },
-  { icon: EyeOff, text: 'Hidden commissions' },
-  { icon: AlertTriangle, text: 'Limited transparency' },
-  { icon: SearchX, text: 'Restricted access to universities' },
-]
-
-const UNIVERSITY_PAIN = [
-  { icon: BadgeDollarSign, text: 'High marketing costs' },
-  { icon: Filter, text: 'Low-quality leads' },
-  { icon: Layers3, text: 'No structured recruitment pipeline' },
-  { icon: SearchX, text: 'Limited student discovery' },
-]
-
-function PainCard({ title, items }: { title: string; items: typeof STUDENT_PAIN }) {
+function PainCard({ title, items }: { title: string; items: Array<{ icon: typeof AlertTriangle; text: string }> }) {
   return (
     <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-6 shadow-[var(--shadow-card)]">
       <h3 className="text-lg font-semibold text-[var(--color-text)]">{title}</h3>
@@ -35,21 +22,34 @@ function PainCard({ title, items }: { title: string; items: typeof STUDENT_PAIN 
 }
 
 export function ProblemSection() {
+  const { t } = useTranslation('landing')
+  const STUDENT_PAIN = [
+    { icon: BadgeDollarSign, text: t('problem.students.0') },
+    { icon: EyeOff, text: t('problem.students.1') },
+    { icon: AlertTriangle, text: t('problem.students.2') },
+    { icon: SearchX, text: t('problem.students.3') },
+  ]
+  const UNIVERSITY_PAIN = [
+    { icon: BadgeDollarSign, text: t('problem.universities.0') },
+    { icon: Filter, text: t('problem.universities.1') },
+    { icon: Layers3, text: t('problem.universities.2') },
+    { icon: SearchX, text: t('problem.universities.3') },
+  ]
   return (
     <section className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
       <div className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
         <Reveal>
           <SectionHeading
-            eyebrow="Problem Statement"
+            eyebrow={t('problem.eyebrow')}
             align="center"
-            title="The Admission System Is Broken"
-            description="Students and universities are both affected by opaque processes and inefficient intermediaries."
+            title={t('problem.title')}
+            description={t('problem.description')}
           />
         </Reveal>
 
         <div className="mt-10 grid gap-5 md:grid-cols-2">
-          <Reveal delay={0.05}><PainCard title="Students face" items={STUDENT_PAIN} /></Reveal>
-          <Reveal delay={0.1}><PainCard title="Universities face" items={UNIVERSITY_PAIN} /></Reveal>
+          <Reveal delay={0.05}><PainCard title={t('problem.studentsTitle')} items={STUDENT_PAIN} /></Reveal>
+          <Reveal delay={0.1}><PainCard title={t('problem.universitiesTitle')} items={UNIVERSITY_PAIN} /></Reveal>
         </div>
       </div>
     </section>

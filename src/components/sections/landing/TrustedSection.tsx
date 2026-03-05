@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
@@ -12,13 +13,14 @@ const TRUSTED_LOGOS = [
 ]
 
 export function TrustedSection() {
+  const { t } = useTranslation('landing')
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
       <Reveal>
         <SectionHeading
           eyebrow="Trust Layer"
           align="center"
-          title="Trusted by universities and students across the region"
+          title={t('trusted.title')}
         />
       </Reveal>
 

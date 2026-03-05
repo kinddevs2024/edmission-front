@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Building2, GraduationCap, Sparkles, ShieldCheck, Target } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Reveal } from './Reveal'
@@ -37,6 +38,7 @@ function FloatingPanel({
 }
 
 export function HeroSection() {
+  const { t } = useTranslation('landing')
   return (
     <section className="relative overflow-hidden border-b border-[var(--color-border)]">
       <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden>
@@ -50,20 +52,20 @@ export function HeroSection() {
       <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl gap-10 px-4 py-20 md:grid-cols-2 md:items-center md:px-6 lg:px-8">
         <Reveal>
           <p className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-            Academic Infrastructure Platform
+            {t('hero.eyebrow')}
           </p>
           <h1 className="mt-5 text-4xl font-semibold leading-tight text-[var(--color-text)] md:text-6xl">
-            Direct Admission Platform
+            {t('hero.title')}
           </h1>
           <p className="mt-4 text-lg text-[var(--color-text-muted)]">
-            Connecting Students and Universities Without Intermediaries
+            {t('hero.subtitle')}
           </p>
           <p className="mt-6 max-w-xl text-base text-[var(--color-text-muted)]">
-            Edmission is a national digital platform that enables transparent admissions between students and universities through AI-powered matching and direct communication.
+            {t('hero.description')}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button to="/register" size="lg">Explore Universities</Button>
-            <Button to="/register?role=university" variant="secondary" size="lg">Register University</Button>
+            <Button to="/register" size="lg">{t('hero.exploreBtn')}</Button>
+            <Button to="/register?role=university" variant="secondary" size="lg">{t('hero.registerUniversityBtn')}</Button>
           </div>
         </Reveal>
 
@@ -77,24 +79,24 @@ export function HeroSection() {
               <Card className="p-5" interactive tilt>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs text-[var(--color-text-muted)]">University Discovery</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.discovery')}</p>
                     <p className="mt-1 text-lg font-semibold">Global Engineering Institute</p>
                     <p className="text-sm text-[var(--color-text-muted)]">Berlin, Germany</p>
                   </div>
-                  <span className="rounded-full bg-primary-accent/15 px-3 py-1 text-sm font-semibold text-primary-accent">92% Match</span>
+                  <span className="rounded-full bg-primary-accent/15 px-3 py-1 text-sm font-semibold text-primary-accent">{t('hero.preview.match')}</span>
                 </div>
                 <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-                  <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">Students</p><p className="font-semibold">12k+</p></div>
-                  <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">Programs</p><p className="font-semibold">48</p></div>
-                  <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">Scholarship</p><p className="font-semibold">70%</p></div>
+                  <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.students')}</p><p className="font-semibold">12k+</p></div>
+                  <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.programs')}</p><p className="font-semibold">48</p></div>
+                  <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.scholarship')}</p><p className="font-semibold">70%</p></div>
                 </div>
               </Card>
             </motion.div>
 
-            <FloatingPanel className="absolute left-0 top-0 w-56" title="Student Profile" value="Portfolio completion: 84%" icon={GraduationCap} />
-            <FloatingPanel className="absolute right-0 top-8 w-52" title="Scholarship Badge" value="Merit Scholarship • 60%" icon={ShieldCheck} />
-            <FloatingPanel className="absolute left-8 bottom-8 w-52" title="Match Engine" value="Transparent breakdown" icon={Target} />
-            <FloatingPanel className="absolute right-6 bottom-2 w-56" title="University Card" value="Direct chat enabled" icon={Building2} />
+            <FloatingPanel className="absolute left-0 top-0 w-56" title={t('hero.panels.studentProfile.title')} value={t('hero.panels.studentProfile.value')} icon={GraduationCap} />
+            <FloatingPanel className="absolute right-0 top-8 w-52" title={t('hero.panels.scholarship.title')} value={t('hero.panels.scholarship.value')} icon={ShieldCheck} />
+            <FloatingPanel className="absolute left-8 bottom-8 w-52" title={t('hero.panels.match.title')} value={t('hero.panels.match.value')} icon={Target} />
+            <FloatingPanel className="absolute right-6 bottom-2 w-56" title={t('hero.panels.university.title')} value={t('hero.panels.university.value')} icon={Building2} />
           </div>
         </Reveal>
       </div>

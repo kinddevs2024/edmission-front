@@ -1,28 +1,29 @@
 import { BarChart3, Filter, GitBranch, SearchCode, Users } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
 
-const FEATURES = [
-  { icon: SearchCode, text: 'Discover students' },
-  { icon: Filter, text: 'Filter candidates' },
-  { icon: GitBranch, text: 'Manage admission pipeline' },
-  { icon: Users, text: 'Allocate scholarships' },
-  { icon: BarChart3, text: 'View analytics' },
-]
-
 export function UniversityExperienceSection() {
+  const { t } = useTranslation('landing')
+  const FEATURES = [
+    { icon: SearchCode, text: t('university.features.0') },
+    { icon: Filter, text: t('university.features.1') },
+    { icon: GitBranch, text: t('university.features.2') },
+    { icon: Users, text: t('university.features.3') },
+    { icon: BarChart3, text: t('university.features.4') },
+  ]
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
       <div className="grid gap-8 md:grid-cols-2 md:items-center">
         <Reveal>
           <Card className="p-5" interactive tilt>
-            <p className="text-sm text-[var(--color-text-muted)]">University dashboard preview</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('university.previewTitle')}</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">Interested</p><p className="text-xl font-semibold">142</p></div>
-              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">Offers sent</p><p className="text-xl font-semibold">36</p></div>
-              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">Acceptance rate</p><p className="text-xl font-semibold">28%</p></div>
-              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">Active chats</p><p className="text-xl font-semibold">51</p></div>
+              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">{t('university.metrics.interested')}</p><p className="text-xl font-semibold">142</p></div>
+              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">{t('university.metrics.offersSent')}</p><p className="text-xl font-semibold">36</p></div>
+              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">{t('university.metrics.acceptanceRate')}</p><p className="text-xl font-semibold">28%</p></div>
+              <div className="rounded-input border border-[var(--color-border)] p-3"><p className="text-xs text-[var(--color-text-muted)]">{t('university.metrics.activeChats')}</p><p className="text-xl font-semibold">51</p></div>
             </div>
             <div className="mt-3 rounded-input border border-[var(--color-border)] p-3">
               <div className="h-2 w-full rounded bg-[var(--color-border)]" />
@@ -37,9 +38,9 @@ export function UniversityExperienceSection() {
         </Reveal>
         <Reveal delay={0.08}>
           <SectionHeading
-            eyebrow="University Experience"
-            title="Built for Universities"
-            description="Operational tooling for structured student acquisition, communication, and scholarship governance."
+            eyebrow={t('university.eyebrow')}
+            title={t('university.title')}
+            description={t('university.description')}
           />
           <ul className="mt-6 space-y-3">
             {FEATURES.map((feature) => (

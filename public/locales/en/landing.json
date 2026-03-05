@@ -1,1 +1,163 @@
-{"heroSubtitle":"Direct connection platform for applicants and universities. Transparent admissions and scholarships in one place.","ctaTitle":"Join the platform","ctaText":"See how Edmission helps applicants find universities and scholarships.","ctaButton":"Get access","overviewTitle":"Platform overview","pillar1Title":"Direct connection","pillar1Desc":"Applicants and universities without middlemen or hidden commissions","pillar2Title":"Transparent matching","pillar2Desc":"Match by programs, scholarships and requirements","pillar3Title":"Scholarships","pillar3Desc":"Manage scholarships and quotas in one place","pillar4Title":"Structured admissions","pillar4Desc":"Unified pipeline for applications and offers","pillar5Title":"AI assistant","pillar5Desc":"Recommendations and tips based on your data","howItWorks":"How it works","step1Title":"Consultation","step1Body":"We discuss your admission goals and current applications.","step2Title":"Research and strategy","step2Body":"Analysis of programs and scholarships. Building admission strategy.","step3Title":"Implementation","step3Body":"Submitting applications and tracking statuses through Edmission.","step4Title":"Monitoring","step4Body":"Tracking responses and chats with admissions offices.","step5Title":"Reporting","step5Body":"Clear status for each application, notifications about offers.","step6Title":"Improvement","step6Body":"Data-driven recommendations and improved matching.","contact":"Contact","contactTitle":"Write to us: we will discuss your needs","contactThanks":"Thank you! We will get back to you soon.","nameLabel":"Name","messageLabel":"Message","sendButton":"Send"}
+{
+  "hero": {
+    "eyebrow": "Academic Infrastructure Platform",
+    "title": "Direct Admission Platform",
+    "subtitle": "Connecting Students and Universities Without Intermediaries",
+    "description": "Edmission is a national digital platform that enables transparent admissions between students and universities through AI-powered matching and direct communication.",
+    "exploreBtn": "Explore Universities",
+    "registerUniversityBtn": "Register University",
+    "preview": {
+      "discovery": "University Discovery",
+      "match": "92% Match",
+      "students": "Students",
+      "programs": "Programs",
+      "scholarship": "Scholarship"
+    },
+    "panels": {
+      "studentProfile": { "title": "Student Profile", "value": "Portfolio completion: 84%" },
+      "scholarship": { "title": "Scholarship Badge", "value": "Merit Scholarship - 60%" },
+      "match": { "title": "Match Engine", "value": "Transparent breakdown" },
+      "university": { "title": "University Card", "value": "Direct chat enabled" }
+    }
+  },
+  "trusted": {
+    "title": "Trusted by universities and students across the region"
+  },
+  "problem": {
+    "eyebrow": "Problem Statement",
+    "title": "The Admission System Is Broken",
+    "description": "Students and universities are both affected by opaque processes and inefficient intermediaries.",
+    "studentsTitle": "Students face",
+    "universitiesTitle": "Universities face",
+    "students": [
+      "Expensive admission agencies",
+      "Hidden commissions",
+      "Limited transparency",
+      "Restricted access to universities"
+    ],
+    "universities": [
+      "High marketing costs",
+      "Low-quality leads",
+      "No structured recruitment pipeline",
+      "Limited student discovery"
+    ]
+  },
+  "infrastructure": {
+    "eyebrow": "Platform Infrastructure",
+    "title": "A Transparent Admission Ecosystem",
+    "cards": [
+      { "title": "Direct Connection", "desc": "Students and universities communicate directly in a secure environment." },
+      { "title": "Transparent Matching", "desc": "Each recommendation includes explicit factor-level score breakdown." },
+      { "title": "Scholarship Allocation", "desc": "Universities allocate, track, and govern scholarship slots in one workflow." },
+      { "title": "Structured Admission Pipeline", "desc": "Progress flows through a clear pipeline from discovery to accepted offer." }
+    ]
+  },
+  "matching": {
+    "eyebrow": "AI Matching Engine",
+    "title": "Transparent Matching Technology",
+    "description": "Match score is calculated using deterministic factors and shown as a transparent breakdown for both sides.",
+    "scoreLabel": "Match score",
+    "factors": [
+      "GPA compatibility",
+      "Field of study match",
+      "Language requirements",
+      "Scholarship eligibility",
+      "Tuition compatibility",
+      "Location preference"
+    ]
+  },
+  "walkthrough": {
+    "eyebrow": "Platform Walkthrough",
+    "title": "Core workflows in one integrated experience",
+    "description": "Horizontally explore key product surfaces designed for modern admission operations.",
+    "cards": [
+      { "title": "Student dashboard", "desc": "Profile completion, recommendations, active applications." },
+      { "title": "University discovery", "desc": "Filter-ready university feed with transparent match insights." },
+      { "title": "Application tracking", "desc": "Live statuses from interested to accepted." },
+      { "title": "Offer management", "desc": "Scholarship offer flow with deadline and response controls." }
+    ]
+  },
+  "student": {
+    "eyebrow": "Student Experience",
+    "title": "Built for Students",
+    "description": "Every step is built for clarity, speed, and direct access to universities.",
+    "previewTitle": "Student dashboard preview",
+    "profileCompletion": "Profile completion",
+    "activeApplications": "Active applications",
+    "recommendedUniversities": "Recommended universities",
+    "features": [
+      "Explore universities",
+      "Receive AI recommendations",
+      "Chat with universities",
+      "Receive scholarship offers"
+    ]
+  },
+  "university": {
+    "eyebrow": "University Experience",
+    "title": "Built for Universities",
+    "description": "Operational tooling for structured student acquisition, communication, and scholarship governance.",
+    "previewTitle": "University dashboard preview",
+    "features": [
+      "Discover students",
+      "Filter candidates",
+      "Manage admission pipeline",
+      "Allocate scholarships",
+      "View analytics"
+    ],
+    "metrics": {
+      "interested": "Interested",
+      "offersSent": "Offers sent",
+      "acceptanceRate": "Acceptance rate",
+      "activeChats": "Active chats"
+    }
+  },
+  "scholarship": {
+    "eyebrow": "Scholarship System",
+    "title": "Scholarship Infrastructure",
+    "description": "Universities allocate scholarship coverage through a structured and trackable pipeline.",
+    "deadline": "Deadline"
+  },
+  "ai": {
+    "eyebrow": "AI Assistant",
+    "title": "AI Admission Guidance",
+    "description": "An embedded assistant helps students and universities make informed admission decisions with contextual insights.",
+    "features": [
+      "Personalized recommendations",
+      "Admission insights",
+      "Application guidance",
+      "Scholarship suggestions"
+    ],
+    "chatTitle": "AI Admission Copilot",
+    "chatSubtitle": "Context-aware guidance",
+    "chatQ1": "Suggest universities with scholarship potential above 60%.",
+    "chatA1": "Based on GPA, language, and budget, 6 strong options are available. Would you like a comparison table?",
+    "chatQ2": "Show top 3 with deadlines."
+  },
+  "network": {
+    "eyebrow": "Global Network",
+    "title": "A Growing Academic Network",
+    "description": "A distributed network of students and universities connected through a single transparent infrastructure layer."
+  },
+  "scale": {
+    "title": "Platform Scale",
+    "universities": "Universities",
+    "students": "Students",
+    "scholarships": "Scholarships"
+  },
+  "finalCta": {
+    "eyebrow": "Get Started",
+    "title": "Join the Future of Academic Admissions",
+    "description": "Build transparent admission workflows for students and universities on a single intelligent platform.",
+    "studentBtn": "Create Student Account",
+    "universityBtn": "Register University"
+  },
+  "footer": {
+    "brand": "Edmission",
+    "description": "Academic infrastructure platform connecting students and universities without intermediaries.",
+    "privacy": "Privacy",
+    "platform": { "title": "Platform", "0": "About", "1": "Infrastructure", "2": "AI Matching" },
+    "students": { "title": "Students", "0": "Explore Universities", "1": "Applications", "2": "Offers" },
+    "universities": { "title": "Universities", "0": "Discovery", "1": "Pipeline", "2": "Scholarships" },
+    "support": { "title": "Support", "0": "Security", "1": "Help Center", "2": "Contact" }
+  }
+}

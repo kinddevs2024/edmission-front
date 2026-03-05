@@ -1,40 +1,25 @@
 import { motion } from 'framer-motion'
 import { ClipboardList, LayoutDashboard, Search, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
 
-const SCREENS = [
-  {
-    title: 'Student dashboard',
-    subtitle: 'Profile completion, recommendations, active applications.',
-    icon: LayoutDashboard,
-  },
-  {
-    title: 'University discovery',
-    subtitle: 'Filter-ready university feed with transparent match insights.',
-    icon: Search,
-  },
-  {
-    title: 'Application tracking',
-    subtitle: 'Live statuses from interested to accepted.',
-    icon: ClipboardList,
-  },
-  {
-    title: 'Offer management',
-    subtitle: 'Scholarship offer flow with deadline and response controls.',
-    icon: Wallet,
-  },
-]
-
 export function WalkthroughSection() {
+  const { t } = useTranslation('landing')
+  const SCREENS = [
+    { title: t('walkthrough.cards.0.title'), subtitle: t('walkthrough.cards.0.desc'), icon: LayoutDashboard },
+    { title: t('walkthrough.cards.1.title'), subtitle: t('walkthrough.cards.1.desc'), icon: Search },
+    { title: t('walkthrough.cards.2.title'), subtitle: t('walkthrough.cards.2.desc'), icon: ClipboardList },
+    { title: t('walkthrough.cards.3.title'), subtitle: t('walkthrough.cards.3.desc'), icon: Wallet },
+  ]
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
       <Reveal>
         <SectionHeading
-          eyebrow="Platform Walkthrough"
-          title="Core workflows in one integrated experience"
-          description="Horizontally explore key product surfaces designed for modern admission operations."
+          eyebrow={t('walkthrough.eyebrow')}
+          title={t('walkthrough.title')}
+          description={t('walkthrough.description')}
         />
       </Reveal>
 

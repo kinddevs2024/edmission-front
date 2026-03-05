@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
@@ -14,15 +15,16 @@ const NODES = [
 ]
 
 export function GlobalNetworkSection() {
+  const { t } = useTranslation('landing')
   return (
     <section className="border-y border-[var(--color-border)] bg-[var(--color-card)]/45">
       <div className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
         <Reveal>
           <SectionHeading
-            eyebrow="Global Network"
+            eyebrow={t('network.eyebrow')}
             align="center"
-            title="A Growing Academic Network"
-            description="A distributed network of students and universities connected through a single transparent infrastructure layer."
+            title={t('network.title')}
+            description={t('network.description')}
           />
         </Reveal>
 

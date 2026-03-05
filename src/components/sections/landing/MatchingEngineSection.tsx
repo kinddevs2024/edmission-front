@@ -1,21 +1,22 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
 
-const FACTORS = [
-  { label: 'GPA compatibility', value: 95 },
-  { label: 'Field of study match', value: 88 },
-  { label: 'Language requirements', value: 84 },
-  { label: 'Scholarship eligibility', value: 80 },
-  { label: 'Tuition compatibility', value: 78 },
-  { label: 'Location preference', value: 74 },
-]
-
 const TOTAL_SCORE = 86
 
 export function MatchingEngineSection() {
+  const { t } = useTranslation('landing')
+  const FACTORS = [
+    { label: t('matching.factors.0'), value: 95 },
+    { label: t('matching.factors.1'), value: 88 },
+    { label: t('matching.factors.2'), value: 84 },
+    { label: t('matching.factors.3'), value: 80 },
+    { label: t('matching.factors.4'), value: 78 },
+    { label: t('matching.factors.5'), value: 74 },
+  ]
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -23,9 +24,9 @@ export function MatchingEngineSection() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-2 md:items-center md:px-6 lg:px-8">
         <Reveal>
           <SectionHeading
-            eyebrow="AI Matching Engine"
-            title="Transparent Matching Technology"
-            description="Match score is calculated using deterministic factors and shown as a transparent breakdown for both sides."
+            eyebrow={t('matching.eyebrow')}
+            title={t('matching.title')}
+            description={t('matching.description')}
           />
           <ul className="mt-6 space-y-2 text-sm text-[var(--color-text-muted)]">
             {FACTORS.map((factor) => (
@@ -43,7 +44,7 @@ export function MatchingEngineSection() {
                 className="flex h-36 w-36 items-center justify-center rounded-full bg-primary-accent/15 text-center"
               >
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Match score</p>
+                  <p className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">{t('matching.scoreLabel')}</p>
                   <p className="text-4xl font-semibold text-[var(--color-text)]">{TOTAL_SCORE}%</p>
                 </div>
               </motion.div>

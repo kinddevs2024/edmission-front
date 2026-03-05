@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Private application areas
+Disallow: /admin/
+Disallow: /student/
+Disallow: /university/
+
+Sitemap: https://edmission.uz/sitemap.xml
