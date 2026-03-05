@@ -145,7 +145,6 @@ export async function getUsers(params?: PaginationParams & { status?: string; ro
     total: res.data?.total ?? 0,
     page: res.data?.page ?? 1,
     limit: res.data?.limit ?? 20,
-    totalPages: res.data?.totalPages ?? 0,
   }
 }
 

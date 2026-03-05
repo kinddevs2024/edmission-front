@@ -265,13 +265,12 @@ export function Discovery() {
                 const st = item.student
                 const name = [st?.firstName, st?.lastName].filter(Boolean).join(' ') || t('university:studentLabel')
                 return (
-                  <Card
+                  <div
                     key={item.id}
-                    interactive
-                    tilt
-                    className="flex flex-col animate-card-enter opacity-0"
+                    className="animate-card-enter opacity-0"
                     style={{ animationDelay: `${Math.min(index, 8) * 0.05}s`, animationFillMode: 'forwards' }}
                   >
+                  <Card interactive tilt className="flex flex-col">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]">
@@ -307,6 +306,7 @@ export function Discovery() {
                       </Button>
                     </div>
                   </Card>
+                  </div>
                 )
               })}
           </div>
