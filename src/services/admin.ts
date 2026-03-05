@@ -29,6 +29,21 @@ export interface AdminUser {
   status: 'active' | 'suspended'
 }
 
+export interface AdminUniversityProfile {
+  id: string
+  userId: string
+  universityName: string
+  tagline?: string
+  establishedYear?: number
+  studentCount?: number
+  country?: string
+  city?: string
+  description?: string
+  logoUrl?: string
+  facultyCodes?: string[]
+  targetStudentCountries?: string[]
+}
+
 export interface CreateAdminUserPayload {
   role: 'student' | 'university' | 'admin'
   email: string
@@ -158,6 +173,58 @@ export async function unsuspendUser(userId: string): Promise<void> {
 
 export async function deleteUser(userId: string): Promise<void> {
   await api.delete(`/admin/users/${userId}`)
+}
+
+export async function getUniversityProfileByUser(userId: string): Promise<AdminUniversityProfile> {
+  const { data } = await api.get<Record<string, unknown>>(`/admin/users/${userId}/university-profile`)
+  const raw = data ?? {}
+  return {
+    id: String(raw.id ?? raw._id ?? ''),
+    userId: String(raw.userId ?? ''),
+    universityName: String(raw.universityName ?? ''),
+    tagline: raw.tagline != null ? String(raw.tagline) : undefined,
+    establishedYear: raw.establishedYear != null ? Number(raw.establishedYear) : undefined,
+    studentCount: raw.studentCount != null ? Number(raw.studentCount) : undefined,
+    country: raw.country != null ? String(raw.country) : undefined,
+    city: raw.city != null ? String(raw.city) : undefined,
+    description: raw.description != null ? String(raw.description) : undefined,
+    logoUrl: raw.logoUrl != null ? String(raw.logoUrl) : undefined,
+    facultyCodes: Array.isArray(raw.facultyCodes) ? raw.facultyCodes.map((x) => String(x)) : [],
+    targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
+  }
+}
+
+export async function updateUniversityProfileByUser(
+  userId: string,
+  payload: {
+    universityName: string
+    tagline?: string
+    establishedYear?: number
+    studentCount?: number
+    country?: string
+    city?: string
+    description?: string
+    logoUrl?: string
+    facultyCodes?: string[]
+    targetStudentCountries?: string[]
+  }
+): Promise<AdminUniversityProfile> {
+  const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/university-profile`, payload)
+  const raw = data ?? {}
+  return {
+    id: String(raw.id ?? raw._id ?? ''),
+    userId: String(raw.userId ?? ''),
+    universityName: String(raw.universityName ?? ''),
+    tagline: raw.tagline != null ? String(raw.tagline) : undefined,
+    establishedYear: raw.establishedYear != null ? Number(raw.establishedYear) : undefined,
+    studentCount: raw.studentCount != null ? Number(raw.studentCount) : undefined,
+    country: raw.country != null ? String(raw.country) : undefined,
+    city: raw.city != null ? String(raw.city) : undefined,
+    description: raw.description != null ? String(raw.description) : undefined,
+    logoUrl: raw.logoUrl != null ? String(raw.logoUrl) : undefined,
+    facultyCodes: Array.isArray(raw.facultyCodes) ? raw.facultyCodes.map((x) => String(x)) : [],
+    targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
+  }
 }
 
 export interface AdminOffer {

@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, suspendUser, unsuspendUser, deleteUser } from '@/services/admin'
+import { createUser, getUsers, suspendUser, unsuspendUser, deleteUser, getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
@@ -41,6 +41,20 @@ export function UserManagement() {
   const [createSubmitting, setCreateSubmitting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [editUniTarget, setEditUniTarget] = useState<AdminUser | null>(null)
+  const [editUniLoading, setEditUniLoading] = useState(false)
+  const [editUniSaving, setEditUniSaving] = useState(false)
+  const [editUniError, setEditUniError] = useState('')
+  const [uniName, setUniName] = useState('')
+  const [uniTagline, setUniTagline] = useState('')
+  const [uniEstablishedYear, setUniEstablishedYear] = useState('')
+  const [uniStudentCount, setUniStudentCount] = useState('')
+  const [uniCountry, setUniCountry] = useState('')
+  const [uniCity, setUniCity] = useState('')
+  const [uniDescription, setUniDescription] = useState('')
+  const [uniLogoUrl, setUniLogoUrl] = useState('')
+  const [uniFacultyCodes, setUniFacultyCodes] = useState('')
+  const [uniTargetCountries, setUniTargetCountries] = useState('')
   const limit = 20
 
   useEffect(() => {
@@ -89,6 +103,68 @@ export function UserManagement() {
       })
       .catch(() => {})
       .finally(() => setDeleteSubmitting(false))
+  }
+
+  const openUniversityEditor = (user: AdminUser) => {
+    setEditUniTarget(user)
+    setEditUniError('')
+    setEditUniLoading(true)
+    getUniversityProfileByUser(user.id)
+      .then((p) => {
+        setUniName(p.universityName ?? '')
+        setUniTagline(p.tagline ?? '')
+        setUniEstablishedYear(p.establishedYear != null ? String(p.establishedYear) : '')
+        setUniStudentCount(p.studentCount != null ? String(p.studentCount) : '')
+        setUniCountry(p.country ?? '')
+        setUniCity(p.city ?? '')
+        setUniDescription(p.description ?? '')
+        setUniLogoUrl(p.logoUrl ?? '')
+        setUniFacultyCodes((p.facultyCodes ?? []).join(', '))
+        setUniTargetCountries((p.targetStudentCountries ?? []).join(', '))
+      })
+      .catch(() => {
+        setEditUniError(t('common:error', 'Error'))
+      })
+      .finally(() => setEditUniLoading(false))
+  }
+
+  const closeUniversityEditor = () => {
+    if (editUniSaving) return
+    setEditUniTarget(null)
+    setEditUniError('')
+    setUniName('')
+    setUniTagline('')
+    setUniEstablishedYear('')
+    setUniStudentCount('')
+    setUniCountry('')
+    setUniCity('')
+    setUniDescription('')
+    setUniLogoUrl('')
+    setUniFacultyCodes('')
+    setUniTargetCountries('')
+  }
+
+  const handleUniversitySave = () => {
+    if (!editUniTarget || !uniName.trim()) return
+    setEditUniSaving(true)
+    setEditUniError('')
+    updateUniversityProfileByUser(editUniTarget.id, {
+      universityName: uniName.trim(),
+      tagline: uniTagline.trim() || undefined,
+      establishedYear: uniEstablishedYear.trim() ? Number(uniEstablishedYear) : undefined,
+      studentCount: uniStudentCount.trim() ? Number(uniStudentCount) : undefined,
+      country: uniCountry.trim() || undefined,
+      city: uniCity.trim() || undefined,
+      description: uniDescription.trim() || undefined,
+      logoUrl: uniLogoUrl.trim() || undefined,
+      facultyCodes: uniFacultyCodes.split(',').map((x) => x.trim()).filter(Boolean),
+      targetStudentCountries: uniTargetCountries.split(',').map((x) => x.trim()).filter(Boolean),
+    })
+      .then(() => {
+        closeUniversityEditor()
+      })
+      .catch(() => setEditUniError(t('common:error', 'Error')))
+      .finally(() => setEditUniSaving(false))
   }
 
   return (
@@ -149,6 +225,11 @@ export function UserManagement() {
                           <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
                         ) : (
                           <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
+                        )}
+                        {u.role === 'university' && (
+                          <Button variant="secondary" size="sm" onClick={() => openUniversityEditor(u)} disabled={!!actionUserId}>
+                            {t('admin:editUniversityProfile', 'Edit profile')}
+                          </Button>
                         )}
                         {u.role !== 'admin' && (
                           <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
@@ -213,6 +294,56 @@ export function UserManagement() {
             {t('admin:createUserHint', 'Users created by admin are verified by default.')}
           </p>
         </div>
+      </Modal>
+
+      <Modal
+        open={!!editUniTarget}
+        onClose={closeUniversityEditor}
+        title={t('admin:editUniversityProfile', 'Edit university profile')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={closeUniversityEditor} disabled={editUniSaving}>{t('common:cancel')}</Button>
+            <Button onClick={handleUniversitySave} disabled={editUniSaving || !uniName.trim()} loading={editUniSaving}>
+              {t('common:save')}
+            </Button>
+          </>
+        }
+      >
+        {editUniLoading ? (
+          <p className="text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
+        ) : (
+          <div className="space-y-3">
+            {editUniError && <p className="text-sm text-red-500">{editUniError}</p>}
+            <Input label={t('university:universityName', 'University name')} value={uniName} onChange={(e) => setUniName(e.target.value)} />
+            <Input label={t('university:slogan', 'Slogan')} value={uniTagline} onChange={(e) => setUniTagline(e.target.value)} />
+            <Input label={t('university:foundedYear', 'Founded year')} type="number" value={uniEstablishedYear} onChange={(e) => setUniEstablishedYear(e.target.value)} />
+            <Input label={t('university:studentCount', 'Student count')} type="number" value={uniStudentCount} onChange={(e) => setUniStudentCount(e.target.value)} />
+            <Input label={t('university:country', 'Country')} value={uniCountry} onChange={(e) => setUniCountry(e.target.value)} />
+            <Input label={t('university:city', 'City')} value={uniCity} onChange={(e) => setUniCity(e.target.value)} />
+            <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} />
+            <label className="block">
+              <span className="block text-sm font-medium mb-1">{t('university:description', 'Description')}</span>
+              <textarea
+                rows={4}
+                value={uniDescription}
+                onChange={(e) => setUniDescription(e.target.value)}
+                className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
+              />
+            </label>
+            <Input
+              label={t('admin:facultyCodes', 'Faculty codes (comma-separated)')}
+              value={uniFacultyCodes}
+              onChange={(e) => setUniFacultyCodes(e.target.value)}
+              placeholder="computer_science, business, medicine"
+            />
+            <Input
+              label={t('university:targetStudentCountries', 'Target student countries (comma-separated codes)')}
+              value={uniTargetCountries}
+              onChange={(e) => setUniTargetCountries(e.target.value)}
+              placeholder="UZ, KZ, TJ"
+            />
+          </div>
+        )}
       </Modal>
 
       <Modal
