@@ -208,6 +208,7 @@ export function StudentProfilePage() {
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
   const [expandedSkillsBlock, setExpandedSkillsBlock] = useState<'skills' | 'interests' | 'hobbies'>('skills')
+  const [displayPercent, setDisplayPercent] = useState(0)
 
   const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -242,6 +243,12 @@ export function StudentProfilePage() {
   useEffect(() => {
     if (openSection === 'skills') setExpandedSkillsBlock('skills')
   }, [openSection])
+
+  useEffect(() => {
+    const target = profile?.portfolioCompletionPercent ?? 0
+    const t = setTimeout(() => setDisplayPercent(target), 80)
+    return () => clearTimeout(t)
+  }, [profile?.portfolioCompletionPercent])
 
   useEffect(() => {
     getStudentProfile()
@@ -424,8 +431,8 @@ export function StudentProfilePage() {
           </div>
           <div className="flex-1 max-w-[200px] h-3 rounded-full bg-[var(--color-border)] overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--color-primary-accent)] transition-all duration-300"
-              style={{ width: `${profile?.portfolioCompletionPercent ?? 0}%` }}
+              className="h-full rounded-full bg-[var(--color-primary-accent)] transition-all duration-500 ease-out"
+              style={{ width: `${displayPercent}%` }}
             />
           </div>
         </div>
@@ -443,7 +450,7 @@ export function StudentProfilePage() {
               type="button"
               onClick={() => setOpenSection(sec.id)}
               className={cn(
-                'flex flex-col items-center gap-3 p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] transition-colors text-center'
+                'flex flex-col items-center gap-3 p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-center'
               )}
             >
               <div className={cn(

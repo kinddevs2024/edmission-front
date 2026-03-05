@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
+import { Building2 } from 'lucide-react'
 import { getUniversities, showInterest, getApplications, getInterestLimit } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
 
@@ -155,6 +156,7 @@ export function ExploreUniversities() {
       ) : list.length === 0 ? (
         <Card>
           <EmptyState
+            icon={<Building2 className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
             title={t('noUniversitiesFound')}
             description={t('tryChangingFiltersOrSearch')}
             actionLabel={t('clearFilters')}
@@ -164,15 +166,20 @@ export function ExploreUniversities() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {list.map((u) => (
-              <UniversityCard
+            {list.map((u, index) => (
+              <div
                 key={u.id}
-                university={u}
-                showMatch
-                onInterest={handleInterest}
-                interested={interestedIds.has(u.id)}
-                interestDisabled={!canShowInterest}
-              />
+                className="animate-card-enter opacity-0"
+                style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
+              >
+                <UniversityCard
+                  university={u}
+                  showMatch
+                  onInterest={handleInterest}
+                  interested={interestedIds.has(u.id)}
+                  interestDisabled={!canShowInterest}
+                />
+              </div>
             ))}
           </div>
           {totalPages > 1 && (

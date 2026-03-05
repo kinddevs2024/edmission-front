@@ -108,7 +108,7 @@ export function PaymentPage() {
           {isStudent && (
             <div className="grid gap-4 sm:grid-cols-3">
               {STUDENT_PLANS.map((plan) => (
-                <Card key={plan.id} className={plan.highlight ? 'ring-2 ring-primary-accent' : ''}>
+                <Card key={plan.id} className={plan.highlight ? 'ring-2 ring-primary-accent' : ''} interactive>
                   <div className="flex items-center gap-2">
                     {getNavIcon('CreditCard', 'size-5 text-primary-accent')}
                     <CardTitle>{plan.name}</CardTitle>
@@ -135,7 +135,7 @@ export function PaymentPage() {
           {isUniversity && (
             <div className="grid gap-4 sm:grid-cols-2">
               {UNIVERSITY_PLANS.map((plan) => (
-                <Card key={plan.id} className={plan.highlight ? 'ring-2 ring-primary-accent' : ''}>
+                <Card key={plan.id} className={plan.highlight ? 'ring-2 ring-primary-accent' : ''} interactive>
                   <div className="flex items-center gap-2">
                     {getNavIcon('CreditCard', 'size-5 text-primary-accent')}
                     <CardTitle>{plan.name}</CardTitle>

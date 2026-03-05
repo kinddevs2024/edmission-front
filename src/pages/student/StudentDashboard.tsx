@@ -123,8 +123,14 @@ export function StudentDashboard() {
           </div>
         ) : recommendations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
-            {recommendations.slice(0, 5).map((u) => (
-              <UniversityCard key={u.id} university={u} showMatch onInterest={() => {}} />
+            {recommendations.slice(0, 5).map((u, index) => (
+              <div
+                key={u.id}
+                className="animate-card-enter opacity-0"
+                style={{ animationDelay: `${index * 0.06}s`, animationFillMode: 'forwards' }}
+              >
+                <UniversityCard university={u} showMatch onInterest={() => {}} />
+              </div>
             ))}
           </div>
         ) : (

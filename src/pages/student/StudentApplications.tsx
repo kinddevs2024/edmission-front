@@ -62,6 +62,7 @@ export function StudentApplications() {
           <TableSkeleton rows={5} cols={5} />
         ) : applications.length === 0 ? (
           <EmptyState
+            icon={<MessageCircle className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
             title={t('student:noApplications')}
             description={t('student:noApplicationsDesc')}
             actionLabel={t('student:exploreUniversities')}

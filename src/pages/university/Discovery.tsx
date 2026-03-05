@@ -251,6 +251,7 @@ export function Discovery() {
       ) : list.length === 0 ? (
         <Card>
           <EmptyState
+            icon={<User className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
             title={t('university:noStudents')}
             description={t('university:discoveryEmptyDesc')}
             actionLabel={t('university:viewPipeline')}
@@ -260,11 +261,17 @@ export function Discovery() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {list.map((item) => {
+              {list.map((item, index) => {
                 const st = item.student
                 const name = [st?.firstName, st?.lastName].filter(Boolean).join(' ') || t('university:studentLabel')
                 return (
-                  <Card key={item.id} className="flex flex-col">
+                  <Card
+                    key={item.id}
+                    interactive
+                    tilt
+                    className="flex flex-col animate-card-enter opacity-0"
+                    style={{ animationDelay: `${Math.min(index, 8) * 0.05}s`, animationFillMode: 'forwards' }}
+                  >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]">

@@ -12,7 +12,7 @@ export function ThemeSwitch() {
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className={cn(
-        'relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border border-[var(--color-border)] transition-colors focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2',
+        'relative inline-flex h-8 w-[60px] shrink-0 items-center rounded-full border border-[var(--color-border)] transition-colors focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2',
         isDark ? 'bg-secondary' : 'bg-[var(--color-border)]/30'
       )}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}

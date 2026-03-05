@@ -128,9 +128,25 @@ export async function getAdminStats(): Promise<AdminStats> {
   }
 }
 
+/** Backend returns users with `suspended` (boolean); we normalize to `status` for UI. */
 export async function getUsers(params?: PaginationParams & { status?: string; role?: string }): Promise<PaginatedResponse<AdminUser>> {
-  const { data } = await api.get<PaginatedResponse<AdminUser>>('/admin/users', { params })
-  return data
+  const res = await api.get<{ data?: Array<Record<string, unknown>>; total?: number; page?: number; limit?: number; totalPages?: number }>('/admin/users', { params })
+  const rawList = res.data?.data ?? []
+  const data: AdminUser[] = rawList.map((raw) => ({
+    id: String(raw.id ?? raw._id ?? ''),
+    email: String(raw.email ?? ''),
+    role: String(raw.role ?? ''),
+    name: (raw.name as string | undefined) ?? undefined,
+    createdAt: raw.createdAt != null ? String(raw.createdAt) : new Date().toISOString(),
+    status: (raw.suspended === true ? 'suspended' : 'active') as 'active' | 'suspended',
+  }))
+  return {
+    data,
+    total: res.data?.total ?? 0,
+    page: res.data?.page ?? 1,
+    limit: res.data?.limit ?? 20,
+    totalPages: res.data?.totalPages ?? 0,
+  }
 }
 
 export async function suspendUser(userId: string): Promise<void> {

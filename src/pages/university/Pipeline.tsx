@@ -132,7 +132,7 @@ export function Pipeline() {
       <PageTitle title="Pipeline" icon="GitBranch" />
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[320px]">
         {COLUMNS.map(({ id, title }) => (
-          <Card key={id} className="min-w-[240px] sm:min-w-[260px] flex-shrink-0 flex flex-col">
+          <Card key={id} className="min-w-[240px] sm:min-w-[260px] flex-shrink-0 flex flex-col" interactive>
             <CardTitle className="flex justify-between items-center">
               <span>{title}</span>
               <span className="text-sm font-normal text-[var(--color-text-muted)]">{byStage[id]?.length ?? 0}</span>

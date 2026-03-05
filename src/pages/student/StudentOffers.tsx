@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getOffers, acceptOffer, declineOffer } from '@/services/student'
-import { Check, X } from 'lucide-react'
+import { Check, X, Gift } from 'lucide-react'
 import { formatDate, daysUntil } from '@/utils/format'
 import type { Offer } from '@/types/student'
 
@@ -55,6 +55,7 @@ export function StudentOffers() {
       {offers.length === 0 ? (
         <Card>
           <EmptyState
+            icon={<Gift className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
             title={t('student:noOffers')}
             description={t('student:noOffersDesc')}
             actionLabel={t('student:exploreUniversities')}
@@ -67,7 +68,7 @@ export function StudentOffers() {
             const days = daysUntil(o.deadline)
             const urgent = o.isUrgent ?? days <= 3
             return (
-              <Card key={o.id} className="flex flex-col">
+              <Card key={o.id} className="flex flex-col" interactive>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <CardTitle>{o.universityName ?? o.universityId}</CardTitle>
                   {urgent && <Badge variant="warning">Urgent · {days} days left</Badge>}

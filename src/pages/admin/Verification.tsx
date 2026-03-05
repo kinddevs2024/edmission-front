@@ -66,8 +66,13 @@ export function Verification() {
           <p className="text-[var(--color-text-muted)] py-8 text-center">No universities pending verification.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            {list.map((item) => (
-              <Card key={item.id} className="p-4">
+            {list.map((item, index) => (
+              <div
+                key={item.id}
+                className="animate-card-enter opacity-0"
+                style={{ animationDelay: `${Math.min(index, 6) * 0.06}s`, animationFillMode: 'forwards' }}
+              >
+                <Card className="p-4" interactive>
                 <div className="flex justify-between items-start gap-2">
                   <div>
                     <p className="font-medium">{item.name}</p>
@@ -93,6 +98,7 @@ export function Verification() {
                   </div>
                 )}
               </Card>
+              </div>
             ))}
           </div>
         )}

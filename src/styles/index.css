@@ -15,6 +15,13 @@
   --color-status-under-review: #3b82f6;
   --color-status-offer-sent: #84cc16;
   --color-status-rejected: #64748b;
+  /* Motion & depth */
+  --duration-motion: 0.25s;
+  --ease-out-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-card-hover: 0 12px 24px -8px rgba(15, 23, 42, 0.15), 0 4px 8px -4px rgba(15, 23, 42, 0.08);
+  --shadow-button: 0 2px 8px rgba(132, 204, 22, 0.25);
+  --shadow-button-hover: 0 4px 14px rgba(132, 204, 22, 0.35);
 }
 
 .dark {
@@ -23,6 +30,10 @@
   --color-border: #1f2937;
   --color-text: #f9fafb;
   --color-text-muted: #cbd5e1;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 12px 24px -8px rgba(0, 0, 0, 0.35), 0 4px 8px -4px rgba(0, 0, 0, 0.2);
+  --shadow-button: 0 2px 8px rgba(132, 204, 22, 0.3);
+  --shadow-button-hover: 0 4px 14px rgba(132, 204, 22, 0.4);
 }
 
 @layer base {
@@ -102,3 +113,39 @@
 .animate-stagger-4 { animation-delay: 0.2s; }
 .animate-stagger-5 { animation-delay: 0.25s; }
 .animate-stagger-6 { animation-delay: 0.3s; }
+
+/* Interactive card: lift + shadow on hover, optional 3D tilt */
+.card-interactive {
+  transition: transform var(--duration-motion) var(--ease-out-smooth),
+    box-shadow var(--duration-motion) var(--ease-out-smooth);
+  box-shadow: var(--shadow-card);
+}
+.card-interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* 3D tilt on hover (use with card-interactive on parent with perspective) */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform var(--duration-motion) var(--ease-out-smooth),
+    box-shadow var(--duration-motion) var(--ease-out-smooth);
+  box-shadow: var(--shadow-card);
+}
+.card-3d:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Progress bar fill animation */
+@keyframes progress-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.animate-progress-fill {
+  transform-origin: left;
+  animation: progress-fill 0.6s var(--ease-out-smooth) forwards;
+}

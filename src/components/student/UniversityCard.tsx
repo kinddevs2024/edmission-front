@@ -27,7 +27,7 @@ export function UniversityCard({ university, showMatch = true, onInterest, inter
   } = university
 
   return (
-    <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
+    <Card className="flex flex-col h-full" interactive tilt>
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-3 min-w-0">
           {logo ? (
