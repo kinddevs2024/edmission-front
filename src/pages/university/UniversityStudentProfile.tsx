@@ -116,6 +116,15 @@ export function UniversityStudentProfile() {
         </dl>
       </Card>
 
+      {profile.budgetAmount != null && Number(profile.budgetAmount) >= 0 && (
+        <Card>
+          <CardTitle>{t('university:budgetLabel', 'Budget for studies')}</CardTitle>
+          <p className="mt-2 text-sm">
+            {Number(profile.budgetAmount).toLocaleString()} {profile.budgetCurrency ?? 'USD'}
+          </p>
+        </Card>
+      )}
+
       <Card>
         <CardTitle>Education</CardTitle>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">

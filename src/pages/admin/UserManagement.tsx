@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, suspendUser, unsuspendUser } from '@/services/admin'
+import { createUser, getUsers, suspendUser, unsuspendUser, deleteUser } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
@@ -39,6 +39,8 @@ export function UserManagement() {
   const [createPassword, setCreatePassword] = useState('')
   const [createName, setCreateName] = useState('')
   const [createSubmitting, setCreateSubmitting] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const limit = 20
 
   useEffect(() => {
@@ -74,6 +76,19 @@ export function UserManagement() {
       .then(() => setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: 'active' as const } : u))))
       .catch(() => {})
       .finally(() => setActionUserId(null))
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return
+    setDeleteSubmitting(true)
+    deleteUser(deleteTarget.id)
+      .then(() => {
+        setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id))
+        setTotal((x) => Math.max(0, x - 1))
+        setDeleteTarget(null)
+      })
+      .catch(() => {})
+      .finally(() => setDeleteSubmitting(false))
   }
 
   return (
@@ -129,11 +144,16 @@ export function UserManagement() {
                       </span>
                     </TableTd>
                     <TableTd>
-                      {u.status === 'active' ? (
-                        <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
-                      ) : (
-                        <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
-                      )}
+                      <div className="flex gap-2 flex-wrap">
+                        {u.status === 'active' ? (
+                          <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
+                        ) : (
+                          <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
+                        )}
+                        {u.role !== 'admin' && (
+                          <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
+                        )}
+                      </div>
                     </TableTd>
                   </TableRow>
                 ))}
@@ -193,6 +213,26 @@ export function UserManagement() {
             {t('admin:createUserHint', 'Users created by admin are verified by default.')}
           </p>
         </div>
+      </Modal>
+
+      <Modal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title={t('admin:deleteUser', 'Delete user')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)}>{t('common:cancel')}</Button>
+            <Button variant="danger" onClick={handleDeleteConfirm} disabled={deleteSubmitting} loading={deleteSubmitting}>
+              {t('admin:delete')}
+            </Button>
+          </>
+        }
+      >
+        {deleteTarget && (
+          <p className="text-[var(--color-text)]">
+            {t('admin:deleteUserConfirm', 'Permanently delete this account and all related data?')} <strong>{deleteTarget.email}</strong> ({deleteTarget.role})
+          </p>
+        )}
       </Modal>
     </div>
   )

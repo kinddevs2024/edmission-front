@@ -122,6 +122,8 @@ export interface StudentSearchParams {
   languages?: string[]
   certType?: string
   certMinScore?: string
+  minBudget?: number
+  maxBudget?: number
 }
 
 export interface DiscoverStudentItem {
@@ -132,6 +134,8 @@ export interface DiscoverStudentItem {
     country?: string
     city?: string
     avatarUrl?: string
+    budgetAmount?: number
+    budgetCurrency?: string
   }
   inPipeline: boolean
 }
@@ -156,6 +160,8 @@ export async function getStudents(params?: StudentSearchParams): Promise<Student
   if (params?.languages?.length) query.languages = params.languages.join(',')
   if (params?.certType) query.certType = params.certType
   if (params?.certMinScore != null) query.certMinScore = params.certMinScore
+  if (params?.minBudget != null) query.minBudget = String(params.minBudget)
+  if (params?.maxBudget != null) query.maxBudget = String(params.maxBudget)
   const { data } = await api.get<StudentSearchResponse>('/university/students', { params: query })
   return data ?? { data: [], total: 0, page: 1, limit: 20, totalPages: 0 }
 }
@@ -197,6 +203,8 @@ export interface FullStudentProfile {
   verifiedAt?: string
   documents?: { id: string; type: string; name?: string; certificateType?: string; score?: string; fileUrl: string }[]
   readiness?: ReadinessInfo
+  budgetAmount?: number
+  budgetCurrency?: string
   interestedFaculties?: string[]
   preferredCountries?: string[]
 }

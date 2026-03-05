@@ -141,6 +141,10 @@ export async function unsuspendUser(userId: string): Promise<void> {
   await api.patch(`/admin/users/${userId}/suspend`, { suspend: false })
 }
 
+export async function deleteUser(userId: string): Promise<void> {
+  await api.delete(`/admin/users/${userId}`)
+}
+
 export interface AdminOffer {
   id: string
   studentId: string

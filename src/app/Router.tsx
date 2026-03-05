@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
@@ -8,55 +9,63 @@ import { StudentLayout } from '@/layouts/StudentLayout'
 import { UniversityLayout } from '@/layouts/UniversityLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 
-import { Login } from '@/pages/auth/Login'
-import { Register } from '@/pages/auth/Register'
-import { ForgotPassword } from '@/pages/auth/ForgotPassword'
-import { VerifyEmail } from '@/pages/auth/VerifyEmail'
-import { ResetPassword } from '@/pages/auth/ResetPassword'
+const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
+const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ default: m.Register })))
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword').then((m) => ({ default: m.ForgotPassword })))
+const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail').then((m) => ({ default: m.VerifyEmail })))
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword').then((m) => ({ default: m.ResetPassword })))
 
-import { StudentDashboard } from '@/pages/student/StudentDashboard'
-import { StudentProfilePage } from '@/pages/student/StudentProfilePage'
-import { ExploreUniversities } from '@/pages/student/ExploreUniversities'
-import { UniversityDetail } from '@/pages/student/UniversityDetail'
-import { StudentApplications } from '@/pages/student/StudentApplications'
-import { StudentDocuments } from '@/pages/student/StudentDocuments'
-import { StudentOffers } from '@/pages/student/StudentOffers'
-import { Compare } from '@/pages/student/Compare'
-import { StudentChat } from '@/pages/student/StudentChat'
+const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
+const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
+const ExploreUniversities = lazy(() => import('@/pages/student/ExploreUniversities').then((m) => ({ default: m.ExploreUniversities })))
+const UniversityDetail = lazy(() => import('@/pages/student/UniversityDetail').then((m) => ({ default: m.UniversityDetail })))
+const StudentApplications = lazy(() => import('@/pages/student/StudentApplications').then((m) => ({ default: m.StudentApplications })))
+const StudentDocuments = lazy(() => import('@/pages/student/StudentDocuments').then((m) => ({ default: m.StudentDocuments })))
+const StudentOffers = lazy(() => import('@/pages/student/StudentOffers').then((m) => ({ default: m.StudentOffers })))
+const Compare = lazy(() => import('@/pages/student/Compare').then((m) => ({ default: m.Compare })))
+const StudentChat = lazy(() => import('@/pages/student/StudentChat').then((m) => ({ default: m.StudentChat })))
 
-import { UniversityDashboard } from '@/pages/university/UniversityDashboard'
-import { UniversityProfilePage } from '@/pages/university/UniversityProfilePage'
-import { UniversityOnboarding } from '@/pages/university/UniversityOnboarding'
-import { Discovery } from '@/pages/university/Discovery'
-import { UniversityStudentProfile } from '@/pages/university/UniversityStudentProfile'
-import { Pipeline } from '@/pages/university/Pipeline'
-import { Scholarships } from '@/pages/university/Scholarships'
-import { Faculties } from '@/pages/university/Faculties'
-import { UniversityAnalytics } from '@/pages/university/UniversityAnalytics'
-import { UniversityChat } from '@/pages/university/UniversityChat'
-import { UniversityPendingVerification } from '@/pages/university/UniversityPendingVerification'
+const UniversityDashboard = lazy(() => import('@/pages/university/UniversityDashboard').then((m) => ({ default: m.UniversityDashboard })))
+const UniversityProfilePage = lazy(() => import('@/pages/university/UniversityProfilePage').then((m) => ({ default: m.UniversityProfilePage })))
+const UniversityOnboarding = lazy(() => import('@/pages/university/UniversityOnboarding').then((m) => ({ default: m.UniversityOnboarding })))
+const Discovery = lazy(() => import('@/pages/university/Discovery').then((m) => ({ default: m.Discovery })))
+const UniversityStudentProfile = lazy(() => import('@/pages/university/UniversityStudentProfile').then((m) => ({ default: m.UniversityStudentProfile })))
+const Pipeline = lazy(() => import('@/pages/university/Pipeline').then((m) => ({ default: m.Pipeline })))
+const Scholarships = lazy(() => import('@/pages/university/Scholarships').then((m) => ({ default: m.Scholarships })))
+const Faculties = lazy(() => import('@/pages/university/Faculties').then((m) => ({ default: m.Faculties })))
+const UniversityAnalytics = lazy(() => import('@/pages/university/UniversityAnalytics').then((m) => ({ default: m.UniversityAnalytics })))
+const UniversityChat = lazy(() => import('@/pages/university/UniversityChat').then((m) => ({ default: m.UniversityChat })))
+const UniversityPendingVerification = lazy(() => import('@/pages/university/UniversityPendingVerification').then((m) => ({ default: m.UniversityPendingVerification })))
 
-import { AdminDashboard } from '@/pages/admin/AdminDashboard'
-import { UserManagement } from '@/pages/admin/UserManagement'
-import { Verification } from '@/pages/admin/Verification'
-import { AdminDocuments } from '@/pages/admin/AdminDocuments'
-import { AdminScholarships } from '@/pages/admin/AdminScholarships'
-import { AdminLogs } from '@/pages/admin/AdminLogs'
-import { SystemHealth } from '@/pages/admin/SystemHealth'
-import { AdminOffers } from '@/pages/admin/AdminOffers'
-import { AdminInterests } from '@/pages/admin/AdminInterests'
-import { AdminChats } from '@/pages/admin/AdminChats'
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
+const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
+const Verification = lazy(() => import('@/pages/admin/Verification').then((m) => ({ default: m.Verification })))
+const AdminDocuments = lazy(() => import('@/pages/admin/AdminDocuments').then((m) => ({ default: m.AdminDocuments })))
+const AdminScholarships = lazy(() => import('@/pages/admin/AdminScholarships').then((m) => ({ default: m.AdminScholarships })))
+const AdminLogs = lazy(() => import('@/pages/admin/AdminLogs').then((m) => ({ default: m.AdminLogs })))
+const SystemHealth = lazy(() => import('@/pages/admin/SystemHealth').then((m) => ({ default: m.SystemHealth })))
+const AdminOffers = lazy(() => import('@/pages/admin/AdminOffers').then((m) => ({ default: m.AdminOffers })))
+const AdminInterests = lazy(() => import('@/pages/admin/AdminInterests').then((m) => ({ default: m.AdminInterests })))
+const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ default: m.AdminChats })))
+const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
 
-import { Profile } from '@/pages/Profile'
-import { Landing } from '@/pages/Landing'
-import { AIChatPage } from '@/pages/AIChatPage'
-import { NotificationsPage } from '@/pages/NotificationsPage'
-import { PaymentPage } from '@/pages/PaymentPage'
-import { PaymentSuccess } from '@/pages/PaymentSuccess'
-import { PaymentCancel } from '@/pages/PaymentCancel'
-import { SupportPage } from '@/pages/SupportPage'
-import { Privacy } from '@/pages/Privacy'
-import { AdminSupport } from '@/pages/admin/AdminSupport'
+const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
+const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
+const AIChatPage = lazy(() => import('@/pages/AIChatPage').then((m) => ({ default: m.AIChatPage })))
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage })))
+const PaymentPage = lazy(() => import('@/pages/PaymentPage').then((m) => ({ default: m.PaymentPage })))
+const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess').then((m) => ({ default: m.PaymentSuccess })))
+const PaymentCancel = lazy(() => import('@/pages/PaymentCancel').then((m) => ({ default: m.PaymentCancel })))
+const SupportPage = lazy(() => import('@/pages/SupportPage').then((m) => ({ default: m.SupportPage })))
+const Privacy = lazy(() => import('@/pages/Privacy').then((m) => ({ default: m.Privacy })))
+
+function PageFallback() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center" aria-hidden>
+      <div className="w-8 h-8 border-2 border-[var(--color-primary-accent)] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: Role[] }) {
   const { isAuthenticated, role } = useAuth()
@@ -77,6 +86,7 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 
 export function Router() {
   return (
+    <Suspense fallback={<PageFallback />}>
     <Routes>
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
@@ -147,5 +157,6 @@ export function Router() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   )
 }

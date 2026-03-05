@@ -52,6 +52,8 @@ export function Discovery() {
   const [filterSkills, setFilterSkills] = useState<string[]>([])
   const [filterInterests, setFilterInterests] = useState<string[]>([])
   const [filterHobbies, setFilterHobbies] = useState<string[]>([])
+  const [filterMinBudget, setFilterMinBudget] = useState<string>('')
+  const [filterMaxBudget, setFilterMaxBudget] = useState<string>('')
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const limit = 20
 
@@ -72,6 +74,8 @@ export function Discovery() {
       skills: filterSkills.length ? filterSkills : undefined,
       interests: filterInterests.length ? filterInterests : undefined,
       hobbies: filterHobbies.length ? filterHobbies : undefined,
+      minBudget: filterMinBudget.trim() ? Number(filterMinBudget) : undefined,
+      maxBudget: filterMaxBudget.trim() ? Number(filterMaxBudget) : undefined,
     })
       .then((res) => {
         setList(res.data ?? [])
@@ -82,7 +86,7 @@ export function Discovery() {
         setTotal(0)
       })
       .finally(() => setLoading(false))
-  }, [page, filterCountry, filterCity, filterLanguages, filterCertType, filterCertMinScore, filterSkills, filterInterests, filterHobbies])
+  }, [page, filterCountry, filterCity, filterLanguages, filterCertType, filterCertMinScore, filterSkills, filterInterests, filterHobbies, filterMinBudget, filterMaxBudget])
 
   const handleClearFilters = () => {
     setFilterCountry('')
@@ -93,6 +97,8 @@ export function Discovery() {
     setFilterSkills([])
     setFilterInterests([])
     setFilterHobbies([])
+    setFilterMinBudget('')
+    setFilterMaxBudget('')
     setPage(1)
     setFilterModalOpen(false)
   }
@@ -111,8 +117,10 @@ export function Discovery() {
     filterCertMinScore.trim() ||
     filterSkills.length > 0 ||
     filterInterests.length > 0 ||
-    filterHobbies.length > 0
-  const filterCount = [filterCountry, filterCity.trim(), filterLanguages.length, filterCertType, filterCertMinScore.trim(), filterSkills.length, filterInterests.length, filterHobbies.length].filter(
+    filterHobbies.length > 0 ||
+    filterMinBudget.trim() !== '' ||
+    filterMaxBudget.trim() !== ''
+  const filterCount = [filterCountry, filterCity.trim(), filterLanguages.length, filterCertType, filterCertMinScore.trim(), filterSkills.length, filterInterests.length, filterHobbies.length, filterMinBudget.trim(), filterMaxBudget.trim()].filter(
     (x) => (typeof x === 'number' ? x > 0 : !!x)
   ).length
 
@@ -214,6 +222,26 @@ export function Discovery() {
             />
           </div>
         )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-[var(--color-border)]">
+          <Input
+            label={t('university:filterMinBudget', 'Min budget')}
+            type="number"
+            min={0}
+            step={100}
+            value={filterMinBudget}
+            onChange={(e) => setFilterMinBudget(e.target.value)}
+            placeholder="e.g. 5000"
+          />
+          <Input
+            label={t('university:filterMaxBudget', 'Max budget')}
+            type="number"
+            min={0}
+            step={100}
+            value={filterMaxBudget}
+            onChange={(e) => setFilterMaxBudget(e.target.value)}
+            placeholder="e.g. 50000"
+          />
+        </div>
       </Modal>
 
       {loading ? (
@@ -247,6 +275,11 @@ export function Discovery() {
                           {(st?.country || st?.city) && (
                             <p className="text-xs text-[var(--color-text-muted)] truncate">
                               {[st.country, st.city].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                          {st?.budgetAmount != null && Number(st.budgetAmount) >= 0 && (
+                            <p className="text-xs text-[var(--color-text-muted)] truncate">
+                              {t('university:budgetLabel', 'Budget')}: {Number(st.budgetAmount).toLocaleString()} {st.budgetCurrency || 'USD'}
                             </p>
                           )}
                         </div>

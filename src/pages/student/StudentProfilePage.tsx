@@ -74,6 +74,8 @@ const schema = z.object({
   })).optional(),
   interestedFaculties: z.array(z.string()).optional(),
   preferredCountries: z.array(z.string()).optional(),
+  budgetAmount: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(0).optional()),
+  budgetCurrency: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -117,7 +119,8 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
     case 'about': {
       const bio = profile.bio != null && String(profile.bio).trim() !== ''
       const avatar = profile.avatarUrl != null && String(profile.avatarUrl).trim() !== ''
-      return Math.round(([bio, avatar].filter(Boolean).length / 2) * 100)
+      const budget = profile.budgetAmount != null && Number(profile.budgetAmount) >= 0
+      return Math.round(([bio, avatar, budget].filter(Boolean).length / 3) * 100)
     }
     case 'skills': {
       const n = [
@@ -219,6 +222,8 @@ export function StudentProfilePage() {
       educationStatus: undefined,
       interestedFaculties: [],
       preferredCountries: [],
+      budgetAmount: undefined,
+      budgetCurrency: 'USD',
     },
   })
 
@@ -297,6 +302,8 @@ export function StudentProfilePage() {
           })),
           interestedFaculties: data.interestedFaculties ?? [],
           preferredCountries: data.preferredCountries ?? [],
+          budgetAmount: data.budgetAmount,
+          budgetCurrency: data.budgetCurrency ?? 'USD',
         })
       })
       .catch((e) => setError(getApiError(e).message))
@@ -356,6 +363,8 @@ export function StudentProfilePage() {
       })),
       interestedFaculties: data.interestedFaculties ?? [],
       preferredCountries: data.preferredCountries ?? [],
+      budgetAmount: data.budgetAmount != null ? data.budgetAmount : undefined,
+      budgetCurrency: data.budgetCurrency || undefined,
     }
   }
 
@@ -756,6 +765,32 @@ export function StudentProfilePage() {
                   placeholder={t('bioPlaceholder')}
                   {...register('bio')}
                 />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetAmount', 'Budget for studies')}</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
+                    placeholder={t('student:budgetPlaceholder', 'e.g. 10000')}
+                    {...register('budgetAmount', { valueAsNumber: true })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetCurrency', 'Currency')}</label>
+                  <select
+                    className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
+                    {...register('budgetCurrency')}
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="UZS">UZS</option>
+                    <option value="KZT">KZT</option>
+                    <option value="RUB">RUB</option>
+                  </select>
+                </div>
               </div>
               <FileUpload
                 label={t('avatarUrl')}

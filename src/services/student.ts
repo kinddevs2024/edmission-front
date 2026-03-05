@@ -72,6 +72,8 @@ export interface StudentProfileData {
   user?: { email: string; emailVerified?: boolean }
   interestedFaculties?: string[]
   preferredCountries?: string[]
+  budgetAmount?: number
+  budgetCurrency?: string
 }
 
 export async function getStudentProfile(): Promise<StudentProfileData> {
