@@ -1,6 +1,7 @@
 import { api, getApiError } from './api'
 import type { User, LoginResponse } from '@/types/user'
 import { useAuthStore } from '@/store/authStore'
+import { saveAuth, clearAuth, getStoredRefreshToken } from './authPersistence'
 
 export interface LoginPayload {
   email: string
@@ -17,6 +18,7 @@ export interface RegisterPayload {
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const { data } = await api.post<LoginResponse>('/auth/login', payload)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
 }
 
@@ -28,13 +30,16 @@ export async function register(payload: RegisterPayload): Promise<LoginResponse>
     role: payload.role,
   })
   useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
 }
 
 export async function logout(): Promise<void> {
+  const refreshToken = getStoredRefreshToken()
   try {
-    await api.post('/auth/logout')
+    await api.post('/auth/logout', { refreshToken: refreshToken ?? undefined })
   } finally {
+    clearAuth()
     useAuthStore.getState().logout()
   }
 }

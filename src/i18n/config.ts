@@ -6,7 +6,7 @@ export const fallbackLng = 'en'
 
 export const namespaces = ['common', 'auth', 'landing', 'student', 'university', 'admin', 'errors', 'chat'] as const
 
-const STORAGE_KEY = 'i18nextLng'
+export const STORAGE_KEY = 'i18nextLng'
 
 function fromUrlParam(): SupportedLng | null {
   if (typeof window === 'undefined') return null

@@ -29,21 +29,28 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   success?: boolean
   left?: ReactNode
   right?: ReactNode
+  /** When type="password": controlled visibility (sync two fields with one eye). */
+  passwordVisible?: boolean
+  onPasswordVisibilityToggle?: () => void
+  /** When type="password" and controlled: show the eye button (set false on second field to avoid duplicate). */
+  showPasswordToggle?: boolean
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ label, error, hint, success, left, right, className, id, type, ...props }, ref) {
+  function Input({ label, error, hint, success, left, right, passwordVisible, onPasswordVisibilityToggle, showPasswordToggle = true, className, id, type, ...props }, ref) {
     const { t } = useTranslation('common')
-    const [showPassword, setShowPassword] = useState(false)
+    const [internalShow, setInternalShow] = useState(false)
     const isPassword = type === 'password'
+    const isControlled = isPassword && typeof passwordVisible === 'boolean' && typeof onPasswordVisibilityToggle === 'function'
+    const showPassword = isControlled ? passwordVisible : internalShow
     const effectiveType = isPassword ? (showPassword ? 'text' : 'password') : type
     const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-')
-    const rightContent = isPassword ? (
+    const rightContent = isPassword && showPasswordToggle ? (
       <button
         type="button"
         tabIndex={-1}
         className="p-1 rounded hover:bg-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
-        onClick={() => setShowPassword((v) => !v)}
+        onClick={isControlled ? onPasswordVisibilityToggle : () => setInternalShow((v) => !v)}
         aria-label={showPassword ? t('hidePassword') : t('showPassword')}
       >
         {showPassword ? <EyeOffIcon /> : <EyeIcon />}

@@ -150,41 +150,58 @@ export function UniversityProfilePage() {
             <p className="text-sm text-[var(--color-text-muted)]">
               {t('university:facultiesHint', 'Select faculties that exist in your university. Open a faculty to see what it includes.')}
             </p>
-            <div className="space-y-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               {FIELD_OF_STUDY.map((cat) => {
                 const selected = (watch('facultyCodes') ?? []).includes(cat.id)
                 const open = openFacultyId === cat.id
                 return (
-                  <div key={cat.id} className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)]">
-                    <div className="flex items-center justify-between gap-3 px-3 py-2">
-                      <label className="flex items-center gap-2 min-w-0">
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={(e) => {
-                            const current = watch('facultyCodes') ?? []
-                            const next = e.target.checked
-                              ? Array.from(new Set([...current, cat.id])).slice(0, 50)
-                              : current.filter((x) => x !== cat.id)
-                            setValue('facultyCodes', next, { shouldDirty: true })
-                          }}
-                        />
-                        <span className="text-sm font-medium truncate">{t(cat.titleKey)}</span>
+                  <div
+                    key={cat.id}
+                    className={`rounded-card border-2 bg-[var(--color-card)] shadow-[var(--shadow-card)] transition-all ${
+                      selected ? 'border-primary-accent ring-1 ring-primary-accent/20' : 'border-[var(--color-border)]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3 p-3">
+                      <label className="flex items-center gap-3 min-w-0 cursor-pointer flex-1">
+                        <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-[var(--color-border)] bg-[var(--color-bg)]">
+                          {selected && (
+                            <span className="h-2.5 w-2.5 rounded-sm bg-primary-accent" />
+                          )}
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const current = watch('facultyCodes') ?? []
+                              const next = e.target.checked
+                                ? Array.from(new Set([...current, cat.id])).slice(0, 50)
+                                : current.filter((x) => x !== cat.id)
+                              setValue('facultyCodes', next, { shouldDirty: true })
+                            }}
+                            className="sr-only"
+                          />
+                        </span>
+                        <span className="text-sm font-medium text-[var(--color-text)] truncate">{t(cat.titleKey)}</span>
                       </label>
-                      <Button
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
                         onClick={() => setOpenFacultyId(open ? null : cat.id)}
+                        className="p-1.5 rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text)] transition-colors"
+                        aria-expanded={open}
                       >
-                        {open ? t('common:hide', 'Hide') : t('common:view', 'View')}
-                      </Button>
+                        <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
                     </div>
                     {open && (
-                      <div className="px-3 pb-3">
-                        <ul className="text-sm text-[var(--color-text-muted)] list-disc list-inside space-y-0.5">
+                      <div className="border-t border-[var(--color-border)] px-3 py-2.5">
+                        <p className="text-xs font-medium text-[var(--color-text-muted)] mb-1.5">{t('common:includes', 'Includes')}</p>
+                        <ul className="text-sm text-[var(--color-text-muted)] space-y-1">
                           {cat.items.map((it) => (
-                            <li key={it}>{it}</li>
+                            <li key={it} className="flex items-center gap-2">
+                              <span className="w-1 h-1 rounded-full bg-[var(--color-text-muted)] shrink-0" />
+                              {it}
+                            </li>
                           ))}
                         </ul>
                       </div>

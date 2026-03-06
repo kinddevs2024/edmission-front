@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
 
 export function LandingHeader() {
   const { t } = useTranslation('landing')
@@ -64,6 +65,7 @@ export function LandingHeader() {
           >
             {t('header.register')}
           </Link>
+          <LanguageMenu />
         </nav>
       </div>
     </header>

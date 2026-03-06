@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Globe } from 'lucide-react'
 import i18n, { loadLanguage } from '@/i18n'
-import { supportedLngs, type SupportedLng } from '@/i18n/config'
+import { supportedLngs, STORAGE_KEY, type SupportedLng } from '@/i18n/config'
 import { cn } from '@/utils/cn'
 
 const LANGUAGE_LABELS: Record<SupportedLng, string> = {
@@ -28,7 +28,14 @@ export function LanguageMenu() {
 
   const handleSelect = (lng: SupportedLng) => {
     setOpen(false)
-    loadLanguage(lng).then(() => i18n.changeLanguage(lng))
+    loadLanguage(lng).then(() => {
+      i18n.changeLanguage(lng)
+      try {
+        localStorage.setItem(STORAGE_KEY, lng)
+      } catch {
+        /* ignore */
+      }
+    })
   }
 
   return (

@@ -311,6 +311,77 @@ export async function rejectUniversity(universityId: string, _comment?: string):
   await api.post(`/admin/universities/${universityId}/verify`, { approve: false })
 }
 
+// ——— University catalog (for registration flow) ———
+
+export interface AdminCatalogUniversity {
+  id: string
+  name: string
+  universityName?: string
+  country?: string
+  city?: string
+  description?: string
+  logoUrl?: string
+  tagline?: string
+  establishedYear?: number
+  studentCount?: number
+  facultyCodes?: string[]
+  targetStudentCountries?: string[]
+}
+
+export interface AdminCatalogListResponse {
+  data: AdminCatalogUniversity[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export async function getAdminCatalogUniversities(params?: { page?: number; limit?: number; search?: string }): Promise<AdminCatalogListResponse> {
+  const { data } = await api.get<AdminCatalogListResponse>('/admin/universities', { params })
+  return data ?? { data: [], total: 0, page: 1, limit: 20, totalPages: 0 }
+}
+
+export async function createCatalogUniversity(body: Record<string, unknown>): Promise<AdminCatalogUniversity> {
+  const { data } = await api.post<AdminCatalogUniversity>('/admin/universities', body)
+  return data!
+}
+
+export async function getCatalogUniversity(id: string): Promise<AdminCatalogUniversity & { programs?: unknown[]; scholarships?: unknown[] }> {
+  const { data } = await api.get<AdminCatalogUniversity & { programs?: unknown[]; scholarships?: unknown[] }>(`/admin/universities/${id}`)
+  return data!
+}
+
+export async function updateCatalogUniversity(id: string, body: Record<string, unknown>): Promise<AdminCatalogUniversity> {
+  const { data } = await api.patch<AdminCatalogUniversity>(`/admin/universities/${id}`, body)
+  return data!
+}
+
+// ——— University verification requests (catalog → profile) ———
+
+export interface UniversityVerificationRequestItem {
+  id: string
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: string
+  reviewedAt?: string
+  university?: { name?: string; country?: string; city?: string }
+  userEmail?: string
+}
+
+export async function getUniversityVerificationRequests(params?: { status?: string }): Promise<UniversityVerificationRequestItem[]> {
+  const { data } = await api.get<UniversityVerificationRequestItem[]>('/admin/university-requests', { params })
+  return data ?? []
+}
+
+export async function approveUniversityRequest(requestId: string): Promise<{ approved: boolean; profileId: string }> {
+  const { data } = await api.post<{ approved: boolean; profileId: string }>(`/admin/university-requests/${requestId}/approve`)
+  return data ?? { approved: true, profileId: '' }
+}
+
+export async function rejectUniversityRequest(requestId: string): Promise<{ rejected: boolean }> {
+  const { data } = await api.post<{ rejected: boolean }>(`/admin/university-requests/${requestId}/reject`)
+  return data ?? { rejected: true }
+}
+
 export async function getLogs(params?: PaginationParams & { type?: string; userId?: string; from?: string; to?: string }): Promise<PaginatedResponse<AuditLogEntry>> {
   const { data } = await api.get<PaginatedResponse<AuditLogEntry>>('/admin/logs', { params })
   return data

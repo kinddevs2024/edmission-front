@@ -9,6 +9,8 @@ import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { GraduationCap, Building2 } from 'lucide-react'
+import { cn } from '@/utils/cn'
 
 export function Register() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
@@ -23,12 +25,13 @@ export function Register() {
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { role: 'student' },
   })
-  watch('role')
+  const role = watch('role')
 
   const onSubmit = async (data: FormData) => {
     setSubmitError('')
@@ -41,7 +44,7 @@ export function Register() {
         role: data.role,
       })
       if (user.role === 'student') navigate('/student/dashboard')
-      else navigate('/university/pending')
+      else navigate('/university/select')
     } catch (err) {
       const key = getApiErrorKey(err)
       setSubmitError(t(`errors:${key}`))
@@ -56,18 +59,74 @@ export function Register() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input label={t('auth:name')} placeholder={t('auth:name')} error={errors.name?.message} {...register('name')} />
         <Input label={t('auth:email')} type="email" autoComplete="email" placeholder={t('auth:emailPlaceholder')} error={errors.email?.message} {...register('email')} />
-        <Input label={t('auth:password')} type="password" autoComplete="new-password" hint={t('auth:passwordMinLength')} error={errors.password?.message} {...register('password')} />
-        <Input label={t('auth:confirmPassword')} type="password" autoComplete="new-password" error={errors.confirmPassword?.message} {...register('confirmPassword')} />
+        <Input
+          label={t('auth:password')}
+          type="password"
+          autoComplete="new-password"
+          hint={t('auth:passwordMinLength')}
+          error={errors.password?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
+          {...register('password')}
+        />
+        <Input
+          label={t('auth:confirmPassword')}
+          type="password"
+          autoComplete="new-password"
+          error={errors.confirmPassword?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle={false}
+          {...register('confirmPassword')}
+        />
         <div>
-          <span className="text-sm text-[var(--color-text-muted)] mr-2">{t('auth:registerAs')}</span>
-          <label className="inline-flex items-center gap-2 mr-4">
-            <input type="radio" value="student" {...register('role')} />
-            {t('auth:student')}
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" value="university" {...register('role')} />
-            {t('auth:university')}
-          </label>
+          <p className="text-sm font-medium text-[var(--color-text)] mb-2">{t('auth:registerAs')}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setValue('role', 'student', { shouldValidate: true })}
+              className={cn(
+                'flex items-center gap-3 p-4 rounded-card border-2 text-left transition-all',
+                role === 'student'
+                  ? 'border-primary-accent bg-primary-accent/10 shadow-md'
+                  : 'border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-text-muted)]'
+              )}
+            >
+              <div className={cn(
+                'w-12 h-12 rounded-lg flex items-center justify-center shrink-0',
+                role === 'student' ? 'bg-primary-accent/20 text-primary-accent' : 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
+              )}>
+                <GraduationCap className="w-6 h-6" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-[var(--color-text)]">{t('auth:student')}</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{t('auth:studentRoleHint', 'I am applying to universities')}</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setValue('role', 'university', { shouldValidate: true })}
+              className={cn(
+                'flex items-center gap-3 p-4 rounded-card border-2 text-left transition-all',
+                role === 'university'
+                  ? 'border-primary-accent bg-primary-accent/10 shadow-md'
+                  : 'border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-text-muted)]'
+              )}
+            >
+              <div className={cn(
+                'w-12 h-12 rounded-lg flex items-center justify-center shrink-0',
+                role === 'university' ? 'bg-primary-accent/20 text-primary-accent' : 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
+              )}>
+                <Building2 className="w-6 h-6" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-[var(--color-text)]">{t('auth:university')}</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{t('auth:universityRoleHint', 'I represent a university')}</p>
+              </div>
+            </button>
+          </div>
+          <input type="hidden" {...register('role')} />
         </div>
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         <Button type="submit" className="w-full" loading={loading} disabled={loading}>{t('common:register')}</Button>

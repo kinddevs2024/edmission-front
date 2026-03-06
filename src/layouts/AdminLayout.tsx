@@ -17,6 +17,8 @@ export function AdminLayout() {
       { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
       { to: '/admin/users', label: t('users'), icon: 'Users' },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' },
+      { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' },
+      { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' },
       { to: '/admin/interests', label: t('interests'), icon: 'Heart' },
       { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' },
@@ -34,6 +36,7 @@ export function AdminLayout() {
       { to: '/admin/users', label: t('users'), icon: 'Users' },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' },
+      { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' },
       { to: '/admin/logs', label: t('logs'), icon: 'Logs' },
     ],
     [t]

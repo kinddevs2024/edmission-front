@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
-import { getProfile, updateProfile, getApiError } from '@/services/auth'
+import { getProfile, updateProfile, getApiError, logout as logoutApi } from '@/services/auth'
 import { setup2FA, verifyAndEnable2FA, disable2FA } from '@/services/twoFactor'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
+import { ThemeSwitch } from '@/components/layout/ThemeSwitch'
 import type { NotificationPreferences } from '@/types/user'
 
 export function Profile() {
@@ -69,6 +71,25 @@ export function Profile() {
           <dt className="text-[var(--color-text-muted)]">{t('common:role')}</dt>
           <dd>{user?.role}</dd>
         </dl>
+      </Card>
+
+      <Card>
+        <CardTitle>{t('settings', 'Settings')}</CardTitle>
+        <div className="mt-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm text-[var(--color-text-muted)]">{t('language', 'Language')}</span>
+            <LanguageMenu />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm text-[var(--color-text-muted)]">{t('theme', 'Theme')}</span>
+            <ThemeSwitch />
+          </div>
+          <div className="pt-2 border-t border-[var(--color-border)]">
+            <Button variant="secondary" onClick={() => logoutApi().catch(() => {})}>
+              {t('logout')}
+            </Button>
+          </div>
+        </div>
       </Card>
 
       <Card>

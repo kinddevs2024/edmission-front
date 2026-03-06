@@ -165,7 +165,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
       />
       <div
         className={cn(
-          'fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl flex flex-col transition-transform duration-300',
+          'fixed inset-0 md:inset-auto md:right-0 md:top-0 md:bottom-0 z-50 w-full md:max-w-md bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl flex flex-col transition-transform duration-300',
           open ? 'translate-x-0' : 'translate-x-full'
         )}
         role="dialog"

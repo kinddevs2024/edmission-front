@@ -36,6 +36,7 @@ const Faculties = lazy(() => import('@/pages/university/Faculties').then((m) => 
 const UniversityAnalytics = lazy(() => import('@/pages/university/UniversityAnalytics').then((m) => ({ default: m.UniversityAnalytics })))
 const UniversityChat = lazy(() => import('@/pages/university/UniversityChat').then((m) => ({ default: m.UniversityChat })))
 const UniversityPendingVerification = lazy(() => import('@/pages/university/UniversityPendingVerification').then((m) => ({ default: m.UniversityPendingVerification })))
+const UniversitySelect = lazy(() => import('@/pages/university/UniversitySelect').then((m) => ({ default: m.UniversitySelect })))
 
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
@@ -48,6 +49,8 @@ const AdminOffers = lazy(() => import('@/pages/admin/AdminOffers').then((m) => (
 const AdminInterests = lazy(() => import('@/pages/admin/AdminInterests').then((m) => ({ default: m.AdminInterests })))
 const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ default: m.AdminChats })))
 const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
+const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
+const AdminUniversityRequests = lazy(() => import('@/pages/admin/AdminUniversityRequests').then((m) => ({ default: m.AdminUniversityRequests })))
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
@@ -80,8 +83,25 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, user } = useAuth()
   if (!isAuthenticated) return <>{children}</>
-  const redirect = role === 'student' ? '/student/dashboard' : role === 'university' ? (user?.universityProfile?.verified ? '/university/dashboard' : '/university/pending') : '/admin'
+  let redirect: string
+  if (role === 'student') redirect = '/student/dashboard'
+  else if (role === 'university') {
+    if (!user?.universityProfile) redirect = '/university/select'
+    else redirect = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
+  } else redirect = '/admin'
   return <Navigate to={redirect} replace />
+}
+
+function LandingOrRedirect() {
+  const { isAuthenticated, role, user } = useAuth()
+  if (!isAuthenticated) return <Landing /> 
+  let to: string
+  if (role === 'student') to = '/student/dashboard'
+  else if (role === 'university') {
+    if (!user?.universityProfile) to = '/university/select'
+    else to = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
+  } else to = '/admin'
+  return <Navigate to={to} replace />
 }
 
 export function Router() {
@@ -97,7 +117,7 @@ export function Router() {
       </Route>
 
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<Landing />} />
+        <Route index element={<LandingOrRedirect />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin']}><Profile /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university']}><NotificationsPage /></ProtectedRoute>} />
@@ -122,6 +142,7 @@ export function Router() {
         </Route>
 
         <Route path="university" element={<ProtectedRoute allowedRoles={['university']}><Outlet /></ProtectedRoute>}>
+          <Route path="select" element={<UniversitySelect />} />
           <Route path="pending" element={<UniversityPendingVerification />} />
           <Route element={<UniversityLayout />}>
           <Route path="onboarding" element={<UniversityOnboarding />} />
@@ -143,6 +164,8 @@ export function Router() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="verification" element={<Verification />} />
+          <Route path="universities" element={<AdminUniversities />} />
+          <Route path="university-requests" element={<AdminUniversityRequests />} />
           <Route path="documents" element={<AdminDocuments />} />
           <Route path="offers" element={<AdminOffers />} />
           <Route path="interests" element={<AdminInterests />} />

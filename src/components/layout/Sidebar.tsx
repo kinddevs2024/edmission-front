@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/utils/cn'
 import { getNavIcon } from '@/components/icons/NavIcons'
@@ -10,15 +10,12 @@ export interface NavItem {
 }
 
 export function Sidebar({ items }: { items: NavItem[] }) {
-  const location = useLocation()
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
-  const isChatPage = location.pathname.includes('/chat')
 
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-primary-dark text-white transition-[width] duration-200 flex flex-col',
-        isChatPage ? 'flex' : 'hidden lg:flex',
+        'fixed left-0 top-0 z-40 h-screen bg-primary-dark text-white transition-[width] duration-200 hidden lg:flex flex-col',
         collapsed ? 'w-[72px]' : 'w-sidebar'
       )}
     >

@@ -4,6 +4,26 @@ import type { UniversityProfile, Scholarship, Faculty } from '@/types/university
 
 type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number }
 
+export interface CatalogUniversity {
+  id: string
+  name: string
+  universityName?: string
+  country?: string
+  city?: string
+  description?: string
+  logoUrl?: string
+}
+
+export async function getCatalog(params?: { search?: string; country?: string }): Promise<CatalogUniversity[]> {
+  const { data } = await api.get<CatalogUniversity[]>('/university/catalog', { params })
+  return data ?? []
+}
+
+export async function createVerificationRequest(universityId: string): Promise<{ id: string; status: string }> {
+  const { data } = await api.post<{ id: string; status: string }>('/university/verification-request', { universityId })
+  return data ?? { id: '', status: 'pending' }
+}
+
 export async function getProfile(): Promise<UniversityProfile> {
   const { data } = await api.get<UniversityProfileResponse>('/university/profile')
   return {

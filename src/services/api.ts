@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from 'axios'
 import { useAuthStore } from '@/store/authStore'
+import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
 
 // Локально (dev): запросы сразу на бэкенд (порт 4000), без прокси. На проде — тот же домен /api (проксирует nginx).
 const baseURL =
@@ -25,8 +26,20 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as typeof error.config & { _retry?: boolean }
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-      // TODO: call refresh token endpoint, then retry originalRequest
+      const refreshToken = getStoredRefreshToken()
+      if (refreshToken) {
+        originalRequest._retry = true
+        try {
+          const { data } = await api.post<{ user: import('@/types/user').User; accessToken: string }>('/auth/refresh', { refreshToken })
+          saveAuth(data.user, data.accessToken, refreshToken)
+          useAuthStore.getState().setAuth(data.user, data.accessToken)
+          if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+          return api(originalRequest)
+        } catch {
+          /* fall through to clear and redirect */
+        }
+      }
+      clearAuth()
       useAuthStore.getState().logout()
       window.location.href = '/login'
     }

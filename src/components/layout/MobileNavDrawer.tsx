@@ -46,7 +46,7 @@ export function MobileNavDrawer() {
           />
           <aside
             className={cn(
-              'fixed top-0 left-0 z-50 h-full w-[min(100vw,280px)] max-w-[280px]',
+              'fixed top-0 left-0 z-50 h-full w-full md:max-w-[280px]',
               'bg-[var(--color-card)] border-r border-[var(--color-border)]',
               'flex flex-col shadow-xl lg:hidden',
               'animate-drawer-enter'
