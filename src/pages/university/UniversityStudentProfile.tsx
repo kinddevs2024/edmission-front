@@ -299,12 +299,12 @@ export function UniversityStudentProfile() {
             ) : isImage(filePreview.url) ? (
               <img src={filePreview.url} alt={filePreview.name} className="max-w-full h-auto rounded border border-[var(--color-border)]" />
             ) : (
-              <>
+              <div>
                 <p className="text-sm text-[var(--color-text-muted)] mb-2">Preview not available. Download the file to open it.</p>
                 <a href={filePreview.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-accent hover:underline">
                   <ExternalLink size={16} /> Open / Download
                 </a>
-              </>
+              </div>
             )}
           </div>
         )}
