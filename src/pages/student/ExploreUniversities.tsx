@@ -39,6 +39,8 @@ export function ExploreUniversities() {
   const [loading, setLoading] = useState(true)
   const [interestedIds, setInterestedIds] = useState<Set<string>>(new Set())
   const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; current: number; limit: number | null }>({ allowed: true, current: 0, limit: 3 })
+  /** When true, backend does not filter by profile (interestedFaculties, preferredCountries). Set by Clear. */
+  const [useProfileFilters, setUseProfileFilters] = useState(true)
   const limit = 12
 
   useEffect(() => {
@@ -68,6 +70,7 @@ export function ExploreUniversities() {
       country: country || undefined,
       city: city.trim() || undefined,
       sort: sort as 'match' | 'name' | 'rating',
+      useProfileFilters,
     })
       .then((res) => {
         if (!cancelled) {
@@ -85,7 +88,7 @@ export function ExploreUniversities() {
         if (!cancelled) setLoading(false)
       })
     return () => { cancelled = true }
-  }, [page, country, city, sort])
+  }, [page, country, city, sort, useProfileFilters])
 
   const handleInterest = (id: string) => {
     if (interestedIds.has(id) || !interestLimit.allowed) return
@@ -101,17 +104,34 @@ export function ExploreUniversities() {
   const interestLabel = interestLimit.limit != null ? `${interestLimit.current}/${interestLimit.limit}` : `${interestLimit.current}`
 
   const totalPages = Math.max(1, Math.ceil(total / limit))
+  const hasFilters = search.trim() !== '' || country !== '' || city.trim() !== '' || sort !== 'match' || useProfileFilters
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setCountry('')
+    setCity('')
+    setSort('match')
+    setPage(1)
+    setUseProfileFilters(false)
+  }
+
+  const handleFilterChange = () => {
+    setPage(1)
+    setUseProfileFilters(true)
+  }
 
   return (
     <div className="space-y-4">
       <PageTitle title={t('exploreUniversities')} icon="GraduationCap" />
 
+      {/* Filters: student-oriented first (sort, country, city, search) */}
       <div className="flex flex-wrap items-end gap-2">
-        <div className="w-[150px] shrink-0">
-          <Input
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+        <div className="w-[110px] shrink-0">
+          <Select
+            label="Sort"
+            options={SORT_OPTIONS}
+            value={sort}
+            onChange={(e) => { setSort(e.target.value); handleFilterChange() }}
             className="text-sm py-1.5 h-8"
           />
         </div>
@@ -120,7 +140,7 @@ export function ExploreUniversities() {
             label="Country"
             options={COUNTRY_OPTIONS}
             value={country}
-            onChange={(e) => { setCountry(e.target.value); setPage(1) }}
+            onChange={(e) => { setCountry(e.target.value); handleFilterChange() }}
             className="text-sm py-1.5 h-8"
           />
         </div>
@@ -128,19 +148,23 @@ export function ExploreUniversities() {
           <Input
             placeholder="City"
             value={city}
-            onChange={(e) => { setCity(e.target.value); setPage(1) }}
+            onChange={(e) => { setCity(e.target.value); handleFilterChange() }}
             className="text-sm py-1.5 h-8"
           />
         </div>
-        <div className="w-[110px] shrink-0">
-          <Select
-            label="Sort"
-            options={SORT_OPTIONS}
-            value={sort}
-            onChange={(e) => { setSort(e.target.value); setPage(1) }}
+        <div className="w-[150px] shrink-0">
+          <Input
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); handleFilterChange() }}
             className="text-sm py-1.5 h-8"
           />
         </div>
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+            {t('clearFilters')}
+          </Button>
+        )}
       </div>
 
       {interestLimit.limit != null && (
@@ -160,7 +184,7 @@ export function ExploreUniversities() {
             title={t('noUniversitiesFound')}
             description={t('tryChangingFiltersOrSearch')}
             actionLabel={t('clearFilters')}
-            onAction={() => { setSearch(''); setCountry(''); setCity(''); setSort('match'); setPage(1) }}
+            onAction={handleClearFilters}
           />
         </Card>
       ) : (

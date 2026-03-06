@@ -14,7 +14,7 @@ export function UniversityExperienceSection() {
     { icon: BarChart3, text: t('university.features.4') },
   ]
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
+    <section id="for-universities" className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
       <div className="grid gap-8 md:grid-cols-2 md:items-center">
         <Reveal>
           <Card className="p-5" interactive tilt>

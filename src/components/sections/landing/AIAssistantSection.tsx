@@ -1,6 +1,7 @@
 import { Bot, Compass, Lightbulb, Sparkles, WandSparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { TiltCard } from '@/components/ui/TiltCard'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
@@ -35,8 +36,9 @@ export function AIAssistantSection() {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <motion.div animate={{ y: [0, -7, 0] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
-            <Card className="p-5" interactive>
+          <TiltCard maxTilt={14} perspective={600} className="[transform-style:preserve-3d]">
+            <motion.div animate={{ y: [0, -7, 0] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
+              <Card className="p-5" interactive>
               <div className="mb-4 flex items-center gap-2 border-b border-[var(--color-border)] pb-3">
                 <span className="rounded-md bg-primary-accent/15 p-2 text-primary-accent"><Bot className="h-4 w-4" aria-hidden /></span>
                 <div>
@@ -55,8 +57,9 @@ export function AIAssistantSection() {
                   {t('ai.chatQ2')}
                 </div>
               </div>
-            </Card>
-          </motion.div>
+              </Card>
+            </motion.div>
+          </TiltCard>
         </Reveal>
       </div>
     </section>

@@ -92,6 +92,8 @@ export interface UniversitiesParams extends PaginationParams {
   degree?: string
   hasScholarship?: boolean
   sort?: 'match' | 'name' | 'rating'
+  /** When false, backend does not filter by profile (interestedFaculties, preferredCountries). Use after "Clear". */
+  useProfileFilters?: boolean
 }
 
 function normalizeUniversityItem(u: UniversityListItem & { universityName?: string }): UniversityListItem {

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { TiltCard } from '@/components/ui/TiltCard'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
@@ -36,8 +37,9 @@ export function MatchingEngineSection() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-            <Card className="relative p-8" interactive>
+          <TiltCard maxTilt={14} perspective={600} className="[transform-style:preserve-3d]">
+            <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+              <Card className="relative p-8" interactive>
             <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-full border-8 border-primary-accent/20">
               <motion.div
                 animate={{ scale: hovered ? 1.03 : 1 }}
@@ -72,8 +74,9 @@ export function MatchingEngineSection() {
                 </div>
               ))}
             </motion.div>
-            </Card>
-          </div>
+              </Card>
+            </div>
+          </TiltCard>
         </Reveal>
       </div>
     </section>

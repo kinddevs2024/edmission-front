@@ -1,5 +1,6 @@
 import { BadgePercent, CalendarClock, CircleDollarSign } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { TiltCard } from '@/components/ui/TiltCard'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { Card } from '@/components/ui/Card'
@@ -23,10 +24,11 @@ export function ScholarshipSection() {
             description={t('scholarship.description')}
           />
         </Reveal>
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {SCHOLARSHIPS.map((item, index) => (
-            <Reveal key={item.name} delay={index * 0.06}>
-              <Card className="h-full p-5" interactive tilt>
+        <TiltCard maxTilt={14} perspective={600} className="mt-10 [transform-style:preserve-3d]">
+          <div className="grid gap-4 md:grid-cols-3">
+            {SCHOLARSHIPS.map((item, index) => (
+              <Reveal key={item.name} delay={index * 0.06}>
+                <Card className="h-full p-5" interactive>
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">{item.name}</h3>
                   <BadgePercent className="h-4 w-4 text-primary-accent" aria-hidden />
@@ -39,10 +41,11 @@ export function ScholarshipSection() {
                   <p className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4" aria-hidden />{item.slots}</p>
                   <p className="flex items-center gap-2"><CalendarClock className="h-4 w-4" aria-hidden />{t('scholarship.deadline')}: {item.deadline}</p>
                 </div>
-              </Card>
-            </Reveal>
-          ))}
-        </div>
+                </Card>
+              </Reveal>
+            ))}
+          </div>
+        </TiltCard>
       </div>
     </section>
   )

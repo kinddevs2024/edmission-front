@@ -37,9 +37,15 @@ export function FooterSection() {
             </div>
           ))}
         </div>
+        <p className="mt-6 text-sm text-[var(--color-text-muted)]">
+          {t('footer.dataSecure')} {t('footer.noHiddenFees')}
+        </p>
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border)] pt-5 text-sm text-[var(--color-text-muted)]">
           <span>© {new Date().getFullYear()} {t('footer.brand')}</span>
-          <Link to="/privacy" className="hover:text-primary-accent">{t('footer.privacy')}</Link>
+          <span className="flex flex-wrap items-center gap-4">
+            <Link to="/privacy" className="hover:text-primary-accent">{t('footer.privacy')}</Link>
+            <a href="mailto:support@edmission.uz" className="hover:text-primary-accent">{t('footer.contact')}</a>
+          </span>
         </div>
       </div>
     </footer>

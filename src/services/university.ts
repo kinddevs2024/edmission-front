@@ -124,6 +124,8 @@ export interface StudentSearchParams {
   certMinScore?: string
   minBudget?: number
   maxBudget?: number
+  /** When false, backend does not filter by profile (targetStudentCountries, facultyCodes). Use after "Clear". */
+  useProfileFilters?: boolean
 }
 
 export interface DiscoverStudentItem {
@@ -162,6 +164,7 @@ export async function getStudents(params?: StudentSearchParams): Promise<Student
   if (params?.certMinScore != null) query.certMinScore = params.certMinScore
   if (params?.minBudget != null) query.minBudget = String(params.minBudget)
   if (params?.maxBudget != null) query.maxBudget = String(params.maxBudget)
+  if (params?.useProfileFilters === false) query.useProfileFilters = '0'
   const { data } = await api.get<StudentSearchResponse>('/university/students', { params: query })
   return data ?? { data: [], total: 0, page: 1, limit: 20, totalPages: 0 }
 }

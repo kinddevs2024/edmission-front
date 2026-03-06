@@ -1,9 +1,12 @@
 {
   "hero": {
     "eyebrow": "Academic Infrastructure Platform",
-    "title": "Direct Admission Platform",
+    "title": "Let universities compete for you",
+    "valueLine": "Get matched with universities and scholarships in one place. No agencies, no hidden fees.",
     "subtitle": "Connecting Students and Universities Without Intermediaries",
     "description": "Edmission is a national digital platform that enables transparent admissions between students and universities through AI-powered matching and direct communication.",
+    "primaryCta": "Create free account",
+    "secondaryCta": "I'm a university",
     "exploreBtn": "Explore Universities",
     "registerUniversityBtn": "Register University",
     "preview": {
@@ -21,7 +24,30 @@
     }
   },
   "trusted": {
-    "title": "Trusted by universities and students across the region"
+    "title": "Trusted by universities and students across the region",
+    "statUniversities": "50+",
+    "statUniversitiesLabel": "Universities",
+    "statStudents": "10,000+",
+    "statStudentsLabel": "Students",
+    "statScholarships": "$5M+",
+    "statScholarshipsLabel": "Scholarships",
+    "testimonial": "I got matched with three universities and a scholarship offer in two weeks. No agency fees.",
+    "testimonialAuthor": "Student, Tashkent"
+  },
+  "ctaBlock": {
+    "title": "Ready to get started?",
+    "description": "Create your profile and get matched with universities and scholarship opportunities.",
+    "button": "Create free account"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      { "q": "What is Edmission?", "a": "Edmission is a direct admission platform that connects students and universities without agencies. You create a profile, get AI-powered university matches, and can receive scholarship offers directly from universities." },
+      { "q": "Is Edmission free for students?", "a": "Yes. Students can create an account, build a profile, explore universities, and receive recommendations and offers at no cost. There are no hidden fees." },
+      { "q": "How does the matching work?", "a": "Our system uses your grades, field of study, language, budget, and preferences to recommend universities and programs that fit. Each match includes a transparent score breakdown." },
+      { "q": "Which countries and universities are on Edmission?", "a": "We are growing our network of partner universities across the region. You can explore available programs and countries once you sign up." },
+      { "q": "How do I get scholarship offers?", "a": "Universities on the platform allocate scholarships and send offers to matched students. Completing your profile and applying to programs increases your visibility to universities." }
+    ]
   },
   "problem": {
     "eyebrow": "Problem Statement",
@@ -136,7 +162,15 @@
   "network": {
     "eyebrow": "Global Network",
     "title": "A Growing Academic Network",
-    "description": "A distributed network of students and universities connected through a single transparent infrastructure layer."
+    "description": "A distributed network of students and universities connected through a single transparent infrastructure layer.",
+    "node0": "Universities worldwide in one place",
+    "node1": "Smart matching to your profile",
+    "node2": "Your strengths, one application",
+    "node3": "Scholarships and financial aid",
+    "node4": "One form, many opportunities",
+    "node5": "Transparent admission process",
+    "node6": "Offers and decisions in one flow",
+    "node7": "Global academic community"
   },
   "scale": {
     "title": "Platform Scale",
@@ -155,9 +189,19 @@
     "brand": "Edmission",
     "description": "Academic infrastructure platform connecting students and universities without intermediaries.",
     "privacy": "Privacy",
+    "dataSecure": "Your data is secure.",
+    "noHiddenFees": "No hidden fees. We don't sell your data.",
+    "contact": "Contact",
     "platform": { "title": "Platform", "0": "About", "1": "Infrastructure", "2": "AI Matching" },
     "students": { "title": "Students", "0": "Explore Universities", "1": "Applications", "2": "Offers" },
     "universities": { "title": "Universities", "0": "Discovery", "1": "Pipeline", "2": "Scholarships" },
     "support": { "title": "Support", "0": "Security", "1": "Help Center", "2": "Contact" }
+  },
+  "header": {
+    "login": "Log in",
+    "register": "Register",
+    "howItWorks": "How it works",
+    "forUniversities": "For universities",
+    "faq": "FAQ"
   }
 }

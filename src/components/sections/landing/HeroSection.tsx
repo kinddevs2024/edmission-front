@@ -3,6 +3,7 @@ import { Building2, GraduationCap, Sparkles, ShieldCheck, Target } from 'lucide-
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { TiltCard } from '@/components/ui/TiltCard'
 import { Reveal } from './Reveal'
 
 function FloatingPanel({
@@ -22,17 +23,19 @@ function FloatingPanel({
       animate={{ y: [0, -6, 0] }}
       transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
     >
-      <Card className="px-4 py-3" interactive>
-        <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-primary-accent/15 p-2 text-primary-accent">
-            <Icon className="h-4 w-4" aria-hidden />
-          </span>
-          <div>
-            <p className="text-xs text-[var(--color-text-muted)]">{title}</p>
-            <p className="text-sm font-semibold text-[var(--color-text)]">{value}</p>
+      <TiltCard maxTilt={8} className="h-full">
+        <Card className="h-full px-4 py-3" interactive>
+          <div className="flex items-center gap-3">
+            <span className="rounded-lg bg-primary-accent/15 p-2 text-primary-accent">
+              <Icon className="h-4 w-4" aria-hidden />
+            </span>
+            <div>
+              <p className="text-xs text-[var(--color-text-muted)]">{title}</p>
+              <p className="text-sm font-semibold text-[var(--color-text)]">{value}</p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </TiltCard>
     </motion.div>
   )
 }
@@ -43,9 +46,54 @@ export function HeroSection() {
     <section className="relative overflow-hidden border-b border-[var(--color-border)]">
       <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden>
         <svg className="h-full w-full" viewBox="0 0 1280 760" fill="none">
-          <path d="M0 130C210 40 320 40 620 160C830 245 970 240 1280 110" stroke="currentColor" className="text-[var(--color-border)]" />
-          <path d="M0 310C190 220 380 220 620 310C860 400 1030 390 1280 320" stroke="currentColor" className="text-[var(--color-border)]" />
-          <path d="M0 510C240 430 390 430 620 510C830 585 1010 590 1280 520" stroke="currentColor" className="text-[var(--color-border)]" />
+          {/* Wave 1: path bends up then down */}
+          <motion.path
+            stroke="currentColor"
+            className="text-[var(--color-border)]"
+            fill="none"
+            animate={{
+              d: [
+                'M0 130C210 40 320 40 620 160C830 245 970 240 1280 110',
+                'M0 122C210 32 320 32 620 152C830 237 970 232 1280 102',
+                'M0 130C210 40 320 40 620 160C830 245 970 240 1280 110',
+                'M0 138C210 48 320 48 620 168C830 253 970 248 1280 118',
+                'M0 130C210 40 320 40 620 160C830 245 970 240 1280 110',
+              ],
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          {/* Wave 2 */}
+          <motion.path
+            stroke="currentColor"
+            className="text-[var(--color-border)]"
+            fill="none"
+            animate={{
+              d: [
+                'M0 310C190 220 380 220 620 310C860 400 1030 390 1280 320',
+                'M0 318C190 228 380 228 620 318C860 408 1030 398 1280 328',
+                'M0 310C190 220 380 220 620 310C860 400 1030 390 1280 320',
+                'M0 302C190 212 380 212 620 302C860 392 1030 382 1280 312',
+                'M0 310C190 220 380 220 620 310C860 400 1030 390 1280 320',
+              ],
+            }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+          />
+          {/* Wave 3 */}
+          <motion.path
+            stroke="currentColor"
+            className="text-[var(--color-border)]"
+            fill="none"
+            animate={{
+              d: [
+                'M0 510C240 430 390 430 620 510C830 585 1010 590 1280 520',
+                'M0 502C240 422 390 422 620 502C830 577 1010 582 1280 512',
+                'M0 510C240 430 390 430 620 510C830 585 1010 590 1280 520',
+                'M0 518C240 438 390 438 620 518C830 593 1010 598 1280 528',
+                'M0 510C240 430 390 430 620 510C830 585 1010 590 1280 520',
+              ],
+            }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+          />
         </svg>
       </div>
 
@@ -57,26 +105,30 @@ export function HeroSection() {
           <h1 className="mt-5 text-4xl font-semibold leading-tight text-[var(--color-text)] md:text-6xl">
             {t('hero.title')}
           </h1>
-          <p className="mt-4 text-lg text-[var(--color-text-muted)]">
-            {t('hero.subtitle')}
+          <p className="mt-4 text-lg font-medium text-[var(--color-text)]">
+            {t('hero.valueLine')}
           </p>
-          <p className="mt-6 max-w-xl text-base text-[var(--color-text-muted)]">
+          <p className="mt-3 max-w-xl text-base text-[var(--color-text-muted)]">
             {t('hero.description')}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button to="/register" size="lg">{t('hero.exploreBtn')}</Button>
-            <Button to="/register?role=university" variant="secondary" size="lg">{t('hero.registerUniversityBtn')}</Button>
+            <Button to="/register" size="lg">{t('hero.primaryCta')}</Button>
+            <Button to="/register?role=university" variant="secondary" size="lg">{t('hero.secondaryCta')}</Button>
           </div>
         </Reveal>
 
         <Reveal delay={0.12}>
           <div className="relative mx-auto h-[420px] w-full max-w-[560px]">
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+            <TiltCard
+              maxTilt={14}
+              perspective={1200}
               className="absolute inset-x-10 top-14"
             >
-              <Card className="p-5" interactive tilt>
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Card className="p-5" interactive>
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.discovery')}</p>
@@ -91,7 +143,8 @@ export function HeroSection() {
                   <div className="rounded-input border border-[var(--color-border)] p-2"><p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.scholarship')}</p><p className="font-semibold">70%</p></div>
                 </div>
               </Card>
-            </motion.div>
+              </motion.div>
+            </TiltCard>
 
             <FloatingPanel className="absolute left-0 top-0 w-56" title={t('hero.panels.studentProfile.title')} value={t('hero.panels.studentProfile.value')} icon={GraduationCap} />
             <FloatingPanel className="absolute right-0 top-8 w-52" title={t('hero.panels.scholarship.title')} value={t('hero.panels.scholarship.value')} icon={ShieldCheck} />

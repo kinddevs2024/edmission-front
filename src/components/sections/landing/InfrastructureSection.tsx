@@ -13,7 +13,7 @@ export function InfrastructureSection() {
     { title: t('infrastructure.cards.3.title'), desc: t('infrastructure.cards.3.desc'), icon: GitBranch },
   ]
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
+    <section id="how-it-works" className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
       <Reveal>
         <SectionHeading
           eyebrow={t('infrastructure.eyebrow')}

@@ -36,7 +36,7 @@ export function ProblemSection() {
     { icon: SearchX, text: t('problem.universities.3') },
   ]
   return (
-    <section className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
+    <section id="problem" className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
       <div className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
         <Reveal>
           <SectionHeading

@@ -55,6 +55,8 @@ export function Discovery() {
   const [filterMinBudget, setFilterMinBudget] = useState<string>('')
   const [filterMaxBudget, setFilterMaxBudget] = useState<string>('')
   const [filterModalOpen, setFilterModalOpen] = useState(false)
+  /** When false, backend does not filter by profile (targetStudentCountries, facultyCodes). Set by Clear. */
+  const [useProfileFilters, setUseProfileFilters] = useState(true)
   const limit = 20
 
   useEffect(() => {
@@ -76,6 +78,7 @@ export function Discovery() {
       hobbies: filterHobbies.length ? filterHobbies : undefined,
       minBudget: filterMinBudget.trim() ? Number(filterMinBudget) : undefined,
       maxBudget: filterMaxBudget.trim() ? Number(filterMaxBudget) : undefined,
+      useProfileFilters,
     })
       .then((res) => {
         setList(res.data ?? [])
@@ -86,7 +89,7 @@ export function Discovery() {
         setTotal(0)
       })
       .finally(() => setLoading(false))
-  }, [page, filterCountry, filterCity, filterLanguages, filterCertType, filterCertMinScore, filterSkills, filterInterests, filterHobbies, filterMinBudget, filterMaxBudget])
+  }, [page, filterCountry, filterCity, filterLanguages, filterCertType, filterCertMinScore, filterSkills, filterInterests, filterHobbies, filterMinBudget, filterMaxBudget, useProfileFilters])
 
   const handleClearFilters = () => {
     setFilterCountry('')
@@ -100,11 +103,13 @@ export function Discovery() {
     setFilterMinBudget('')
     setFilterMaxBudget('')
     setPage(1)
+    setUseProfileFilters(false)
     setFilterModalOpen(false)
   }
 
   const handleApplyFilters = () => {
     setPage(1)
+    setUseProfileFilters(true)
     setFilterModalOpen(false)
   }
 

@@ -1,9 +1,12 @@
 {
   "hero": {
     "eyebrow": "Akademik infratuzilma platformasi",
-    "title": "To'g'ridan-to'g'ri qabul platformasi",
+    "title": "Universitetlar siz uchun raqobatlashsin",
+    "valueLine": "Universitetlar va stipendiyalar bitta joyda. Agentliklar va yashirin to'lovlar yo'q.",
     "subtitle": "Talabalar va universitetlarni vositachilarsiz bog'laymiz",
     "description": "Edmission — AI asosidagi matching va bevosita muloqot orqali talabalar hamda universitetlar o'rtasida shaffof qabul jarayonini ta'minlaydigan milliy raqamli platforma.",
+    "primaryCta": "Hisob yaratish",
+    "secondaryCta": "Men universitetman",
     "exploreBtn": "Universitetlarni ko'rish",
     "registerUniversityBtn": "Universitetni ro'yxatdan o'tkazish",
     "preview": {
@@ -21,7 +24,30 @@
     }
   },
   "trusted": {
-    "title": "Mintaqadagi universitetlar va talabalar ishonadigan platforma"
+    "title": "Mintaqadagi universitetlar va talabalar ishonadigan platforma",
+    "statUniversities": "50+",
+    "statUniversitiesLabel": "Universitet",
+    "statStudents": "10 000+",
+    "statStudentsLabel": "Talaba",
+    "statScholarships": "$5M+",
+    "statScholarshipsLabel": "Stipendiya",
+    "testimonial": "Ikki haftada uchta universitet va stipendiya taklifi oldim. Agentlik to'lovlari yo'q.",
+    "testimonialAuthor": "Talaba, Toshkent"
+  },
+  "ctaBlock": {
+    "title": "Boshlashga tayyormisiz?",
+    "description": "Profil yarating va universitetlar va stipendiyalar bilan tanishing.",
+    "button": "Hisob yaratish"
+  },
+  "faq": {
+    "title": "Tez-tez so'raladigan savollar",
+    "items": [
+      { "q": "Edmission nima?", "a": "Edmission — vositachilarsiz talabalar va universitetlarni bog'laydigan to'g'ridan-to'g'ri qabul platformasi. Profil yaratasiz, AI orqali universitetlar taklifini olasiz va universitetlardan to'g'ridan-to'g'ri stipendiya takliflari olishingiz mumkin." },
+      { "q": "Talabalar uchun bepulmi?", "a": "Ha. Talabalar hisob yaratishi, profil to'ldirishi, universitetlarni ko'rishi va tavsiyalar va takliflar olishi bepul. Yashirin to'lovlar yo'q." },
+      { "q": "Matching qanday ishlaydi?", "a": "Tizim baholar, yo'nalish, til, byudjet va afzalliklar asosida mos universitet va dasturlarni tavsiya qiladi. Har bir match uchun ochiq ball tafsiloti ko'rsatiladi." },
+      { "q": "Qaysi mamlakatlar va universitetlar bor?", "a": "Mintaqada hamkor universitetlar tarmog'ini kengaytiryapmiz. Ro'yxatdan o'tgach, dasturlar va mamlakatlarni ko'rishingiz mumkin." },
+      { "q": "Stipendiya taklifini qanday olaman?", "a": "Platformadagi universitetlar stipendiya ajratadi va mos talabalariga taklif yuboradi. Profilni to'ldirish va arizalar berish universitetlar oldida ko'rinishingizni oshiradi." }
+    ]
   },
   "problem": {
     "eyebrow": "Muammo",
@@ -136,7 +162,15 @@
   "network": {
     "eyebrow": "Global tarmoq",
     "title": "Rivojlanayotgan akademik tarmoq",
-    "description": "Talabalar va universitetlarni yagona shaffof infratuzilma qatlamida bog'laydigan taqsimlangan tarmoq."
+    "description": "Talabalar va universitetlarni yagona shaffof infratuzilma qatlamida bog'laydigan taqsimlangan tarmoq.",
+    "node0": "Dunyo universitetlari bir joyda",
+    "node1": "Profilingizga aqlli moslashuv",
+    "node2": "Kuchli tomonlaringiz — bitta ariza",
+    "node3": "Stipendiyalar va moliyaviy yordam",
+    "node4": "Bitta forma — ko'p imkoniyatlar",
+    "node5": "Shaffof qabul jarayoni",
+    "node6": "Takliflar va qarorlar bitta oqimda",
+    "node7": "Global akademik hamjamiyat"
   },
   "scale": {
     "title": "Platforma ko'lami",
@@ -155,172 +189,19 @@
     "brand": "Edmission",
     "description": "Talabalar va universitetlarni vositachilarsiz bog'laydigan akademik infratuzilma platformasi.",
     "privacy": "Maxfiylik",
+    "dataSecure": "Ma'lumotlaringiz himoyalangan.",
+    "noHiddenFees": "Yashirin to'lovlar yo'q. Ma'lumotlaringizni sotmaymiz.",
+    "contact": "Aloqa",
     "platform": { "title": "Platforma", "0": "Loyiha haqida", "1": "Infratuzilma", "2": "AI matching" },
     "students": { "title": "Talabalar", "0": "Universitetlarni ko'rish", "1": "Arizalar", "2": "Offerlar" },
     "universities": { "title": "Universitetlar", "0": "Discovery", "1": "Pipeline", "2": "Stipendiyalar" },
-    "support": { "title": "Yordam", "0": "Xavfsizlik", "1": "Yordam markazi", "2": "Kontakt" }
-  }
-}
-{
-  "hero": {
-    "eyebrow": "Akademik infratuzilma platformasi",
-    "title": "To'g'ridan-to'g'ri qabul platformasi",
-    "subtitle": "Talabalar va universitetlarni vositachilarsiz bog'laymiz",
-    "description": "Edmission - AI asosidagi matching va to'g'ridan-to'g'ri aloqa orqali talabalar hamda universitetlar o'rtasida shaffof qabul jarayonini ta'minlaydigan milliy raqamli platforma.",
-    "exploreBtn": "Universitetlarni ko'rish",
-    "registerUniversityBtn": "Universitetni ro'yxatdan o'tkazish",
-    "preview": {
-      "discovery": "Universitetlar qidiruvi",
-      "match": "92% moslik",
-      "students": "Talabalar",
-      "programs": "Dasturlar",
-      "scholarship": "Stipendiya"
-    },
-    "panels": {
-      "studentProfile": { "title": "Talaba profili", "value": "Portfolio to'ldirilishi: 84%" },
-      "scholarship": { "title": "Stipendiya belgisi", "value": "Merit Scholarship - 60%" },
-      "match": { "title": "Matching moduli", "value": "Shaffof tafsilotlar" },
-      "university": { "title": "Universitet kartasi", "value": "To'g'ridan-to'g'ri chat yoqilgan" }
-    }
-  },
-  "trusted": {
-    "title": "Mintaqa bo'ylab universitetlar va talabalar ishonadi"
-  },
-  "problem": {
-    "eyebrow": "Muammo",
-    "title": "Qabul tizimi muammoli",
-    "description": "Talabalar ham, universitetlar ham noaniq jarayonlar va samarasiz vositachilardan zarar ko'rmoqda.",
-    "studentsTitle": "Talabalar duch keladi",
-    "universitiesTitle": "Universitetlar duch keladi",
-    "students": [
-      "Qimmat qabul agentliklari",
-      "Yashirin komissiyalar",
-      "Shaffoflikning pastligi",
-      "Universitetlarga cheklangan kirish"
-    ],
-    "universities": [
-      "Yuqori marketing xarajatlari",
-      "Past sifatli leadlar",
-      "Tuzilgan recruitment pipeline yo'qligi",
-      "Talabalarni topish imkoniyati cheklanganligi"
-    ]
-  },
-  "infrastructure": {
-    "eyebrow": "Platforma infratuzilmasi",
-    "title": "Shaffof qabul ekotizimi",
-    "cards": [
-      { "title": "To'g'ridan-to'g'ri aloqa", "desc": "Talabalar va universitetlar xavfsiz muhitda bevosita muloqot qiladi." },
-      { "title": "Shaffof matching", "desc": "Har bir tavsiya omillar bo'yicha aniq tafsilot bilan beriladi." },
-      { "title": "Stipendiya taqsimoti", "desc": "Universitetlar stipendiya slotlarini bitta oqimda boshqaradi." },
-      { "title": "Tuzilgan qabul pipeline", "desc": "Qiziqishdan qabul qilingan offergacha bo'lgan yo'l aniq bosqichlarda yuradi." }
-    ]
-  },
-  "matching": {
-    "eyebrow": "AI matching",
-    "title": "Shaffof matching texnologiyasi",
-    "description": "Moslik bali deterministik omillar asosida hisoblanadi va ikki tomonga ham ochiq ko'rsatiladi.",
-    "scoreLabel": "Moslik bali",
-    "factors": [
-      "GPA mosligi",
-      "Yo'nalish mosligi",
-      "Til talablari",
-      "Stipendiya mosligi",
-      "Kontrakt narxi mosligi",
-      "Lokatsiya afzalligi"
-    ]
-  },
-  "walkthrough": {
-    "eyebrow": "Platforma walkthrough",
-    "title": "Asosiy jarayonlar yagona tajribada",
-    "description": "Zamonaviy admission jarayoni uchun asosiy product ekranlarini gorizontal ko'rib chiqing.",
-    "cards": [
-      { "title": "Talaba dashboard", "desc": "Profil to'ldirilishi, tavsiyalar, faol arizalar." },
-      { "title": "Universitet qidiruvi", "desc": "Filtrli universitet feed va shaffof matching insightlari." },
-      { "title": "Arizalarni kuzatish", "desc": "Qiziqishdan qabulgacha jonli statuslar." },
-      { "title": "Offer boshqaruvi", "desc": "Muddat va javob boshqaruvi bilan stipendiya offer oqimi." }
-    ]
-  },
-  "student": {
-    "eyebrow": "Talaba tajribasi",
-    "title": "Talabalar uchun yaratilgan",
-    "description": "Har bir bosqich aniqlik, tezlik va universitetlarga bevosita kirishga yo'naltirilgan.",
-    "previewTitle": "Talaba dashboard preview",
-    "profileCompletion": "Profil to'ldirilishi",
-    "activeApplications": "Faol arizalar",
-    "recommendedUniversities": "Tavsiya etilgan universitetlar",
-    "features": [
-      "Universitetlarni ko'ring",
-      "AI tavsiyalarini oling",
-      "Universitetlar bilan chat qiling",
-      "Stipendiya offerlarini oling"
-    ]
-  },
-  "university": {
-    "eyebrow": "Universitet tajribasi",
-    "title": "Universitetlar uchun yaratilgan",
-    "description": "Talabalarni jalb qilish, muloqot va stipendiya boshqaruvi uchun operatsion vositalar.",
-    "previewTitle": "Universitet dashboard preview",
-    "features": [
-      "Talabalarni toping",
-      "Nomzodlarni filtrlang",
-      "Qabul pipeline ni boshqaring",
-      "Stipendiyalarni taqsimlang",
-      "Analitikani ko'ring"
-    ],
-    "metrics": {
-      "interested": "Qiziqqanlar",
-      "offersSent": "Yuborilgan offerlar",
-      "acceptanceRate": "Qabul foizi",
-      "activeChats": "Faol chatlar"
-    }
-  },
-  "scholarship": {
-    "eyebrow": "Stipendiya tizimi",
-    "title": "Stipendiya infratuzilmasi",
-    "description": "Universitetlar stipendiya qamrovini tuzilgan va kuzatiladigan oqim orqali taqsimlaydi.",
-    "deadline": "Muddat"
-  },
-  "ai": {
-    "eyebrow": "AI yordamchi",
-    "title": "AI qabul yo'riqnomasi",
-    "description": "Ichki yordamchi talabalar va universitetlarga kontekst asosida yaxshiroq qaror qabul qilishga yordam beradi.",
-    "features": [
-      "Shaxsiy tavsiyalar",
-      "Qabul bo'yicha insightlar",
-      "Ariza bo'yicha yo'riqnoma",
-      "Stipendiya bo'yicha tavsiyalar"
-    ],
-    "chatTitle": "AI Admission Copilot",
-    "chatSubtitle": "Kontekstga mos tavsiyalar",
-    "chatQ1": "60% dan yuqori stipendiya ehtimoli bor universitetlarni ko'rsat.",
-    "chatA1": "GPA, til va budjet bo'yicha 6 ta kuchli variant bor. Taqqoslash jadvalini ko'rsataymi?",
-    "chatQ2": "Muddatlari bilan top-3 ni ko'rsat."
-  },
-  "network": {
-    "eyebrow": "Global tarmoq",
-    "title": "O'sib borayotgan akademik tarmoq",
-    "description": "Talabalar va universitetlarni yagona shaffof infratuzilma qatlamida birlashtiruvchi taqsimlangan tarmoq."
-  },
-  "scale": {
-    "title": "Platforma miqyosi",
-    "universities": "Universitetlar",
-    "students": "Talabalar",
-    "scholarships": "Stipendiyalar"
-  },
-  "finalCta": {
-    "eyebrow": "Boshlash",
-    "title": "Akademik qabul kelajagiga qo'shiling",
-    "description": "Talabalar va universitetlar uchun shaffof admission jarayonlarini yagona aqlli platformada quring.",
-    "studentBtn": "Talaba akkaunti yaratish",
-    "universityBtn": "Universitetni ro'yxatdan o'tkazish"
-  },
-  "footer": {
-    "brand": "Edmission",
-    "description": "Talabalar va universitetlarni vositachilarsiz bog'laydigan akademik infratuzilma platformasi.",
-    "privacy": "Maxfiylik",
-    "platform": { "title": "Platforma", "0": "Loyiha haqida", "1": "Infratuzilma", "2": "AI Matching" },
-    "students": { "title": "Talabalar", "0": "Universitetlarni ko'rish", "1": "Arizalar", "2": "Offerlar" },
-    "universities": { "title": "Universitetlar", "0": "Discovery", "1": "Pipeline", "2": "Stipendiyalar" },
     "support": { "title": "Yordam", "0": "Xavfsizlik", "1": "Yordam markazi", "2": "Aloqa" }
+  },
+  "header": {
+    "login": "Kirish",
+    "register": "Ro'yxatdan o'tish",
+    "howItWorks": "Qanday ishlaydi",
+    "forUniversities": "Universitetlar",
+    "faq": "Savollar"
   }
 }
