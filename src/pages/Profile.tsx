@@ -7,7 +7,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
-import { ThemeSwitch } from '@/components/layout/ThemeSwitch'
+import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import type { NotificationPreferences } from '@/types/user'
 
 export function Profile() {

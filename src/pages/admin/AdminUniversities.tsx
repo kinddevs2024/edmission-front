@@ -206,12 +206,17 @@ export function AdminUniversities() {
           <Input label={t('university:city', 'City')} value={formCity} onChange={(e) => setFormCity(e.target.value)} />
           <Input label={t('university:slogan', 'Slogan')} value={formTagline} onChange={(e) => setFormTagline(e.target.value)} />
           <Input label={t('university:logoUrl', 'Logo URL')} value={formLogoUrl} onChange={(e) => setFormLogoUrl(e.target.value)} />
-          <Input
-            label={t('university:description', 'Description')}
-            value={formDescription}
-            onChange={(e) => setFormDescription(e.target.value)}
-            multiline
-          />
+          <div className="w-full">
+            <label className="block text-sm font-medium text-[var(--color-text)] mb-1">
+              {t('university:description', 'Description')}
+            </label>
+            <textarea
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-input border bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent"
+            />
+          </div>
           <Input
             label={t('university:foundedYear', 'Founded year')}
             type="number"
