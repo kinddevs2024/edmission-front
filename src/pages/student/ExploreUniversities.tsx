@@ -10,7 +10,7 @@ import { Select } from '@/components/ui/Select'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
 import { Building2 } from 'lucide-react'
-import { getUniversities, showInterest, getApplications, getInterestLimit } from '@/services/student'
+import { getUniversities, showInterest, getApplications, getInterestLimit, getStudentProfile } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
 
 const COUNTRY_OPTIONS = [
@@ -41,7 +41,16 @@ export function ExploreUniversities() {
   const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; current: number; limit: number | null }>({ allowed: true, current: 0, limit: 3 })
   /** When true, backend does not filter by profile (interestedFaculties, preferredCountries). Set by Clear. */
   const [useProfileFilters, setUseProfileFilters] = useState(true)
+  const [profileFilterCounts, setProfileFilterCounts] = useState<{ faculties: number; countries: number }>({ faculties: 0, countries: 0 })
   const limit = 12
+
+  useEffect(() => {
+    getStudentProfile().then((p) => {
+      const faculties = (p.interestedFaculties ?? []).filter(Boolean).length
+      const countries = (p.preferredCountries ?? []).filter(Boolean).length
+      setProfileFilterCounts({ faculties, countries })
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     getApplications({ limit: 500 }).then((res) => {
@@ -105,6 +114,7 @@ export function ExploreUniversities() {
 
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const hasFilters = search.trim() !== '' || country !== '' || city.trim() !== '' || sort !== 'match' || useProfileFilters
+  const profileCriteriaCount = profileFilterCounts.faculties + profileFilterCounts.countries
 
   const handleClearFilters = () => {
     setSearch('')
@@ -166,6 +176,12 @@ export function ExploreUniversities() {
           </Button>
         )}
       </div>
+
+      {useProfileFilters && profileCriteriaCount > 0 && (
+        <p className="text-sm text-[var(--color-text-muted)]">
+          {t('profileFiltersApplied', 'Using your profile')}: {profileFilterCounts.faculties} {t('faculties', 'faculties')}, {profileFilterCounts.countries} {t('countries', 'countries')} ({profileCriteriaCount} {t('criteriaTotal', 'criteria total')})
+        </p>
+      )}
 
       {interestLimit.limit != null && (
         <p className="text-sm text-[var(--color-text-muted)]">

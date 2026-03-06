@@ -19,8 +19,11 @@ export async function getCatalog(params?: { search?: string; country?: string })
   return data ?? []
 }
 
-export async function createVerificationRequest(universityId: string): Promise<{ id: string; status: string }> {
-  const { data } = await api.post<{ id: string; status: string }>('/university/verification-request', { universityId })
+export async function createVerificationRequest(
+  payload: string | { universityName: string; establishedYear?: number }
+): Promise<{ id: string; status: string }> {
+  const body = typeof payload === 'string' ? { universityId: payload } : payload
+  const { data } = await api.post<{ id: string; status: string }>('/university/verification-request', body)
   return data ?? { id: '', status: 'pending' }
 }
 
@@ -32,6 +35,7 @@ export async function getProfile(): Promise<UniversityProfile> {
     slogan: data.slogan ?? data.tagline,
     foundedYear: data.foundedYear ?? data.establishedYear,
     facultyCodes: (data as unknown as { facultyCodes?: string[] }).facultyCodes ?? [],
+    facultyItems: (data as unknown as { facultyItems?: Record<string, string[]> }).facultyItems ?? undefined,
     targetStudentCountries: (data as unknown as { targetStudentCountries?: string[] }).targetStudentCountries ?? [],
   }
 }
@@ -48,6 +52,7 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
   const logoUrl = (patch as { logoUrl?: string }).logoUrl ?? patch.logo
   if (logoUrl != null) body.logoUrl = logoUrl
   if (patch.facultyCodes != null) body.facultyCodes = patch.facultyCodes
+  if (patch.facultyItems != null) body.facultyItems = patch.facultyItems
   if (patch.targetStudentCountries != null) body.targetStudentCountries = patch.targetStudentCountries
   const { data } = await api.put<UniversityProfileResponse | null>('/university/profile', body)
   const raw = data ?? {}

@@ -30,6 +30,8 @@ export interface UniversityProfile {
   createdAt?: string
   updatedAt?: string
   facultyCodes?: string[]
+  /** Per-category included items: category id -> item names. If missing, all catalog items for that category. */
+  facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
 }
 

@@ -23,6 +23,7 @@ const schema = z.object({
   description: z.string().optional(),
   logo: z.string().url().optional().or(z.literal('')),
   facultyCodes: z.array(z.string()).optional(),
+  facultyItems: z.record(z.string(), z.array(z.string())).optional(),
   targetStudentCountries: z.array(z.string()).optional(),
 })
 
@@ -65,6 +66,7 @@ export function UniversityProfilePage() {
           description: data.description ?? '',
           logo: data.logo ?? '',
           facultyCodes: data.facultyCodes ?? [],
+          facultyItems: data.facultyItems ?? {},
           targetStudentCountries: data.targetStudentCountries ?? [],
         })
       })
@@ -86,6 +88,7 @@ export function UniversityProfilePage() {
         description: data.description || undefined,
         logo: data.logo || undefined,
         facultyCodes: data.facultyCodes ?? [],
+        facultyItems: data.facultyItems ?? undefined,
         targetStudentCountries: data.targetStudentCountries ?? [],
       })
       setProfile(updated)
@@ -195,14 +198,31 @@ export function UniversityProfilePage() {
                     </div>
                     {open && (
                       <div className="border-t border-[var(--color-border)] px-3 py-2.5">
-                        <p className="text-xs font-medium text-[var(--color-text-muted)] mb-1.5">{t('common:includes', 'Includes')}</p>
-                        <ul className="text-sm text-[var(--color-text-muted)] space-y-1">
-                          {cat.items.map((it) => (
-                            <li key={it} className="flex items-center gap-2">
-                              <span className="w-1 h-1 rounded-full bg-[var(--color-text-muted)] shrink-0" />
-                              {it}
-                            </li>
-                          ))}
+                        <p className="text-xs font-medium text-[var(--color-text-muted)] mb-1.5">{t('university:customizeItemsHint', 'Customize: check only the programs you offer. Uncheck to hide.')}</p>
+                        <ul className="text-sm space-y-1.5">
+                          {cat.items.map((it) => {
+                            const facultyItems = watch('facultyItems') ?? {}
+                            const included = facultyItems[cat.id] ?? cat.items
+                            const checked = included.includes(it)
+                            return (
+                              <li key={it} className="flex items-center gap-2">
+                                <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => {
+                                      const current = watch('facultyItems') ?? {}
+                                      const list = current[cat.id] ?? cat.items
+                                      const next = checked ? list.filter((x) => x !== it) : [...list, it]
+                                      setValue('facultyItems', { ...current, [cat.id]: next }, { shouldDirty: true })
+                                    }}
+                                    className="rounded border-[var(--color-border)]"
+                                  />
+                                  <span className={checked ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>
+                                </label>
+                              </li>
+                            )
+                          })}
                         </ul>
                       </div>
                     )}

@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
 import { getCatalog, createVerificationRequest, type CatalogUniversity } from '@/services/university'
-import { Building2, CheckCircle } from 'lucide-react'
+import { Building2, CheckCircle, Plus } from 'lucide-react'
 
 export function UniversitySelect() {
   const { t } = useTranslation(['common', 'university'])
@@ -13,6 +14,10 @@ export function UniversitySelect() {
   const [search, setSearch] = useState('')
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
+  const [otherOpen, setOtherOpen] = useState(false)
+  const [otherName, setOtherName] = useState('')
+  const [otherYear, setOtherYear] = useState('')
+  const [otherSubmitting, setOtherSubmitting] = useState(false)
 
   useEffect(() => {
     getCatalog({ search: search.trim() || undefined })
@@ -28,6 +33,26 @@ export function UniversitySelect() {
       setSent(true)
     } catch {
       setSubmittingId(null)
+    }
+  }
+
+  const handleOtherSubmit = async () => {
+    const name = otherName.trim()
+    if (!name) return
+    setOtherSubmitting(true)
+    try {
+      await createVerificationRequest({
+        universityName: name,
+        establishedYear: otherYear.trim() ? parseInt(otherYear, 10) : undefined,
+      })
+      setOtherOpen(false)
+      setOtherName('')
+      setOtherYear('')
+      setSent(true)
+    } catch {
+      // keep modal open
+    } finally {
+      setOtherSubmitting(false)
     }
   }
 
@@ -67,44 +92,92 @@ export function UniversitySelect() {
           <div className="text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</div>
         ) : list.length === 0 ? (
           <Card className="p-6">
-            <p className="text-[var(--color-text-muted)]">{t('university:noUniversitiesInCatalog', 'No universities found. Try a different search or contact support.')}</p>
+            <p className="text-[var(--color-text-muted)] mb-4">{t('university:noUniversitiesInCatalog', 'No universities found. Try a different search or add your own.')}</p>
+            <Button variant="secondary" size="sm" onClick={() => setOtherOpen(true)} icon={<Plus className="w-4 h-4" />}>
+              {t('university:otherUniversity', 'Other')}
+            </Button>
           </Card>
         ) : (
-          <ul className="space-y-3">
-            {list.map((u) => (
-              <li key={u.id}>
-                <Card className="p-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-lg bg-[var(--color-border)] flex items-center justify-center shrink-0 overflow-hidden">
-                      {u.logoUrl ? (
-                        <img src={u.logoUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <Building2 className="w-6 h-6 text-[var(--color-text-muted)]" aria-hidden />
-                      )}
+          <>
+            <ul className="space-y-3">
+              {list.map((u) => (
+                <li key={u.id}>
+                  <Card className="p-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-lg bg-[var(--color-border)] flex items-center justify-center shrink-0 overflow-hidden">
+                        {u.logoUrl ? (
+                          <img src={u.logoUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Building2 className="w-6 h-6 text-[var(--color-text-muted)]" aria-hidden />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[var(--color-text)] truncate">{u.name || u.universityName}</p>
+                        {(u.country || u.city) && (
+                          <p className="text-sm text-[var(--color-text-muted)] truncate">
+                            {[u.city, u.country].filter(Boolean).join(', ')}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-[var(--color-text)] truncate">{u.name || u.universityName}</p>
-                      {(u.country || u.city) && (
-                        <p className="text-sm text-[var(--color-text-muted)] truncate">
-                          {[u.city, u.country].filter(Boolean).join(', ')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleSet(u.id)}
-                    disabled={submittingId !== null}
-                    loading={submittingId === u.id}
-                  >
-                    {t('university:setAsMine', 'Set')}
-                  </Button>
-                </Card>
-              </li>
-            ))}
-          </ul>
+                    <Button
+                      size="sm"
+                      onClick={() => handleSet(u.id)}
+                      disabled={submittingId !== null}
+                      loading={submittingId === u.id}
+                    >
+                      {t('university:setAsMine', 'Set')}
+                    </Button>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 pt-4 border-t border-[var(--color-border)]">
+              <p className="text-sm text-[var(--color-text-muted)] mb-2">
+                {t('university:notInListHint', "Your university isn't in the list?")}
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => setOtherOpen(true)} icon={<Plus className="w-4 h-4" />}>
+                {t('university:otherUniversity', 'Other')}
+              </Button>
+            </div>
+          </>
         )}
       </div>
+
+      <Modal
+        open={otherOpen}
+        onClose={() => { setOtherOpen(false); setOtherName(''); setOtherYear('') }}
+        title={t('university:otherUniversity', 'Other')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => { setOtherOpen(false); setOtherName(''); setOtherYear('') }}>
+              {t('common:cancel')}
+            </Button>
+            <Button onClick={handleOtherSubmit} disabled={otherSubmitting || !otherName.trim()} loading={otherSubmitting}>
+              {t('university:sendRequest', 'Send request')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Input
+            label={t('university:universityName', 'University name')}
+            value={otherName}
+            onChange={(e) => setOtherName(e.target.value)}
+            placeholder={t('university:enterUniversityName', 'Enter university name')}
+          />
+          <Input
+            label={t('university:foundedYear', 'Year established')}
+            type="number"
+            value={otherYear}
+            onChange={(e) => setOtherYear(e.target.value)}
+            placeholder="e.g. 1990"
+          />
+          <p className="text-xs text-[var(--color-text-muted)]">
+            {t('university:otherUniversityHint', 'A verification request will be sent. An administrator will review and add your university.')}
+          </p>
+        </div>
+      </Modal>
     </div>
   )
 }
