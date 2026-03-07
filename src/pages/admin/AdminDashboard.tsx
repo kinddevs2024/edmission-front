@@ -18,11 +18,12 @@ export function AdminDashboard() {
       .catch((e) => {
         toastApiError(e)
         setStats({
-        studentsCount: 0,
-        universitiesCount: 0,
-        activeOffersCount: 0,
-        healthStatus: 'ok',
-      }))
+          studentsCount: 0,
+          universitiesCount: 0,
+          activeOffersCount: 0,
+          healthStatus: 'ok',
+        })
+      })
   }, [])
 
   useEffect(() => {

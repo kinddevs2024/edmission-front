@@ -5,6 +5,7 @@ import { getNotifications, markNotificationRead, markAllNotificationsRead } from
 import { useAuth } from '@/hooks/useAuth'
 import { formatDate } from '@/utils/format'
 import { cn } from '@/utils/cn'
+import { toastApiError } from '@/utils/toastError'
 
 const MAX_VISIBLE = 10
 

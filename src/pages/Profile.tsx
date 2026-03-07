@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
+import { toastApiError } from '@/utils/toastError'
 import type { NotificationPreferences } from '@/types/user'
 
 export function Profile() {

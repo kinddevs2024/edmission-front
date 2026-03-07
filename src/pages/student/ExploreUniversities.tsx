@@ -11,6 +11,7 @@ import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
 import { Building2 } from 'lucide-react'
 import { getUniversities, showInterest, getApplications, getInterestLimit, getStudentProfile } from '@/services/student'
+import { toastApiError } from '@/utils/toastError'
 import type { UniversityListItem } from '@/types/university'
 
 const COUNTRY_OPTIONS = [

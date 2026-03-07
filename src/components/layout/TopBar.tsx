@@ -11,6 +11,7 @@ import { NotificationsDropdown } from './NotificationsDropdown'
 import { LanguageMenu } from './LanguageMenu'
 import { MobileNavDrawer } from './MobileNavDrawer'
 import { cn } from '@/utils/cn'
+import { toastApiError } from '@/utils/toastError'
 
 export function TopBar() {
   const { t } = useTranslation('common')

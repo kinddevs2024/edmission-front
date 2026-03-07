@@ -16,6 +16,7 @@ import {
   Cell,
 } from 'recharts'
 import { getFunnelAnalytics } from '@/services/university'
+import { toastApiError } from '@/utils/toastError'
 
 const STAGE_LABELS: Record<string, string> = {
   interested: 'Interested',

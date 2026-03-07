@@ -18,6 +18,7 @@ import {
 import { useNotificationStore } from '@/store/notificationStore'
 import { formatDate } from '@/utils/format'
 import { cn } from '@/utils/cn'
+import { toastApiError } from '@/utils/toastError'
 import type { NotificationItem, NotificationType } from '@/store/notificationStore'
 
 const TYPE_OPTIONS: { value: '' | NotificationType; label: string }[] = [
