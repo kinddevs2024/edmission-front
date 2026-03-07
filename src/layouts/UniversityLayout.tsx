@@ -12,9 +12,9 @@ export function UniversityLayout() {
   const { user } = useAuth()
   const { t } = useTranslation('university')
   const location = useLocation()
-  const verified = user?.role === 'university' ? user?.universityProfile?.verified : true
-  if (user?.role === 'university' && verified === false) {
-    return <Navigate to="/university/pending" replace />
+  if (user?.role === 'university') {
+    if (!user?.universityProfile) return <Navigate to="/university/select" replace />
+    if (!user.universityProfile.verified) return <Navigate to="/university/pending" replace />
   }
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed)
