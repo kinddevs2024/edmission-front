@@ -9,10 +9,20 @@ import { Modal } from '@/components/ui/Modal'
 import axios from 'axios'
 import { getCatalog, createVerificationRequest, type CatalogUniversity } from '@/services/university'
 
-function isProfileExistsConflict(err: unknown): boolean {
-  if (!axios.isAxiosError(err) || !err.response?.data) return false
+function getApiError(err: unknown): { message: string; code?: string } | null {
+  if (!axios.isAxiosError(err) || !err.response?.data) return null
   const data = err.response.data as { message?: string; code?: string }
-  return data.code === 'CONFLICT' || (data.message?.toLowerCase().includes('profile already exists') ?? false)
+  return { message: data.message ?? 'Request failed', code: data.code }
+}
+
+function isProfileExistsConflict(err: unknown): boolean {
+  const e = getApiError(err)
+  return e ? (e.code === 'CONFLICT' && (e.message?.toLowerCase().includes('profile already exists') ?? false)) : false
+}
+
+function isRequestAlreadySent(err: unknown): boolean {
+  const e = getApiError(err)
+  return e ? (e.code === 'CONFLICT' && (e.message?.toLowerCase().includes('request already sent') ?? false)) : false
 }
 import { Building2, CheckCircle, Plus } from 'lucide-react'
 
@@ -35,6 +45,7 @@ export function UniversitySelect() {
   const [otherName, setOtherName] = useState('')
   const [otherYear, setOtherYear] = useState('')
   const [otherSubmitting, setOtherSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     getCatalog({ search: search.trim() || undefined })
@@ -44,19 +55,30 @@ export function UniversitySelect() {
   }, [search])
 
   const handleSet = async (universityId: string) => {
+    setError(null)
     setSubmittingId(universityId)
     try {
       await createVerificationRequest(universityId)
       setSent(true)
     } catch (err: unknown) {
-      if (isProfileExistsConflict(err)) navigate('/university/dashboard', { replace: true })
       setSubmittingId(null)
+      if (isProfileExistsConflict(err)) {
+        navigate('/university/dashboard', { replace: true })
+        return
+      }
+      if (isRequestAlreadySent(err)) {
+        navigate('/university/pending', { replace: true })
+        return
+      }
+      const e = getApiError(err)
+      setError(e?.message ?? t('common:error', 'Something went wrong'))
     }
   }
 
   const handleOtherSubmit = async () => {
     const name = otherName.trim()
     if (!name) return
+    setError(null)
     setOtherSubmitting(true)
     try {
       await createVerificationRequest({
@@ -71,7 +93,15 @@ export function UniversitySelect() {
       if (isProfileExistsConflict(err)) {
         setOtherOpen(false)
         navigate('/university/dashboard', { replace: true })
+        return
       }
+      if (isRequestAlreadySent(err)) {
+        setOtherOpen(false)
+        navigate('/university/pending', { replace: true })
+        return
+      }
+      const e = getApiError(err)
+      setError(e?.message ?? t('common:error', 'Something went wrong'))
     } finally {
       setOtherSubmitting(false)
     }
@@ -106,9 +136,14 @@ export function UniversitySelect() {
         <Input
           placeholder={t('common:search', 'Search')}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setError(null) }}
           className="mb-6 max-w-sm"
         />
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-sm" role="alert">
+            {error}
+          </div>
+        )}
         {loading ? (
           <div className="text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</div>
         ) : list.length === 0 ? (
@@ -181,10 +216,15 @@ export function UniversitySelect() {
         }
       >
         <div className="space-y-3">
+          {error && otherOpen && (
+            <div className="p-3 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 text-sm" role="alert">
+              {error}
+            </div>
+          )}
           <Input
             label={t('university:universityName', 'University name')}
             value={otherName}
-            onChange={(e) => setOtherName(e.target.value)}
+            onChange={(e) => { setOtherName(e.target.value); setError(null) }}
             placeholder={t('university:enterUniversityName', 'Enter university name')}
           />
           <Input
