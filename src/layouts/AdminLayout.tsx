@@ -19,6 +19,7 @@ export function AdminLayout() {
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' },
       { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' },
       { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' },
+      { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' },
       { to: '/admin/interests', label: t('interests'), icon: 'Heart' },
       { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' },
@@ -37,6 +38,7 @@ export function AdminLayout() {
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' },
       { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' },
+      { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' },
       { to: '/admin/logs', label: t('logs'), icon: 'Logs' },
     ],
     [t]

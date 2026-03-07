@@ -41,6 +41,7 @@ export interface AdminUniversityProfile {
   description?: string
   logoUrl?: string
   facultyCodes?: string[]
+  facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
 }
 
@@ -190,6 +191,9 @@ export async function getUniversityProfileByUser(userId: string): Promise<AdminU
     description: raw.description != null ? String(raw.description) : undefined,
     logoUrl: raw.logoUrl != null ? String(raw.logoUrl) : undefined,
     facultyCodes: Array.isArray(raw.facultyCodes) ? raw.facultyCodes.map((x) => String(x)) : [],
+    facultyItems: raw.facultyItems && typeof raw.facultyItems === 'object' && !Array.isArray(raw.facultyItems)
+      ? raw.facultyItems as Record<string, string[]>
+      : undefined,
     targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
   }
 }
@@ -206,6 +210,7 @@ export async function updateUniversityProfileByUser(
     description?: string
     logoUrl?: string
     facultyCodes?: string[]
+    facultyItems?: Record<string, string[]>
     targetStudentCountries?: string[]
   }
 ): Promise<AdminUniversityProfile> {
@@ -325,6 +330,7 @@ export interface AdminCatalogUniversity {
   establishedYear?: number
   studentCount?: number
   facultyCodes?: string[]
+  facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
 }
 
@@ -390,6 +396,32 @@ export async function getLogs(params?: PaginationParams & { type?: string; userI
 export async function getHealth(): Promise<{ status: string; services: ServiceHealth[] }> {
   const { data } = await api.get<{ status: string; services: ServiceHealth[] }>('/admin/health')
   return data
+}
+
+// ——— Investors ———
+
+export interface InvestorItem {
+  id: string
+  name: string
+  logoUrl?: string
+  websiteUrl?: string
+  description?: string
+  order?: number
+}
+
+export async function getInvestors(): Promise<InvestorItem[]> {
+  const { data } = await api.get<InvestorItem[]>('/admin/investors')
+  return data ?? []
+}
+
+export async function createInvestor(payload: { name: string; logoUrl?: string; websiteUrl?: string; description?: string; order?: number }): Promise<InvestorItem> {
+  const { data } = await api.post<InvestorItem>('/admin/investors', payload)
+  return data!
+}
+
+export async function deleteInvestor(id: string): Promise<{ deleted: boolean }> {
+  const { data } = await api.delete<{ deleted: boolean }>(`/admin/investors/${id}`)
+  return data ?? { deleted: true }
 }
 
 export async function getScholarshipsSummary(): Promise<ScholarshipSummaryItem[]> {

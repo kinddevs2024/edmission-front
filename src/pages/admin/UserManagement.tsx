@@ -72,6 +72,8 @@ export function UserManagement() {
   const [uniDescription, setUniDescription] = useState('')
   const [uniLogoUrl, setUniLogoUrl] = useState('')
   const [uniFacultyCodes, setUniFacultyCodes] = useState<string[]>([])
+  const [uniFacultyItems, setUniFacultyItems] = useState<Record<string, string[]>>({})
+  const [uniOpenFacultyId, setUniOpenFacultyId] = useState<string | null>(null)
   const [uniTargetCountries, setUniTargetCountries] = useState<string[]>([])
   const limit = 20
 
@@ -138,6 +140,7 @@ export function UserManagement() {
         setUniDescription(p.description ?? '')
         setUniLogoUrl(p.logoUrl ?? '')
         setUniFacultyCodes(p.facultyCodes ?? [])
+        setUniFacultyItems((p as { facultyItems?: Record<string, string[]> }).facultyItems ?? {})
         setUniTargetCountries(p.targetStudentCountries ?? [])
       })
       .catch(() => {
@@ -159,6 +162,8 @@ export function UserManagement() {
     setUniDescription('')
     setUniLogoUrl('')
     setUniFacultyCodes([])
+    setUniFacultyItems({})
+    setUniOpenFacultyId(null)
     setUniTargetCountries([])
   }
 
@@ -176,6 +181,7 @@ export function UserManagement() {
       description: uniDescription.trim() || undefined,
       logoUrl: uniLogoUrl.trim() || undefined,
       facultyCodes: uniFacultyCodes,
+      facultyItems: Object.keys(uniFacultyItems).length ? uniFacultyItems : undefined,
       targetStudentCountries: uniTargetCountries,
     })
       .then(() => {
@@ -357,18 +363,75 @@ export function UserManagement() {
               <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
                 {t('university:facultiesListTitle', 'Faculties')}
               </p>
-              <ChipSelect
-                options={FIELD_OF_STUDY.map((f) => t(f.titleKey))}
-                value={uniFacultyCodes.map((id) => t(FIELD_OF_STUDY.find((f) => f.id === id)?.titleKey ?? id))}
-                onChange={(labels) => {
-                  const ids = labels
-                    .map((label) => FIELD_OF_STUDY.find((f) => t(f.titleKey) === label)?.id)
-                    .filter((v): v is string => Boolean(v))
-                  setUniFacultyCodes(ids)
-                }}
-                max={50}
-                placeholder={t('university:facultiesHint', 'Select faculties that exist in your university.')}
-              />
+              <p className="text-xs text-[var(--color-text-muted)] mb-2">{t('university:facultiesHint', 'Select faculties. Expand to customize items.')}</p>
+              <div className="grid gap-2 sm:grid-cols-2 max-h-48 overflow-y-auto">
+                {FIELD_OF_STUDY.map((cat) => {
+                  const selected = uniFacultyCodes.includes(cat.id)
+                  const open = uniOpenFacultyId === cat.id
+                  const items = uniFacultyItems[cat.id] ?? cat.items
+                  return (
+                    <div
+                      key={cat.id}
+                      className={`rounded-lg border-2 p-2 transition-all ${selected ? 'border-primary-accent' : 'border-[var(--color-border)]'}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const next = e.target.checked
+                                ? [...uniFacultyCodes, cat.id].slice(0, 50)
+                                : uniFacultyCodes.filter((x) => x !== cat.id)
+                              setUniFacultyCodes(next)
+                              if (!e.target.checked) {
+                                const { [cat.id]: _, ...rest } = uniFacultyItems
+                                setUniFacultyItems(rest)
+                              }
+                            }}
+                            className="rounded border-[var(--color-border)]"
+                          />
+                          <span className="text-sm truncate">{t(cat.titleKey)}</span>
+                        </label>
+                        {selected && (
+                          <button
+                            type="button"
+                            onClick={() => setUniOpenFacultyId(open ? null : cat.id)}
+                            className="p-1 rounded text-[var(--color-text-muted)] hover:bg-[var(--color-border)]"
+                            aria-expanded={open}
+                          >
+                            <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      {open && selected && (
+                        <div className="mt-2 pt-2 border-t border-[var(--color-border)] space-y-1 max-h-32 overflow-y-auto">
+                          {cat.items.map((it) => {
+                            const inc = items.includes(it)
+                            return (
+                              <label key={it} className="flex items-center gap-2 cursor-pointer text-xs">
+                                <input
+                                  type="checkbox"
+                                  checked={inc}
+                                  onChange={() => {
+                                    const list = uniFacultyItems[cat.id] ?? cat.items
+                                    const next = inc ? list.filter((x) => x !== it) : [...list, it]
+                                    setUniFacultyItems({ ...uniFacultyItems, [cat.id]: next })
+                                  }}
+                                  className="rounded border-[var(--color-border)]"
+                                />
+                                <span className={inc ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
             <div>
               <p className="mb-2 text-sm font-medium text-[var(--color-text)]">

@@ -50,6 +50,7 @@ const AdminInterests = lazy(() => import('@/pages/admin/AdminInterests').then((m
 const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ default: m.AdminChats })))
 const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
+const AdminInvestors = lazy(() => import('@/pages/admin/AdminInvestors').then((m) => ({ default: m.AdminInvestors })))
 const AdminUniversityRequests = lazy(() => import('@/pages/admin/AdminUniversityRequests').then((m) => ({ default: m.AdminUniversityRequests })))
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
@@ -166,6 +167,7 @@ export function Router() {
           <Route path="verification" element={<Verification />} />
           <Route path="universities" element={<AdminUniversities />} />
           <Route path="university-requests" element={<AdminUniversityRequests />} />
+          <Route path="investors" element={<AdminInvestors />} />
           <Route path="documents" element={<AdminDocuments />} />
           <Route path="offers" element={<AdminOffers />} />
           <Route path="interests" element={<AdminInterests />} />
