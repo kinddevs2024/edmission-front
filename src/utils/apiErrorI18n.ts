@@ -17,6 +17,8 @@ export function getApiErrorKey(error: unknown): string {
   if (msg.includes('network') || msg.includes('connection') || msg.includes('unreachable')) return 'networkError'
   if (msg.includes('server') || msg.includes('500')) return 'serverError'
   if (msg.includes('temporarily unavailable') || msg.includes('try again later') || msg.includes('503')) return 'serviceUnavailable'
+  if (msg.includes('validation failed')) return 'validationFailed'
+  if (msg.includes('too many') || msg.includes('rate limit')) return 'rateLimit'
   return 'default'
 }
 

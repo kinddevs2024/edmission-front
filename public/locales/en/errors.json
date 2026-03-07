@@ -12,5 +12,7 @@
   "notFound": "Not found.",
   "serverError": "Server error. Please try again later.",
   "networkError": "Connection problem. Check your internet.",
-  "serviceUnavailable": "Service temporarily unavailable. Please try again later."
+  "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+  "validationFailed": "Please check your input and try again.",
+  "rateLimit": "Too many attempts. Please try again later."
 }

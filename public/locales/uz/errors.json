@@ -12,5 +12,7 @@
   "notFound": "Topilmadi.",
   "serverError": "Server xatosi. Keyinroq urinib ko'ring.",
   "networkError": "Ulanish muammosi. Internetni tekshiring.",
-  "serviceUnavailable": "Xizmat vaqtincha mavjud emas. Keyinroq urinib ko'ring."
+  "serviceUnavailable": "Xizmat vaqtincha mavjud emas. Keyinroq urinib ko'ring.",
+  "validationFailed": "Ma'lumotlaringizni tekshiring va qayta urinib ko'ring.",
+  "rateLimit": "Juda ko'p urinishlar. Keyinroq urinib ko'ring."
 }

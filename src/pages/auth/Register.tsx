@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { register as registerApi } from '@/services/auth'
+import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -14,9 +15,15 @@ import { cn } from '@/utils/cn'
 
 export function Register() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
+  const passwordSchema = z
+    .string()
+    .min(8, t('auth:passwordMinLength'))
+    .refine((p) => /[A-Z]/.test(p), t('auth:passwordUppercase', 'At least one uppercase letter'))
+    .refine((p) => /[a-z]/.test(p), t('auth:passwordLowercase', 'At least one lowercase letter'))
+    .refine((p) => /\d/.test(p), t('auth:passwordNumber', 'At least one number'))
   const schema = z.object({
     email: z.string().email(t('auth:invalidEmail')),
-    password: z.string().min(8, t('auth:passwordMinLength')),
+    password: passwordSchema,
     confirmPassword: z.string(),
     name: z.string().min(1, t('auth:nameRequired')),
     role: z.enum(['student', 'university']),
@@ -46,8 +53,10 @@ export function Register() {
       if (user.role === 'student') navigate('/student/dashboard')
       else navigate('/university/select')
     } catch (err) {
-      const key = getApiErrorKey(err)
-      setSubmitError(t(`errors:${key}`))
+      const apiErr = getApiError(err)
+      const errList = apiErr.errors as Array<{ field?: string; message?: string }> | undefined
+      const firstMsg = Array.isArray(errList) && errList[0]?.message ? errList[0].message : null
+      setSubmitError(firstMsg ?? t(`errors:${getApiErrorKey(err)}`))
     } finally {
       setLoading(false)
     }
@@ -63,7 +72,7 @@ export function Register() {
           label={t('auth:password')}
           type="password"
           autoComplete="new-password"
-          hint={t('auth:passwordMinLength')}
+          hint={t('auth:passwordRequirements', '8+ chars, uppercase, lowercase, number')}
           error={errors.password?.message}
           passwordVisible={showPassword}
           onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
