@@ -1,15 +1,32 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
+import axios from 'axios'
 import { getCatalog, createVerificationRequest, type CatalogUniversity } from '@/services/university'
+
+function isProfileExistsConflict(err: unknown): boolean {
+  if (!axios.isAxiosError(err) || !err.response?.data) return false
+  const data = err.response.data as { message?: string; code?: string }
+  return data.code === 'CONFLICT' || (data.message?.toLowerCase().includes('profile already exists') ?? false)
+}
 import { Building2, CheckCircle, Plus } from 'lucide-react'
 
 export function UniversitySelect() {
   const { t } = useTranslation(['common', 'university'])
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [list, setList] = useState<CatalogUniversity[]>([])
+
+  useEffect(() => {
+    if (user?.universityProfile) {
+      navigate(user.universityProfile.verified ? '/university/dashboard' : '/university/pending', { replace: true })
+    }
+  }, [user?.universityProfile, navigate])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [submittingId, setSubmittingId] = useState<string | null>(null)
@@ -31,7 +48,8 @@ export function UniversitySelect() {
     try {
       await createVerificationRequest(universityId)
       setSent(true)
-    } catch {
+    } catch (err: unknown) {
+      if (isProfileExistsConflict(err)) navigate('/university/dashboard', { replace: true })
       setSubmittingId(null)
     }
   }
@@ -49,8 +67,11 @@ export function UniversitySelect() {
       setOtherName('')
       setOtherYear('')
       setSent(true)
-    } catch {
-      // keep modal open
+    } catch (err: unknown) {
+      if (isProfileExistsConflict(err)) {
+        setOtherOpen(false)
+        navigate('/university/dashboard', { replace: true })
+      }
     } finally {
       setOtherSubmitting(false)
     }
