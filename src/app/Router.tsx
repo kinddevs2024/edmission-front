@@ -65,7 +65,7 @@ const Privacy = lazy(() => import('@/pages/Privacy').then((m) => ({ default: m.P
 
 function PageFallback() {
   return (
-    <div className="min-h-[40vh] flex items-center justify-center" aria-hidden>
+    <div className="min-h-screen w-full flex items-center justify-center" aria-hidden>
       <div className="w-8 h-8 border-2 border-[var(--color-primary-accent)] border-t-transparent rounded-full animate-spin" />
     </div>
   )
