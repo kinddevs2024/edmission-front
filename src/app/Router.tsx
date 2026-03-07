@@ -142,10 +142,9 @@ export function Router() {
           <Route path="ai" element={<AIChatPage />} />
         </Route>
 
-        <Route path="university" element={<ProtectedRoute allowedRoles={['university']}><Outlet /></ProtectedRoute>}>
+        <Route path="university" element={<ProtectedRoute allowedRoles={['university']}><UniversityLayout /></ProtectedRoute>}>
           <Route path="select" element={<UniversitySelect />} />
           <Route path="pending" element={<UniversityPendingVerification />} />
-          <Route element={<UniversityLayout />}>
           <Route path="onboarding" element={<UniversityOnboarding />} />
           <Route path="profile" element={<UniversityProfilePage />} />
           <Route path="dashboard" element={<UniversityDashboard />} />
@@ -157,7 +156,6 @@ export function Router() {
           <Route path="analytics" element={<UniversityAnalytics />} />
           <Route path="chat" element={<UniversityChat />} />
           <Route path="ai" element={<AIChatPage />} />
-          </Route>
         </Route>
 
         <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>

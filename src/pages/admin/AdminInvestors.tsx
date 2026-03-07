@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getInvestors, createInvestor, deleteInvestor, type InvestorItem } from '@/services/admin'
+import { toastApiError } from '@/utils/toastError'
 import { Plus, Trash2, Building2 } from 'lucide-react'
 
 export function AdminInvestors() {
@@ -25,7 +26,7 @@ export function AdminInvestors() {
     setLoading(true)
     getInvestors()
       .then(setList)
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }
 
@@ -54,7 +55,7 @@ export function AdminInvestors() {
         setAddOpen(false)
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 
@@ -66,7 +67,7 @@ export function AdminInvestors() {
         setList((prev) => prev.filter((i) => i.id !== deleteTarget.id))
         setDeleteTarget(null)
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setDeleteSubmitting(false))
   }
 

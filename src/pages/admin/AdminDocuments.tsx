@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getPendingDocuments, reviewDocument, type PendingDocumentItem } from '@/services/admin'
 import { getApiError } from '@/services/auth'
+import { toastApiError } from '@/utils/toastError'
 import { FileText } from 'lucide-react'
 
 export function AdminDocuments() {
@@ -19,7 +20,7 @@ export function AdminDocuments() {
     setLoading(true)
     getPendingDocuments()
       .then(setList)
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }
 

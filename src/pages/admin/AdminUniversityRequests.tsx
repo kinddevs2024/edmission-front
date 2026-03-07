@@ -11,6 +11,7 @@ import {
   type UniversityVerificationRequestItem,
 } from '@/services/admin'
 import { formatDate } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 export function AdminUniversityRequests() {
   const { t } = useTranslation(['common', 'admin'])
@@ -24,7 +25,7 @@ export function AdminUniversityRequests() {
     setLoading(true)
     getUniversityVerificationRequests(filter === 'pending' ? { status: 'pending' } : undefined)
       .then(setList)
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }
 
@@ -40,7 +41,7 @@ export function AdminUniversityRequests() {
         setActionModal(null)
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 
@@ -52,7 +53,7 @@ export function AdminUniversityRequests() {
         setActionModal(null)
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 

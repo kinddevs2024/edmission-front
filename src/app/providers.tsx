@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect } from 'react'
+import { Toaster } from 'sonner'
 import { I18nextProvider } from 'react-i18next'
 import { BrowserRouter } from 'react-router-dom'
 import i18n from '@/i18n'
@@ -25,6 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <BackendHealthCheck />
         <ThemeSync />
         {children}
+        <Toaster richColors position="top-center" />
       </BrowserRouter>
     </I18nextProvider>
   )

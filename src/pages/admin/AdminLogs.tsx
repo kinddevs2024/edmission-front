@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { getLogs } from '@/services/admin'
 import { formatDateTime } from '@/utils/format'
 import type { AuditLogEntry } from '@/services/admin'
+import { toastApiError } from '@/utils/toastError'
 
 const TYPE_OPTIONS = [
   { value: '', label: 'All types' },
@@ -36,7 +37,8 @@ export function AdminLogs() {
         setEntries(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setEntries([])
         setTotal(0)
       })

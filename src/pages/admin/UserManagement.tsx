@@ -14,6 +14,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { toastApiError } from '@/utils/toastError'
 
 const COUNTRY_CODE_OPTIONS = [
   { code: 'UZ', label: 'Uzbekistan' },
@@ -89,7 +90,8 @@ export function UserManagement() {
         setUsers(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setUsers([])
         setTotal(0)
       })
@@ -100,7 +102,7 @@ export function UserManagement() {
     setActionUserId(userId)
     suspendUser(userId)
       .then(() => setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: 'suspended' as const } : u))))
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionUserId(null))
   }
 
@@ -108,7 +110,7 @@ export function UserManagement() {
     setActionUserId(userId)
     unsuspendUser(userId)
       .then(() => setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: 'active' as const } : u))))
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionUserId(null))
   }
 
@@ -121,7 +123,7 @@ export function UserManagement() {
         setTotal((x) => Math.max(0, x - 1))
         setDeleteTarget(null)
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setDeleteSubmitting(false))
   }
 
@@ -143,7 +145,8 @@ export function UserManagement() {
         setUniFacultyItems((p as { facultyItems?: Record<string, string[]> }).facultyItems ?? {})
         setUniTargetCountries(p.targetStudentCountries ?? [])
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setEditUniError(t('common:error', 'Error'))
       })
       .finally(() => setEditUniLoading(false))
@@ -187,7 +190,7 @@ export function UserManagement() {
       .then(() => {
         closeUniversityEditor()
       })
-      .catch(() => setEditUniError(t('common:error', 'Error')))
+      .catch((e) => { toastApiError(e); setEditUniError(t('common:error', 'Error')) })
       .finally(() => setEditUniSaving(false))
   }
 
@@ -289,7 +292,7 @@ export function UserManagement() {
                     setCreateName('')
                     setCreateRole('student')
                   })
-                  .catch(() => {})
+                  .catch(toastApiError)
                   .finally(() => setCreateSubmitting(false))
               }}
               disabled={createSubmitting || !createEmail.trim() || !createPassword.trim()}

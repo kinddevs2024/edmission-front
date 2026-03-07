@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { getScholarships, createScholarship } from '@/services/university'
 import { formatDate } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 import type { Scholarship } from '@/types/university'
 
 export function Scholarships() {
@@ -26,7 +27,7 @@ export function Scholarships() {
   useEffect(() => {
     getScholarships({ limit: 100 })
       .then((res) => setList(Array.isArray(res) ? res : (res?.data ?? [])))
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -42,7 +43,7 @@ export function Scholarships() {
         setDeadline('')
         setEligibility('')
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 

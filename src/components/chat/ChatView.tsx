@@ -7,6 +7,7 @@ import { ChatList } from './ChatList'
 import { MessageThread } from './MessageThread'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
+import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
 
 export function ChatView() {
@@ -26,7 +27,7 @@ export function ChatView() {
     const roleOrStudent = role ?? 'student'
     getChats(roleOrStudent)
       .then(setChats)
-      .catch(() => setChats([]))
+      .catch((e) => { toastApiError(e); setChats([]) })
       .finally(() => setChatsLoading(false))
   }, [role])
 
@@ -49,7 +50,7 @@ export function ChatView() {
             setMobileView('thread')
             setSearchParams({}, { replace: true })
           })
-          .catch(() => setSearchParams({}, { replace: true }))
+          .catch((e) => { toastApiError(e); setSearchParams({}, { replace: true }) })
       }
     }
   }, [searchParams, role, chats, chatsLoading, setSearchParams])
@@ -73,7 +74,7 @@ export function ChatView() {
         }))
         setMessages(withIsFromMe)
       })
-      .catch(() => setMessages([]))
+      .catch((e) => { toastApiError(e); setMessages([]) })
       .finally(() => setMessagesLoading(false))
     return () => {
       leaveChat(selectedChat.id)
@@ -137,7 +138,7 @@ export function ChatView() {
             )
           )
         })
-        .catch(() => {})
+        .catch(toastApiError)
     },
     [selectedChat]
   )
@@ -166,7 +167,7 @@ export function ChatView() {
 
   const handleMarkRead = useCallback(() => {
     if (selectedChat?.id) {
-      markAsRead(selectedChat.id).catch(() => {})
+      markAsRead(selectedChat.id).catch(toastApiError)
       setChats((prev) =>
         prev.map((c) => (c.id === selectedChat.id ? { ...c, unreadCount: 0 } : c))
       )

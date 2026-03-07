@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getRecommendations } from '@/services/student'
 import { api } from '@/services/api'
 import type { UniversityListItem } from '@/types/university'
+import { toastApiError } from '@/utils/toastError'
 
 /** Fetch recommended universities (recommendation IDs + university details). Returns mock-friendly list. */
 export function useRecommendationUniversities(limit = 5) {
@@ -32,8 +33,8 @@ export function useRecommendationUniversities(limit = 5) {
             )
           })
       })
-      .catch(() => {
-        if (!cancelled) setList([])
+      .catch((e) => {
+        if (!cancelled) { toastApiError(e); setList([]) }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)

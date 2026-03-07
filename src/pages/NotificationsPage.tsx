@@ -62,7 +62,7 @@ export function NotificationsPage() {
         setTotal(res.total)
         setTotalPages(res.totalPages)
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setLoading(false))
   }
 
@@ -78,7 +78,7 @@ export function NotificationsPage() {
         markAsRead(n.id)
         setItems((prev) => prev.map((i) => (i.id === n.id ? { ...i, read: true } : i)))
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionLoading(null))
   }
 
@@ -88,7 +88,7 @@ export function NotificationsPage() {
         markAllAsRead()
         setItems((prev) => prev.map((i) => ({ ...i, read: true })))
       })
-      .catch(() => {})
+      .catch(toastApiError)
   }
 
   const handleDeleteOne = (id: string) => {
@@ -99,7 +99,7 @@ export function NotificationsPage() {
         setItems((prev) => prev.filter((i) => i.id !== id))
         setTotal((t) => Math.max(0, t - 1))
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionLoading(null))
   }
 
@@ -110,7 +110,7 @@ export function NotificationsPage() {
         removeNotifications(readIds)
         fetchList()
       })
-      .catch(() => {})
+      .catch(toastApiError)
   }
 
   const handleDeleteAll = () => {
@@ -126,7 +126,7 @@ export function NotificationsPage() {
         setTotal(0)
         setConfirmDeleteAll(false)
       })
-      .catch(() => {})
+      .catch(toastApiError)
   }
 
   const linkFor = (n: NotificationItem) =>

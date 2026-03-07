@@ -56,7 +56,7 @@ export function TopBar() {
         >
           {user?.name || user?.email}
         </Link>
-        <Button variant="ghost" size="sm" onClick={() => logoutApi().catch(() => {})}>
+        <Button variant="ghost" size="sm" onClick={() => logoutApi().catch(toastApiError)}>
           {t('logout')}
         </Button>
       </div>

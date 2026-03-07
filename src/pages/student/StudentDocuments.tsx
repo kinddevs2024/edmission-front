@@ -8,6 +8,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { FileUpload } from '@/components/ui/FileUpload'
+import { toastApiError } from '@/utils/toastError'
 import { ShieldCheck, FileText, Loader2 } from 'lucide-react'
 
 const DOC_TYPES: { value: DocumentType; label: string }[] = [
@@ -60,7 +61,7 @@ export function StudentDocuments() {
     setLoading(true)
     getMyDocuments()
       .then(setDocs)
-      .catch(() => setDocs([]))
+      .catch((e) => { toastApiError(e); setDocs([]) })
       .finally(() => setLoading(false))
   }
 
@@ -106,7 +107,7 @@ export function StudentDocuments() {
       setScore('')
       setFileUrl('')
       load()
-      getProfile().catch(() => {})
+      getProfile().catch(toastApiError)
     } catch (e) {
       setError(getApiError(e).message)
     } finally {

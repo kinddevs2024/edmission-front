@@ -7,6 +7,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { getVerificationQueue, approveUniversity, rejectUniversity } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { VerificationItem } from '@/services/admin'
+import { toastApiError } from '@/utils/toastError'
 
 export function Verification() {
   const { t } = useTranslation(['common', 'admin'])
@@ -20,7 +21,7 @@ export function Verification() {
     setLoading(true)
     getVerificationQueue()
       .then(setList)
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }
 
@@ -37,7 +38,7 @@ export function Verification() {
         setComment('')
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 
@@ -50,7 +51,7 @@ export function Verification() {
         setComment('')
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 

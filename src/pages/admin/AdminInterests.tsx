@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { getInterests, updateInterestStatus, type AdminInterest } from '@/services/admin'
 import { formatDateTime } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
@@ -34,7 +35,8 @@ export function AdminInterests() {
         setItems(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setItems([])
         setTotal(0)
       })
@@ -45,7 +47,7 @@ export function AdminInterests() {
     setActionId(id)
     updateInterestStatus(id, status)
       .then(() => setItems((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x))))
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionId(null))
   }
 

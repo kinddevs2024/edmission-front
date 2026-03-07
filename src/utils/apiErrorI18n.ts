@@ -16,6 +16,7 @@ export function getApiErrorKey(error: unknown): string {
   if (msg.includes('not found')) return 'notFound'
   if (msg.includes('network') || msg.includes('connection') || msg.includes('unreachable')) return 'networkError'
   if (msg.includes('server') || msg.includes('500')) return 'serverError'
+  if (msg.includes('temporarily unavailable') || msg.includes('try again later') || msg.includes('503')) return 'serviceUnavailable'
   return 'default'
 }
 

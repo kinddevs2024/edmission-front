@@ -4,6 +4,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/components/ui/Table'
 import { getScholarshipsSummary } from '@/services/admin'
 import { formatDate } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 export function AdminScholarships() {
   const [list, setList] = useState<Awaited<ReturnType<typeof getScholarshipsSummary>>>([])
@@ -12,7 +13,7 @@ export function AdminScholarships() {
   useEffect(() => {
     getScholarshipsSummary()
       .then(setList)
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }, [])
 

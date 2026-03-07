@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getOffers, acceptOffer, declineOffer } from '@/services/student'
+import { toastApiError } from '@/utils/toastError'
 import { Check, X, Gift } from 'lucide-react'
 import { formatDate, daysUntil } from '@/utils/format'
 import type { Offer } from '@/types/student'
@@ -19,7 +20,7 @@ export function StudentOffers() {
   useEffect(() => {
     getOffers({ limit: 50 })
       .then((res) => setOffers(res.data ?? []))
-      .catch(() => setOffers([]))
+      .catch((e) => { toastApiError(e); setOffers([]) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -27,7 +28,7 @@ export function StudentOffers() {
     setActionLoading({ id, action: 'accept' })
     acceptOffer(id)
       .then(() => setOffers((prev) => prev.filter((o) => o.id !== id)))
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionLoading(null))
   }
 
@@ -35,7 +36,7 @@ export function StudentOffers() {
     setActionLoading({ id, action: 'decline' })
     declineOffer(id)
       .then(() => setOffers((prev) => prev.filter((o) => o.id !== id)))
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionLoading(null))
   }
 

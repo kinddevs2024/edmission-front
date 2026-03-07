@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { getOffers, updateOfferStatus, type AdminOffer } from '@/services/admin'
 import { formatDateTime } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
@@ -31,7 +32,8 @@ export function AdminOffers() {
         setItems(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setItems([])
         setTotal(0)
       })
@@ -42,7 +44,7 @@ export function AdminOffers() {
     setActionId(id)
     updateOfferStatus(id, status)
       .then(() => setItems((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o))))
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setActionId(null))
   }
 

@@ -3,6 +3,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getHealth } from '@/services/admin'
 import type { ServiceHealth } from '@/services/admin'
+import { toastApiError } from '@/utils/toastError'
 
 export function SystemHealth() {
   const [status, setStatus] = useState<string>('')
@@ -15,7 +16,8 @@ export function SystemHealth() {
         setStatus(res.status ?? 'unknown')
         setServices(res.services ?? [])
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setStatus('error')
         setServices([])
       })

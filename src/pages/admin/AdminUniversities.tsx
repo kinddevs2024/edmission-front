@@ -14,6 +14,7 @@ import {
   type AdminCatalogUniversity,
 } from '@/services/admin'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { toastApiError } from '@/utils/toastError'
 import { Plus, Trash2 } from 'lucide-react'
 
 const COUNTRY_OPTIONS = [
@@ -63,7 +64,8 @@ export function AdminUniversities() {
         setList(res.data)
         setTotal(res.total)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setList([])
         setTotal(0)
       })
@@ -128,6 +130,7 @@ export function AdminUniversities() {
       setShowPrograms(progs.length > 0)
       setShowScholarships(schs.length > 0)
     })
+    .catch(toastApiError)
   }
 
   const handleSubmit = () => {
@@ -174,7 +177,7 @@ export function AdminUniversities() {
         setEditingId(null)
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 

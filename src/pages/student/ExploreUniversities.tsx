@@ -49,15 +49,15 @@ export function ExploreUniversities() {
       const faculties = (p.interestedFaculties ?? []).filter(Boolean).length
       const countries = (p.preferredCountries ?? []).filter(Boolean).length
       setProfileFilterCounts({ faculties, countries })
-    }).catch(() => {})
+    }).catch(toastApiError)
   }, [])
 
   useEffect(() => {
     getApplications({ limit: 500 }).then((res) => {
       const ids = new Set((res.data ?? []).map((a) => (a as { universityId?: string }).universityId).filter(Boolean) as string[])
       setInterestedIds(ids)
-    }).catch(() => {})
-    getInterestLimit().then(setInterestLimit).catch(() => {})
+    }).catch(toastApiError)
+    getInterestLimit().then(setInterestLimit).catch(toastApiError)
   }, [])
 
   useEffect(() => {
@@ -87,10 +87,11 @@ export function ExploreUniversities() {
           setTotal(res.total ?? 0)
         }
       })
-      .catch(() => {
+      .catch((e) => {
         if (!cancelled) {
           setList([])
           setTotal(0)
+          toastApiError(e)
         }
       })
       .finally(() => {
@@ -106,7 +107,7 @@ export function ExploreUniversities() {
         setInterestedIds((s) => new Set(s).add(id))
         setInterestLimit((prev) => ({ ...prev, current: prev.current + 1, allowed: prev.limit === null ? true : prev.current + 1 < prev.limit }))
       })
-      .catch(() => {})
+      .catch(toastApiError)
   }
 
   const canShowInterest = interestLimit.allowed

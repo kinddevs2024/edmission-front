@@ -8,6 +8,7 @@ import { createTicket, getMyTickets, getTicket, addTicketReply } from '@/service
 import type { Ticket } from '@/services/tickets'
 import { getApiError } from '@/services/api'
 import { formatDate } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 const STATUS_LABEL: Record<string, string> = {
   open: 'Open',
@@ -32,7 +33,7 @@ export function SupportPage() {
   useEffect(() => {
     getMyTickets({ limit: 50 })
       .then((res) => setTickets(res.data ?? []))
-      .catch(() => setTickets([]))
+      .catch((e) => { toastApiError(e); setTickets([]) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -41,7 +42,7 @@ export function SupportPage() {
       setLoading(true)
       getTicket(id)
         .then(setTicket)
-        .catch(() => setTicket(null))
+        .catch((e) => { toastApiError(e); setTicket(null) })
         .finally(() => setLoading(false))
     } else {
       setTicket(null)

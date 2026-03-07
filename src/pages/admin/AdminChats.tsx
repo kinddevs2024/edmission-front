@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { getChats, getChatMessages, type AdminChat, type AdminChatMessage } from '@/services/admin'
 import { formatDateTime } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 export function AdminChats() {
   const [items, setItems] = useState<AdminChat[]>([])
@@ -25,7 +26,8 @@ export function AdminChats() {
         setItems(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setItems([])
         setTotal(0)
       })
@@ -38,7 +40,7 @@ export function AdminChats() {
     setMessagesLoading(true)
     getChatMessages(chatId, { limit: 100 })
       .then((res) => setMessages(res.messages ?? []))
-      .catch(() => setMessages([]))
+      .catch((e) => { toastApiError(e); setMessages([]) })
       .finally(() => setMessagesLoading(false))
   }
 

@@ -8,6 +8,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { MessageCircle, Send, UserCheck, ArrowRight, User } from 'lucide-react'
 import type { PipelineStage } from '@/types/university'
 import type { Scholarship } from '@/types/university'
+import { toastApiError } from '@/utils/toastError'
 
 const COLUMNS: { id: PipelineStage; title: string }[] = [
   { id: 'interested', title: 'Interested' },
@@ -81,7 +82,7 @@ export function Pipeline() {
         )
         setByStage(next)
       })
-      .catch(() => {})
+      .catch(toastApiError)
   }, [])
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export function Pipeline() {
           const list = Array.isArray(res) ? res : (res as { data?: Scholarship[] })?.data ?? []
           setScholarships(list)
         })
-        .catch(() => setScholarships([]))
+        .catch((e) => { toastApiError(e); setScholarships([]) })
       setOfferForm({ scholarshipId: '', coveragePercent: 50, deadline: '' })
     }
   }, [offerModal])
@@ -113,7 +114,7 @@ export function Pipeline() {
         setOfferModal(null)
         loadPipeline()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setOfferSubmitting(false))
   }
 
@@ -123,7 +124,7 @@ export function Pipeline() {
     setStatusUpdating(applicationId)
     updateInterestStatus(applicationId, status)
       .then(() => loadPipeline())
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setStatusUpdating(null))
   }
 

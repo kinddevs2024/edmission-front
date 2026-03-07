@@ -17,7 +17,7 @@ export function NotificationsDropdown() {
   useEffect(() => {
     getNotifications({ limit: 30 }, role)
       .then((res) => setNotifications(res.data))
-      .catch(() => {})
+      .catch(toastApiError)
   }, [setNotifications, role])
 
   useEffect(() => {
@@ -32,12 +32,12 @@ export function NotificationsDropdown() {
 
   const handleMarkRead = (id: string) => {
     markAsRead(id)
-    markNotificationRead(id).catch(() => {})
+    markNotificationRead(id).catch(toastApiError)
   }
 
   const handleMarkAllRead = () => {
     markAllAsRead()
-    markAllNotificationsRead().catch(() => {})
+    markAllNotificationsRead().catch(toastApiError)
   }
 
   return (

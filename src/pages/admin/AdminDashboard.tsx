@@ -5,6 +5,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { getAdminStats, getVerificationQueue } from '@/services/admin'
 import type { AdminStats as AdminStatsType } from '@/services/admin'
+import { toastApiError } from '@/utils/toastError'
 
 export function AdminDashboard() {
   const { t } = useTranslation('admin')
@@ -14,7 +15,9 @@ export function AdminDashboard() {
   useEffect(() => {
     getAdminStats()
       .then(setStats)
-      .catch(() => setStats({
+      .catch((e) => {
+        toastApiError(e)
+        setStats({
         studentsCount: 0,
         universitiesCount: 0,
         activeOffersCount: 0,
@@ -25,7 +28,7 @@ export function AdminDashboard() {
   useEffect(() => {
     getVerificationQueue()
       .then((list) => setVerificationCount(list.length))
-      .catch(() => setVerificationCount(0))
+      .catch((e) => { toastApiError(e); setVerificationCount(0) })
   }, [])
 
   const healthLabel = stats?.healthStatus === 'ok' ? t('healthOk') : stats?.healthStatus === 'degraded' ? t('healthDegraded') : t('healthError')

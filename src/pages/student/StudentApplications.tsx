@@ -11,6 +11,7 @@ import { getApplications } from '@/services/student'
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS } from '@/utils/constants'
 import { MessageCircle, Gift } from 'lucide-react'
 import { formatDate } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 import type { Application, ApplicationStatus } from '@/types/student'
 
 export function StudentApplications() {
@@ -37,7 +38,8 @@ export function StudentApplications() {
         setApplications(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setApplications([])
         setTotal(0)
       })

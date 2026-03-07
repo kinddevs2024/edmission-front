@@ -13,6 +13,7 @@ import {
 import type { AdminTicket } from '@/services/adminTickets'
 import { getApiError } from '@/services/api'
 import { formatDate } from '@/utils/format'
+import { toastApiError } from '@/utils/toastError'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All' },
@@ -51,7 +52,7 @@ export function AdminSupport() {
       role: roleFilter || undefined,
     })
       .then((res) => setTickets(res.data ?? []))
-      .catch(() => setTickets([]))
+      .catch((e) => { toastApiError(e); setTickets([]) })
       .finally(() => setLoading(false))
   }, [statusFilter, roleFilter])
 
@@ -63,7 +64,7 @@ export function AdminSupport() {
           setTicket(t)
           setStatusUpdate(t.status)
         })
-        .catch(() => setTicket(null))
+        .catch((e) => { toastApiError(e); setTicket(null) })
         .finally(() => setLoading(false))
     } else {
       setTicket(null)

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import axios from 'axios'
 import { getCatalog, createVerificationRequest, type CatalogUniversity } from '@/services/university'
+import { toastApiError } from '@/utils/toastError'
 
 function getApiError(err: unknown): { message: string; code?: string } | null {
   if (!axios.isAxiosError(err) || !err.response?.data) return null
@@ -50,7 +51,7 @@ export function UniversitySelect() {
   useEffect(() => {
     getCatalog({ search: search.trim() || undefined })
       .then(setList)
-      .catch(() => setList([]))
+      .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }, [search])
 

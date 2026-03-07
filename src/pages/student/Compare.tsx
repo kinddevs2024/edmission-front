@@ -7,6 +7,7 @@ import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/compo
 import { Select } from '@/components/ui/Select'
 import { getApplications, getCompareUniversities } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
+import { toastApiError } from '@/utils/toastError'
 
 const MAX_COMPARE = 4
 
@@ -29,7 +30,7 @@ export function Compare() {
           setAllOptions(list.map((u) => ({ value: u.id, label: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '' })))
         })
       })
-      .catch(() => setAllOptions([]))
+      .catch((e) => { toastApiError(e); setAllOptions([]) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -40,7 +41,7 @@ export function Compare() {
     }
     getCompareUniversities(selectedIds)
       .then((list) => setUniversities(list.map((u) => ({ ...u, name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '' }))))
-      .catch(() => setUniversities([]))
+      .catch((e) => { toastApiError(e); setUniversities([]) })
   }, [selectedIds])
 
   const addId = (id: string) => {

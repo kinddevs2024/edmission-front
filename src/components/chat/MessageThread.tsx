@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { MessageBubble } from './MessageBubble'
 import { Button } from '@/components/ui/Button'
 import { uploadFile } from '@/services/upload'
+import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
 import type { SendMessageParams } from '@/services/chat'
 import { Mic, Square, Smile, Send, GraduationCap } from 'lucide-react'
@@ -65,22 +66,34 @@ export function MessageThread({
 
   const startRecording = () => {
     if (!chat || !navigator.mediaDevices?.getUserMedia) return
+    if (typeof MediaRecorder === 'undefined') {
+      toastApiError(new Error('Voice recording is not supported in this browser'))
+      return
+    }
     chunksRef.current = []
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      const mr = new MediaRecorder(stream)
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : ''
+      const opts = mimeType ? { mimeType } : {}
+      const mr = new MediaRecorder(stream, opts)
       mediaRecorderRef.current = mr
+      const actualMime = mr.mimeType || 'audio/webm'
+      const ext = actualMime.includes('mp4') ? '.m4a' : '.webm'
       mr.ondataavailable = (e) => { if (e.data.size) chunksRef.current.push(e.data) }
       mr.onstop = () => {
         stream.getTracks().forEach((t) => t.stop())
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
-        const file = new File([blob], 'voice.webm', { type: 'audio/webm' })
+        if (chunksRef.current.length === 0) {
+          toastApiError(new Error('Recording too short. Try again.'))
+          return
+        }
+        const blob = new Blob(chunksRef.current, { type: actualMime })
+        const file = new File([blob], `voice${ext}`, { type: actualMime })
         uploadFile(file).then((url) => {
           onSend({ type: 'voice', attachmentUrl: url })
-        }).catch(() => {})
+        }).catch(toastApiError)
       }
       mr.start()
       setRecording(true)
-    }).catch(() => {})
+    }).catch(toastApiError)
   }
 
   const stopRecording = () => {

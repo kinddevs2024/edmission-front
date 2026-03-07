@@ -12,7 +12,9 @@ export function UniversityLayout() {
   const { user } = useAuth()
   const { t } = useTranslation('university')
   const location = useLocation()
-  if (user?.role === 'university') {
+  const isSelect = location.pathname === '/university/select'
+  const isPending = location.pathname === '/university/pending'
+  if (user?.role === 'university' && !isSelect && !isPending) {
     if (!user?.universityProfile) return <Navigate to="/university/select" replace />
     if (!user.universityProfile.verified) return <Navigate to="/university/pending" replace />
   }
@@ -24,31 +26,45 @@ export function UniversityLayout() {
     if (location.pathname === '/university/chat' && collapsed) setSidebarCollapsed(false)
   }, [location.pathname, collapsed, setSidebarCollapsed])
   const navItems = useMemo(
-    () => [
-      { to: '/university/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
-      { to: '/university/profile', label: t('navProfile'), icon: 'User' },
-      { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
-      { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
-      { to: '/university/scholarships', label: t('navScholarships'), icon: 'Wallet' },
-      { to: '/university/faculties', label: t('navFaculties'), icon: 'Building2' },
-      { to: '/university/analytics', label: t('navAnalytics'), icon: 'BarChart3' },
-      { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
-      { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
-      { to: '/payment', label: 'Subscription', icon: 'CreditCard' },
-      { to: '/support', label: 'Support', icon: 'HelpCircle' },
-    { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
-    ],
-    [t]
+    () =>
+      isSelect || isPending
+        ? [
+            { to: '/university/select', label: t('selectUniversity', 'Select university'), icon: 'Building2' },
+            { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
+            { to: '/support', label: 'Support', icon: 'HelpCircle' },
+          ]
+        : [
+            { to: '/university/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
+            { to: '/university/profile', label: t('navProfile'), icon: 'User' },
+            { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
+            { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
+            { to: '/university/scholarships', label: t('navScholarships'), icon: 'Wallet' },
+            { to: '/university/faculties', label: t('navFaculties'), icon: 'Building2' },
+            { to: '/university/analytics', label: t('navAnalytics'), icon: 'BarChart3' },
+            { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
+            { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
+            { to: '/payment', label: 'Subscription', icon: 'CreditCard' },
+            { to: '/support', label: 'Support', icon: 'HelpCircle' },
+            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
+          ],
+    [t, isSelect, isPending]
   )
   const bottomNavItems = useMemo(
-    () => [
-      { to: '/university/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
-      { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
-      { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
-      { to: '/university/profile', label: t('navProfile'), icon: 'User' },
-      { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
-    ],
-    [t]
+    () =>
+      isSelect || isPending
+        ? [
+            { to: '/university/select', label: t('selectUniversity', 'Select'), icon: 'Building2' },
+            { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
+            { to: '/support', label: 'Support', icon: 'HelpCircle' },
+          ]
+        : [
+            { to: '/university/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
+            { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
+            { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
+            { to: '/university/profile', label: t('navProfile'), icon: 'User' },
+            { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
+          ],
+    [t, isSelect, isPending]
   )
   useEffect(() => {
     setNavItems(navItems)

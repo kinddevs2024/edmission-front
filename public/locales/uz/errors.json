@@ -11,5 +11,6 @@
   "forbidden": "Ruxsat yo'q.",
   "notFound": "Topilmadi.",
   "serverError": "Server xatosi. Keyinroq urinib ko'ring.",
-  "networkError": "Ulanish muammosi. Internetni tekshiring."
+  "networkError": "Ulanish muammosi. Internetni tekshiring.",
+  "serviceUnavailable": "Xizmat vaqtincha mavjud emas. Keyinroq urinib ko'ring."
 }

@@ -19,7 +19,7 @@ export function Profile() {
     const next = { ...prefs, [key]: value }
     updateProfile({ notificationPreferences: next })
       .then(() => getProfile())
-      .catch(() => {})
+      .catch(toastApiError)
   }
 
   const [twoFaStep, setTwoFaStep] = useState<'idle' | 'setup' | 'verify' | 'disable'>('idle')
@@ -85,7 +85,7 @@ export function Profile() {
             <ThemeSwitch />
           </div>
           <div className="pt-2 border-t border-[var(--color-border)]">
-            <Button variant="secondary" onClick={() => logoutApi().catch(() => {})}>
+            <Button variant="secondary" onClick={() => logoutApi().catch(toastApiError)}>
               {t('logout')}
             </Button>
           </div>

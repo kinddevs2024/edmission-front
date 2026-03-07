@@ -7,6 +7,7 @@ import { MatchScore } from '@/components/student/MatchScore'
 import { api } from '@/services/api'
 import { showInterest, getApplications, getInterestLimit } from '@/services/student'
 import { getImageUrl } from '@/services/upload'
+import { toastApiError } from '@/utils/toastError'
 import { MessageCircle } from 'lucide-react'
 import type { UniversityProfile, Program, Scholarship, Faculty } from '@/types/university'
 
@@ -26,8 +27,8 @@ export function UniversityDetail() {
     getApplications({ limit: 500 }).then((res) => {
       const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === id)
       setInterested(hasId)
-    }).catch(() => {})
-    getInterestLimit().then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit })).catch(() => {})
+    }).catch(toastApiError)
+    getInterestLimit().then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit })).catch(toastApiError)
   }, [id])
 
   useEffect(() => {
@@ -47,8 +48,8 @@ export function UniversityDetail() {
           setMatchBreakdown(u.breakdown ?? null)
         }
       })
-      .catch(() => {
-        if (!cancelled) setUni(null)
+      .catch((e) => {
+        if (!cancelled) { toastApiError(e); setUni(null) }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -58,7 +59,7 @@ export function UniversityDetail() {
 
   const handleInterest = () => {
     if (!id || interested || !interestLimit.allowed) return
-    showInterest(id).then(() => setInterested(true)).catch(() => {})
+    showInterest(id).then(() => setInterested(true)).catch(toastApiError)
   }
 
   if (loading && !uni) {

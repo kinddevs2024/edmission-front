@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { getFaculties, getProfile, createFaculty, updateFaculty, deleteFaculty, updateProfile } from '@/services/university'
 import type { Faculty } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { toastApiError } from '@/utils/toastError'
 import { Pencil, Trash2, Plus, ChevronDown } from 'lucide-react'
 
 export function Faculties() {
@@ -34,7 +35,8 @@ export function Faculties() {
         setProfileFacultyItems(profile.facultyItems ?? {})
         setList((faculties ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)))
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setProfileFacultyCodes([])
         setProfileFacultyItems({})
         setList([])
@@ -53,7 +55,7 @@ export function Faculties() {
         setProfileFacultyCodes(codes)
         setProfileFacultyItems(items)
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSavingProfile(false))
   }
 
@@ -126,7 +128,7 @@ export function Faculties() {
         setModal(null)
         load()
       })
-      .catch(() => {})
+      .catch(toastApiError)
       .finally(() => setSubmitting(false))
   }
 
@@ -134,7 +136,7 @@ export function Faculties() {
     if (!confirm(t('common:confirmDelete', 'Delete?'))) return
     deleteFaculty(f.id)
       .then(() => setList((prev) => prev.filter((x) => x.id !== f.id)))
-      .catch(() => {})
+      .catch(toastApiError)
   }
 
   const availableToAdd = FIELD_OF_STUDY.filter((c) => !profileFacultyCodes.includes(c.id))

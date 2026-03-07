@@ -2,31 +2,34 @@ import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { clsx } from 'clsx'
 
 export function FAQSection() {
   const { t } = useTranslation('landing')
   const [openIndex, setOpenIndex] = useState<number | null>(0)
+  const schemaRef = useRef<HTMLScriptElement | null>(null)
 
   const items = t('faq.items', { returnObjects: true }) as Array<{ q: string; a: string }>
 
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: items.map((item) => ({
-      '@type': 'Question',
-      name: item.q,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.a,
-      },
-    })),
-  }
+  useEffect(() => {
+    if (schemaRef.current) {
+      const faqSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: items.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      }
+      schemaRef.current.textContent = JSON.stringify(faqSchema)
+    }
+  }, [items])
 
   return (
     <section id="faq" className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script ref={schemaRef} type="application/ld+json" />
       <div className="mx-auto max-w-3xl px-4 py-20 md:px-6 lg:px-8">
         <Reveal>
           <SectionHeading

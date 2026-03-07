@@ -10,6 +10,7 @@ import { getApplications, getOffers, getRecommendations, getCompareUniversities,
 import { getMyDocuments } from '@/services/studentDocuments'
 import type { UniversityListItem } from '@/types/university'
 import type { Application, Offer } from '@/types/student'
+import { toastApiError } from '@/utils/toastError'
 import { CheckCircle, Circle } from 'lucide-react'
 
 export function StudentDashboard() {
@@ -23,15 +24,15 @@ export function StudentDashboard() {
   const [docCount, setDocCount] = useState(0)
 
   useEffect(() => {
-    getApplications({ limit: 100 }).then((r) => setApplications(r.data ?? [])).catch(() => {})
-    getOffers({ limit: 100 }).then((r) => setOffers(r.data ?? [])).catch(() => {})
-    getMyDocuments().then((d) => setDocCount(d.length)).catch(() => {})
+    getApplications({ limit: 100 }).then((r) => setApplications(r.data ?? [])).catch(toastApiError)
+    getOffers({ limit: 100 }).then((r) => setOffers(r.data ?? [])).catch(toastApiError)
+    getMyDocuments().then((d) => setDocCount(d.length)).catch(toastApiError)
     getStudentProfile()
       .then((p) => {
         setProfilePercent(p.portfolioCompletionPercent ?? 0)
         setMinimalComplete(p.minimalPortfolioComplete ?? false)
       })
-      .catch(() => {})
+      .catch(toastApiError)
   }, [])
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export function StudentDashboard() {
           name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '',
         })))
       })
-      .catch(() => setRecommendations([]))
+      .catch((e) => { toastApiError(e); setRecommendations([]) })
       .finally(() => { if (!cancelled) setLoadingRecs(false) })
     return () => { cancelled = true }
   }, [])

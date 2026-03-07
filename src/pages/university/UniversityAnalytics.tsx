@@ -30,7 +30,7 @@ const PIE_COLORS = ['#84CC16', '#3B82F6', '#64748B', '#F59E0B']
 export function UniversityAnalytics() {
   const [funnel, setFunnel] = useState<{ byStatus: Record<string, number>; total: number }>({ byStatus: {}, total: 0 })
   useEffect(() => {
-    getFunnelAnalytics().then(setFunnel).catch(() => {})
+    getFunnelAnalytics().then(setFunnel).catch(toastApiError)
   }, [])
   const funnelBar = Object.entries(funnel.byStatus).map(([stage, count]) => ({
     stage: STAGE_LABELS[stage] ?? stage,

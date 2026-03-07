@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Badge } from '@/components/ui/Badge'
 import { getDashboard, type UniversityDashboardData } from '@/services/university'
+import { toastApiError } from '@/utils/toastError'
 import { Bot, Users, BarChart3, MessageCircle, Send, ShieldCheck } from 'lucide-react'
 
 const STAGE_LABELS: Record<string, string> = {
@@ -24,7 +25,7 @@ export function UniversityDashboard() {
   useEffect(() => {
     getDashboard()
       .then(setDashboard)
-      .catch(() => setDashboard(null))
+      .catch((e) => { toastApiError(e); setDashboard(null) })
       .finally(() => setLoading(false))
   }, [])
 

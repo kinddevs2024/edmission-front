@@ -14,6 +14,7 @@ import { MessageCircle, User, SlidersHorizontal } from 'lucide-react'
 import { getStudents, type DiscoverStudentItem } from '@/services/university'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { getProfileCriteria } from '@/services/options'
+import { toastApiError } from '@/utils/toastError'
 
 const COUNTRY_OPTIONS = [
   { value: '', label: 'All countries' },
@@ -84,7 +85,8 @@ export function Discovery() {
         setList(res.data ?? [])
         setTotal(res.total ?? 0)
       })
-      .catch(() => {
+      .catch((e) => {
+        toastApiError(e)
         setList([])
         setTotal(0)
       })
