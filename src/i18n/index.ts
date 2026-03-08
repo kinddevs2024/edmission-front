@@ -2,11 +2,14 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { supportedLngs, defaultNS, fallbackLng, namespaces, getInitialLanguage } from './config'
 
-/** Load all namespaces for one language (8 requests in parallel). */
-async function loadLanguageResources(lng: string): Promise<Record<string, object>> {
+/** Namespaces needed for first paint (landing + common). Load rest in background. */
+const CRITICAL_NS: readonly string[] = ['common', 'landing']
+const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
+
+async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<Record<string, object>> {
   const out: Record<string, object> = {}
   await Promise.all(
-    namespaces.map(async (ns) => {
+    nsList.map(async (ns) => {
       try {
         const r = await fetch(`/locales/${lng}/${ns}.json`)
         out[ns] = r.ok ? await r.json() : {}
@@ -16,6 +19,11 @@ async function loadLanguageResources(lng: string): Promise<Record<string, object
     })
   )
   return out
+}
+
+/** Load all namespaces for one language. */
+async function loadLanguageResources(lng: string): Promise<Record<string, object>> {
+  return loadNamespaces(lng, namespaces)
 }
 
 const loadedLanguages = new Set<string>()
@@ -32,11 +40,13 @@ export async function loadLanguage(lng: string): Promise<void> {
 
 export async function initI18n() {
   const initialLng = getInitialLanguage()
-  // Load only initial language so the app can render quickly (8 requests instead of 24).
-  const resources = await loadLanguageResources(initialLng)
-  loadedLanguages.add(initialLng)
-
-  const resourcesMap: Record<string, Record<string, object>> = { [initialLng]: resources }
+  // Load only critical namespaces (common + landing) for first paint, then load rest in background.
+  const criticalRes = await loadNamespaces(initialLng, CRITICAL_NS)
+  const resourcesMap: Record<string, Record<string, object>> = { [initialLng]: { ...criticalRes } }
+  // Add empty placeholders for other NS so t() doesn't break; they'll be filled async.
+  for (const ns of OTHER_NS) {
+    resourcesMap[initialLng][ns] = {}
+  }
 
   await i18n.use(initReactI18next).init({
     resources: resourcesMap,
@@ -47,11 +57,16 @@ export async function initI18n() {
     supportedLngs: [...supportedLngs],
     interpolation: { escapeValue: false },
   })
+  loadedLanguages.add(initialLng)
   try {
     localStorage.setItem('i18nextLng', initialLng)
   } catch {
     /* ignore */
   }
+  // Load remaining namespaces in background (non-blocking).
+  loadNamespaces(initialLng, OTHER_NS).then((otherRes) => {
+    OTHER_NS.forEach((ns) => i18n.addResourceBundle(initialLng, ns, otherRes[ns], true))
+  })
   return i18n
 }
 
