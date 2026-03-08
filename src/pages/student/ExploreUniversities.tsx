@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
@@ -10,9 +11,8 @@ import { Select } from '@/components/ui/Select'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
 import { Building2 } from 'lucide-react'
-import { getUniversities, showInterest, getApplications, getInterestLimit, getStudentProfile } from '@/services/student'
+import { getUniversities, showInterest, getInterestedUniversityIds, getInterestLimit, getStudentProfile } from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
-import type { UniversityListItem } from '@/types/university'
 
 const COUNTRY_OPTIONS = [
   { value: '', label: 'All countries' },
@@ -34,32 +34,61 @@ export function ExploreUniversities() {
   const [country, setCountry] = useState(searchParams.get('country') ?? '')
   const [city, setCity] = useState(searchParams.get('city') ?? '')
   const [sort, setSort] = useState(searchParams.get('sort') ?? 'match')
-  const [list, setList] = useState<UniversityListItem[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1)
-  const [loading, setLoading] = useState(true)
-  const [interestedIds, setInterestedIds] = useState<Set<string>>(new Set())
-  const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; current: number; limit: number | null }>({ allowed: true, current: 0, limit: 3 })
   /** When true, backend does not filter by profile (interestedFaculties, preferredCountries). Set by Clear. */
   const [useProfileFilters, setUseProfileFilters] = useState(true)
-  const [profileFilterCounts, setProfileFilterCounts] = useState<{ faculties: number; countries: number }>({ faculties: 0, countries: 0 })
-  const limit = 12
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    getStudentProfile().then((p) => {
-      const faculties = (p.interestedFaculties ?? []).filter(Boolean).length
-      const countries = (p.preferredCountries ?? []).filter(Boolean).length
-      setProfileFilterCounts({ faculties, countries })
-    }).catch(toastApiError)
-  }, [])
+  const { data: interestedIdsData } = useQuery({
+    queryKey: ['student', 'interestedUniversityIds'],
+    queryFn: getInterestedUniversityIds,
+    staleTime: 2 * 60 * 1000,
+  })
+  const interestedIds = new Set(interestedIdsData ?? [])
 
-  useEffect(() => {
-    getApplications({ limit: 500 }).then((res) => {
-      const ids = new Set((res.data ?? []).map((a) => (a as { universityId?: string }).universityId).filter(Boolean) as string[])
-      setInterestedIds(ids)
-    }).catch(toastApiError)
-    getInterestLimit().then(setInterestLimit).catch(toastApiError)
-  }, [])
+  const { data: interestLimit } = useQuery({
+    queryKey: ['student', 'interestLimit'],
+    queryFn: getInterestLimit,
+    staleTime: 60 * 1000,
+  })
+  const limit = interestLimit ?? { allowed: true, current: 0, limit: 3 }
+
+  const { data: universitiesData, isLoading: loading } = useQuery({
+    queryKey: ['student', 'universities', page, country, city, sort, useProfileFilters],
+    queryFn: () => getUniversities({
+      page,
+      limit: 12,
+      country: country || undefined,
+      city: city.trim() || undefined,
+      sort: sort as 'match' | 'name' | 'rating',
+      useProfileFilters,
+    }),
+    staleTime: 30 * 1000,
+  })
+  const list = universitiesData?.data ?? []
+  const total = universitiesData?.total ?? 0
+  const limitSize = 12
+
+  const { data: profileFilterCounts } = useQuery({
+    queryKey: ['student', 'profile', 'filterCounts'],
+    queryFn: getStudentProfile,
+    select: (p) => ({
+      faculties: (p.interestedFaculties ?? []).filter(Boolean).length,
+      countries: (p.preferredCountries ?? []).filter(Boolean).length,
+    }),
+  })
+  const profileCriteria = profileFilterCounts ?? { faculties: 0, countries: 0 }
+
+  const interestMutation = useMutation({
+    mutationFn: showInterest,
+    onSuccess: (_, universityId) => {
+      queryClient.setQueryData<string[]>(['student', 'interestedUniversityIds'], (prev) =>
+        prev ? [...prev, universityId] : [universityId]
+      )
+      queryClient.invalidateQueries({ queryKey: ['student', 'interestLimit'] })
+    },
+    onError: toastApiError,
+  })
 
   useEffect(() => {
     const params: Record<string, string> = {}
@@ -71,52 +100,17 @@ export function ExploreUniversities() {
     setSearchParams(params, { replace: true })
   }, [search, country, city, sort, page, setSearchParams])
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    getUniversities({
-      page,
-      limit,
-      country: country || undefined,
-      city: city.trim() || undefined,
-      sort: sort as 'match' | 'name' | 'rating',
-      useProfileFilters,
-    })
-      .then((res) => {
-        if (!cancelled) {
-          setList(res.data ?? [])
-          setTotal(res.total ?? 0)
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setList([])
-          setTotal(0)
-          toastApiError(e)
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => { cancelled = true }
-  }, [page, country, city, sort, useProfileFilters])
-
   const handleInterest = (id: string) => {
-    if (interestedIds.has(id) || !interestLimit.allowed) return
-    showInterest(id)
-      .then(() => {
-        setInterestedIds((s) => new Set(s).add(id))
-        setInterestLimit((prev) => ({ ...prev, current: prev.current + 1, allowed: prev.limit === null ? true : prev.current + 1 < prev.limit }))
-      })
-      .catch(toastApiError)
+    if (interestedIds.has(id) || !limit.allowed) return
+    interestMutation.mutate(id)
   }
 
-  const canShowInterest = interestLimit.allowed
-  const interestLabel = interestLimit.limit != null ? `${interestLimit.current}/${interestLimit.limit}` : `${interestLimit.current}`
+  const canShowInterest = limit.allowed
+  const interestLabel = limit.limit != null ? `${limit.current}/${limit.limit}` : `${limit.current}`
 
-  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const totalPages = Math.max(1, Math.ceil(total / limitSize))
   const hasFilters = search.trim() !== '' || country !== '' || city.trim() !== '' || sort !== 'match' || useProfileFilters
-  const profileCriteriaCount = profileFilterCounts.faculties + profileFilterCounts.countries
+  const profileCriteriaCount = profileCriteria.faculties + profileCriteria.countries
 
   const handleClearFilters = () => {
     setSearch('')
@@ -181,13 +175,13 @@ export function ExploreUniversities() {
 
       {useProfileFilters && profileCriteriaCount > 0 && (
         <p className="text-sm text-[var(--color-text-muted)]">
-          {t('profileFiltersApplied', 'Using your profile')}: {profileFilterCounts.faculties} {t('faculties', 'faculties')}, {profileFilterCounts.countries} {t('countries', 'countries')} ({profileCriteriaCount} {t('criteriaTotal', 'criteria total')})
+          {t('profileFiltersApplied', 'Using your profile')}: {profileCriteria.faculties} {t('faculties', 'faculties')}, {profileCriteria.countries} {t('countries', 'countries')} ({profileCriteriaCount} {t('criteriaTotal', 'criteria total')})
         </p>
       )}
 
-      {interestLimit.limit != null && (
+      {limit.limit != null && (
         <p className="text-sm text-[var(--color-text-muted)]">
-          Interests used: {interestLabel} {!canShowInterest && interestedIds.size >= interestLimit.limit && '(limit reached — upgrade to add more)'}
+          Interests used: {interestLabel} {!canShowInterest && limit.limit != null && interestedIds.size >= limit.limit && '(limit reached — upgrade to add more)'}
         </p>
       )}
 

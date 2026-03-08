@@ -281,7 +281,7 @@ export function Discovery() {
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]">
-                            <img src={getStudentAvatarUrl(st?.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                            <img src={getStudentAvatarUrl(st?.avatarUrl)} alt="" loading="lazy" className="w-full h-full object-cover" />
                           </div>
                         <div className="min-w-0">
                           <CardTitle className="truncate">{name}</CardTitle>

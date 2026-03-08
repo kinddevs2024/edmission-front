@@ -105,7 +105,7 @@ export function UniversityStudentProfile() {
             </Card>
           )}
           <div className="flex justify-center md:justify-start">
-            <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
+            <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" loading="lazy" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
           </div>
 
               <Card>

@@ -156,6 +156,12 @@ export async function getInterestLimit(): Promise<InterestLimit> {
   return data ?? { allowed: false, current: 0, limit: 3 }
 }
 
+/** Lightweight: returns only university IDs the student has shown interest in. */
+export async function getInterestedUniversityIds(): Promise<string[]> {
+  const { data } = await api.get<{ ids: string[] }>('/student/interests/university-ids')
+  return data?.ids ?? []
+}
+
 export async function showInterest(universityId: string): Promise<void> {
   await api.post(`/student/universities/${universityId}/interest`)
 }

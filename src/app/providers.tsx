@@ -1,10 +1,20 @@
 import { type ReactNode, useEffect } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { I18nextProvider } from 'react-i18next'
 import { BrowserRouter } from 'react-router-dom'
 import i18n from '@/i18n'
 import { useTheme } from '@/hooks/useTheme'
 import { checkBackendHealthOnce } from '@/services/health'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 min
+      gcTime: 5 * 60 * 1000, // 5 min (formerly cacheTime)
+    },
+  },
+})
 
 function ThemeSync() {
   useTheme()
@@ -21,6 +31,7 @@ function BackendHealthCheck() {
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
+    <QueryClientProvider client={queryClient}>
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>
         <BackendHealthCheck />
@@ -29,5 +40,6 @@ export function Providers({ children }: { children: ReactNode }) {
         <Toaster richColors position="top-center" />
       </BrowserRouter>
     </I18nextProvider>
+    </QueryClientProvider>
   )
 }

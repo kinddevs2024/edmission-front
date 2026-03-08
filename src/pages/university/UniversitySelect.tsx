@@ -163,7 +163,7 @@ export function UniversitySelect() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-12 h-12 rounded-lg bg-[var(--color-border)] flex items-center justify-center shrink-0 overflow-hidden">
                         {u.logoUrl ? (
-                          <img src={u.logoUrl} alt="" className="w-full h-full object-cover" />
+                          <img src={u.logoUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
                         ) : (
                           <Building2 className="w-6 h-6 text-[var(--color-text-muted)]" aria-hidden />
                         )}

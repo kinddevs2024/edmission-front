@@ -44,6 +44,7 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
             {chat.participant.avatar ? (
               <img
                 src={getImageUrl(chat.participant.avatar)}
+                loading="lazy"
                 alt=""
                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
               />
