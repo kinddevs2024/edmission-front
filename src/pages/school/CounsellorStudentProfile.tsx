@@ -422,8 +422,8 @@ export function CounsellorStudentProfile() {
               onChange={(labels) => {
                 const codes = labels
                   .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
-                  .filter((v): v is string => !!v)
-                setValue('preferredCountries', codes, { shouldDirty: true })
+                  .filter((c): c is (typeof COUNTRY_CODE_OPTIONS)[number]['code'] => c != null)
+                setValue('preferredCountries', codes as string[], { shouldDirty: true })
               }}
               max={8}
               placeholder={t('student:preferredCountriesPlaceholder', 'Select countries')}
