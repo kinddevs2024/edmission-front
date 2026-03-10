@@ -9,7 +9,7 @@ import { toastApiError } from '@/utils/toastError'
 
 export function CounsellorSchoolProfile() {
   const { t } = useTranslation(['common', 'admin'])
-  const [profile, setProfile] = useState<CounsellorProfileType | null>(null)
+  const [, setProfile] = useState<CounsellorProfileType | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [schoolName, setSchoolName] = useState('')
