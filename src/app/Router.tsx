@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import type { Role } from '@/types/user'
 
 import { AuthLayout } from '@/layouts/AuthLayout'
@@ -121,9 +122,15 @@ function LandingOrRedirect() {
   return <Navigate to={to} replace />
 }
 
+function DocumentTitle() {
+  useDocumentTitle()
+  return null
+}
+
 export function Router() {
   return (
     <Suspense fallback={<PageFallback />}>
+    <DocumentTitle />
     <Routes>
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
