@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { Link } from 'react-router-dom'
 import {
   listMyStudents,
   createStudent,
   updateMyStudent,
   deleteMyStudent,
+  generateTempPassword,
   type CounsellorStudent,
   type CreateStudentResult,
 } from '@/services/counsellor'
@@ -33,6 +35,8 @@ export function CounsellorStudents() {
   const [editFirstName, setEditFirstName] = useState('')
   const [editLastName, setEditLastName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<CounsellorStudent | null>(null)
+  const [passwordModal, setPasswordModal] = useState<{ student: CounsellorStudent; password: string } | null>(null)
+  const [passwordLoading, setPasswordLoading] = useState(false)
   const limit = 20
 
   const load = () => {
@@ -104,6 +108,15 @@ export function CounsellorStudents() {
       .finally(() => setSubmitting(false))
   }
 
+  const handleGetPassword = (s: CounsellorStudent) => {
+    if (!s.mustChangePassword) return
+    setPasswordLoading(true)
+    generateTempPassword(s.userId)
+      .then((res) => setPasswordModal({ student: s, password: res.temporaryPassword }))
+      .catch(toastApiError)
+      .finally(() => setPasswordLoading(false))
+  }
+
   const handleDelete = () => {
     if (!deleteTarget) return
     setSubmitting(true)
@@ -149,7 +162,15 @@ export function CounsellorStudents() {
                     <tr key={s.userId} className="border-b border-[var(--color-border)] last:border-0">
                       <td className="py-3">{s.email}</td>
                       <td className="py-3">{s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || '—'}</td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 text-right space-x-1">
+                        <Link to={`/school/students/${s.userId}/profile`}>
+                          <Button size="sm" variant="ghost">{t('admin:editProfile', 'Edit profile')}</Button>
+                        </Link>
+                        {s.mustChangePassword && (
+                          <Button size="sm" variant="ghost" onClick={() => handleGetPassword(s)} disabled={passwordLoading}>
+                            {t('admin:getPassword', 'Get password')}
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>{t('common:edit')}</Button>
                         <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setDeleteTarget(s)}>{t('common:delete')}</Button>
                       </td>
@@ -220,6 +241,26 @@ export function CounsellorStudents() {
             <p className="text-sm text-[var(--color-text-muted)]">{editingStudent.email}</p>
             <Input label={t('admin:firstName', 'First name')} value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} />
             <Input label={t('admin:lastName', 'Last name')} value={editLastName} onChange={(e) => setEditLastName(e.target.value)} />
+          </div>
+        )}
+      </Modal>
+
+      {/* Temp password modal */}
+      <Modal
+        open={!!passwordModal}
+        onClose={() => setPasswordModal(null)}
+        title={t('admin:tempPasswordTitle', 'Temporary password')}
+        footer={<Button onClick={() => setPasswordModal(null)}>{t('common:close')}</Button>}
+      >
+        {passwordModal && (
+          <div className="space-y-3">
+            <p className="text-sm text-[var(--color-text-muted)]">
+              {t('admin:tempPasswordFor', 'Password for')} {passwordModal.student.email}
+            </p>
+            <div className="rounded-lg bg-[var(--color-border)] p-4">
+              <p className="font-mono text-lg break-all">{passwordModal.password}</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-2">{t('admin:tempPasswordHint', 'Student must change it on first login.')}</p>
+            </div>
           </div>
         )}
       </Modal>

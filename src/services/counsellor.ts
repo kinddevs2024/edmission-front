@@ -29,6 +29,7 @@ export interface CounsellorStudent {
   lastName: string
   country: string
   city: string
+  mustChangePassword?: boolean
 }
 
 export interface CreateStudentResult {
@@ -72,6 +73,16 @@ export async function updateMyStudent(studentUserId: string, patch: Record<strin
 
 export async function deleteMyStudent(studentUserId: string): Promise<void> {
   await api.delete(`/counsellor/students/${studentUserId}`)
+}
+
+export async function getStudentProfile(studentUserId: string): Promise<Record<string, unknown>> {
+  const { data } = await api.get(`/counsellor/students/${studentUserId}`)
+  return data
+}
+
+export async function generateTempPassword(studentUserId: string): Promise<{ temporaryPassword: string }> {
+  const { data } = await api.post<{ temporaryPassword: string }>(`/counsellor/students/${studentUserId}/generate-temp-password`)
+  return data
 }
 
 export async function listJoinRequests(params?: { status?: string; page?: number; limit?: number }): Promise<{ data: JoinRequestItem[]; total: number; page: number; limit: number; totalPages: number }> {

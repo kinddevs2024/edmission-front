@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -13,7 +14,7 @@ import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Building2, ExternalLink } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -35,9 +36,17 @@ const schema = z.object({
   educationStatus: z.preprocess((v) => (v === '' ? undefined : v), z.enum(['in_school', 'finished_school', 'in_university', 'finished_university']).optional()),
   schoolCompleted: z.boolean().optional(),
   schoolName: z.string().optional(),
-  graduationYear: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(1950).max(2030).optional()),
+  graduationYear: z.preprocess((v) => {
+    if (v === '' || v === undefined || v === null) return undefined
+    const n = Number(v)
+    return Number.isFinite(n) ? n : undefined
+  }, z.number().min(1950).max(2030).optional()),
   gradingScheme: z.string().optional(),
-  gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
+  gradeScale: z.preprocess((v) => {
+    if (v === '' || v === undefined || v === null) return undefined
+    const n = Number(v)
+    return Number.isFinite(n) ? n : undefined
+  }, z.number().optional()),
   highestEducationLevel: z.string().optional(),
   targetDegreeLevel: z.preprocess((v) => (v === '' ? undefined : v), z.enum(['bachelor', 'master', 'phd']).optional()),
   schoolsAttended: z.array(z.object({
@@ -46,7 +55,11 @@ const schema = z.object({
     institutionType: z.preprocess((v) => (v === '' ? undefined : v), z.enum(['school', 'university']).optional()),
     educationLevel: z.string().optional(),
     gradingScheme: z.string().optional(),
-    gradeScale: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
+    gradeScale: z.preprocess((v) => {
+      if (v === '' || v === undefined || v === null) return undefined
+      const n = Number(v)
+      return Number.isFinite(n) ? n : undefined
+    }, z.number().optional()),
     gradeAverage: z.preprocess((v) => (v === '' ? undefined : v), z.number().optional()),
     primaryLanguage: z.string().optional(),
     attendedFrom: z.string().optional(),
@@ -209,6 +222,7 @@ export function StudentProfilePage() {
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
   const [expandedSkillsBlock, setExpandedSkillsBlock] = useState<'skills' | 'interests' | 'hobbies'>('skills')
   const [displayPercent, setDisplayPercent] = useState(0)
+  const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
 
   const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -331,9 +345,9 @@ export function StudentProfilePage() {
       educationStatus: data.educationStatus || undefined,
       schoolCompleted: data.schoolCompleted,
       schoolName: data.schoolName || undefined,
-      graduationYear: data.graduationYear != null ? data.graduationYear : undefined,
+      graduationYear: data.graduationYear != null ? Number(data.graduationYear) : undefined,
       gradingScheme: data.gradingScheme || undefined,
-      gradeScale: data.gradeScale != null ? data.gradeScale : undefined,
+      gradeScale: data.gradeScale != null ? Number(data.gradeScale) : undefined,
       highestEducationLevel: data.highestEducationLevel || undefined,
       targetDegreeLevel: data.targetDegreeLevel || undefined,
       schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
@@ -342,8 +356,8 @@ export function StudentProfilePage() {
         institutionName: s.institutionName || undefined,
         educationLevel: s.educationLevel || undefined,
         gradingScheme: s.gradingScheme || undefined,
-        gradeScale: s.gradeScale != null ? s.gradeScale : undefined,
-        gradeAverage: s.gradeAverage != null ? s.gradeAverage : undefined,
+        gradeScale: s.gradeScale != null ? Number(s.gradeScale) : undefined,
+        gradeAverage: s.gradeAverage != null ? Number(s.gradeAverage) : undefined,
         primaryLanguage: s.primaryLanguage || undefined,
         attendedFrom: s.attendedFrom || undefined,
         attendedTo: s.attendedTo || undefined,
@@ -401,15 +415,15 @@ export function StudentProfilePage() {
   }
 
   return (
-    <div className="p-4 max-w-3xl mx-auto space-y-6">
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
+      <div className="flex flex-wrap items-center gap-6">
         <img
           src={getStudentAvatarUrl(profile?.avatarUrl)}
           alt=""
-          className="w-16 h-16 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
+          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
         />
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
           {verified && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400 mt-1" title={t('common:verified')}>
               <span aria-hidden>✓</span> {t('common:verified')}
@@ -417,19 +431,19 @@ export function StudentProfilePage() {
           )}
         </div>
       </div>
-      <p className="text-sm text-[var(--color-text-muted)]">
+      <p className="text-base sm:text-lg text-[var(--color-text-muted)] leading-relaxed max-w-2xl">
         {t('portfolioIntro')}
       </p>
 
-      <Card className="p-4">
-        <div className="flex items-center justify-between gap-4">
+      <Card className="p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-sm text-[var(--color-text-muted)]">{t('portfolioCompletion')}</p>
-            <p className="text-2xl font-semibold text-[var(--color-text)]">
+            <p className="text-base text-[var(--color-text-muted)]">{t('portfolioCompletion')}</p>
+            <p className="text-2xl sm:text-3xl font-semibold text-[var(--color-text)] mt-0.5">
               {profile?.portfolioCompletionPercent ?? 0}%
             </p>
           </div>
-          <div className="flex-1 max-w-[200px] h-3 rounded-full bg-[var(--color-border)] overflow-hidden">
+          <div className="flex-1 w-full sm:max-w-[280px] h-4 rounded-full bg-[var(--color-border)] overflow-hidden">
             <div
               className="h-full rounded-full bg-[var(--color-primary-accent)] transition-all duration-500 ease-out"
               style={{ width: `${displayPercent}%` }}
@@ -438,7 +452,7 @@ export function StudentProfilePage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
         {SECTIONS.map((sec) => {
           const isFaculties = sec.id === 'faculties'
           const facultiesSelected = (profile?.interestedFaculties?.length ?? 0) > 0
@@ -450,11 +464,11 @@ export function StudentProfilePage() {
               type="button"
               onClick={() => setOpenSection(sec.id)}
               className={cn(
-                'flex flex-col items-center gap-3 p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-center'
+                'flex flex-col items-center gap-4 p-5 sm:p-6 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-center min-h-[140px]'
               )}
             >
-              <div className={cn(
-                'relative w-20 h-20 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)]',
+                <div className={cn(
+                  'relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)] shrink-0',
                 isFaculties && facultiesSelected && 'ring-2 ring-green-500/50 !bg-green-500/10'
               )}>
                 {isFaculties ? (
@@ -495,13 +509,13 @@ export function StudentProfilePage() {
                         d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
                       />
                     </svg>
-                    <span className="relative text-sm font-semibold text-[var(--color-text)]">{pct}%</span>
+                    <span className="relative text-sm sm:text-base font-semibold text-[var(--color-text)]">{pct}%</span>
                   </>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-[var(--color-text)]">
-                <Icon className="w-4 h-4 flex-shrink-0 text-[var(--color-text-muted)]" />
-                <span className="text-sm font-medium truncate">{t(sec.titleKey)}</span>
+              <div className="flex items-center justify-center gap-2 text-[var(--color-text)] w-full min-h-[2.5rem]">
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[var(--color-text-muted)]" />
+                <span className="text-sm sm:text-base font-medium text-center line-clamp-2">{t(sec.titleKey)}</span>
               </div>
             </button>
           )
@@ -570,58 +584,74 @@ export function StudentProfilePage() {
 
           {openSection === 'education' && (
             <>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('educationStatusLabel')}</label>
-                <select {...register('educationStatus')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm mb-4">
-                  <option value="">—</option>
-                  {EDUCATION_STATUS_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                  ))}
-                </select>
+              <p className="text-base font-medium text-[var(--color-text)] mb-3">{t('educationStatusLabel')}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                {EDUCATION_STATUS_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => setValue('educationStatus', o.value, { shouldDirty: true })}
+                    className={cn(
+                      'p-4 rounded-xl border-2 text-left text-sm font-medium transition-all',
+                      educationStatus === o.value
+                        ? 'border-[var(--color-primary-accent)] bg-[var(--color-primary-accent)]/10 text-[var(--color-text)]'
+                        : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-muted)] hover:border-[var(--color-primary-accent)]/50'
+                    )}
+                  >
+                    {t(o.labelKey)}
+                  </button>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('applyingForDegree')}</label>
-                <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                  <option value="">—</option>
-                  {TARGET_DEGREE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradingScheme')}</label>
-                <select {...register('gradingScheme')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                  <option value="">—</option>
-                  {GRADING_SCHEME_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradeScaleOutOf')}</label>
-                <select {...register('gradeScale')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                  <option value="">—</option>
-                  {GRADE_SCALE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('highestLevelOfEducation')}</label>
-                <select {...register('highestEducationLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                  <option value="">—</option>
-                  {HIGHEST_EDUCATION_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                  ))}
-                </select>
-              </div>
-              <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
-              <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} />
-              <div className="space-y-4">
-                <div>
-                  <p className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('languageLevel')}</p>
-                  <p className="text-xs text-[var(--color-text-muted)] mb-3">{t('languageLevelHint')}</p>
+
+              <p className="text-base font-medium text-[var(--color-text)] mb-2">{t('applyingForDegree')}</p>
+              <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-base mb-6">
+                <option value="">—</option>
+                {TARGET_DEGREE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
+                ))}
+              </select>
+
+              {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
+                <div className="space-y-4 mb-6 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
+                  <p className="text-base font-medium text-[var(--color-text)]">{t('schoolName')}</p>
+                  <Input label={t('schoolName')} {...register('schoolName')} placeholder="например: Лицей №1" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
+                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
+                  </div>
+                  <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0–4" />
                 </div>
+              )}
+
+              {(educationStatus === 'in_university' || educationStatus === 'finished_university') && (
+                <div className="space-y-4 mb-6 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
+                  <p className="text-base font-medium text-[var(--color-text)]">{t('institutionName')}</p>
+                  <Input label={t('institutionName')} {...register('schoolName')} placeholder="например: Ташкентский университет" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder="1 курс, 2 курс…" />
+                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2025" />
+                  </div>
+                </div>
+              )}
+
+              <Card className="p-4 mb-6 border-2 border-dashed border-[var(--color-primary-accent)]/50 bg-[var(--color-primary-accent)]/5">
+                <div className="flex items-start gap-3">
+                  <Building2 className="w-6 h-6 text-[var(--color-primary-accent)] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-[var(--color-text)]">{t('linkToMySchool', 'Привязать к школе')}</p>
+                    <p className="text-sm text-[var(--color-text-muted)] mt-1 mb-3">{t('linkToSchoolHint', 'Выберите школу из списка — ваш консультант увидит профиль и сможет помогать.')}</p>
+                    <Link to="/student/schools" className="inline-flex items-center gap-2 text-[var(--color-primary-accent)] font-medium hover:underline">
+                      {t('chooseSchool', 'Выбрать школу')} <ExternalLink className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="mb-4">
+                <p className="block text-base font-medium text-[var(--color-text)] mb-1">{t('languageLevel')}</p>
+                <p className="text-sm text-[var(--color-text-muted)] mb-3">{t('languageLevelHint')}</p>
+              </div>
+              <div className="space-y-3 mb-6">
                 {languageFields.length > 0 && (
                   <ul className="space-y-2" role="list">
                     {languageFields.map((field, i) => (
@@ -711,26 +741,52 @@ export function StudentProfilePage() {
                   )}
                 </Card>
               </div>
-              <hr className="border-[var(--color-border)]" />
-              {(() => {
-                const targetDegree = watch('targetDegreeLevel')
-                const isMasterOrPhd = targetDegree === 'master' || targetDegree === 'phd'
-                const institutionLabel = isMasterOrPhd ? (t('institutionName') || 'University / Institution name') : t('schoolName')
-                const completedLabel = isMasterOrPhd ? (t('institutionCompleted') || 'University / Institution completed') : t('schoolCompleted')
-                return (
-                  <>
-                    <p className="text-sm font-medium text-[var(--color-text)]">{completedLabel}</p>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" {...register('schoolCompleted')} className="rounded border-[var(--color-border)]" />
-                      <span className="text-sm">{completedLabel}</span>
-                    </label>
-                    <Input label={institutionLabel} {...register('schoolName')} placeholder={institutionLabel} />
-                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
-                  </>
-                )
-              })()}
-              <p className="text-sm font-medium text-[var(--color-text)] mt-4">{t('schoolsUniversitiesAttended')}</p>
-              <div className="space-y-3">
+
+              <button
+                type="button"
+                onClick={() => setEducationShowAdvanced(!educationShowAdvanced)}
+                className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] py-2"
+              >
+                {educationShowAdvanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                {t('educationMoreOptions', 'Дополнительные сведения (система оценок, несколько школ/вузов)')}
+              </button>
+              {educationShowAdvanced && (
+                <div className="space-y-4 pt-2 border-t border-[var(--color-border)]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradingScheme')}</label>
+                      <select {...register('gradingScheme')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                        <option value="">—</option>
+                        {GRADING_SCHEME_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradeScaleOutOf')}</label>
+                      <select {...register('gradeScale')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                        <option value="">—</option>
+                        {GRADE_SCALE_OPTIONS.map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('highestLevelOfEducation')}</label>
+                    <select {...register('highestEducationLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
+                      <option value="">—</option>
+                      {HIGHEST_EDUCATION_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" {...register('schoolCompleted')} className="rounded border-[var(--color-border)]" />
+                    <span className="text-sm">{t('schoolCompleted')}</span>
+                  </label>
+                  <p className="text-sm font-medium text-[var(--color-text)]">{t('schoolsUniversitiesAttended')}</p>
+                  <div className="space-y-3">
                 {schoolsAttendedFields.map((field, i) => (
                   <Card key={field.id} className="p-4 space-y-2 border border-[var(--color-border)]">
                     <div className="flex justify-between items-center">
@@ -759,7 +815,9 @@ export function StudentProfilePage() {
                 <Button type="button" variant="secondary" size="sm" onClick={() => appendSchool({ country: '', institutionName: '', institutionType: (educationStatus === 'in_university' || educationStatus === 'finished_university') ? 'university' : 'school', educationLevel: '', primaryLanguage: '', attendedFrom: '', attendedTo: '', degreeName: '' })} icon={<Plus className="w-4 h-4" />}>
                   {t('addSchoolUniversity', 'Add school / university')}
                 </Button>
-              </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
 

@@ -61,6 +61,7 @@ const CounsellorSchoolProfile = lazy(() => import('@/pages/admin/CounsellorSchoo
 const CounsellorStudents = lazy(() => import('@/pages/admin/CounsellorStudents').then((m) => ({ default: m.CounsellorStudents })))
 const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRequests').then((m) => ({ default: m.CounsellorJoinRequests })))
 const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
+const CounsellorStudentProfile = lazy(() => import('@/pages/school/CounsellorStudentProfile').then((m) => ({ default: m.CounsellorStudentProfile })))
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
@@ -208,6 +209,7 @@ export function Router() {
           <Route path="dashboard" element={<SchoolDashboard />} />
           <Route path="my-school" element={<CounsellorSchoolProfile />} />
           <Route path="my-students" element={<CounsellorStudents />} />
+          <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
           <Route path="join-requests" element={<CounsellorJoinRequests />} />
         </Route>
       </Route>
