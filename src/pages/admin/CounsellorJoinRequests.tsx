@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
+import axios from 'axios'
 import { listJoinRequests, acceptJoinRequest, rejectJoinRequest, type JoinRequestItem } from '@/services/counsellor'
 import { toastApiError } from '@/utils/toastError'
+import { toast } from 'sonner'
 
 export function CounsellorJoinRequests() {
   const { t } = useTranslation(['common', 'admin'])
@@ -38,16 +40,38 @@ export function CounsellorJoinRequests() {
   const handleAccept = (id: string) => {
     setActionId(id)
     acceptJoinRequest(id)
-      .then(() => load())
-      .catch(toastApiError)
+      .then(() => {
+        toast.success(t('admin:requestAccepted', 'Request accepted'))
+        load()
+      })
+      .catch((e) => {
+        const res = axios.isAxiosError(e) ? e.response?.data : null
+        if (res?.code === 'VALIDATION' && String(res?.message ?? '').toLowerCase().includes('already processed')) {
+          toast.info(t('admin:requestAlreadyProcessed', 'Already processed'))
+          load()
+        } else {
+          toastApiError(e)
+        }
+      })
       .finally(() => setActionId(null))
   }
 
   const handleReject = (id: string) => {
     setActionId(id)
     rejectJoinRequest(id)
-      .then(() => load())
-      .catch(toastApiError)
+      .then(() => {
+        toast.success(t('admin:requestRejected', 'Request rejected'))
+        load()
+      })
+      .catch((e) => {
+        const res = axios.isAxiosError(e) ? e.response?.data : null
+        if (res?.code === 'VALIDATION' && String(res?.message ?? '').toLowerCase().includes('already processed')) {
+          toast.info(t('admin:requestAlreadyProcessed', 'Already processed'))
+          load()
+        } else {
+          toastApiError(e)
+        }
+      })
       .finally(() => setActionId(null))
   }
 
