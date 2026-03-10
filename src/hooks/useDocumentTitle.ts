@@ -1,8 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-
-const APP_NAME = 'Edmission'
+import i18n from '@/i18n'
 
 /** Pathname patterns mapped to translation keys (namespace:key) or fallback text. */
 const PATH_TITLES: Record<string, string> = {
@@ -37,10 +36,10 @@ const PATH_TITLES: Record<string, string> = {
   '/university/profile': 'university:navProfile',
   '/university/dashboard': 'university:dashboard',
   '/university/students': 'university:navDiscovery',
-  '/university/pipeline': 'Pipeline',
-  '/university/scholarships': 'Scholarships',
+  '/university/pipeline': 'university:navPipeline',
+  '/university/scholarships': 'university:navScholarships',
   '/university/faculties': 'university:facultiesListTitle',
-  '/university/analytics': 'Analytics',
+  '/university/analytics': 'university:navAnalytics',
   '/university/chat': 'university:navChat',
   '/admin/dashboard': 'admin:dashboard',
   '/admin/users': 'admin:users',
@@ -48,9 +47,9 @@ const PATH_TITLES: Record<string, string> = {
   '/admin/universities': 'admin:universityCatalog',
   '/admin/university-requests': 'admin:universityRequests',
   '/admin/investors': 'admin:investors',
-  '/admin/documents': 'Student documents',
+  '/admin/documents': 'admin:studentDocuments',
   '/admin/offers': 'admin:offers',
-  '/admin/interests': 'Interests',
+  '/admin/interests': 'admin:interests',
   '/admin/chats': 'admin:chats',
   '/admin/scholarships': 'admin:scholarships',
   '/admin/support': 'admin:support',
@@ -80,8 +79,9 @@ export function useDocumentTitle() {
       pageTitle = t('admin:universityProfile', 'University')
     } else {
       const last = base.split('/').filter(Boolean).pop()
-      pageTitle = last ? last.charAt(0).toUpperCase() + last.slice(1).replace(/-/g, ' ') : t('common:appName', APP_NAME)
+      pageTitle = last ? last.charAt(0).toUpperCase() + last.slice(1).replace(/-/g, ' ') : t('common:appName')
     }
-    document.title = pathname === '/' || pathname === '' ? APP_NAME : `${APP_NAME} | ${pageTitle}`
-  }, [pathname, t])
+    const appName = t('common:appName', 'Edmission')
+    document.title = pathname === '/' || pathname === '' ? appName : `${appName} | ${pageTitle}`
+  }, [pathname, t, i18n.language])
 }

@@ -14,7 +14,7 @@ import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Building2, ExternalLink } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, ExternalLink } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -604,7 +604,7 @@ export function StudentProfilePage() {
               </div>
 
               <p className="text-base font-medium text-[var(--color-text)] mb-2">{t('applyingForDegree')}</p>
-              <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-base mb-6">
+              <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-base mb-5">
                 <option value="">—</option>
                 {TARGET_DEGREE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
@@ -612,9 +612,8 @@ export function StudentProfilePage() {
               </select>
 
               {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
-                <div className="space-y-4 mb-6 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
-                  <p className="text-base font-medium text-[var(--color-text)]">{t('schoolName')}</p>
-                  <Input label={t('schoolName')} {...register('schoolName')} placeholder="например: Лицей №1" />
+                <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
+                  <Input label={t('schoolName')} {...register('schoolName')} placeholder="Лицей №1" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
                     <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
@@ -624,9 +623,8 @@ export function StudentProfilePage() {
               )}
 
               {(educationStatus === 'in_university' || educationStatus === 'finished_university') && (
-                <div className="space-y-4 mb-6 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
-                  <p className="text-base font-medium text-[var(--color-text)]">{t('institutionName')}</p>
-                  <Input label={t('institutionName')} {...register('schoolName')} placeholder="например: Ташкентский университет" />
+                <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
+                  <Input label={t('institutionName')} {...register('schoolName')} placeholder="ТашГУ" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder="1 курс, 2 курс…" />
                     <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2025" />
@@ -634,23 +632,14 @@ export function StudentProfilePage() {
                 </div>
               )}
 
-              <Card className="p-4 mb-6 border-2 border-dashed border-[var(--color-primary-accent)]/50 bg-[var(--color-primary-accent)]/5">
-                <div className="flex items-start gap-3">
-                  <Building2 className="w-6 h-6 text-[var(--color-primary-accent)] shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-[var(--color-text)]">{t('linkToMySchool', 'Привязать к школе')}</p>
-                    <p className="text-sm text-[var(--color-text-muted)] mt-1 mb-3">{t('linkToSchoolHint', 'Выберите школу из списка — ваш консультант увидит профиль и сможет помогать.')}</p>
-                    <Link to="/student/schools" className="inline-flex items-center gap-2 text-[var(--color-primary-accent)] font-medium hover:underline">
-                      {t('chooseSchool', 'Выбрать школу')} <ExternalLink className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-
-              <div className="mb-4">
-                <p className="block text-base font-medium text-[var(--color-text)] mb-1">{t('languageLevel')}</p>
-                <p className="text-sm text-[var(--color-text-muted)] mb-3">{t('languageLevelHint')}</p>
+              <div className="flex items-center justify-between gap-3 p-3 mb-5 rounded-xl border border-[var(--color-primary-accent)]/30 bg-[var(--color-primary-accent)]/5">
+                <span className="text-sm text-[var(--color-text)]">{t('linkToSchoolHint')}</span>
+                <Link to="/student/schools" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-[var(--color-primary-accent)] font-medium hover:underline">
+                  {t('chooseSchool')} <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
               </div>
+
+              <p className="text-base font-medium text-[var(--color-text)] mb-2">{t('languageLevel')}</p>
               <div className="space-y-3 mb-6">
                 {languageFields.length > 0 && (
                   <ul className="space-y-2" role="list">
@@ -676,11 +665,9 @@ export function StudentProfilePage() {
                     ))}
                   </ul>
                 )}
-                <Card className="p-4 border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg)]">
-                  <p className="text-sm font-medium text-[var(--color-text)] mb-3">{t('addLanguage')}</p>
-                  <div className="flex flex-wrap gap-3 items-end">
-                    <div className="min-w-[140px]">
-                      <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">{t('common:language')}</label>
+                <Card className="p-3 border border-dashed border-[var(--color-border)] bg-[var(--color-bg)]">
+                  <div className="flex flex-wrap gap-2 items-end">
+                    <div className="min-w-[100px]">
                       <select
                         value={newLanguage}
                         onChange={(e) => {
@@ -696,19 +683,17 @@ export function StudentProfilePage() {
                       </select>
                     </div>
                     {newLanguage === 'Other' && (
-                      <div className="min-w-[160px]">
-                        <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Название языка</label>
+                      <div className="min-w-[120px]">
                         <input
                           type="text"
                           value={customLanguageName}
                           onChange={(e) => setCustomLanguageName(e.target.value)}
-                          placeholder="Например: Итальянский"
+                          placeholder="Язык"
                           className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent"
                         />
                       </div>
                     )}
-                    <div className="min-w-[100px]">
-                      <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">Уровень</label>
+                    <div className="min-w-[80px]">
                       <select
                         value={newLevel}
                         onChange={(e) => setNewLevel(e.target.value)}
@@ -733,12 +718,9 @@ export function StudentProfilePage() {
                       icon={<Plus className="w-4 h-4" />}
                       disabled={newLanguage === 'Other' && !customLanguageName.trim()}
                     >
-                      Добавить
+                      {t('addLanguage')}
                     </Button>
                   </div>
-                  {newLanguage === 'Other' && !customLanguageName.trim() && (
-                    <p className="text-xs text-[var(--color-text-muted)] mt-2">Введите название языка и нажмите «Добавить».</p>
-                  )}
                 </Card>
               </div>
 
@@ -748,7 +730,7 @@ export function StudentProfilePage() {
                 className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] py-2"
               >
                 {educationShowAdvanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                {t('educationMoreOptions', 'Дополнительные сведения (система оценок, несколько школ/вузов)')}
+                {t('educationMoreOptions')}
               </button>
               {educationShowAdvanced && (
                 <div className="space-y-4 pt-2 border-t border-[var(--color-border)]">

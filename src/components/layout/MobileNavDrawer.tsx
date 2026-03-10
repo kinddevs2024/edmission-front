@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Menu, X } from 'lucide-react'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { getNavIcon } from '@/components/icons/NavIcons'
@@ -7,6 +8,7 @@ import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { cn } from '@/utils/cn'
 
 export function MobileNavDrawer() {
+  const { t } = useTranslation('common')
   const navItems = useMobileMenuStore((s) => s.navItems)
   const [open, setOpen] = useState(false)
 
@@ -56,7 +58,7 @@ export function MobileNavDrawer() {
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
               <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
-              <span className="font-semibold text-[var(--color-text)]">Edmission</span>
+              <span className="font-semibold text-[var(--color-text)]">{t('appName')}</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

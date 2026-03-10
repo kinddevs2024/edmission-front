@@ -1,5 +1,10 @@
 {
   "appName": "Edmission",
+  "account": "Аккаунт",
+  "privacy": "Конфиденциальность",
+  "paymentSuccess": "Оплата прошла",
+  "paymentCancel": "Оплата отменена",
+  "edmissionAi": "Edmission AI",
   "login": "Войти",
   "register": "Регистрация",
   "logout": "Выйти",

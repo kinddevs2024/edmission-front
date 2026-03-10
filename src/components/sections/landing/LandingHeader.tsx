@@ -57,7 +57,7 @@ export function LandingHeader() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)]">
           <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" aria-hidden />
-          Edmission
+          {t('footer.brand')}
         </Link>
 
         <nav className="flex items-center gap-3 sm:gap-4">

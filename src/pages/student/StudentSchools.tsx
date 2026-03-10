@@ -4,8 +4,10 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PageTitle } from '@/components/ui/PageTitle'
+import axios from 'axios'
 import { listSchools, requestToJoinSchool, type SchoolsListResponse } from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
+import { toast } from 'sonner'
 
 export function StudentSchools() {
   const { t } = useTranslation(['common', 'admin'])
@@ -30,9 +32,19 @@ export function StudentSchools() {
     setRequestingId(counsellorUserId)
     requestToJoinSchool(counsellorUserId)
       .then(() => {
+        toast.success(t('admin:requestSent', 'Request sent'))
         if (data) setData({ ...data, data: data.data })
       })
-      .catch(toastApiError)
+      .catch((e) => {
+        const res = axios.isAxiosError(e) ? e.response?.data : null
+        const code = res?.code
+        const msg = String(res?.message ?? '').toLowerCase()
+        if (code === 'CONFLICT' && (msg.includes('request already sent') || msg.includes('already in this school'))) {
+          toast.info(t('admin:requestAlreadySent', 'Request already sent. Waiting for response.'))
+        } else {
+          toastApiError(e)
+        }
+      })
       .finally(() => setRequestingId(null))
   }
 

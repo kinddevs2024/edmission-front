@@ -1,5 +1,10 @@
 {
   "appName": "Edmission",
+  "account": "Hisob",
+  "privacy": "Maxfiylik",
+  "paymentSuccess": "To'lov muvaffaqiyatli",
+  "paymentCancel": "To'lov bekor qilindi",
+  "edmissionAi": "Edmission AI",
   "login": "Kirish",
   "register": "Ro'yxatdan o'tish",
   "logout": "Chiqish",
