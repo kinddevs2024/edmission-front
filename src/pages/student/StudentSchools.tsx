@@ -33,7 +33,12 @@ export function StudentSchools() {
     requestToJoinSchool(counsellorUserId)
       .then(() => {
         toast.success(t('admin:requestSent', 'Request sent'))
-        if (data) setData({ ...data, data: data.data })
+        if (data) {
+          const updated = data.data.map((s) =>
+            s.counsellorUserId === counsellorUserId ? { ...s, requestStatus: 'pending' as const } : s
+          )
+          setData({ ...data, data: updated })
+        }
       })
       .catch((e) => {
         const res = axios.isAxiosError(e) ? e.response?.data : null
@@ -41,6 +46,12 @@ export function StudentSchools() {
         const msg = String(res?.message ?? '').toLowerCase()
         if (code === 'CONFLICT' && (msg.includes('request already sent') || msg.includes('already in this school'))) {
           toast.info(t('admin:requestAlreadySent', 'Request already sent. Waiting for response.'))
+          if (data) {
+            const updated = data.data.map((s) =>
+              s.counsellorUserId === counsellorUserId ? { ...s, requestStatus: 'pending' as const } : s
+            )
+            setData({ ...data, data: updated })
+          }
         } else {
           toastApiError(e)
         }
@@ -87,10 +98,14 @@ export function StudentSchools() {
                 <Button
                   size="sm"
                   onClick={() => handleRequest(school.counsellorUserId)}
-                  disabled={!!requestingId}
+                  disabled={!!requestingId || school.requestStatus === 'pending' || school.requestStatus === 'accepted'}
                   loading={requestingId === school.counsellorUserId}
                 >
-                  {t('admin:requestToJoin', 'Request to join')}
+                  {school.requestStatus === 'accepted'
+                    ? t('admin:alreadyInSchool', 'In school')
+                    : school.requestStatus === 'pending'
+                      ? t('admin:requestSent', 'Request sent')
+                      : t('admin:requestToJoin', 'Request to join')}
                 </Button>
               </li>
             ))}

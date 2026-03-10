@@ -415,15 +415,15 @@ export function StudentProfilePage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-8">
-      <div className="flex flex-wrap items-center gap-6">
+    <div className="p-3 sm:p-4 max-w-4xl mx-auto space-y-5 min-h-0">
+      <div className="flex flex-wrap items-center gap-4">
         <img
           src={getStudentAvatarUrl(profile?.avatarUrl)}
           alt=""
-          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
         />
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
           {verified && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400 mt-1" title={t('common:verified')}>
               <span aria-hidden>✓</span> {t('common:verified')}
@@ -431,15 +431,15 @@ export function StudentProfilePage() {
           )}
         </div>
       </div>
-      <p className="text-base sm:text-lg text-[var(--color-text-muted)] leading-relaxed max-w-2xl">
+      <p className="text-sm sm:text-base text-[var(--color-text-muted)] leading-relaxed max-w-2xl">
         {t('portfolioIntro')}
       </p>
 
-      <Card className="p-5 sm:p-6">
+      <Card className="p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-base text-[var(--color-text-muted)]">{t('portfolioCompletion')}</p>
-            <p className="text-2xl sm:text-3xl font-semibold text-[var(--color-text)] mt-0.5">
+            <p className="text-xl sm:text-2xl font-semibold text-[var(--color-text)] mt-0.5">
               {profile?.portfolioCompletionPercent ?? 0}%
             </p>
           </div>
@@ -452,7 +452,7 @@ export function StudentProfilePage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {SECTIONS.map((sec) => {
           const isFaculties = sec.id === 'faculties'
           const facultiesSelected = (profile?.interestedFaculties?.length ?? 0) > 0
@@ -464,11 +464,11 @@ export function StudentProfilePage() {
               type="button"
               onClick={() => setOpenSection(sec.id)}
               className={cn(
-                'flex flex-col items-center gap-4 p-5 sm:p-6 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-center min-h-[140px]'
+                'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
               )}
             >
                 <div className={cn(
-                  'relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)] shrink-0',
+                  'relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)] shrink-0',
                 isFaculties && facultiesSelected && 'ring-2 ring-green-500/50 !bg-green-500/10'
               )}>
                 {isFaculties ? (
@@ -513,7 +513,7 @@ export function StudentProfilePage() {
                   </>
                 )}
               </div>
-              <div className="flex items-center justify-center gap-2 text-[var(--color-text)] w-full min-h-[2.5rem]">
+              <div className="flex items-center justify-center gap-1.5 text-[var(--color-text)] w-full min-h-[2rem]">
                 <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[var(--color-text-muted)]" />
                 <span className="text-sm sm:text-base font-medium text-center line-clamp-2">{t(sec.titleKey)}</span>
               </div>

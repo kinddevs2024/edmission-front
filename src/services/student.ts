@@ -175,7 +175,7 @@ export async function declineOffer(offerId: string): Promise<void> {
 }
 
 export interface SchoolsListResponse {
-  data: { id: string; counsellorUserId: string; schoolName: string; schoolDescription: string; country: string; city: string; counsellorName: string }[]
+  data: { id: string; counsellorUserId: string; schoolName: string; schoolDescription: string; country: string; city: string; counsellorName: string; requestStatus?: 'pending' | 'accepted' | null }[]
   total: number
   page: number
   limit: number
