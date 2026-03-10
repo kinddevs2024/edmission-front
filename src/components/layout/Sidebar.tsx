@@ -25,7 +25,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
           collapsed ? 'justify-center' : 'justify-start'
         )}
       >
-        <img src="/logo/white.svg" alt="" className="h-8 w-8 shrink-0 rounded-lg" aria-hidden />
+        <img src="/logo/Group%201.png" alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" aria-hidden />
         {!collapsed && <span className="font-semibold text-primary-accent">Edmission</span>}
       </div>
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">

@@ -56,7 +56,7 @@ export function LandingHeader() {
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)]">
-          <img src="/logo/green.svg" alt="" className="h-8 w-8 rounded-lg" aria-hidden />
+          <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" aria-hidden />
           Edmission
         </Link>
 
@@ -102,24 +102,35 @@ export function LandingHeader() {
             )}
           </div>
 
-          {/* Mobile: hamburger button */}
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            className="sm:hidden flex items-center justify-center w-10 h-10 rounded-input hover:bg-[var(--color-border)]/30 transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5 text-[var(--color-text)]" aria-hidden />
-          </button>
+          {/* Mobile: two equal-size buttons — Menu and Register, no language */}
+          <div className="sm:hidden flex items-center gap-2 flex-1 max-w-[240px] justify-end">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-full h-11 px-4 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] text-sm font-medium hover:bg-[var(--color-border)]/20 transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="truncate">{t('header.menu', 'Menu')}</span>
+            </button>
+            <Link
+              to="/register"
+              className="flex-1 min-w-0 flex items-center justify-center rounded-full h-11 px-4 bg-primary-accent text-primary-dark text-sm font-medium hover:opacity-90 transition-colors"
+            >
+              <span className="truncate">{t('header.register')}</span>
+            </Link>
+          </div>
 
-          {/* Register button - always visible */}
+          {/* Desktop: Register + Language */}
           <Link
             to="/register"
-            className="rounded-input bg-primary-accent px-3 py-2 text-sm font-medium text-primary-dark hover:opacity-90 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="hidden sm:flex rounded-input bg-primary-accent px-3 py-2 text-sm font-medium text-primary-dark hover:opacity-90 min-h-[44px] min-w-[44px] items-center justify-center"
           >
             {t('header.register')}
           </Link>
-          <LanguageMenu />
+          <div className="hidden sm:block">
+            <LanguageMenu />
+          </div>
         </nav>
       </div>
 
@@ -132,7 +143,7 @@ export function LandingHeader() {
             onClick={() => setMenuOpen(false)}
           />
           <aside
-            className="fixed top-0 right-0 z-50 h-full w-full max-w-[280px] bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl sm:hidden flex flex-col animate-drawer-enter"
+            className="fixed top-0 left-0 z-50 h-full w-full max-w-[280px] bg-[var(--color-card)] border-r border-[var(--color-border)] shadow-xl sm:hidden flex flex-col animate-drawer-enter"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
@@ -167,12 +178,6 @@ export function LandingHeader() {
                 {t('header.login')}
               </Link>
             </nav>
-            <div className="p-4 border-t border-[var(--color-border)]">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-[var(--color-text-muted)]">{t('header.language', 'Language')}</span>
-                <LanguageMenu />
-              </div>
-            </div>
           </aside>
         </>
       )}

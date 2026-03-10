@@ -55,7 +55,7 @@ export function MobileNavDrawer() {
             aria-label="Navigation menu"
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-              <img src="/logo/green.svg" alt="" className="h-8 w-8 rounded-lg" />
+              <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
               <span className="font-semibold text-[var(--color-text)]">Edmission</span>
               <button
                 type="button"
