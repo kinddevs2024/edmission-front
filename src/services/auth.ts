@@ -59,6 +59,11 @@ export async function resetPassword(token: string, newPassword: string): Promise
   await api.post('/auth/reset-password', { token, newPassword })
 }
 
+/** Set new password (for user with temp password from school counsellor). Clears mustChangePassword. */
+export async function setPassword(newPassword: string): Promise<void> {
+  await api.post('/auth/set-password', { newPassword })
+}
+
 export async function getProfile(): Promise<User> {
   const { data } = await api.get<User>('/auth/me')
   useAuthStore.getState().setUser(data)

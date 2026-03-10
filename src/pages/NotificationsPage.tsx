@@ -21,15 +21,15 @@ import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
 import type { NotificationItem, NotificationType } from '@/store/notificationStore'
 
-const TYPE_OPTIONS: { value: '' | NotificationType; label: string }[] = [
-  { value: '', label: 'All types' },
-  { value: 'message', label: 'Message' },
-  { value: 'offer', label: 'Offer' },
-  { value: 'offer_accepted', label: 'Offer accepted' },
-  { value: 'offer_declined', label: 'Offer declined' },
-  { value: 'interest', label: 'Interest' },
-  { value: 'status_update', label: 'Status update' },
-  { value: 'system', label: 'System' },
+const TYPE_OPTIONS: { value: '' | NotificationType; labelKey: string }[] = [
+  { value: '', labelKey: 'notificationTypeAll' },
+  { value: 'message', labelKey: 'notificationTypeMessage' },
+  { value: 'offer', labelKey: 'notificationTypeOffer' },
+  { value: 'offer_accepted', labelKey: 'notificationTypeOfferAccepted' },
+  { value: 'offer_declined', labelKey: 'notificationTypeOfferDeclined' },
+  { value: 'interest', labelKey: 'notificationTypeInterest' },
+  { value: 'status_update', labelKey: 'notificationTypeStatusUpdate' },
+  { value: 'system', labelKey: 'notificationTypeSystem' },
 ]
 
 export function NotificationsPage() {
@@ -149,11 +149,11 @@ export function NotificationsPage() {
               setPage(1)
             }}
             className="rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-            aria-label="Filter by type"
+            aria-label={t('filterByType')}
           >
             {TYPE_OPTIONS.map((o) => (
               <option key={o.value || 'all'} value={o.value}>
-                {o.label}
+                {t(o.labelKey)}
               </option>
             ))}
           </select>
@@ -264,7 +264,7 @@ export function NotificationsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border)]">
             <p className="text-sm text-[var(--color-text-muted)]">
-              Page {page} of {totalPages} · {total} total
+              {t('pageOfTotal', { page, totalPages, total })}
             </p>
             <div className="flex gap-2">
               <Button
@@ -273,7 +273,7 @@ export function NotificationsPage() {
                 disabled={page <= 1}
                 onClick={() => setPage((p) => p - 1)}
               >
-                Previous
+                {t('prev')}
               </Button>
               <Button
                 variant="secondary"
@@ -281,7 +281,7 @@ export function NotificationsPage() {
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t('next')}
               </Button>
             </div>
           </div>

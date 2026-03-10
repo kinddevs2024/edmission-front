@@ -14,32 +14,32 @@ export function AdminLayout() {
 
   const navItems = useMemo(
     () => [
-      { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
-      { to: '/admin/users', label: t('users'), icon: 'Users' },
-      { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' },
-      { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' },
-      { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' },
-      { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' },
-      { to: '/admin/offers', label: t('offers'), icon: 'Gift' },
-      { to: '/admin/interests', label: t('interests'), icon: 'Heart' },
-      { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' },
-      { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' },
-      { to: '/admin/support', label: t('support'), icon: 'HelpCircle' },
-      { to: '/admin/logs', label: t('logs'), icon: 'Logs' },
-      { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' },
+      { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/admin/users', label: t('users'), icon: 'Users' as const },
+      { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
+      { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
+      { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' as const },
+      { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
+      { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
+      { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
+      { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' as const },
+      { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
+      { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
+      { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
+      { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
     ],
     [t]
   )
 
   const bottomNavItems = useMemo(
     () => [
-      { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
-      { to: '/admin/users', label: t('users'), icon: 'Users' },
-      { to: '/admin/offers', label: t('offers'), icon: 'Gift' },
-      { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' },
-      { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' },
-      { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' },
-      { to: '/admin/logs', label: t('logs'), icon: 'Logs' },
+        { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+        { to: '/admin/users', label: t('users'), icon: 'Users' as const },
+        { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
+        { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
+        { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' as const },
+        { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
+        { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
     ],
     [t]
   )

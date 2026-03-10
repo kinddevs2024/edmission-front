@@ -32,11 +32,16 @@ export function Login() {
     setLoading(true)
     try {
       const { user } = await login(data)
+      if ((user as { mustChangePassword?: boolean }).mustChangePassword) {
+        navigate('/set-password')
+        return
+      }
       if (user.role === 'student') navigate('/student/dashboard')
       else if (user.role === 'university') {
         const verified = (user as { universityProfile?: { verified?: boolean } }).universityProfile?.verified
         navigate(verified ? '/university/dashboard' : '/university/pending')
       }
+      else if (user.role === 'school_counsellor') navigate('/school/dashboard')
       else navigate('/admin')
     } catch (err) {
       const key = getApiErrorKey(err)

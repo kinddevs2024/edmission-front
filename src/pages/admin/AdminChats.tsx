@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -10,6 +12,8 @@ import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
 export function AdminChats() {
+  const { t } = useTranslation(['common', 'admin'])
+  const [searchParams, setSearchParams] = useSearchParams()
   const [items, setItems] = useState<AdminChat[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -18,6 +22,8 @@ export function AdminChats() {
   const [messages, setMessages] = useState<AdminChatMessage[]>([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const limit = 20
+
+  const chatIdFromUrl = searchParams.get('chatId')
 
   useEffect(() => {
     setLoading(true)
@@ -34,6 +40,23 @@ export function AdminChats() {
       .finally(() => setLoading(false))
   }, [page])
 
+  useEffect(() => {
+    if (chatIdFromUrl) {
+      setModalChatId(chatIdFromUrl)
+      setMessages([])
+      setMessagesLoading(true)
+      getChatMessages(chatIdFromUrl, { limit: 100 })
+        .then((res) => setMessages(res.messages ?? []))
+        .catch((e) => { toastApiError(e); setMessages([]) })
+        .finally(() => setMessagesLoading(false))
+      setSearchParams((prev) => {
+        const p = new URLSearchParams(prev)
+        p.delete('chatId')
+        return p
+      }, { replace: true })
+    }
+  }, [chatIdFromUrl])
+
   const openMessages = (chatId: string) => {
     setModalChatId(chatId)
     setMessages([])
@@ -46,10 +69,10 @@ export function AdminChats() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Chats" icon="MessageCircle" />
+      <PageTitle title={t('admin:chats')} icon="MessageCircle" />
 
       <Card>
-        <CardTitle>All chats</CardTitle>
+        <CardTitle>{t('admin:allChats', 'All chats')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={8} cols={5} />
         ) : (
@@ -58,10 +81,10 @@ export function AdminChats() {
               <TableHead>
                 <TableRow>
                   <TableTh>ID</TableTh>
-                  <TableTh>StudentProfile</TableTh>
-                  <TableTh>UniversityProfile</TableTh>
-                  <TableTh>Updated</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('admin:studentProfile', 'Student')}</TableTh>
+                  <TableTh>{t('admin:universityProfile', 'University')}</TableTh>
+                  <TableTh>{t('common:updated', 'Updated')}</TableTh>
+                  <TableTh>{t('common:actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -73,7 +96,7 @@ export function AdminChats() {
                     <TableTd>{c.updatedAt ? formatDateTime(c.updatedAt) : '—'}</TableTd>
                     <TableTd>
                       <Button size="sm" variant="secondary" onClick={() => openMessages(c.id)}>
-                        View messages
+                        {t('admin:viewMessages', 'View messages')}
                       </Button>
                     </TableTd>
                   </TableRow>
@@ -88,17 +111,17 @@ export function AdminChats() {
       <Modal
         open={!!modalChatId}
         onClose={() => setModalChatId(null)}
-        title={modalChatId ? `Chat messages (${modalChatId})` : 'Chat messages'}
+        title={modalChatId ? t('admin:chatMessagesWithId', 'Chat messages ({{id}})', { id: modalChatId }) : t('admin:chatMessages', 'Chat messages')}
         footer={
           <Button variant="secondary" onClick={() => setModalChatId(null)}>
-            Close
+            {t('common:close')}
           </Button>
         }
       >
         {messagesLoading ? (
-          <p className="text-[var(--color-text-muted)]">Loading...</p>
+          <p className="text-[var(--color-text-muted)]">{t('common:loading')}</p>
         ) : messages.length === 0 ? (
-          <p className="text-[var(--color-text-muted)]">No messages.</p>
+          <p className="text-[var(--color-text-muted)]">{t('admin:noMessages', 'No messages.')}</p>
         ) : (
           <ul className="space-y-2">
             {messages.map((m) => (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -9,6 +10,7 @@ import { toastApiError } from '@/utils/toastError'
 import { FileText } from 'lucide-react'
 
 export function AdminDocuments() {
+  const { t } = useTranslation(['common', 'admin'])
   const [list, setList] = useState<PendingDocumentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<{ item: PendingDocumentItem; decision: 'approved' | 'rejected' } | null>(null)
@@ -73,10 +75,10 @@ export function AdminDocuments() {
                     View file
                   </a>
                   <Button size="sm" onClick={() => setModal({ item, decision: 'approved' })}>
-                    Approve
+                    {t('admin:approve')}
                   </Button>
                   <Button size="sm" variant="danger" onClick={() => setModal({ item, decision: 'rejected' })}>
-                    Reject
+                    {t('admin:reject')}
                   </Button>
                 </div>
               </li>
@@ -88,18 +90,18 @@ export function AdminDocuments() {
       <Modal
         open={!!modal}
         onClose={() => { setModal(null); setReason(''); setError('') }}
-        title={modal?.decision === 'approved' ? 'Approve document' : 'Reject document'}
+        title={modal?.decision === 'approved' ? t('admin:approveDocument', 'Approve document') : t('admin:rejectDocument', 'Reject document')}
         footer={
           modal ? (
             <>
-              <Button variant="secondary" onClick={() => { setModal(null); setReason('') }}>Cancel</Button>
+              <Button variant="secondary" onClick={() => { setModal(null); setReason('') }}>{t('common:cancel')}</Button>
               <Button
                 variant={modal.decision === 'rejected' ? 'danger' : 'primary'}
                 onClick={handleReview}
                 disabled={submitting}
                 loading={submitting}
               >
-                {modal.decision === 'approved' ? 'Approve' : 'Reject'}
+                {modal.decision === 'approved' ? t('admin:approve') : t('admin:reject')}
               </Button>
             </>
           ) : undefined
@@ -112,14 +114,14 @@ export function AdminDocuments() {
             </p>
             {modal.decision === 'rejected' && (
               <label className="block">
-                <span className="block text-sm font-medium mb-1">Rejection reason (optional)</span>
+                <span className="block text-sm font-medium mb-1">{t('admin:rejectionReasonOptional', 'Rejection reason (optional)')}</span>
                 <textarea
                   className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 text-sm"
                   rows={2}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Reason for rejection"
-                  aria-label="Rejection reason"
+                  placeholder={t('admin:reasonForRejection', 'Reason for rejection')}
+                  aria-label={t('admin:rejectionReasonOptional')}
                 />
               </label>
             )}

@@ -25,6 +25,7 @@ export function StudentLayout() {
       { to: '/student/universities', label: t('navUniversities'), icon: 'GraduationCap' },
       { to: '/student/applications', label: t('navApplications'), icon: 'FileCheck' },
       { to: '/student/documents', label: t('navDocuments'), icon: 'FileText' },
+      { to: '/student/schools', label: t('navMySchool', 'My school'), icon: 'Building2' },
       { to: '/student/offers', label: t('navOffers'), icon: 'Gift' },
       { to: '/student/compare', label: t('navCompare'), icon: 'GitCompare' },
       { to: '/student/chat', label: t('navChat'), icon: 'MessageCircle' },

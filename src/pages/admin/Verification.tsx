@@ -82,8 +82,8 @@ export function Verification() {
                     <p className="text-xs text-[var(--color-text-muted)] mt-1">Submitted: {formatDate(item.submittedAt)}</p>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <Button size="sm" onClick={() => setActionModal({ type: 'approve', item })}>Approve</Button>
-                    <Button size="sm" variant="danger" onClick={() => setActionModal({ type: 'reject', item })}>Reject</Button>
+                    <Button size="sm" onClick={() => setActionModal({ type: 'approve', item })}>{t('admin:approve')}</Button>
+                    <Button size="sm" variant="danger" onClick={() => setActionModal({ type: 'reject', item })}>{t('admin:reject')}</Button>
                   </div>
                 </div>
                 {item.documents && item.documents.length > 0 && (

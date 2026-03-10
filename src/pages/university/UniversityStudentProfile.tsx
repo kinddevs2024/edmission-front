@@ -41,8 +41,8 @@ export function UniversityStudentProfile() {
   if (!studentId) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>Back</Button>
-        <p className="text-[var(--color-text-muted)]">Invalid student.</p>
+        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
+        <p className="text-[var(--color-text-muted)]">{t('university:invalidStudent', 'Invalid student.')}</p>
       </div>
     )
   }
@@ -50,8 +50,8 @@ export function UniversityStudentProfile() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>Back</Button>
-        <p className="text-[var(--color-text-muted)]">Loading profile…</p>
+        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
+        <p className="text-[var(--color-text-muted)]">{t('common:loading')}</p>
       </div>
     )
   }
@@ -59,8 +59,8 @@ export function UniversityStudentProfile() {
   if (error || !profile) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>Back</Button>
-        <p className="text-red-500">{error || 'Student not found.'}</p>
+        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
+        <p className="text-red-500">{error || t('university:studentNotFound', 'Student not found.')}</p>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export function UniversityStudentProfile() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>
-          Back
+          {t('common:back')}
         </Button>
         <Button to={`/university/chat?studentId=${encodeURIComponent(profile.id)}`} size="sm" icon={<MessageCircle size={16} />}>
           {t('university:navChat')}
@@ -288,7 +288,7 @@ export function UniversityStudentProfile() {
         <Button to={`/university/chat?studentId=${encodeURIComponent(profile.id)}`} icon={<MessageCircle size={16} />}>
           {t('university:navChat')}
         </Button>
-        <Button variant="secondary" onClick={() => navigate(-1)}>Back to list</Button>
+        <Button variant="secondary" onClick={() => navigate(-1)}>{t('common:backToList')}</Button>
       </div>
 
       <Modal open={!!filePreview} onClose={() => setFilePreview(null)} title={filePreview?.name ?? ''}>

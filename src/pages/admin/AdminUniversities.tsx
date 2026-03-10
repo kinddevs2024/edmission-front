@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { FileUpload } from '@/components/ui/FileUpload'
 import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { ChipSelect } from '@/components/ui/ChipSelect'
@@ -15,6 +16,7 @@ import {
 } from '@/services/admin'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
+import { useAuth } from '@/hooks/useAuth'
 import { Plus, Trash2 } from 'lucide-react'
 
 const COUNTRY_OPTIONS = [
@@ -30,6 +32,8 @@ const COUNTRY_OPTIONS = [
 
 export function AdminUniversities() {
   const { t } = useTranslation(['common', 'admin', 'university'])
+  const { role } = useAuth()
+  const isCounsellor = role === 'school_counsellor'
   const [list, setList] = useState<AdminCatalogUniversity[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -186,9 +190,11 @@ export function AdminUniversities() {
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:universityCatalog', 'University catalog')} icon="Building2">
-        <Button size="sm" onClick={openAdd}>
-          {t('admin:addUniversity', 'Add university')}
-        </Button>
+        {!isCounsellor && (
+          <Button size="sm" onClick={openAdd}>
+            {t('admin:addUniversity', 'Add university')}
+          </Button>
+        )}
       </PageTitle>
 
       <Card>
@@ -226,9 +232,11 @@ export function AdminUniversities() {
                       <td className="py-3">{u.country ?? '—'}</td>
                       <td className="py-3">{u.city ?? '—'}</td>
                       <td className="py-3 text-right">
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(u.id)}>
-                          {t('common:edit', 'Edit')}
-                        </Button>
+                        {!isCounsellor && (
+                          <Button size="sm" variant="ghost" onClick={() => openEdit(u.id)}>
+                            {t('common:edit', 'Edit')}
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -277,7 +285,14 @@ export function AdminUniversities() {
           <Input label={t('university:country', 'Country')} value={formCountry} onChange={(e) => setFormCountry(e.target.value)} />
           <Input label={t('university:city', 'City')} value={formCity} onChange={(e) => setFormCity(e.target.value)} />
           <Input label={t('university:slogan', 'Slogan')} value={formTagline} onChange={(e) => setFormTagline(e.target.value)} />
-          <Input label={t('university:logoUrl', 'Logo URL')} value={formLogoUrl} onChange={(e) => setFormLogoUrl(e.target.value)} />
+          <FileUpload
+            label={t('university:logo', 'Logo')}
+            value={formLogoUrl}
+            onChange={setFormLogoUrl}
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            hint={t('university:uploadLogoOrUrl', 'Upload from device or paste URL below')}
+          />
+          <Input label={t('university:logoUrl', 'Logo URL')} value={formLogoUrl} onChange={(e) => setFormLogoUrl(e.target.value)} placeholder="https://..." />
           <div className="w-full">
             <label className="block text-sm font-medium text-[var(--color-text)] mb-1">
               {t('university:description', 'Description')}

@@ -174,6 +174,23 @@ export async function declineOffer(offerId: string): Promise<void> {
   await api.post(`/student/offers/${offerId}/decline`)
 }
 
+export interface SchoolsListResponse {
+  data: { id: string; counsellorUserId: string; schoolName: string; schoolDescription: string; country: string; city: string; counsellorName: string }[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export async function listSchools(params?: { search?: string; page?: number; limit?: number }): Promise<SchoolsListResponse> {
+  const { data } = await api.get<SchoolsListResponse>('/student/schools', { params })
+  return data
+}
+
+export async function requestToJoinSchool(counsellorUserId: string): Promise<void> {
+  await api.post(`/student/schools/${counsellorUserId}/request`)
+}
+
 /** Fetch universities by ids (for compare or recommendations). Returns array. */
 export async function getCompareUniversities(ids: string[]): Promise<UniversityListItem[]> {
   if (ids.length === 0) return []

@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, suspendUser, unsuspendUser, deleteUser, resetUserPassword, getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
+import { createUser, getUsers, updateUser, suspendUser, unsuspendUser, deleteUser, resetUserPassword, getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/Input'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
+import { useAuth } from '@/hooks/useAuth'
+import type { Role } from '@/types/user'
 
 const COUNTRY_CODE_OPTIONS = [
   { code: 'UZ', label: 'Uzbekistan' },
@@ -34,11 +36,14 @@ const COUNTRY_OPTIONS = [
 
 export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
+  const { role } = useAuth()
+  const isCounsellor = role === 'school_counsellor'
   const ROLE_OPTIONS = [
     { value: '', label: t('admin:allRoles') },
     { value: 'student', label: t('auth:student') },
     { value: 'university', label: t('auth:university') },
     { value: 'admin', label: t('common:admin') },
+    { value: 'school_counsellor', label: t('admin:schoolCounsellor', 'School counsellor') },
   ]
   const STATUS_OPTIONS = [
     { value: '', label: t('admin:allStatuses') },
@@ -53,7 +58,7 @@ export function UserManagement() {
   const [loading, setLoading] = useState(true)
   const [actionUserId, setActionUserId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
-  const [createRole, setCreateRole] = useState<'student' | 'university' | 'admin'>('student')
+  const [createRole, setCreateRole] = useState<Role>('student')
   const [createEmail, setCreateEmail] = useState('')
   const [createName, setCreateName] = useState('')
   const [createSubmitting, setCreateSubmitting] = useState(false)
@@ -78,6 +83,10 @@ export function UserManagement() {
   const [uniFacultyItems, setUniFacultyItems] = useState<Record<string, string[]>>({})
   const [uniOpenFacultyId, setUniOpenFacultyId] = useState<string | null>(null)
   const [uniTargetCountries, setUniTargetCountries] = useState<string[]>([])
+  const [editUserTarget, setEditUserTarget] = useState<AdminUser | null>(null)
+  const [editUserRole, setEditUserRole] = useState<Role>('student')
+  const [editUserName, setEditUserName] = useState('')
+  const [editUserSaving, setEditUserSaving] = useState(false)
   const limit = 20
 
   useEffect(() => {
@@ -139,6 +148,24 @@ export function UserManagement() {
       })
       .catch(toastApiError)
       .finally(() => setDeleteSubmitting(false))
+  }
+
+  const openEditUser = (user: AdminUser) => {
+    setEditUserTarget(user)
+    setEditUserRole((user.role as Role) || 'student')
+    setEditUserName(user.name ?? '')
+  }
+
+  const handleEditUserSave = () => {
+    if (!editUserTarget) return
+    setEditUserSaving(true)
+    updateUser(editUserTarget.id, { role: editUserRole, name: editUserName.trim() || undefined })
+      .then((updated) => {
+        setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
+        setEditUserTarget(null)
+      })
+      .catch(toastApiError)
+      .finally(() => setEditUserSaving(false))
   }
 
   const openUniversityEditor = (user: AdminUser) => {
@@ -213,9 +240,11 @@ export function UserManagement() {
       <PageTitle title={t('admin:users')} icon="Users" />
 
       <Card>
-        <div className="flex justify-end mb-3">
-          <Button onClick={() => setCreateOpen(true)}>{t('common:create')}</Button>
-        </div>
+        {!isCounsellor && (
+          <div className="flex justify-end mb-3">
+            <Button onClick={() => setCreateOpen(true)}>{t('common:create')}</Button>
+          </div>
+        )}
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
             label={t('common:role')}
@@ -261,24 +290,31 @@ export function UserManagement() {
                       </span>
                     </TableTd>
                     <TableTd>
-                      <div className="flex gap-2 flex-wrap">
-                        {u.status === 'active' ? (
-                          <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
-                        ) : (
-                          <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
-                        )}
-                        {u.role === 'university' && (
-                          <Button variant="secondary" size="sm" onClick={() => openUniversityEditor(u)} disabled={!!actionUserId}>
-                            {t('admin:editUniversityProfile', 'Edit profile')}
+                      {isCounsellor ? (
+                        <span className="text-[var(--color-text-muted)]">—</span>
+                      ) : (
+                        <div className="flex gap-2 flex-wrap">
+                          <Button variant="secondary" size="sm" onClick={() => openEditUser(u)} disabled={!!actionUserId}>
+                            {t('admin:changeRole', 'Change role')}
                           </Button>
-                        )}
-                        <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
-                          {t('admin:resetPassword', 'Reset password')}
-                        </Button>
-                        {u.role !== 'admin' && (
-                          <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
-                        )}
-                      </div>
+                          {u.status === 'active' ? (
+                            <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
+                          ) : (
+                            <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
+                          )}
+                          {u.role === 'university' && (
+                            <Button variant="secondary" size="sm" onClick={() => openUniversityEditor(u)} disabled={!!actionUserId}>
+                              {t('admin:editUniversityProfile', 'Edit profile')}
+                            </Button>
+                          )}
+                          <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
+                            {t('admin:resetPassword', 'Reset password')}
+                          </Button>
+                          {u.role !== 'admin' && (
+                            <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
+                          )}
+                        </div>
+                      )}
                     </TableTd>
                   </TableRow>
                 ))}
@@ -326,15 +362,51 @@ export function UserManagement() {
               { value: 'student', label: t('auth:student') },
               { value: 'university', label: t('auth:university') },
               { value: 'admin', label: t('common:admin') },
+              { value: 'school_counsellor', label: t('admin:schoolCounsellor', 'School counsellor') },
             ]}
             value={createRole}
-            onChange={(e) => setCreateRole(e.target.value as 'student' | 'university' | 'admin')}
+            onChange={(e) => setCreateRole(e.target.value as Role)}
           />
           <Input label={t('common:email')} value={createEmail} onChange={(e) => setCreateEmail(e.target.value)} />
           <Input label={t('common:name')} value={createName} onChange={(e) => setCreateName(e.target.value)} />
           <p className="text-xs text-[var(--color-text-muted)]">
             {t('admin:createUserInviteHint', 'User will receive an email with a link to set their password.')}
           </p>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!editUserTarget}
+        onClose={() => setEditUserTarget(null)}
+        title={t('admin:changeRole', 'Change role')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditUserTarget(null)} disabled={editUserSaving}>{t('common:cancel')}</Button>
+            <Button onClick={handleEditUserSave} disabled={editUserSaving} loading={editUserSaving}>{t('common:save', 'Save')}</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          {editUserTarget && (
+            <>
+              <p className="text-sm text-[var(--color-text-muted)]">{t('admin:userEmail', 'User')}: {editUserTarget.email}</p>
+              <Select
+                label={t('common:role')}
+                options={[
+                  { value: 'student', label: t('auth:student') },
+                  { value: 'university', label: t('auth:university') },
+                  { value: 'admin', label: t('common:admin') },
+                  { value: 'school_counsellor', label: t('admin:schoolCounsellor', 'School counsellor') },
+                ]}
+                value={editUserRole}
+                onChange={(e) => setEditUserRole(e.target.value as Role)}
+              />
+              <Input label={t('common:name')} value={editUserName} onChange={(e) => setEditUserName(e.target.value)} />
+              <p className="text-xs text-[var(--color-text-muted)]">
+                {t('admin:changeRoleHint', 'Assigning School counsellor: user will get read-only access to the admin panel.')}
+              </p>
+            </>
+          )}
         </div>
       </Modal>
 

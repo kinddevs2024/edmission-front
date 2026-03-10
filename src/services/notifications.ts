@@ -45,6 +45,17 @@ export function buildNotificationLink(
   _metadata?: Record<string, unknown>,
   role?: Role | null
 ): string | undefined {
+  const isAdmin = role === 'admin' || role === 'school_counsellor'
+  if (isAdmin) {
+    switch (type) {
+      case 'message':
+        return referenceId ? `/admin/chats?chatId=${referenceId}` : '/admin/chats'
+      case 'university_verification_request':
+        return '/admin/university-requests'
+      default:
+        return '/admin/dashboard'
+    }
+  }
   const chatPath = role === 'student' ? '/student/chat' : role === 'university' ? '/university/chat' : '/student/chat'
   switch (type) {
     case 'message':

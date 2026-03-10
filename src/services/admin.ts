@@ -46,7 +46,7 @@ export interface AdminUniversityProfile {
 }
 
 export interface CreateAdminUserPayload {
-  role: 'student' | 'university' | 'admin'
+  role: 'student' | 'university' | 'admin' | 'school_counsellor'
   email: string
   password?: string
   name?: string
@@ -164,6 +164,26 @@ export async function getUsers(params?: PaginationParams & { status?: string; ro
     total: res.data?.total ?? 0,
     page: res.data?.page ?? 1,
     limit: res.data?.limit ?? 20,
+  }
+}
+
+export interface UpdateUserPayload {
+  name?: string
+  role?: 'student' | 'university' | 'admin' | 'school_counsellor'
+  emailVerified?: boolean
+  suspended?: boolean
+}
+
+export async function updateUser(userId: string, payload: UpdateUserPayload): Promise<AdminUser> {
+  const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}`, payload)
+  const raw = data ?? {}
+  return {
+    id: String(raw.id ?? raw._id ?? ''),
+    email: String(raw.email ?? ''),
+    role: String(raw.role ?? ''),
+    name: (raw.name as string | undefined) ?? undefined,
+    createdAt: String(raw.createdAt ?? ''),
+    status: (raw.suspended ? 'suspended' : 'active') as 'active' | 'suspended',
   }
 }
 

@@ -19,7 +19,7 @@ function isSidebarPath(pathname: string) {
 
 export function MainLayout() {
   const { isAuthenticated, role } = useAuth()
-  const { t } = useTranslation(['student', 'university', 'admin'])
+  const { t } = useTranslation(['student', 'university', 'admin', 'school'])
   const location = useLocation()
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
@@ -72,6 +72,16 @@ export function MainLayout() {
         { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
       ]
     }
+    if (role === 'school_counsellor') {
+      return [
+        { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' },
+        { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' },
+        { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' },
+        { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' },
+        { to: '/profile', label: t('school:account', 'Account'), icon: 'Settings' },
+        { to: '/notifications', label: t('school:notifications'), icon: 'Bell' },
+      ]
+    }
     return []
   }, [role, t])
 
@@ -101,6 +111,14 @@ export function MainLayout() {
         { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
         { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
         { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
+      ]
+    }
+    if (role === 'school_counsellor') {
+      return [
+        { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' },
+        { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' },
+        { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' },
+        { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' },
       ]
     }
     return []

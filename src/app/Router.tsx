@@ -8,12 +8,14 @@ import { MainLayout } from '@/layouts/MainLayout'
 import { StudentLayout } from '@/layouts/StudentLayout'
 import { UniversityLayout } from '@/layouts/UniversityLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
+import { SchoolLayout } from '@/layouts/SchoolLayout'
 
 const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
 const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ default: m.Register })))
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword').then((m) => ({ default: m.ForgotPassword })))
 const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail').then((m) => ({ default: m.VerifyEmail })))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword').then((m) => ({ default: m.ResetPassword })))
+const SetPassword = lazy(() => import('@/pages/auth/SetPassword').then((m) => ({ default: m.SetPassword })))
 const ChooseLanguage = lazy(() => import('@/pages/auth/ChooseLanguage').then((m) => ({ default: m.ChooseLanguage })))
 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
@@ -25,6 +27,7 @@ const StudentDocuments = lazy(() => import('@/pages/student/StudentDocuments').t
 const StudentOffers = lazy(() => import('@/pages/student/StudentOffers').then((m) => ({ default: m.StudentOffers })))
 const Compare = lazy(() => import('@/pages/student/Compare').then((m) => ({ default: m.Compare })))
 const StudentChat = lazy(() => import('@/pages/student/StudentChat').then((m) => ({ default: m.StudentChat })))
+const StudentSchools = lazy(() => import('@/pages/student/StudentSchools').then((m) => ({ default: m.StudentSchools })))
 
 const UniversityDashboard = lazy(() => import('@/pages/university/UniversityDashboard').then((m) => ({ default: m.UniversityDashboard })))
 const UniversityProfilePage = lazy(() => import('@/pages/university/UniversityProfilePage').then((m) => ({ default: m.UniversityProfilePage })))
@@ -53,6 +56,10 @@ const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) =>
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
 const AdminInvestors = lazy(() => import('@/pages/admin/AdminInvestors').then((m) => ({ default: m.AdminInvestors })))
 const AdminUniversityRequests = lazy(() => import('@/pages/admin/AdminUniversityRequests').then((m) => ({ default: m.AdminUniversityRequests })))
+const CounsellorSchoolProfile = lazy(() => import('@/pages/admin/CounsellorSchoolProfile').then((m) => ({ default: m.CounsellorSchoolProfile })))
+const CounsellorStudents = lazy(() => import('@/pages/admin/CounsellorStudents').then((m) => ({ default: m.CounsellorStudents })))
+const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRequests').then((m) => ({ default: m.CounsellorJoinRequests })))
+const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
@@ -73,10 +80,14 @@ function PageFallback() {
 }
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: Role[] }) {
-  const { isAuthenticated, role } = useAuth()
+  const { isAuthenticated, role, user } = useAuth()
+  const location = window.location.pathname
   if (!isAuthenticated) return <Navigate to="/login" replace />
+  if ((user as { mustChangePassword?: boolean })?.mustChangePassword && !location.startsWith('/set-password')) {
+    return <Navigate to="/set-password" replace />
+  }
   if (role && !allowedRoles.includes(role)) {
-    const redirect = role === 'student' ? '/student/dashboard' : role === 'university' ? '/university/dashboard' : '/admin'
+    const redirect = role === 'student' ? '/student/dashboard' : role === 'university' ? '/university/dashboard' : role === 'school_counsellor' ? '/school/dashboard' : '/admin'
     return <Navigate to={redirect} replace />
   }
   return <>{children}</>
@@ -90,7 +101,9 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   else if (role === 'university') {
     if (!user?.universityProfile) redirect = '/university/select'
     else redirect = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
-  } else redirect = '/admin'
+  } else if (role === 'admin') redirect = '/admin'
+  else if (role === 'school_counsellor') redirect = '/school/dashboard'
+  else redirect = '/admin'
   return <Navigate to={redirect} replace />
 }
 
@@ -102,7 +115,9 @@ function LandingOrRedirect() {
   else if (role === 'university') {
     if (!user?.universityProfile) to = '/university/select'
     else to = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
-  } else to = '/admin'
+  } else if (role === 'admin') to = '/admin'
+  else if (role === 'school_counsellor') to = '/school/dashboard'
+  else to = '/admin'
   return <Navigate to={to} replace />
 }
 
@@ -116,14 +131,15 @@ export function Router() {
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
+        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><SetPassword /></ProtectedRoute>} />
         <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
       </Route>
 
       <Route path="/" element={<MainLayout />}>
         <Route index element={<LandingOrRedirect />} />
         <Route path="privacy" element={<Privacy />} />
-        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin']}><Profile /></ProtectedRoute>} />
-        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university']}><NotificationsPage /></ProtectedRoute>} />
+        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><Profile /></ProtectedRoute>} />
+        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><NotificationsPage /></ProtectedRoute>} />
         <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university']}><AIChatPage /></ProtectedRoute>} />
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />
@@ -138,6 +154,7 @@ export function Router() {
           <Route path="universities/:id" element={<UniversityDetail />} />
           <Route path="applications" element={<StudentApplications />} />
           <Route path="documents" element={<StudentDocuments />} />
+          <Route path="schools" element={<StudentSchools />} />
           <Route path="offers" element={<StudentOffers />} />
           <Route path="compare" element={<Compare />} />
           <Route path="chat" element={<StudentChat />} />
@@ -177,6 +194,14 @@ export function Router() {
           <Route path="support/:id" element={<AdminSupport />} />
           <Route path="logs" element={<AdminLogs />} />
           <Route path="health" element={<SystemHealth />} />
+        </Route>
+
+        <Route path="school" element={<ProtectedRoute allowedRoles={['school_counsellor']}><SchoolLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<SchoolDashboard />} />
+          <Route path="my-school" element={<CounsellorSchoolProfile />} />
+          <Route path="my-students" element={<CounsellorStudents />} />
+          <Route path="join-requests" element={<CounsellorJoinRequests />} />
         </Route>
       </Route>
 
