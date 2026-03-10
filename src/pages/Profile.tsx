@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { getProfile, updateProfile, getApiError, logout as logoutApi } from '@/services/auth'
 import { setup2FA, verifyAndEnable2FA, disable2FA } from '@/services/twoFactor'
+import { PageTitle } from '@/components/ui/PageTitle'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -62,6 +63,7 @@ export function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
+      <PageTitle title={t('profile')} icon="Settings" />
       <Card>
         <CardTitle>{t('profile')}</CardTitle>
         <dl className="grid grid-cols-1 gap-2 mt-2">

@@ -25,6 +25,7 @@ import {
   CreditCard,
   Building2,
   Clock,
+  Settings,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -55,6 +56,7 @@ const iconMap: Record<string, LucideIcon> = {
   HelpCircle,
   CreditCard,
   Clock,
+  Settings,
 }
 
 export type NavIconName = keyof typeof iconMap

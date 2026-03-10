@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getCounsellorProfile, listMyStudents, listJoinRequests } from '@/services/counsellor'
 import { toastApiError } from '@/utils/toastError'
-import { Users, UserPlus, Building2, Inbox, ChevronRight, Mail } from 'lucide-react'
+import { Users, UserPlus, Building2, Inbox, ChevronRight, Mail, BarChart3 } from 'lucide-react'
 
 export function SchoolDashboard() {
   const { t } = useTranslation('school')
@@ -97,6 +98,33 @@ export function SchoolDashboard() {
           </Card>
         </Link>
       </div>
+
+      <Card>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart3 size={18} />
+          {t('statsOverview', 'Overview')}
+        </CardTitle>
+        <div className="h-48 mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={[
+                { label: t('statsStudents'), value: loading ? 0 : studentsTotal },
+                { label: t('statsPending'), value: loading ? 0 : pendingTotal },
+              ]}
+              margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis dataKey="label" stroke="var(--color-text-muted)" tick={{ fontSize: 11 }} />
+              <YAxis stroke="var(--color-text-muted)" allowDecimals={false} />
+              <Tooltip contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                <Cell fill="var(--color-primary-accent)" />
+                <Cell fill="#f59e0b" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
