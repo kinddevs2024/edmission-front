@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MessageBubble } from './MessageBubble'
 import { Button } from '@/components/ui/Button'
@@ -6,7 +7,7 @@ import { uploadFile } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
 import type { SendMessageParams } from '@/services/chat'
-import { Mic, Square, Smile, Send, GraduationCap } from 'lucide-react'
+import { Mic, Square, Smile, Send, GraduationCap, ExternalLink } from 'lucide-react'
 
 const EMOTION_OPTIONS = ['👍', '👏', '🎉', '❤️', '😊', '🙏', '⭐', '🔥', '💪', '👋']
 
@@ -130,6 +131,12 @@ export function MessageThread({
 
   const showAcceptButton = role === 'university' && !chat.acceptedAt && onAcceptStudent
 
+  const profileUrl = role === 'student'
+    ? `/student/universities/${chat.participant.id}`
+    : role === 'university'
+      ? `/university/students/${chat.participant.id}`
+      : null
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[var(--color-bg)]">
       <div className="px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-card)] flex items-center justify-between gap-2 flex-wrap">
@@ -141,16 +148,28 @@ export function MessageThread({
             </p>
           )}
         </div>
-        {showAcceptButton && (
-          <Button
-            size="sm"
-            onClick={() => setAcceptModalOpen(true)}
-            icon={<GraduationCap className="w-4 h-4" />}
-            title={t('chat:acceptTooltip')}
-          >
-            {t('chat:accept')}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {profileUrl && (
+            <Link
+              to={profileUrl}
+              className="inline-flex items-center gap-1.5 rounded-input px-2 py-1.5 text-sm font-medium text-primary-accent hover:bg-primary-accent/10 transition-colors"
+              title={t('chat:openProfile', 'Open profile')}
+            >
+              <ExternalLink className="w-4 h-4" aria-hidden />
+              <span>{t('chat:openProfile', 'Open profile')}</span>
+            </Link>
+          )}
+          {showAcceptButton && (
+            <Button
+              size="sm"
+              onClick={() => setAcceptModalOpen(true)}
+              icon={<GraduationCap className="w-4 h-4" />}
+              title={t('chat:acceptTooltip')}
+            >
+              {t('chat:accept')}
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">

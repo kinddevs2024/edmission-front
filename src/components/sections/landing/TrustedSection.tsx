@@ -14,7 +14,7 @@ export function TrustedSection() {
   ]
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:px-8">
       <Reveal>
         <SectionHeading
           align="center"

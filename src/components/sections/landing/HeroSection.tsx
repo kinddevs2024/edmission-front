@@ -97,12 +97,12 @@ export function HeroSection() {
         </svg>
       </div>
 
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl gap-10 px-4 py-20 md:grid-cols-2 md:items-center md:px-6 lg:px-8">
+      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl gap-8 px-4 py-12 sm:py-16 md:grid-cols-2 md:items-center md:gap-10 md:py-20 md:px-6 lg:px-8">
         <Reveal>
           <p className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
             {t('hero.eyebrow')}
           </p>
-          <h1 className="mt-5 text-4xl font-semibold leading-tight text-[var(--color-text)] md:text-6xl">
+          <h1 className="mt-4 text-3xl font-semibold leading-tight text-[var(--color-text)] sm:text-4xl md:mt-5 md:text-6xl">
             {t('hero.title')}
           </h1>
           <p className="mt-4 text-lg font-medium text-[var(--color-text)]">

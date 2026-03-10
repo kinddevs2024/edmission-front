@@ -42,6 +42,7 @@
   "goToLogin": "На страницу входа",
   "emailVerified": "Email подтверждён",
   "signInNow": "Теперь можно войти.",
+  "redirecting": "Перенаправление...",
   "close": "Закрыть",
   "notifications": "Уведомления",
   "openAIChat": "Открыть Edmission AI",

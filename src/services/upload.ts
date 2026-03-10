@@ -25,6 +25,7 @@ export function getStudentAvatarUrl(avatarUrl: string | undefined | null): strin
 
 /**
  * Upload a file. Returns the full URL to the uploaded file (e.g. for avatar or portfolio work).
+ * Requires authentication.
  */
 export async function uploadFile(file: File): Promise<string> {
   const formData = new FormData()
@@ -32,7 +33,23 @@ export async function uploadFile(file: File): Promise<string> {
   const { data } = await api.post<{ url: string }>('/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-  const path = data?.url ?? ''
+  return resolveUploadUrl(data?.url ?? '')
+}
+
+/**
+ * Public avatar upload for registration (no auth required).
+ */
+export async function uploadAvatarForRegister(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<{ url: string }>('/upload/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return resolveUploadUrl(data?.url ?? '')
+}
+
+function resolveUploadUrl(path: string): string {
+  if (!path) return ''
   if (path.startsWith('http')) return path
   const base = baseURL.replace(/\/api\/?$/, '')
   return `${base}${path.startsWith('/') ? path : `/${path}`}`

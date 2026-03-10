@@ -48,12 +48,15 @@ export interface AdminUniversityProfile {
 export interface CreateAdminUserPayload {
   role: 'student' | 'university' | 'admin'
   email: string
-  password: string
+  password?: string
   name?: string
 }
 
 export async function createUser(payload: CreateAdminUserPayload): Promise<AdminUser> {
-  const { data } = await api.post<unknown>('/admin/users', payload)
+  const body: Record<string, unknown> = { role: payload.role, email: payload.email }
+  if (payload.name != null) body.name = payload.name
+  if (payload.password != null && payload.password.trim()) body.password = payload.password
+  const { data } = await api.post<unknown>('/admin/users', body)
   const raw = (data ?? {}) as Record<string, unknown>
   return {
     id: String(raw.id ?? raw._id ?? ''),
@@ -174,6 +177,10 @@ export async function unsuspendUser(userId: string): Promise<void> {
 
 export async function deleteUser(userId: string): Promise<void> {
   await api.delete(`/admin/users/${userId}`)
+}
+
+export async function resetUserPassword(userId: string, password: string): Promise<void> {
+  await api.post(`/admin/users/${userId}/reset-password`, { password })
 }
 
 export async function getUniversityProfileByUser(userId: string): Promise<AdminUniversityProfile> {

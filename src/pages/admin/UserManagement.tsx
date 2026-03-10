@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, suspendUser, unsuspendUser, deleteUser, getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
+import { createUser, getUsers, suspendUser, unsuspendUser, deleteUser, resetUserPassword, getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
@@ -55,11 +55,13 @@ export function UserManagement() {
   const [createOpen, setCreateOpen] = useState(false)
   const [createRole, setCreateRole] = useState<'student' | 'university' | 'admin'>('student')
   const [createEmail, setCreateEmail] = useState('')
-  const [createPassword, setCreatePassword] = useState('')
   const [createName, setCreateName] = useState('')
   const [createSubmitting, setCreateSubmitting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [resetTarget, setResetTarget] = useState<AdminUser | null>(null)
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetSubmitting, setResetSubmitting] = useState(false)
   const [editUniTarget, setEditUniTarget] = useState<AdminUser | null>(null)
   const [editUniLoading, setEditUniLoading] = useState(false)
   const [editUniSaving, setEditUniSaving] = useState(false)
@@ -112,6 +114,18 @@ export function UserManagement() {
       .then(() => setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: 'active' as const } : u))))
       .catch(toastApiError)
       .finally(() => setActionUserId(null))
+  }
+
+  const handleResetPasswordConfirm = () => {
+    if (!resetTarget || !resetPassword.trim()) return
+    setResetSubmitting(true)
+    resetUserPassword(resetTarget.id, resetPassword)
+      .then(() => {
+        setResetTarget(null)
+        setResetPassword('')
+      })
+      .catch(toastApiError)
+      .finally(() => setResetSubmitting(false))
   }
 
   const handleDeleteConfirm = () => {
@@ -258,6 +272,9 @@ export function UserManagement() {
                             {t('admin:editUniversityProfile', 'Edit profile')}
                           </Button>
                         )}
+                        <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
+                          {t('admin:resetPassword', 'Reset password')}
+                        </Button>
                         {u.role !== 'admin' && (
                           <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
                         )}
@@ -282,20 +299,19 @@ export function UserManagement() {
             <Button
               onClick={() => {
                 setCreateSubmitting(true)
-                createUser({ role: createRole, email: createEmail, password: createPassword, name: createName || undefined })
+                createUser({ role: createRole, email: createEmail, name: createName || undefined })
                   .then((newUser) => {
                     setUsers((prev) => [newUser, ...prev])
                     setTotal((x) => x + 1)
                     setCreateOpen(false)
                     setCreateEmail('')
-                    setCreatePassword('')
                     setCreateName('')
                     setCreateRole('student')
                   })
                   .catch(toastApiError)
                   .finally(() => setCreateSubmitting(false))
               }}
-              disabled={createSubmitting || !createEmail.trim() || !createPassword.trim()}
+              disabled={createSubmitting || !createEmail.trim()}
               loading={createSubmitting}
             >
               {t('common:create')}
@@ -315,10 +331,9 @@ export function UserManagement() {
             onChange={(e) => setCreateRole(e.target.value as 'student' | 'university' | 'admin')}
           />
           <Input label={t('common:email')} value={createEmail} onChange={(e) => setCreateEmail(e.target.value)} />
-          <Input label={t('auth:password')} type="password" value={createPassword} onChange={(e) => setCreatePassword(e.target.value)} />
           <Input label={t('common:name')} value={createName} onChange={(e) => setCreateName(e.target.value)} />
           <p className="text-xs text-[var(--color-text-muted)]">
-            {t('admin:createUserHint', 'Users created by admin are verified by default.')}
+            {t('admin:createUserInviteHint', 'User will receive an email with a link to set their password.')}
           </p>
         </div>
       </Modal>
@@ -454,6 +469,35 @@ export function UserManagement() {
                 placeholder={t('university:targetStudentCountriesPlaceholder', 'Select countries')}
               />
             </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={!!resetTarget}
+        onClose={() => { setResetTarget(null); setResetPassword('') }}
+        title={t('admin:resetPassword', 'Reset password')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => { setResetTarget(null); setResetPassword('') }} disabled={resetSubmitting}>{t('common:cancel')}</Button>
+            <Button onClick={handleResetPasswordConfirm} disabled={resetSubmitting || !resetPassword.trim()} loading={resetSubmitting}>
+              {t('admin:resetPassword', 'Reset password')}
+            </Button>
+          </>
+        }
+      >
+        {resetTarget && (
+          <div className="space-y-3">
+            <p className="text-sm text-[var(--color-text)]">
+              {t('admin:resetPasswordConfirm', 'Set a new password for')} <strong>{resetTarget.email}</strong>
+            </p>
+            <Input
+              label={t('auth:password')}
+              type="password"
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+              placeholder={t('auth:passwordRequirements', '8+ chars, uppercase, lowercase, number')}
+            />
           </div>
         )}
       </Modal>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
-import { uploadFile, getImageUrl } from '@/services/upload'
+import { uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
 import { getApiError } from '@/services/auth'
 import { cn } from '@/utils/cn'
 
@@ -13,6 +13,8 @@ interface FileUploadProps {
   className?: string
   /** Show as avatar circle (for profile photo) */
   variant?: 'default' | 'avatar'
+  /** Use public upload (no auth) - for registration flow */
+  publicUpload?: boolean
 }
 
 export function FileUpload({
@@ -23,11 +25,14 @@ export function FileUpload({
   hint,
   className,
   variant = 'default',
+  publicUpload = false,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [imgLoadError, setImgLoadError] = useState(false)
   useEffect(() => setImgLoadError(false), [value])
+
+  const uploadFn = publicUpload ? uploadAvatarForRegister : uploadFile
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -35,7 +40,7 @@ export function FileUpload({
     setError('')
     setUploading(true)
     try {
-      const url = await uploadFile(file)
+      const url = await uploadFn(file)
       onChange(url)
     } catch (err: unknown) {
       setError(getApiError(err).message)

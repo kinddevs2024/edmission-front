@@ -198,6 +198,8 @@
     "support": { "title": "Support", "0": "Security", "1": "Help Center", "2": "Contact" }
   },
   "header": {
+    "menu": "Menu",
+    "language": "Language",
     "login": "Log in",
     "register": "Register",
     "howItWorks": "How it works",

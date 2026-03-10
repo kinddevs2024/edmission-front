@@ -7,9 +7,12 @@ import { z } from 'zod'
 import { register as registerApi } from '@/services/auth'
 import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
+import i18n, { loadLanguage } from '@/i18n'
+import { isBrowserLanguageSupported, getBrowserPreferredLanguage, STORAGE_KEY } from '@/i18n/config'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { FileUpload } from '@/components/ui/FileUpload'
 import { GraduationCap, Building2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
@@ -33,6 +36,7 @@ export function Register() {
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState('')
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -49,9 +53,22 @@ export function Register() {
         password: data.password,
         name: data.name,
         role: data.role,
+        avatarUrl: role === 'student' && avatarUrl ? avatarUrl : undefined,
       })
-      if (user.role === 'student') navigate('/student/dashboard')
-      else navigate('/university/select')
+      const nextUrl = user.role === 'student' ? '/student/dashboard' : '/university/select'
+      if (isBrowserLanguageSupported()) {
+        const lng = getBrowserPreferredLanguage()
+        await loadLanguage(lng)
+        i18n.changeLanguage(lng)
+        try {
+          localStorage.setItem(STORAGE_KEY, lng)
+        } catch {
+          /* ignore */
+        }
+        navigate(nextUrl)
+      } else {
+        navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`)
+      }
     } catch (err) {
       const apiErr = getApiError(err)
       const errList = apiErr.errors as Array<{ field?: string; message?: string }> | undefined
@@ -67,6 +84,16 @@ export function Register() {
       <CardTitle className="mb-4">{t('common:register')}</CardTitle>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input label={t('auth:name')} placeholder={t('auth:name')} error={errors.name?.message} {...register('name')} />
+        {role === 'student' && (
+          <FileUpload
+            label={t('auth:avatar', 'Profile photo')}
+            value={avatarUrl}
+            onChange={setAvatarUrl}
+            variant="avatar"
+            publicUpload
+            hint={t('auth:avatarHint', 'Optional. Add a photo to your profile.')}
+          />
+        )}
         <Input label={t('auth:email')} type="email" autoComplete="email" placeholder={t('auth:emailPlaceholder')} error={errors.email?.message} {...register('email')} />
         <Input
           label={t('auth:password')}

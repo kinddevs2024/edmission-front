@@ -19,5 +19,6 @@
   "congratulatoryMessage": "Congratulatory message",
   "congratulatoryPlaceholder": "Congratulations! We are pleased to offer you...",
   "acceptDefaultMessage": "Congratulations! You have been accepted.",
-  "accepted": "Accepted"
+  "accepted": "Accepted",
+  "openProfile": "Open profile"
 }

@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { getNavIcon } from '@/components/icons/NavIcons'
-import { LanguageMenu } from './LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { cn } from '@/utils/cn'
 
@@ -56,7 +55,7 @@ export function MobileNavDrawer() {
             aria-label="Navigation menu"
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-              <img src="/favicon.svg" alt="" className="h-8 w-8 rounded-lg" />
+              <img src="/logo/green.svg" alt="" className="h-8 w-8 rounded-lg" />
               <span className="font-semibold text-[var(--color-text)]">Edmission</span>
               <button
                 type="button"
@@ -89,11 +88,7 @@ export function MobileNavDrawer() {
                 </NavLink>
               ))}
             </nav>
-            <div className="p-4 border-t border-[var(--color-border)] space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-[var(--color-text-muted)]">Language</span>
-                <LanguageMenu />
-              </div>
+            <div className="p-4 border-t border-[var(--color-border)]">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-[var(--color-text-muted)]">Theme</span>
                 <ThemeSwitch />

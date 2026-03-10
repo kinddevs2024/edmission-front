@@ -30,7 +30,7 @@ export function FAQSection() {
   return (
     <section id="faq" className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
       <script ref={schemaRef} type="application/ld+json" />
-      <div className="mx-auto max-w-3xl px-4 py-20 md:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:px-8">
         <Reveal>
           <SectionHeading
             align="center"
@@ -46,7 +46,7 @@ export function FAQSection() {
                 <button
                   type="button"
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)]/50"
+                  className="flex w-full min-h-[44px] items-center justify-between px-5 py-4 text-left text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)]/50"
                   aria-expanded={openIndex === index}
                 >
                   <span className="font-medium">{item.q}</span>

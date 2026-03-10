@@ -14,6 +14,7 @@ const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ defau
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword').then((m) => ({ default: m.ForgotPassword })))
 const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail').then((m) => ({ default: m.VerifyEmail })))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword').then((m) => ({ default: m.ResetPassword })))
+const ChooseLanguage = lazy(() => import('@/pages/auth/ChooseLanguage').then((m) => ({ default: m.ChooseLanguage })))
 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
@@ -115,6 +116,7 @@ export function Router() {
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
+        <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
       </Route>
 
       <Route path="/" element={<MainLayout />}>

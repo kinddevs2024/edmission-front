@@ -9,6 +9,8 @@ import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
+import i18n, { loadLanguage } from '@/i18n'
+import { isBrowserLanguageSupported, getBrowserPreferredLanguage, STORAGE_KEY } from '@/i18n/config'
 
 type FormData = { newPassword: string; confirmPassword: string }
 
@@ -38,6 +40,19 @@ export function ResetPassword() {
     try {
       await resetPassword(token, data.newPassword)
       setSuccess(true)
+      if (isBrowserLanguageSupported()) {
+        const lng = getBrowserPreferredLanguage()
+        await loadLanguage(lng)
+        i18n.changeLanguage(lng)
+        try {
+          localStorage.setItem(STORAGE_KEY, lng)
+        } catch {
+          /* ignore */
+        }
+        navigate('/login', { replace: true })
+      } else {
+        navigate('/choose-language?next=/login', { replace: true })
+      }
     } catch (err) {
       const key = getApiErrorKey(err)
       setSubmitError(t(`errors:${key}`))
@@ -60,8 +75,7 @@ export function ResetPassword() {
     return (
       <Card className="p-6">
         <CardTitle className="mb-2">{t('auth:resetPassword')}</CardTitle>
-        <p className="text-[var(--color-text-muted)] mb-4">{t('common:signInNow')}</p>
-        <Button onClick={() => navigate('/login')}>{t('common:signIn')}</Button>
+        <p className="text-[var(--color-text-muted)] mb-4">{t('common:redirecting', 'Redirecting...')}</p>
       </Card>
     )
   }

@@ -198,6 +198,8 @@
     "support": { "title": "Yordam", "0": "Xavfsizlik", "1": "Yordam markazi", "2": "Aloqa" }
   },
   "header": {
+    "menu": "Menyu",
+    "language": "Til",
     "login": "Kirish",
     "register": "Ro'yxatdan o'tish",
     "howItWorks": "Qanday ishlaydi",

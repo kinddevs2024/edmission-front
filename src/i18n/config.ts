@@ -20,14 +20,22 @@ function fromUrlParam(): SupportedLng | null {
   return null
 }
 
+/** Browser's primary language code (e.g. 'en', 'ru', 'uz', 'de'). */
+export function getBrowserLanguageCode(): string {
+  if (typeof navigator === 'undefined') return ''
+  const preferred = navigator.language || (navigator.languages && navigator.languages[0]) || ''
+  return preferred.split('-')[0].toLowerCase()
+}
+
+/** True if browser's primary language is one of our supported (uz, en, ru). */
+export function isBrowserLanguageSupported(): boolean {
+  const code = getBrowserLanguageCode()
+  return code === 'en' || code === 'ru' || code === 'uz'
+}
+
 /** Returns browser-preferred language if supported; otherwise fallback. */
 export function getBrowserPreferredLanguage(): SupportedLng {
-  if (typeof navigator === 'undefined') return fallbackLng
-  const preferred = navigator.language || (navigator.languages && navigator.languages[0]) || ''
-  const code = preferred.split('-')[0].toLowerCase()
-  // Product rule:
-  // - Use browser default language only when it is RU or UZ.
-  // - For any other browser language, always fall back to EN.
+  const code = getBrowserLanguageCode()
   if (code === 'ru') return 'ru'
   if (code === 'uz') return 'uz'
   return 'en'

@@ -37,7 +37,7 @@ export function ProblemSection() {
   ]
   return (
     <section id="problem" className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
-      <div className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:px-8">
         <Reveal>
           <SectionHeading
             eyebrow={t('problem.eyebrow')}

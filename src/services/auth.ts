@@ -13,6 +13,7 @@ export interface RegisterPayload {
   password: string
   name: string
   role: 'student' | 'university'
+  avatarUrl?: string
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
@@ -23,12 +24,14 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function register(payload: RegisterPayload): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/register', {
+  const body: Record<string, unknown> = {
     email: payload.email,
     password: payload.password,
     name: payload.name,
     role: payload.role,
-  })
+  }
+  if (payload.avatarUrl) body.avatarUrl = payload.avatarUrl
+  const { data } = await api.post<LoginResponse>('/auth/register', body)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
