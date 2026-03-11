@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { verifyEmail } from '@/services/auth'
+import { verifyEmailByLink } from '@/services/auth'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 
@@ -17,7 +17,7 @@ export function VerifyEmail() {
       setStatus('error')
       return
     }
-    verifyEmail(token)
+    verifyEmailByLink(token)
       .then(() => setStatus('ok'))
       .catch(() => setStatus('error'))
   }, [searchParams])

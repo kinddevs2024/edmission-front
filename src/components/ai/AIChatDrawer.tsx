@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Send, Maximize2, Bot, User } from 'lucide-react'
-import { sendAIChat, getAIStatus, type AIStatus } from '@/services/ai'
+import { sendAIChatStream, getAIStatus, type AIStatus } from '@/services/ai'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 
@@ -10,6 +10,8 @@ export interface Message {
   id: string
   role: 'user' | 'assistant'
   text: string
+  /** Shown above the main answer while the model is "thinking" (e.g. DeepSeek R1). */
+  thinking?: string
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -49,10 +51,6 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  const buildHistory = useCallback((): { role: 'user' | 'assistant'; content: string }[] => {
-    return messages.slice(-20).map((m) => ({ role: m.role, content: m.text }))
-  }, [messages])
-
   const handleSend = useCallback(
     async (text: string, selectedText?: string) => {
       const trimmed = text.trim()
@@ -67,23 +65,48 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
       setMessages((prev) => [...prev, userMsg])
       setLoading(true)
 
+      const assistantId = `a-${Date.now()}`
+      const assistantMsg: Message = { id: assistantId, role: 'assistant', text: '', thinking: '' }
+      setMessages((prev) => [...prev, assistantMsg])
+
+      const historyForApi: { role: 'user' | 'assistant'; content: string }[] = [
+        ...messages.slice(-19).map((m) => ({ role: m.role, content: m.text })),
+        { role: 'user', content: trimmed },
+      ]
+
       try {
-        const history = buildHistory()
-        const res = await sendAIChat({
-          message: trimmed,
-          history,
-          selectedText,
-        })
-        const assistantMsg: Message = {
-          id: `a-${Date.now()}`,
-          role: 'assistant',
-          text: res.text ?? '',
-        }
-        setMessages((prev) => [...prev, assistantMsg])
+        await sendAIChatStream(
+          { message: trimmed, history: historyForApi, selectedText },
+          {
+            onChunk: (chunk) => {
+              setMessages((prev) =>
+                prev.map((m) => {
+                  if (m.id !== assistantId) return m
+                  if (chunk.type === 'thinking') {
+                    return { ...m, thinking: (m.thinking ?? '') + chunk.text }
+                  }
+                  return { ...m, text: (m.text ?? '') + chunk.text }
+                })
+              )
+            },
+            onDone: () => setLoading(false),
+            onError: (message) => {
+              setLoading(false)
+              if (message.toLowerCase().includes('limit') || message.includes('429')) {
+                setRateLimitMessage(message)
+              } else {
+                setError(message)
+              }
+              setMessages((prev) => prev.filter((m) => m.id !== assistantId))
+            },
+          }
+        )
       } catch (err: unknown) {
+        setLoading(false)
+        setMessages((prev) => prev.filter((m) => m.id !== assistantId))
         const msg =
           err && typeof err === 'object' && 'response' in err
-            ? (err as { response?: { data?: { message?: string; code?: string } } }).response?.data?.message
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
             : null
         if (
           msg?.toLowerCase().includes('limit') ||
@@ -91,13 +114,11 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         ) {
           setRateLimitMessage(msg ?? 'Free tier limit reached. Try again later.')
         } else {
-          setError(msg ?? t('aiErrorDefault'))
+          setError(err instanceof Error ? err.message : t('aiErrorDefault'))
         }
-      } finally {
-        setLoading(false)
       }
     },
-    [loading, buildHistory, t]
+    [loading, messages, t]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -255,7 +276,17 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                       : 'bg-[var(--color-border)]/25 text-[var(--color-text)]'
                   )}
                 >
-                  <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                  {m.role === 'assistant' && m.thinking != null && m.thinking.length > 0 && (
+                    <div className="mb-3 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)]/60 px-3 py-2 text-xs text-[var(--color-text-muted)]">
+                      <p className="font-medium text-[var(--color-text-muted)] mb-1 opacity-80">Thinking</p>
+                      <p className="whitespace-pre-wrap break-words">{m.thinking}</p>
+                    </div>
+                  )}
+                  <p className="whitespace-pre-wrap break-words">
+                    {m.text || (loading && m.id === messages[messages.length - 1]?.id ? (
+                      <span className="text-[var(--color-text-muted)] animate-pulse">...</span>
+                    ) : null)}
+                  </p>
                 </div>
                 {m.role === 'user' && (
                   <div className="shrink-0 w-8 h-8 rounded-full bg-[var(--color-border)]/30 flex items-center justify-center">
@@ -264,16 +295,23 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                 )}
               </div>
             ))}
-            {loading && (
-              <div className="flex gap-2 justify-start">
-                <div className="shrink-0 w-8 h-8 rounded-full bg-primary-accent/20 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary-accent animate-pulse" aria-hidden />
+            {loading && (() => {
+              const last = messages[messages.length - 1]
+              const isStreamingAssistant = last?.role === 'assistant'
+              const hasContent = isStreamingAssistant && (Boolean(last?.text) || Boolean(last?.thinking))
+              if (isStreamingAssistant && hasContent) return null
+              if (isStreamingAssistant) return null
+              return (
+                <div className="flex gap-2 justify-start">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-primary-accent/20 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-primary-accent animate-pulse" aria-hidden />
+                  </div>
+                  <div className="rounded-card px-4 py-2.5 bg-[var(--color-border)]/25 text-sm text-[var(--color-text-muted)]">
+                    {t('typing')}
+                  </div>
                 </div>
-                <div className="rounded-card px-4 py-2.5 bg-[var(--color-border)]/25 text-sm text-[var(--color-text-muted)]">
-                  {t('typing')}
-                </div>
-              </div>
-            )}
+              )
+            })()}
             {error && <p className="text-sm text-red-500">{error}</p>}
             {rateLimitMessage && (
               <p className="text-sm text-amber-600 dark:text-amber-400">{rateLimitMessage}</p>

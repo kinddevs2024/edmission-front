@@ -11,10 +11,15 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string
   password: string
-  name: string
   role: 'student' | 'university'
+  acceptTerms: boolean
+  name?: string
   avatarUrl?: string
 }
+
+export type RegisterResult =
+  | { needsVerification: true; email: string }
+  | LoginResponse
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const { data } = await api.post<LoginResponse>('/auth/login', payload)
@@ -23,15 +28,27 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data
 }
 
-export async function register(payload: RegisterPayload): Promise<LoginResponse> {
+export async function register(payload: RegisterPayload): Promise<RegisterResult> {
   const body: Record<string, unknown> = {
     email: payload.email,
     password: payload.password,
-    name: payload.name,
     role: payload.role,
+    acceptTerms: payload.acceptTerms,
   }
+  if (payload.name) body.name = payload.name
   if (payload.avatarUrl) body.avatarUrl = payload.avatarUrl
-  const { data } = await api.post<LoginResponse>('/auth/register', body)
+  const { data } = await api.post<RegisterResult>('/auth/register', body)
+  if ('needsVerification' in data && data.needsVerification) {
+    return { needsVerification: true, email: data.email }
+  }
+  const loginData = data as LoginResponse
+  useAuthStore.getState().setAuth(loginData.user, loginData.accessToken)
+  saveAuth(loginData.user, loginData.accessToken, loginData.refreshToken ?? null)
+  return loginData
+}
+
+export async function verifyEmailByCode(email: string, code: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/verify-email', { email, code })
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
@@ -51,7 +68,8 @@ export async function forgotPassword(email: string): Promise<void> {
   await api.post('/auth/forgot-password', { email })
 }
 
-export async function verifyEmail(token: string): Promise<void> {
+/** Verify by link token (e.g. from email link). */
+export async function verifyEmailByLink(token: string): Promise<void> {
   await api.get('/auth/verify-email', { params: { token } })
 }
 

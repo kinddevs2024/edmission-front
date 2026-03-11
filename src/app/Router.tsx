@@ -153,7 +153,7 @@ export function Router() {
         <Route path="cookies" element={<Cookies />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><Profile /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><NotificationsPage /></ProtectedRoute>} />
-        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university']}><AIChatPage /></ProtectedRoute>} />
+        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><AIChatPage /></ProtectedRoute>} />
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />
         <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentCancel /></ProtectedRoute>} />
