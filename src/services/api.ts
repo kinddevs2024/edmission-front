@@ -43,6 +43,13 @@ api.interceptors.response.use(
       useAuthStore.getState().logout()
       window.location.href = '/login'
     }
+    if (error.response?.status === 503) {
+      const data = error.response.data as { code?: string }
+      if (data?.code === 'MAINTENANCE') {
+        window.location.href = '/maintenance'
+        return Promise.reject(error)
+      }
+    }
     return Promise.reject(error)
   }
 )

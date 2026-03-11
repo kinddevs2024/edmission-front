@@ -135,6 +135,26 @@ export async function reviewDocument(
   await api.patch(`/admin/documents/${documentId}/review`, { decision, rejectionReason })
 }
 
+export interface SystemSettings {
+  requireAccountConfirmation: boolean
+  requireEmailVerification: boolean
+  maintenanceMode: boolean
+}
+
+export async function getSettings(): Promise<SystemSettings> {
+  const { data } = await api.get<SystemSettings>('/admin/settings')
+  return data ?? {
+    requireAccountConfirmation: false,
+    requireEmailVerification: false,
+    maintenanceMode: false,
+  }
+}
+
+export async function updateSettings(patch: Partial<SystemSettings>): Promise<SystemSettings> {
+  const { data } = await api.patch<SystemSettings>('/admin/settings', patch)
+  return data ?? patch as SystemSettings
+}
+
 export async function getAdminStats(): Promise<AdminStats> {
   const { data } = await api.get<AdminDashboardResponse>('/admin/dashboard')
   return {

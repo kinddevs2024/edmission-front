@@ -130,5 +130,9 @@
   "fieldEducation": "Образование",
   "fieldEnvironmentAgricultureSustainability": "Экология, сельское хозяйство и устойчивое развитие",
   "fieldHospitalityTourismService": "Гостеприимство, туризм и сервис",
-  "fieldLawLegalStudies": "Право и юридические исследования"
+  "fieldLawLegalStudies": "Право и юридические исследования",
+  "maintenance": {
+    "title": "Сайт на техническом обслуживании",
+    "description": "Выполняются плановые работы. Попробуйте позже."
+  }
 }

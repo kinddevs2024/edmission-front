@@ -183,3 +183,16 @@
     stroke-dashoffset: -9;
   }
 }
+
+/* Trusted by: infinite horizontal logo marquee */
+@keyframes trusted-logos-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.trusted-logos-marquee {
+  animation: trusted-logos-scroll 40s linear infinite;
+}

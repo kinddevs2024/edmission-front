@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { HeroSection } from '@/components/sections/landing/HeroSection'
 import { TrustedSection } from '@/components/sections/landing/TrustedSection'
+import { AccreditationSection } from '@/components/sections/landing/AccreditationSection'
+import { CertificationsSection } from '@/components/sections/landing/CertificationsSection'
+import { TestimonialsSection } from '@/components/sections/landing/TestimonialsSection'
 import { ProblemSection } from '@/components/sections/landing/ProblemSection'
 import { CtaBlock } from '@/components/sections/landing/CtaBlock'
 import { InfrastructureSection } from '@/components/sections/landing/InfrastructureSection'
@@ -19,6 +22,9 @@ export function LandingPage() {
       <LandingHeader />
       <HeroSection />
       <TrustedSection />
+      <AccreditationSection />
+      <CertificationsSection />
+      <TestimonialsSection />
       <ProblemSection />
       <CtaBlock />
       <InfrastructureSection />

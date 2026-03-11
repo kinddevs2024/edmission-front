@@ -30,9 +30,41 @@
     "statStudents": "10 000+",
     "statStudentsLabel": "Talaba",
     "statScholarships": "$5M+",
-    "statScholarshipsLabel": "Stipendiya",
-    "testimonial": "Ikki haftada uchta universitet va stipendiya taklifi oldim. Agentlik to'lovlari yo'q.",
-    "testimonialAuthor": "Talaba, Toshkent"
+    "statScholarshipsLabel": "Stipendiya"
+  },
+  "accreditation": {
+    "eyebrow": "Tan olish",
+    "title": "Akreditatsiya va standartlar",
+    "description": "Edmission ta'limda ishonch va sifat standartlariga amal qiladi.",
+    "qualityTitle": "Sifat kafolati",
+    "qualityDesc": "Shaffof qabul va talaba-universitet moslashtirish uchun eng yaxshi amaliyotlardan foydalanamiz.",
+    "trustTitle": "Ishonch va xavfsizlik",
+    "trustDesc": "Ma'lumotlaringiz xavfsiz, jarayonlarimiz adolat va ishonchlilik uchun mo'ljallangan.",
+    "standardsTitle": "Tarmoq standartlari",
+    "standardsDesc": "Platformamiz institutsional va mintaqaviy qabul standartlariga mos keladi."
+  },
+  "certifications": {
+    "eyebrow": "Hamkorlik dalili",
+    "title": "Sertifikatlar",
+    "description": "Universitetlar va tashkilotlar bilan rasmiy sertifikatlar va hamkorlik hujjatlari.",
+    "viewPdf": "PDF ko'rish"
+  },
+  "testimonials": {
+    "eyebrow": "Ovozlar",
+    "title": "Talabalar va universitetlar nima deydi",
+    "description": "Jamoamizdan haqiqiy tajribalar.",
+    "item1": {
+      "quote": "Ikki haftada uchta universitet va stipendiya taklifi oldim. Agentlik to'lovlari yo'q.",
+      "author": "Talaba, Toshkent"
+    },
+    "item2": {
+      "quote": "Edmission bizga malakali leadlar va aniq pipeline berdi. Rekrutment xarajatlarini sezilarli kamaydirdik.",
+      "author": "Qabul bo'limi, hamkor universitet"
+    },
+    "item3": {
+      "quote": "Nihoyat dasturlarni solishtirib, universitetlar bilan to'g'ridan-to'g'ri muloqot qiladigan platforma. Juda shaffof.",
+      "author": "Talaba, Samarqand"
+    }
   },
   "ctaBlock": {
     "title": "Boshlashga tayyormisiz?",
@@ -195,7 +227,20 @@
     "platform": { "title": "Platforma", "0": "Loyiha haqida", "1": "Infratuzilma", "2": "AI matching" },
     "students": { "title": "Talabalar", "0": "Universitetlarni ko'rish", "1": "Arizalar", "2": "Offerlar" },
     "universities": { "title": "Universitetlar", "0": "Discovery", "1": "Pipeline", "2": "Stipendiyalar" },
-    "support": { "title": "Yordam", "0": "Xavfsizlik", "1": "Yordam markazi", "2": "Aloqa" }
+    "support": { "title": "Yordam", "0": "Xavfsizlik", "1": "Yordam markazi", "2": "Aloqa" },
+    "security": {
+      "title": "Xavfsizlik va muvofiqlik",
+      "compliance": "Yevropa ma'lumotlarni himoya qilish standartlari (GDPR) va yaxshi amaliyotlar bo'yicha ishlaymiz.",
+      "dataProtection": "Ma'lumotlaringiz xavfsiz qayta ishlanadi. Shaxsiy ma'lumotlarni uchinchi tomonlarga sotmaymiz.",
+      "memberData": "A'zo ma'lumotlari faqat xizmat ko'rsatish uchun ishlatiladi: matching, arizalar va muloqot. Kirish, tuzatish yoki o'chirishni istagan vaqtda so'rashingiz mumkin."
+    }
+  },
+  "cookie": {
+    "title": "Cookie haqida",
+    "description": "Xizmatni ko'rsatish, sozlamalaringizni eslash va saytni yaxshilash uchun cookie'lardan foydalanamiz. Davom etish orqali cookie'lardan foydalanishimizga rozisiz. Batafsil: Maxfiylik siyosati.",
+    "accept": "Qabul qilish",
+    "reject": "Rad etish",
+    "learnMore": "Maxfiylik siyosati"
   },
   "header": {
     "menu": "Menyu",

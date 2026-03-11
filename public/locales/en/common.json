@@ -129,5 +129,9 @@
   "fieldEducation": "Education",
   "fieldEnvironmentAgricultureSustainability": "Environment, Agriculture & Sustainability",
   "fieldHospitalityTourismService": "Hospitality, Tourism & Service Industry",
-  "fieldLawLegalStudies": "Law & Legal Studies"
+  "fieldLawLegalStudies": "Law & Legal Studies",
+  "maintenance": {
+    "title": "Site under maintenance",
+    "description": "We are performing scheduled maintenance. Please try again later."
+  }
 }

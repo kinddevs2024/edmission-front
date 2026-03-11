@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingAIButton } from '@/components/ai/FloatingAIButton'
 import { VersionBadge } from '@/components/VersionBadge'
+import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { cn } from '@/utils/cn'
@@ -151,6 +152,7 @@ export function MainLayout() {
       )}
       {isAuthenticated && <FloatingAIButton />}
       <VersionBadge />
+      <CookieConsentBanner />
     </div>
   )
 }

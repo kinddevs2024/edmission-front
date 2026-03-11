@@ -130,5 +130,9 @@
   "fieldEducation": "Ta'lim",
   "fieldEnvironmentAgricultureSustainability": "Atrof-muhit, qishloq xo'jaligi va barqarorlik",
   "fieldHospitalityTourismService": "Mehmondo'stlik, turizm va servis",
-  "fieldLawLegalStudies": "Huquq va yuridik tadqiqotlar"
+  "fieldLawLegalStudies": "Huquq va yuridik tadqiqotlar",
+  "maintenance": {
+    "title": "Sayt texnik xizmat rejimida",
+    "description": "Reja asosidagi ishlar olib borilmoqda. Keyinroq urinib ko'ring."
+  }
 }

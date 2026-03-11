@@ -57,6 +57,7 @@ const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) =>
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
 const AdminInvestors = lazy(() => import('@/pages/admin/AdminInvestors').then((m) => ({ default: m.AdminInvestors })))
 const AdminUniversityRequests = lazy(() => import('@/pages/admin/AdminUniversityRequests').then((m) => ({ default: m.AdminUniversityRequests })))
+const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings').then((m) => ({ default: m.AdminSettings })))
 const CounsellorSchoolProfile = lazy(() => import('@/pages/admin/CounsellorSchoolProfile').then((m) => ({ default: m.CounsellorSchoolProfile })))
 const CounsellorStudents = lazy(() => import('@/pages/admin/CounsellorStudents').then((m) => ({ default: m.CounsellorStudents })))
 const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRequests').then((m) => ({ default: m.CounsellorJoinRequests })))
@@ -72,6 +73,7 @@ const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess').then((m) => (
 const PaymentCancel = lazy(() => import('@/pages/PaymentCancel').then((m) => ({ default: m.PaymentCancel })))
 const SupportPage = lazy(() => import('@/pages/SupportPage').then((m) => ({ default: m.SupportPage })))
 const Privacy = lazy(() => import('@/pages/Privacy').then((m) => ({ default: m.Privacy })))
+const Maintenance = lazy(() => import('@/pages/Maintenance').then((m) => ({ default: m.Maintenance })))
 
 function PageFallback() {
   return (
@@ -133,6 +135,7 @@ export function Router() {
     <Suspense fallback={<PageFallback />}>
     <DocumentTitle />
     <Routes>
+      <Route path="/maintenance" element={<Maintenance />} />
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
@@ -202,6 +205,7 @@ export function Router() {
           <Route path="support/:id" element={<AdminSupport />} />
           <Route path="logs" element={<AdminLogs />} />
           <Route path="health" element={<SystemHealth />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         <Route path="school" element={<ProtectedRoute allowedRoles={['school_counsellor']}><SchoolLayout /></ProtectedRoute>}>

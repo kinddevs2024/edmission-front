@@ -30,9 +30,41 @@
     "statStudents": "10,000+",
     "statStudentsLabel": "Students",
     "statScholarships": "$5M+",
-    "statScholarshipsLabel": "Scholarships",
-    "testimonial": "I got matched with three universities and a scholarship offer in two weeks. No agency fees.",
-    "testimonialAuthor": "Student, Tashkent"
+    "statScholarshipsLabel": "Scholarships"
+  },
+  "accreditation": {
+    "eyebrow": "Recognition",
+    "title": "Accreditation & Standards",
+    "description": "Edmission operates to recognized quality and trust standards in education.",
+    "qualityTitle": "Quality Assurance",
+    "qualityDesc": "We follow best practices for transparent admissions and student-university matching.",
+    "trustTitle": "Trust & Security",
+    "trustDesc": "Your data is secure and our processes are designed for fairness and reliability.",
+    "standardsTitle": "Industry Standards",
+    "standardsDesc": "Our platform aligns with institutional and regional admission standards."
+  },
+  "certifications": {
+    "eyebrow": "Proof of Partnership",
+    "title": "Certifications",
+    "description": "Official certifications and partnership documents with universities and organizations.",
+    "viewPdf": "View PDF"
+  },
+  "testimonials": {
+    "eyebrow": "Voices",
+    "title": "What Students and Universities Say",
+    "description": "Real experiences from our community.",
+    "item1": {
+      "quote": "I got matched with three universities and a scholarship offer in two weeks. No agency fees.",
+      "author": "Student, Tashkent"
+    },
+    "item2": {
+      "quote": "Edmission gave us qualified leads and a clear pipeline. We reduced recruitment costs significantly.",
+      "author": "Admissions Officer, Partner University"
+    },
+    "item3": {
+      "quote": "Finally a platform where I could compare programs and talk to universities directly. Very transparent.",
+      "author": "Student, Samarkand"
+    }
   },
   "ctaBlock": {
     "title": "Ready to get started?",
@@ -195,7 +227,20 @@
     "platform": { "title": "Platform", "0": "About", "1": "Infrastructure", "2": "AI Matching" },
     "students": { "title": "Students", "0": "Explore Universities", "1": "Applications", "2": "Offers" },
     "universities": { "title": "Universities", "0": "Discovery", "1": "Pipeline", "2": "Scholarships" },
-    "support": { "title": "Support", "0": "Security", "1": "Help Center", "2": "Contact" }
+    "support": { "title": "Support", "0": "Security", "1": "Help Center", "2": "Contact" },
+    "security": {
+      "title": "Security & Compliance",
+      "compliance": "We operate in line with European data protection standards (GDPR) and best practices.",
+      "dataProtection": "Your data is processed securely. We do not sell personal data to third parties.",
+      "memberData": "Member data is used only to provide the service: matching, applications, and communications. You can request access, correction, or deletion at any time."
+    }
+  },
+  "cookie": {
+    "title": "Cookie notice",
+    "description": "We use cookies to provide the service, remember your preferences, and improve the site. By continuing, you agree to our use of cookies. See our Privacy Policy for details.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "learnMore": "Privacy policy"
   },
   "header": {
     "menu": "Menu",

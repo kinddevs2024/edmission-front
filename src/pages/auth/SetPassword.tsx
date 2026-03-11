@@ -37,7 +37,8 @@ export function SetPassword() {
       else if (user.role === 'university') {
         const verified = (user as { universityProfile?: { verified?: boolean } }).universityProfile?.verified
         navigate(verified ? '/university/dashboard' : '/university/pending', { replace: true })
-      } else navigate('/admin', { replace: true })
+      } else if (user.role === 'school_counsellor') navigate('/school/dashboard', { replace: true })
+      else navigate('/admin', { replace: true })
     } catch (err) {
       const key = getApiErrorKey(err)
       setSubmitError(t(`errors:${key}`))

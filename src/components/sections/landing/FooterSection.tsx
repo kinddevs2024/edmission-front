@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Shield } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 
@@ -16,7 +17,7 @@ export function FooterSection() {
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
-              <p className="text-xl font-semibold">{t('footer.brand')}</p>
+            <p className="text-xl font-semibold">{t('footer.brand')}</p>
             <p className="mt-2 max-w-sm text-sm text-[var(--color-text-muted)]">
               {t('footer.description')}
             </p>
@@ -37,6 +38,17 @@ export function FooterSection() {
             </div>
           ))}
         </div>
+
+        <div className="mt-8 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]/50 p-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text)]">
+            <Shield className="h-4 w-4 text-primary-accent" aria-hidden />
+            {t('footer.security.title')}
+          </p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+            {t('footer.security.compliance')} {t('footer.security.dataProtection')} {t('footer.security.memberData')}
+          </p>
+        </div>
+
         <p className="mt-6 text-sm text-[var(--color-text-muted)]">
           {t('footer.dataSecure')} {t('footer.noHiddenFees')}
         </p>

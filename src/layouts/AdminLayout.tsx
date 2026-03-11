@@ -27,6 +27,7 @@ export function AdminLayout() {
       { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
       { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
       { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
+      { to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const },
     ],
     [t]
   )
