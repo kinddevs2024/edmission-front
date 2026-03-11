@@ -30,7 +30,6 @@ export function AdminSettings() {
     if (!settings) return
     setSaving(key)
     try {
-      const next = { ...settings, [key]: value }
       const updated = await updateSettings({ [key]: value })
       setSettings(updated)
       toast.success(t('settings.saved'))
