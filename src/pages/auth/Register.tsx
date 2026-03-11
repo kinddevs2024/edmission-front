@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
@@ -15,14 +15,6 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { GraduationCap, Building2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
-const passwordSchema = (t: (key: string, def?: string) => string) =>
-  z
-    .string()
-    .min(8, t('auth:passwordMinLength'))
-    .refine((p) => /[A-Z]/.test(p), t('auth:passwordUppercase', 'At least one uppercase letter'))
-    .refine((p) => /[a-z]/.test(p), t('auth:passwordLowercase', 'At least one lowercase letter'))
-    .refine((p) => /\d/.test(p), t('auth:passwordNumber', 'At least one number'))
-
 export function Register() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
   const navigate = useNavigate()
@@ -34,18 +26,27 @@ export function Register() {
   const [codeError, setCodeError] = useState('')
   const [codeLoading, setCodeLoading] = useState(false)
 
-  const schema = z
-    .object({
-      email: z.string().email(t('auth:invalidEmail')),
-      password: passwordSchema(t),
-      confirmPassword: z.string(),
-      role: z.enum(['student', 'university']),
-      acceptTerms: z.boolean().refine((v) => v === true, { message: t('auth:acceptTermsRequired') }),
-    })
-    .refine((d) => d.password === d.confirmPassword, {
-      message: t('auth:passwordsMustMatch'),
-      path: ['confirmPassword'],
-    })
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          email: z.string().email(t('auth:invalidEmail')),
+          password: z
+            .string()
+            .min(8, t('auth:passwordMinLength'))
+            .refine((p) => /[A-Z]/.test(p), t('auth:passwordUppercase', 'At least one uppercase letter'))
+            .refine((p) => /[a-z]/.test(p), t('auth:passwordLowercase', 'At least one lowercase letter'))
+            .refine((p) => /\d/.test(p), t('auth:passwordNumber', 'At least one number')),
+          confirmPassword: z.string(),
+          role: z.enum(['student', 'university']),
+          acceptTerms: z.boolean().refine((v) => v === true, { message: t('auth:acceptTermsRequired') }),
+        })
+        .refine((d) => d.password === d.confirmPassword, {
+          message: t('auth:passwordsMustMatch'),
+          path: ['confirmPassword'],
+        }),
+    [t]
+  )
   type FormData = z.infer<typeof schema>
 
   const {
