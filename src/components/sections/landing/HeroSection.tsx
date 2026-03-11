@@ -51,6 +51,7 @@ export function HeroSection() {
             stroke="currentColor"
             className="text-[var(--color-border)]"
             fill="none"
+            initial={{ d: 'M0 130C210 40 320 40 620 160C830 245 970 240 1280 110' }}
             animate={{
               d: [
                 'M0 130C210 40 320 40 620 160C830 245 970 240 1280 110',
@@ -67,6 +68,7 @@ export function HeroSection() {
             stroke="currentColor"
             className="text-[var(--color-border)]"
             fill="none"
+            initial={{ d: 'M0 310C190 220 380 220 620 310C860 400 1030 390 1280 320' }}
             animate={{
               d: [
                 'M0 310C190 220 380 220 620 310C860 400 1030 390 1280 320',
@@ -83,6 +85,7 @@ export function HeroSection() {
             stroke="currentColor"
             className="text-[var(--color-border)]"
             fill="none"
+            initial={{ d: 'M0 510C240 430 390 430 620 510C830 585 1010 590 1280 520' }}
             animate={{
               d: [
                 'M0 510C240 430 390 430 620 510C830 585 1010 590 1280 520',

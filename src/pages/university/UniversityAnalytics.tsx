@@ -35,7 +35,7 @@ export function UniversityAnalytics() {
   }, [])
   const funnelBar = Object.entries(funnel.byStatus).map(([stage, count]) => ({
     stage: STAGE_LABELS[stage] ?? stage,
-    count,
+    count: Number(count) || 0,
   }))
 
   return (
