@@ -14,10 +14,7 @@ export function UniversityLayout() {
   const location = useLocation()
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
-  if (user?.role === 'university' && !isSelect && !isPending) {
-    if (!user?.universityProfile) return <Navigate to="/university/select" replace />
-    if (!user.universityProfile.verified) return <Navigate to="/university/pending" replace />
-  }
+
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
@@ -25,6 +22,7 @@ export function UniversityLayout() {
   useEffect(() => {
     if (location.pathname === '/university/chat' && collapsed) setSidebarCollapsed(false)
   }, [location.pathname, collapsed, setSidebarCollapsed])
+
   const navItems = useMemo(
     () =>
       isSelect || isPending
@@ -70,6 +68,11 @@ export function UniversityLayout() {
     setNavItems(navItems)
     return () => setNavItems(null)
   }, [navItems, setNavItems])
+
+  if (user?.role === 'university' && !isSelect && !isPending) {
+    if (!user?.universityProfile) return <Navigate to="/university/select" replace />
+    if (!user.universityProfile.verified) return <Navigate to="/university/pending" replace />
+  }
 
   return (
     <div className="flex">

@@ -221,6 +221,7 @@
     "brand": "Edmission",
     "description": "Talabalar va universitetlarni vositachilarsiz bog'laydigan akademik infratuzilma platformasi.",
     "privacy": "Maxfiylik",
+    "cookies": "Cookie siyosati",
     "dataSecure": "Ma'lumotlaringiz himoyalangan.",
     "noHiddenFees": "Yashirin to'lovlar yo'q. Ma'lumotlaringizni sotmaymiz.",
     "contact": "Aloqa",
@@ -237,10 +238,10 @@
   },
   "cookie": {
     "title": "Cookie haqida",
-    "description": "Xizmatni ko'rsatish, sozlamalaringizni eslash va saytni yaxshilash uchun cookie'lardan foydalanamiz. Davom etish orqali cookie'lardan foydalanishimizga rozisiz. Batafsil: Maxfiylik siyosati.",
+    "description": "Xizmatni ko'rsatish, sozlamalaringizni eslash va saytni yaxshilash uchun cookie'lardan foydalanamiz. Davom etish orqali cookie'lardan foydalanishimizga rozisiz.",
     "accept": "Qabul qilish",
     "reject": "Rad etish",
-    "learnMore": "Maxfiylik siyosati"
+    "learnMore": "Cookie siyosati"
   },
   "header": {
     "menu": "Menyu",

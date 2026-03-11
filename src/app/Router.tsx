@@ -73,6 +73,7 @@ const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess').then((m) => (
 const PaymentCancel = lazy(() => import('@/pages/PaymentCancel').then((m) => ({ default: m.PaymentCancel })))
 const SupportPage = lazy(() => import('@/pages/SupportPage').then((m) => ({ default: m.SupportPage })))
 const Privacy = lazy(() => import('@/pages/Privacy').then((m) => ({ default: m.Privacy })))
+const Cookies = lazy(() => import('@/pages/Cookies').then((m) => ({ default: m.Cookies })))
 const Maintenance = lazy(() => import('@/pages/Maintenance').then((m) => ({ default: m.Maintenance })))
 
 function PageFallback() {
@@ -149,6 +150,7 @@ export function Router() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<LandingOrRedirect />} />
         <Route path="privacy" element={<Privacy />} />
+        <Route path="cookies" element={<Cookies />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><Profile /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><NotificationsPage /></ProtectedRoute>} />
         <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university']}><AIChatPage /></ProtectedRoute>} />

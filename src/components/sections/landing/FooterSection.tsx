@@ -56,6 +56,7 @@ export function FooterSection() {
           <span>© {new Date().getFullYear()} {t('footer.brand')}</span>
           <span className="flex flex-wrap items-center gap-4">
             <Link to="/privacy" className="hover:text-primary-accent">{t('footer.privacy')}</Link>
+            <Link to="/cookies" className="hover:text-primary-accent">{t('footer.cookies')}</Link>
             <a href="mailto:support@edmission.uz" className="hover:text-primary-accent">{t('footer.contact')}</a>
           </span>
         </div>

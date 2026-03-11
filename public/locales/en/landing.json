@@ -221,6 +221,7 @@
     "brand": "Edmission",
     "description": "Academic infrastructure platform connecting students and universities without intermediaries.",
     "privacy": "Privacy",
+    "cookies": "Cookie policy",
     "dataSecure": "Your data is secure.",
     "noHiddenFees": "No hidden fees. We don't sell your data.",
     "contact": "Contact",
@@ -237,10 +238,10 @@
   },
   "cookie": {
     "title": "Cookie notice",
-    "description": "We use cookies to provide the service, remember your preferences, and improve the site. By continuing, you agree to our use of cookies. See our Privacy Policy for details.",
+    "description": "We use cookies to provide the service, remember your preferences, and improve the site. By continuing, you agree to our use of cookies.",
     "accept": "Accept",
     "reject": "Reject",
-    "learnMore": "Privacy policy"
+    "learnMore": "Cookie policy"
   },
   "header": {
     "menu": "Menu",

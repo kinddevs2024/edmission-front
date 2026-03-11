@@ -14,6 +14,7 @@ const PATH_TITLES: Record<string, string> = {
   '/set-password': 'auth:setPassword',
   '/choose-language': 'auth:chooseLanguage',
   '/privacy': 'common:privacy',
+  '/cookies': 'cookies:title',
   '/profile': 'common:account',
   '/notifications': 'common:notifications',
   '/ai': 'common:edmissionAi',
@@ -63,7 +64,7 @@ const PATH_TITLES: Record<string, string> = {
 
 export function useDocumentTitle() {
   const { pathname } = useLocation()
-  const { t } = useTranslation(['common', 'student', 'university', 'admin', 'school', 'auth'])
+  const { t } = useTranslation(['common', 'student', 'university', 'admin', 'school', 'auth', 'cookies'])
 
   useEffect(() => {
     const base = pathname.replace(/\/$/, '') || '/'
