@@ -31,7 +31,6 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const { role, user } = useAuth()
   const navigate = useNavigate()
   const messages = useAIChatStore((s) => s.messages)
-  const setMessages = useAIChatStore((s) => s.setMessages)
   const addMessage = useAIChatStore((s) => s.addMessage)
   const updateMessage = useAIChatStore((s) => s.updateMessage)
   const removeMessage = useAIChatStore((s) => s.removeMessage)
