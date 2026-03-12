@@ -76,6 +76,21 @@ export async function sendAIChatStream(
     return
   }
 
+  const contentType = res.headers.get('Content-Type') ?? ''
+
+  // Backend returned JSON { reply: "..." } (non-streaming)
+  if (contentType.includes('application/json')) {
+    try {
+      const data = (await res.json()) as { reply?: string }
+      const reply = data.reply ?? ''
+      if (reply) callbacks.onChunk({ type: 'content', text: reply })
+      callbacks.onDone()
+    } catch (_) {
+      callbacks.onError('Invalid response')
+    }
+    return
+  }
+
   const reader = res.body?.getReader()
   if (!reader) {
     callbacks.onError('No response body')
@@ -84,34 +99,39 @@ export async function sendAIChatStream(
 
   const decoder = new TextDecoder()
   let buffer = ''
+
+  function processLines(chunk: string): boolean {
+    const lines = chunk.split('\n')
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed.startsWith('data: ')) continue
+      try {
+        const payload = JSON.parse(trimmed.slice(6)) as { t: string; d?: string }
+        if (payload.t === 'done') return true
+        if (payload.t === 'error' && payload.d) {
+          callbacks.onError(payload.d)
+          return true
+        }
+        if ((payload.t === 'content' || payload.t === 'thinking') && payload.d !== undefined) {
+          callbacks.onChunk({ type: payload.t as 'content' | 'thinking', text: String(payload.d) })
+        }
+      } catch (_) {
+        /* skip malformed */
+      }
+    }
+    return false
+  }
+
   try {
     while (true) {
       const { done, value } = await reader.read()
-      if (done) break
-      buffer += decoder.decode(value, { stream: true })
+      if (value) buffer += decoder.decode(value, { stream: true })
       const lines = buffer.split('\n')
       buffer = lines.pop() ?? ''
-      for (const line of lines) {
-        const trimmed = line.trim()
-        if (!trimmed.startsWith('data: ')) continue
-        try {
-          const payload = JSON.parse(trimmed.slice(6)) as { t: string; d?: string }
-          if (payload.t === 'done') {
-            callbacks.onDone()
-            return
-          }
-          if (payload.t === 'error' && payload.d) {
-            callbacks.onError(payload.d)
-            return
-          }
-          if ((payload.t === 'content' || payload.t === 'thinking') && payload.d !== undefined) {
-            callbacks.onChunk({ type: payload.t as 'content' | 'thinking', text: payload.d })
-          }
-        } catch (_) {
-          /* skip malformed */
-        }
-      }
+      if (processLines(lines.join('\n'))) return
+      if (done) break
     }
+    if (buffer.trim() && processLines(buffer)) return
     callbacks.onDone()
   } catch (e) {
     callbacks.onError(e instanceof Error ? e.message : 'Stream failed')

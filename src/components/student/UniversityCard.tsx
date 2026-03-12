@@ -31,7 +31,7 @@ export function UniversityCard({ university, showMatch = true, onInterest, inter
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-3 min-w-0">
           {logo ? (
-            <img src={getImageUrl(logo)} alt="" loading="lazy" className="w-12 h-12 rounded-input object-cover flex-shrink-0" />
+            <img src={getImageUrl(logo)} alt="" loading="lazy" className="w-12 h-12 rounded-input object-contain bg-[var(--color-border)]/30 flex-shrink-0 p-0.5" />
           ) : (
             <div className="w-12 h-12 rounded-input bg-[var(--color-border)] flex-shrink-0" />
           )}

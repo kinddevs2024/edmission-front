@@ -77,11 +77,11 @@ export function FileUpload({
           <Loader2 className={cn('animate-spin text-[var(--color-text-muted)]', isAvatar ? 'w-10 h-10' : 'w-8 h-8')} aria-hidden />
         ) : value ? (
           <>
-            {(accept.includes('image') && (/\.(jpe?g|png|gif|webp)$/i.test(value) || /\/uploads\//.test(value) || value.includes('uploads') || value.startsWith('data:'))) && !imgLoadError ? (
+            {(accept.includes('image') && (/\.(jpe?g|png|gif|webp|svg)$/i.test(value) || /\.svg\b/i.test(value) || /\/uploads\//.test(value) || value.includes('uploads') || value.startsWith('data:'))) && !imgLoadError ? (
               <img
                 src={getImageUrl(value)}
                 alt=""
-                className={cn('object-cover', isAvatar ? 'w-full h-full' : 'max-h-24 max-w-full rounded')}
+                className={cn(isAvatar ? 'object-cover w-full h-full' : 'object-contain max-h-24 max-w-full rounded')}
                 onError={() => setImgLoadError(true)}
               />
             ) : value && (accept.includes('image') && imgLoadError) ? (

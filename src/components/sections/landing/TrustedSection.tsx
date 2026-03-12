@@ -41,7 +41,7 @@ export function TrustedSection() {
 
       {/* Partner university logos carousel (aylanib turishi) */}
       <div className="relative mt-8 overflow-hidden" aria-label={t('trusted.title')}>
-        <div className="flex w-max trusted-logos-marquee gap-10 px-2">
+        <div className="flex w-max trusted-logos-marquee gap-10 px-2 pb-2">
           {[...PARTNER_LOGOS, ...PARTNER_LOGOS].map((logo, i) => (
             <div
               key={i}
@@ -58,7 +58,7 @@ export function TrustedSection() {
         </div>
       </div>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-3">
+      <div className="mt-14 sm:mt-16 grid gap-6 sm:grid-cols-3">
         {stats.map((stat, index) => (
           <Reveal key={stat.label} delay={index * 0.05}>
             <motion.div

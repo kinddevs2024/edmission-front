@@ -29,9 +29,9 @@ export function UniversityLayout() {
         ? [
             { to: '/university/select', label: t('selectUniversity', 'Select university'), icon: 'Building2' },
             { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
-            { to: '/support', label: 'Support', icon: 'HelpCircle' },
           ]
         : [
+            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
             { to: '/university/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
             { to: '/university/profile', label: t('navProfile'), icon: 'User' },
             { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
@@ -42,8 +42,16 @@ export function UniversityLayout() {
             { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
             { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
             { to: '/payment', label: 'Subscription', icon: 'CreditCard' },
+          ],
+    [t, isSelect, isPending]
+  )
+  const navBottomItems = useMemo(
+    () =>
+      isSelect || isPending
+        ? [{ to: '/support', label: 'Support', icon: 'HelpCircle' }]
+        : [
             { to: '/support', label: 'Support', icon: 'HelpCircle' },
-            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
+            { to: '/profile', label: t('account', 'Account'), icon: 'Settings' },
           ],
     [t, isSelect, isPending]
   )
@@ -56,18 +64,18 @@ export function UniversityLayout() {
             { to: '/support', label: 'Support', icon: 'HelpCircle' },
           ]
         : [
+            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
             { to: '/university/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
             { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
-            { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
             { to: '/university/profile', label: t('navProfile'), icon: 'User' },
-            { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
+            { to: '/support', label: 'Support', icon: 'HelpCircle' },
           ],
     [t, isSelect, isPending]
   )
   useEffect(() => {
-    setNavItems(navItems)
+    setNavItems([...navItems, ...navBottomItems])
     return () => setNavItems(null)
-  }, [navItems, setNavItems])
+  }, [navItems, navBottomItems, setNavItems])
 
   if (user?.role === 'university' && !isSelect && !isPending) {
     if (!user?.universityProfile) return <Navigate to="/university/select" replace />
@@ -76,7 +84,7 @@ export function UniversityLayout() {
 
   return (
     <div className="flex">
-      <Sidebar items={navItems} />
+      <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter">
           <Outlet />

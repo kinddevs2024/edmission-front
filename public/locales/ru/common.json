@@ -74,6 +74,7 @@
   "aiPoweredByDeepSeek": "На базе DeepSeek · Ассистент подключён",
   "aiPoweredByChatGPT": "На базе ChatGPT · Ассистент подключён",
   "aiAssistantUnavailable": "Ассистент временно недоступен",
+  "aiWelcome": "С чего начнём?",
   "aiSuggestedIntro": "Спросите об университетах, заявках или стипендиях.",
   "aiSuggestedLabel": "Примеры вопросов:",
   "aiPlaceholder": "Введите вопрос...",

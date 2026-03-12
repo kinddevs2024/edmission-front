@@ -20,6 +20,7 @@ export function StudentLayout() {
 
   const navItems = useMemo(
     () => [
+      { to: '/student/ai', label: t('navEdmissionAi'), icon: 'Bot' },
       { to: '/student/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
       { to: '/student/profile', label: t('navProfile'), icon: 'User' },
       { to: '/student/universities', label: t('navUniversities'), icon: 'GraduationCap' },
@@ -31,29 +32,34 @@ export function StudentLayout() {
       { to: '/student/chat', label: t('navChat'), icon: 'MessageCircle' },
       { to: '/notifications', label: t('navNotifications'), icon: 'Bell' },
       { to: '/payment', label: t('navSubscription'), icon: 'CreditCard' },
+    ],
+    [t]
+  )
+  const navBottomItems = useMemo(
+    () => [
       { to: '/support', label: t('navSupport'), icon: 'HelpCircle' },
-      { to: '/student/ai', label: t('navEdmissionAi'), icon: 'Bot' },
+      { to: '/profile', label: t('account', 'Account'), icon: 'Settings' },
     ],
     [t]
   )
   const bottomNavItems = useMemo(
     () => [
+      { to: '/student/ai', label: t('navEdmissionAi'), icon: 'Bot' },
       { to: '/student/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
       { to: '/student/universities', label: t('navExplore'), icon: 'GraduationCap' },
-      { to: '/student/applications', label: t('navApplications'), icon: 'FileCheck' },
       { to: '/student/profile', label: t('navProfile'), icon: 'User' },
-      { to: '/student/chat', label: t('navChat'), icon: 'MessageCircle' },
+      { to: '/support', label: t('navSupport'), icon: 'HelpCircle' },
     ],
     [t]
   )
   useEffect(() => {
-    setNavItems(navItems)
+    setNavItems([...navItems, ...navBottomItems])
     return () => setNavItems(null)
-  }, [navItems, setNavItems])
+  }, [navItems, navBottomItems, setNavItems])
 
   return (
     <div className="flex">
-      <Sidebar items={navItems} />
+      <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
         'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-0',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'

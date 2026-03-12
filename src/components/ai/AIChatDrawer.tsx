@@ -1,25 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Maximize2, Bot, User } from 'lucide-react'
+import { MessageTextWithLinks } from '@/utils/linkifyPaths'
 import { sendAIChatStream, getAIStatus, type AIStatus } from '@/services/ai'
+import { updateStudentProfile } from '@/services/student'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
-
-export interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  text: string
-  /** Shown above the main answer while the model is "thinking" (e.g. DeepSeek R1). */
-  thinking?: string
-}
+import { useAIChatStore, type ChatMessage } from '@/store/aiChatStore'
+import { parseAIActions } from '@/utils/parseAIActions'
+import { getRandomPlaceholder } from '@/utils/aiChatPlaceholders'
 
 const SUGGESTED_QUESTIONS = [
-  'How do I choose a university?',
-  'What documents do I need for application?',
-  'How does the scholarship process work?',
-  'Where do I fill in my GPA?',
-  'Help me complete my profile.',
+  'Как выбрать университет?',
+  'Какие документы нужны?',
+  'Как работают стипендии?',
+  'Где указать GPA?',
+  'Помоги с профилем',
 ]
 
 interface AIChatDrawerProps {
@@ -29,12 +28,20 @@ interface AIChatDrawerProps {
 
 export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const { t } = useTranslation('common')
-  const [messages, setMessages] = useState<Message[]>([])
+  const { role, user } = useAuth()
+  const navigate = useNavigate()
+  const messages = useAIChatStore((s) => s.messages)
+  const setMessages = useAIChatStore((s) => s.setMessages)
+  const addMessage = useAIChatStore((s) => s.addMessage)
+  const updateMessage = useAIChatStore((s) => s.updateMessage)
+  const removeMessage = useAIChatStore((s) => s.removeMessage)
+  const selectionAsk = useAIChatStore((s) => s.selectionAsk)
+  const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
   const [input, setInput] = useState('')
+  const [placeholder, setPlaceholder] = useState(() => getRandomPlaceholder())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
-  const [selectionAsk, setSelectionAsk] = useState<{ text: string; messageId: string } | null>(null)
   const [aiStatus, setAIStatus] = useState<AIStatus | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -53,21 +60,22 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
 
   const handleSend = useCallback(
     async (text: string, selectedText?: string) => {
-      const trimmed = text.trim()
+      const trimmed = text.trim() || (selectedText ? 'Please explain or elaborate on the selected part.' : '')
       if (!trimmed || loading) return
 
       setInput('')
+      setPlaceholder(getRandomPlaceholder())
       setError(null)
       setRateLimitMessage(null)
       setSelectionAsk(null)
 
-      const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', text: trimmed }
-      setMessages((prev) => [...prev, userMsg])
+      const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', text: trimmed }
+      addMessage(userMsg)
       setLoading(true)
 
       const assistantId = `a-${Date.now()}`
-      const assistantMsg: Message = { id: assistantId, role: 'assistant', text: '', thinking: '' }
-      setMessages((prev) => [...prev, assistantMsg])
+      const assistantMsg: ChatMessage = { id: assistantId, role: 'assistant', text: '', thinking: '' }
+      addMessage(assistantMsg)
 
       const historyForApi: { role: 'user' | 'assistant'; content: string }[] = [
         ...messages.slice(-19).map((m) => ({ role: m.role, content: m.text })),
@@ -79,17 +87,44 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
           { message: trimmed, history: historyForApi, selectedText },
           {
             onChunk: (chunk) => {
-              setMessages((prev) =>
-                prev.map((m) => {
-                  if (m.id !== assistantId) return m
-                  if (chunk.type === 'thinking') {
-                    return { ...m, thinking: (m.thinking ?? '') + chunk.text }
-                  }
-                  return { ...m, text: (m.text ?? '') + chunk.text }
-                })
-              )
+              updateMessage(assistantId, (m) => {
+                if (chunk.type === 'thinking') {
+                  return { ...m, thinking: (m.thinking ?? '') + chunk.text }
+                }
+                return { ...m, text: (m.text ?? '') + chunk.text }
+              })
             },
-            onDone: () => setLoading(false),
+            onDone: () => {
+              setLoading(false)
+              const last = useAIChatStore.getState().messages.find((m) => m.id === assistantId)
+              const fullText = last?.text ?? ''
+              const { displayText, profileUpdate, openPath } = parseAIActions(fullText)
+              if (displayText !== fullText) {
+                updateMessage(assistantId, (m) => ({ ...m, text: displayText }))
+              }
+              if (openPath) navigate(openPath)
+              if (profileUpdate && role === 'student' && user?.id) {
+                const patch: Record<string, unknown> = {}
+                if (profileUpdate.firstName != null) patch.firstName = String(profileUpdate.firstName)
+                if (profileUpdate.lastName != null) patch.lastName = String(profileUpdate.lastName)
+                if (profileUpdate.country != null) patch.country = String(profileUpdate.country)
+                if (profileUpdate.city != null) patch.city = String(profileUpdate.city)
+                if (profileUpdate.birthDate != null) patch.birthDate = String(profileUpdate.birthDate)
+                if (profileUpdate.age != null) {
+                  const age = Number(profileUpdate.age)
+                  if (!isNaN(age)) {
+                    const y = new Date().getFullYear()
+                    patch.birthDate = `${y - age}-01-01`
+                  }
+                }
+                if (Array.isArray(profileUpdate.interests)) patch.interests = profileUpdate.interests.map(String)
+                if (Array.isArray(profileUpdate.skills)) patch.skills = profileUpdate.skills.map(String)
+                if (Array.isArray(profileUpdate.hobbies)) patch.hobbies = profileUpdate.hobbies.map(String)
+                if (Object.keys(patch).length > 0) {
+                  updateStudentProfile(patch).catch(() => {})
+                }
+              }
+            },
             onError: (message) => {
               setLoading(false)
               if (message.toLowerCase().includes('limit') || message.includes('429')) {
@@ -97,13 +132,13 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               } else {
                 setError(message)
               }
-              setMessages((prev) => prev.filter((m) => m.id !== assistantId))
+              removeMessage(assistantId)
             },
           }
         )
       } catch (err: unknown) {
         setLoading(false)
-        setMessages((prev) => prev.filter((m) => m.id !== assistantId))
+        removeMessage(assistantId)
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -118,16 +153,13 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         }
       }
     },
-    [loading, messages, t]
+    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, setPlaceholder, role, user?.id]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (selectionAsk) {
-      handleSend(
-        input.trim() || `What did you mean by this? Can you explain?`,
-        selectionAsk.text
-      )
+      handleSend(input.trim(), selectionAsk.text)
     } else {
       handleSend(input)
     }
@@ -137,10 +169,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       if (selectionAsk) {
-        handleSend(
-          input.trim() || `What did you mean by this? Can you explain?`,
-          selectionAsk.text
-        )
+        handleSend(input.trim(), selectionAsk.text)
       } else {
         handleSend(input)
       }
@@ -151,7 +180,10 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
     const sel = window.getSelection()
     const text = sel?.toString()?.trim()
     if (!text) {
-      setSelectionAsk(null)
+      const active = document.activeElement as HTMLElement | null
+      if (!(active?.tagName === 'TEXTAREA' || active?.closest('[data-chat-form]'))) {
+        setSelectionAsk(null)
+      }
       return
     }
     const messageId = (sel?.anchorNode?.parentElement?.closest('[data-message-id]') as HTMLElement | null)
@@ -167,8 +199,13 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
       const text = sel?.toString()?.trim()
       const el = sel?.anchorNode?.parentElement?.closest('[data-message-id]') as HTMLElement | null
       const messageId = el?.dataset?.messageId
-      if (text && messageId) setSelectionAsk({ text, messageId })
-      else setSelectionAsk(null)
+      if (text && messageId) {
+        setSelectionAsk({ text, messageId })
+      } else {
+        const active = document.activeElement as HTMLElement | null
+        const isTypingInChat = active?.tagName === 'TEXTAREA' || active?.closest('[data-chat-form]')
+        if (!isTypingInChat) setSelectionAsk(null)
+      }
     }
     document.addEventListener('selectionchange', onSelectionChange)
     return () => document.removeEventListener('selectionchange', onSelectionChange)
@@ -176,19 +213,19 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
 
   return (
     <>
-      <div
-        className={cn(
-          'fixed inset-0 z-40 bg-black/30 transition-opacity',
-          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        )}
+      <motion.div
+        className={cn('fixed inset-0 z-40 bg-black/30', !open && 'pointer-events-none')}
+        initial={false}
+        animate={{ opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.2 }}
         onClick={onClose}
         aria-hidden
       />
-      <div
-        className={cn(
-          'fixed inset-0 md:inset-auto md:right-0 md:top-0 md:bottom-0 z-50 w-full md:max-w-md bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl flex flex-col transition-transform duration-300',
-          open ? 'translate-x-0' : 'translate-x-full'
-        )}
+      <motion.div
+        className="fixed inset-0 md:inset-auto md:right-0 md:top-0 md:bottom-0 z-50 w-full md:max-w-md bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl flex flex-col"
+        initial={false}
+        animate={{ x: open ? 0 : '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         role="dialog"
         aria-label={t('openAIChat')}
       >
@@ -232,32 +269,82 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         </div>
 
         {messages.length === 0 && !loading ? (
-          <div className="p-4 overflow-y-auto flex-1">
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">{t('aiSuggestedIntro')}</p>
-            <p className="text-xs text-[var(--color-text-muted)] mb-2">{t('aiSuggestedLabel')}</p>
-            <div className="space-y-2">
-              {SUGGESTED_QUESTIONS.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => handleSend(q)}
-                  className="block w-full text-left px-3 py-2.5 rounded-card border border-[var(--color-border)] hover:bg-[var(--color-border)]/20 text-sm transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 flex flex-col items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="flex flex-col items-center w-full"
+            >
+              <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">
+                {t('aiWelcome', 'С чего начнём?')}
+              </h2>
+              <p className="text-xs text-[var(--color-text-muted)] mb-6 text-center">
+                {t('aiSuggestedIntro', 'Спросите об университетах, заявках или стипендиях.')}
+              </p>
+              <form onSubmit={handleSubmit} className="w-full mb-5">
+                <div className="flex gap-2 items-end w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    rows={1}
+                    className="flex-1 min-h-[40px] max-h-24 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
+                    disabled={loading}
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={loading || !input.trim()}
+                    className="shrink-0 rounded-lg"
+                    icon={<Send className="w-4 h-4" />}
+                  >
+                    {t('send')}
+                  </Button>
+                </div>
+              </form>
+              <p className="text-xs text-[var(--color-text-muted)] mb-2">
+                {t('aiSuggestedLabel', 'Примеры:')}
+              </p>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {SUGGESTED_QUESTIONS.map((q, i) => (
+                  <motion.button
+                    key={q}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.15 + i * 0.03, duration: 0.2 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => handleSend(q)}
+                    className="px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] hover:bg-[var(--color-border)]/30 text-xs text-[var(--color-text)] transition-colors"
+                  >
+                    {q}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
         ) : (
           <div
             className="flex-1 overflow-y-auto p-4 space-y-4"
             onMouseUp={handleSelectText}
             onTouchEnd={handleSelectText}
           >
+            <AnimatePresence initial={false}>
             {messages.map((m) => (
-              <div
+              <motion.div
                 key={m.id}
                 data-message-id={m.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
                 className={cn(
                   'flex gap-2',
                   m.role === 'user' ? 'justify-end' : 'justify-start'
@@ -283,9 +370,13 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                     </div>
                   )}
                   <p className="whitespace-pre-wrap break-words">
-                    {m.text || (loading && m.id === messages[messages.length - 1]?.id ? (
+                    {m.role === 'assistant' && m.text ? (
+                      <MessageTextWithLinks text={m.text} className="whitespace-pre-wrap break-words" />
+                    ) : m.text ? (
+                      m.text
+                    ) : loading && m.id === messages[messages.length - 1]?.id ? (
                       <span className="text-[var(--color-text-muted)] animate-pulse">...</span>
-                    ) : null)}
+                    ) : null}
                   </p>
                 </div>
                 {m.role === 'user' && (
@@ -293,8 +384,9 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                     <User className="w-4 h-4 text-[var(--color-text-muted)]" aria-hidden />
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
+            </AnimatePresence>
             {loading && (() => {
               const last = messages[messages.length - 1]
               const isStreamingAssistant = last?.role === 'assistant'
@@ -317,51 +409,47 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               <p className="text-sm text-amber-600 dark:text-amber-400">{rateLimitMessage}</p>
             )}
             {selectionAsk && (
-              <div className="flex items-center gap-2 p-2 rounded-card bg-primary-accent/10 border border-primary-accent/30">
-                <span className="text-xs text-[var(--color-text-muted)] flex-1 truncate" title={selectionAsk.text}>
-                  &quot;{selectionAsk.text.slice(0, 50)}...&quot;
-                </span>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    handleSend(
-                      input.trim() || 'What did you mean by this? Can you explain in more detail?',
-                      selectionAsk.text
-                    )
-                  }}
-                  disabled={loading}
-                >
-                  {t('askAboutThis')}
-                </Button>
+              <div className="p-2 rounded-card bg-primary-accent/10 border border-primary-accent/30 space-y-2">
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {t('askingAboutSelection', 'Asking about selected text:')}
+                </p>
+                <p className="text-sm truncate" title={selectionAsk.text}>
+                  &quot;{selectionAsk.text.length > 80 ? selectionAsk.text.slice(0, 80) + '…' : selectionAsk.text}&quot;
+                </p>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {t('aiTypeQuestionBelow', 'Type your question in the input below and press Send.')}
+                </p>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--color-border)] shrink-0">
+        {(messages.length > 0 || loading) && (
+        <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--color-border)] shrink-0" data-chat-form>
           {selectionAsk && (
             <p className="text-xs text-[var(--color-text-muted)] mb-2">
               {t('askingAboutSelection')}
             </p>
           )}
-          <div className="flex gap-2 items-end">
+          <div className="flex gap-2 items-end rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={selectionAsk ? t('aiPlaceholderFollowUp') : t('aiPlaceholder')}
+              placeholder={selectionAsk ? t('aiPlaceholderSelection', 'Уточните выделенный фрагмент…') : placeholder}
               rows={1}
-              className="flex-1 min-h-[44px] max-h-32 rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent resize-y"
+              className="flex-1 min-h-[40px] max-h-28 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
               disabled={loading}
             />
-            <Button type="submit" size="sm" disabled={loading || (!input.trim() && !selectionAsk)} className="shrink-0" icon={<Send className="w-4 h-4" />}>
+            <Button type="submit" size="sm" disabled={loading || (!input.trim() && !selectionAsk)} className="shrink-0 rounded-lg" icon={<Send className="w-4 h-4" />}>
               {t('send')}
             </Button>
           </div>
         </form>
-      </div>
+        )}
+      </motion.div>
     </>
   )
 }

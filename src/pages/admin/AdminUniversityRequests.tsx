@@ -41,7 +41,11 @@ export function AdminUniversityRequests() {
         setActionModal(null)
         load()
       })
-      .catch(toastApiError)
+      .catch((e) => {
+        toastApiError(e)
+        setActionModal(null)
+        load()
+      })
       .finally(() => setSubmitting(false))
   }
 
@@ -53,7 +57,11 @@ export function AdminUniversityRequests() {
         setActionModal(null)
         load()
       })
-      .catch(toastApiError)
+      .catch((e) => {
+        toastApiError(e)
+        setActionModal(null)
+        load()
+      })
       .finally(() => setSubmitting(false))
   }
 

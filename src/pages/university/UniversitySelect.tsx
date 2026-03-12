@@ -161,9 +161,9 @@ export function UniversitySelect() {
                 <li key={u.id}>
                   <Card className="p-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-lg bg-[var(--color-border)] flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 rounded-lg bg-[var(--color-border)]/50 flex items-center justify-center shrink-0 overflow-hidden p-0.5">
                         {u.logoUrl ? (
-                          <img src={u.logoUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                          <img src={u.logoUrl} alt="" loading="lazy" className="w-full h-full object-contain" />
                         ) : (
                           <Building2 className="w-6 h-6 text-[var(--color-text-muted)]" aria-hidden />
                         )}

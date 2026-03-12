@@ -9,7 +9,39 @@ export interface NavItem {
   icon?: string
 }
 
-export function Sidebar({ items }: { items: NavItem[] }) {
+function NavLinkItem({
+  to,
+  label,
+  icon,
+  collapsed,
+}: NavItem & { collapsed: boolean }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200',
+          isActive
+            ? 'bg-primary-accent/20 text-primary-accent shadow-sm'
+            : 'text-dark-muted hover:bg-white/5 hover:text-white'
+        )
+      }
+    >
+      <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+        {getNavIcon(icon, 'size-5')}
+      </span>
+      {!collapsed && <span className="flex-1 truncate">{label}</span>}
+    </NavLink>
+  )
+}
+
+export function Sidebar({
+  items,
+  bottomItems = [],
+}: {
+  items: NavItem[]
+  bottomItems?: NavItem[]
+}) {
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
 
   return (
@@ -21,33 +53,26 @@ export function Sidebar({ items }: { items: NavItem[] }) {
     >
       <div
         className={cn(
-          'p-4 border-b border-dark-border h-16 flex items-center min-h-[64px] gap-2',
+          'p-4 border-b border-white/10 h-16 flex items-center min-h-[64px] gap-2 shrink-0',
           collapsed ? 'justify-center' : 'justify-start'
         )}
       >
         <img src="/logo/Group%201.png" alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" aria-hidden />
         {!collapsed && <span className="font-semibold text-primary-accent">Edmission</span>}
       </div>
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-        {items.map(({ to, label, icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 px-3 py-2 rounded-input text-sm transition-all duration-200',
-                isActive
-                  ? 'bg-primary-accent/20 text-primary-accent shadow-sm'
-                  : 'text-dark-muted hover:bg-secondary hover:text-white'
-              )
-            }
-          >
-            <span className="shrink-0 w-5 h-5 flex items-center justify-center">
-              {getNavIcon(icon, 'size-5')}
-            </span>
-            {!collapsed && <span className="flex-1 truncate">{label}</span>}
-          </NavLink>
-        ))}
+      <nav className="flex-1 min-h-0 flex flex-col p-3">
+        <div className="flex-1 overflow-y-auto space-y-0.5">
+          {items.map((item) => (
+            <NavLinkItem key={item.to} {...item} collapsed={collapsed} />
+          ))}
+        </div>
+        {bottomItems.length > 0 && (
+          <div className="mt-auto pt-3 border-t border-white/10 space-y-0.5 shrink-0">
+            {bottomItems.map((item) => (
+              <NavLinkItem key={item.to} {...item} collapsed={collapsed} />
+            ))}
+          </div>
+        )}
       </nav>
     </aside>
   )

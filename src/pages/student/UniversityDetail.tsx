@@ -87,7 +87,7 @@ export function UniversityDetail() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           {uni.logo ? (
-            <img src={getImageUrl(uni.logo)} alt="" loading="lazy" className="w-20 h-20 rounded-card object-cover" />
+            <img src={getImageUrl(uni.logo)} alt="" loading="lazy" className="w-20 h-20 rounded-card object-contain bg-[var(--color-border)]/30 p-1" />
           ) : (
             <div className="w-20 h-20 rounded-card bg-[var(--color-border)]" />
           )}

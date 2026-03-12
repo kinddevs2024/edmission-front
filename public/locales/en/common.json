@@ -74,6 +74,7 @@
   "aiPoweredByDeepSeek": "Powered by DeepSeek · Assistant connected",
   "aiPoweredByChatGPT": "Powered by ChatGPT · Assistant connected",
   "aiAssistantUnavailable": "Assistant temporarily unavailable",
+  "aiWelcome": "Where should we start?",
   "aiSuggestedIntro": "Ask me about universities, applications, or scholarships.",
   "aiSuggestedLabel": "Suggested questions:",
   "aiPlaceholder": "Type your question...",

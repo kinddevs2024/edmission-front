@@ -54,6 +54,11 @@ export async function verifyEmailByCode(email: string, code: string): Promise<Lo
   return data
 }
 
+/** Resend 6-digit verification code. Available after 60s cooldown. */
+export async function resendVerificationCode(email: string): Promise<void> {
+  await api.post('/auth/verify-email/resend', { email })
+}
+
 export async function logout(): Promise<void> {
   const refreshToken = getStoredRefreshToken()
   try {

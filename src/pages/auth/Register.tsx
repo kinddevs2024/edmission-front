@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { register as registerApi, verifyEmailByCode } from '@/services/auth'
+import { register as registerApi, verifyEmailByCode, resendVerificationCode } from '@/services/auth'
 import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import i18n, { loadLanguage } from '@/i18n'
@@ -25,6 +25,8 @@ export function Register() {
   const [pendingEmail, setPendingEmail] = useState('')
   const [codeError, setCodeError] = useState('')
   const [codeLoading, setCodeLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(60)
+  const [resendLoading, setResendLoading] = useState(false)
 
   const schema = useMemo(
     () =>
@@ -60,6 +62,28 @@ export function Register() {
     defaultValues: { role: 'student', acceptTerms: false },
   })
   const role = watch('role')
+
+  // Resend cooldown: 60s after entering code step or after successful resend
+  useEffect(() => {
+    if (step !== 'code' || resendCooldown <= 0) return
+    const t = setInterval(() => setResendCooldown((c) => Math.max(0, c - 1)), 1000)
+    return () => clearInterval(t)
+  }, [step, resendCooldown])
+
+  const onResend = async () => {
+    if (resendCooldown > 0 || resendLoading) return
+    setResendLoading(true)
+    setCodeError('')
+    try {
+      await resendVerificationCode(pendingEmail)
+      setResendCooldown(60)
+    } catch (err) {
+      const apiErr = getApiError(err)
+      setCodeError(apiErr.message ?? t('errors:unknown'))
+    } finally {
+      setResendLoading(false)
+    }
+  }
 
   const onSubmit = async (data: FormData) => {
     setSubmitError('')
@@ -166,13 +190,29 @@ export function Register() {
           >
             {t('auth:verifyAndContinue')}
           </Button>
-          <button
-            type="button"
-            onClick={() => setStep('form')}
-            className="block w-full text-sm text-[var(--color-text-muted)] hover:underline"
-          >
-            ← {t('common:back')}
-          </button>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setStep('form')}
+              className="text-sm text-[var(--color-text-muted)] hover:underline"
+            >
+              ← {t('common:back')}
+            </button>
+            {resendCooldown > 0 ? (
+              <span className="text-sm text-[var(--color-text-muted)]">
+                {t('auth:resendIn', { seconds: resendCooldown })}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onResend}
+                disabled={resendLoading}
+                className="text-sm text-primary-accent hover:underline disabled:opacity-50"
+              >
+                {resendLoading ? t('common:loading') : t('auth:resendCode')}
+              </button>
+            )}
+          </div>
         </form>
       </Card>
     )

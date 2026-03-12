@@ -14,6 +14,7 @@ export function SchoolLayout() {
 
   const navItems = useMemo(
     () => [
+      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/school/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
       { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
@@ -22,25 +23,32 @@ export function SchoolLayout() {
     ],
     [t]
   )
+  const navBottomItems = useMemo(
+    () => [
+      { to: '/support', label: 'Support', icon: 'HelpCircle' as const },
+      { to: '/profile', label: t('account', 'Account'), icon: 'Settings' as const },
+    ],
+    [t]
+  )
 
   const bottomNavItems = useMemo(
     () => [
+      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/school/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
-      { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
-      { to: '/school/join-requests', label: t('joinRequests'), icon: 'Users' as const },
+      { to: '/support', label: 'Support', icon: 'HelpCircle' as const },
     ],
     [t]
   )
 
   useEffect(() => {
-    setNavItems(navItems)
+    setNavItems([...navItems, ...navBottomItems])
     return () => setNavItems(null)
-  }, [setNavItems, navItems])
+  }, [setNavItems, navItems, navBottomItems])
 
   return (
     <div className="flex">
-      <Sidebar items={navItems} />
+      <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter">
           <Outlet />

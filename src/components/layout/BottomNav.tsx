@@ -6,7 +6,8 @@ import type { NavItem } from '@/components/layout/Sidebar'
 export function BottomNav({ items }: { items: NavItem[] }) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around bg-[var(--color-card)] border-t border-[var(--color-border)] safe-area-pb md:hidden"
+      className="fixed bottom-3 left-3 right-3 z-40 flex items-center justify-around rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg py-2 md:hidden"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
       aria-label="Main navigation"
     >
       {items.map(({ to, label, icon }) => (
