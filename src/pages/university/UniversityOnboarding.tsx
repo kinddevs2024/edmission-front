@@ -27,6 +27,8 @@ const step1Schema = z.object({
   accreditation: z.string().optional(),
   rating: z.coerce.number().min(0).max(100).optional(),
   description: z.string().optional(),
+  minLanguageLevel: z.string().optional(),
+  tuitionPrice: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
 })
 
 export function UniversityOnboarding() {
@@ -54,6 +56,8 @@ export function UniversityOnboarding() {
         foundedYear: data.foundedYear ?? undefined,
         studentCount: data.studentCount ?? undefined,
         description: data.description || undefined,
+        minLanguageLevel: data.minLanguageLevel || undefined,
+        tuitionPrice: data.tuitionPrice ?? undefined,
       })
       navigate('/university/dashboard')
     } catch (e) {
@@ -97,6 +101,17 @@ export function UniversityOnboarding() {
               label="Description"
               rows={4}
               {...register('description')}
+            />
+            <Input
+              label="Minimum requirements (e.g. IELTS 6.5, TOEFL 90, certificates)"
+              {...register('minLanguageLevel')}
+              placeholder="e.g. IELTS 6.5, CFR, GPA 3.0"
+            />
+            <Input
+              label="Minimum tuition (annual cost)"
+              type="number"
+              {...register('tuitionPrice')}
+              placeholder="Annual cost in main currency"
             />
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting} loading={submitting}>Next</Button>

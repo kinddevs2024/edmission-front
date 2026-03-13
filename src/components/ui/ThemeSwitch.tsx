@@ -1,5 +1,6 @@
 import { useUIStore } from '@/store/uiStore'
-import { Switch } from '@material-tailwind/react'
+import { Moon, Sun } from 'lucide-react'
+import { cn } from '@/utils/cn'
 
 export function ThemeSwitch() {
   const theme = useUIStore((s) => s.theme)
@@ -7,15 +8,31 @@ export function ThemeSwitch() {
   const isDark = theme === 'dark'
 
   return (
-    // @ts-expect-error MT Switch extends DOM input and requires extra optional props
-    <Switch
-      checked={isDark}
-      onChange={() => setTheme(isDark ? 'light' : 'dark')}
-      color={'green' as const}
-      className="h-6 w-11"
-      containerProps={{ className: 'h-6 w-11' }}
-      circleProps={{ className: 'h-5 w-5 before:opacity-0' }}
-      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-    />
+    <div className="flex rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-0.5" role="group" aria-label="Theme">
+      <button
+        type="button"
+        onClick={() => setTheme('light')}
+        className={cn(
+          'p-1.5 rounded-md transition-colors',
+          !isDark ? 'bg-primary-accent text-primary-dark' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+        )}
+        aria-label="Light theme"
+        aria-pressed={!isDark}
+      >
+        <Sun className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => setTheme('dark')}
+        className={cn(
+          'p-1.5 rounded-md transition-colors',
+          isDark ? 'bg-primary-accent text-primary-dark' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+        )}
+        aria-label="Dark theme"
+        aria-pressed={isDark}
+      >
+        <Moon className="w-4 h-4" />
+      </button>
+    </div>
   )
 }

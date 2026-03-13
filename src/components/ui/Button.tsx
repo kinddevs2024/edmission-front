@@ -20,7 +20,7 @@ function Spinner({ className }: { className?: string }) {
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
-  children: ReactNode
+  children?: ReactNode
   className?: string
   to?: string
   icon?: ReactNode

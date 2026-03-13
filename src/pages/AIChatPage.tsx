@@ -268,9 +268,7 @@ export function AIChatPage() {
                     className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
                     icon={<Send className="w-5 h-5" />}
                     aria-label={t('send')}
-                  >
-                    {null}
-                  </Button>
+                  />
                 </div>
               </form>
               <p className="text-xs text-[var(--color-text-muted)] mb-3">
@@ -409,9 +407,7 @@ export function AIChatPage() {
               className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
               icon={<Send className="w-5 h-5" />}
               aria-label={t('send')}
-            >
-              {null}
-            </Button>
+            />
           </div>
         </motion.form>
         )}

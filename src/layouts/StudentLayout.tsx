@@ -6,7 +6,6 @@ import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { useAuth } from '@/hooks/useAuth'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { GlobalSearch } from '@/components/layout/GlobalSearch'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
@@ -72,11 +71,6 @@ export function StudentLayout() {
         'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-0 bg-pattern-subtle min-h-screen flex flex-col',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
-        <div className="hidden md:flex items-center px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
-          <div className="max-w-content w-full mx-auto">
-            <GlobalSearch />
-          </div>
-        </div>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1">
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
