@@ -128,8 +128,8 @@ export function ExploreUniversities() {
       <PageTitle title={t('exploreUniversities')} icon="GraduationCap" />
 
       {/* Filters: student-oriented first (sort, country, city, search) */}
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="w-[110px] shrink-0">
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="min-w-[140px] w-[140px] shrink-0">
           <Select
             label="Sort"
             options={SORT_OPTIONS}
@@ -138,7 +138,7 @@ export function ExploreUniversities() {
             className="text-sm py-1.5 h-8"
           />
         </div>
-        <div className="w-[120px] shrink-0">
+        <div className="min-w-[140px] w-[140px] shrink-0">
           <Select
             label="Country"
             options={COUNTRY_OPTIONS}
@@ -147,7 +147,7 @@ export function ExploreUniversities() {
             className="text-sm py-1.5 h-8"
           />
         </div>
-        <div className="w-[100px] shrink-0">
+        <div className="min-w-[120px] w-[120px] shrink-0">
           <Input
             placeholder="City"
             value={city}

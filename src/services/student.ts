@@ -96,8 +96,12 @@ export interface UniversitiesParams extends PaginationParams {
   useProfileFilters?: boolean
 }
 
-function normalizeUniversityItem(u: UniversityListItem & { universityName?: string }): UniversityListItem {
-  return { ...u, name: u.name ?? u.universityName ?? '' }
+function normalizeUniversityItem(u: UniversityListItem & { universityName?: string; logoUrl?: string }): UniversityListItem {
+  return {
+    ...u,
+    name: u.name ?? u.universityName ?? '',
+    logo: u.logo ?? u.logoUrl,
+  }
 }
 
 export async function getUniversities(params?: UniversitiesParams): Promise<PaginatedResponse<UniversityListItem>> {

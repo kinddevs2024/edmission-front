@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
-import { Send, Bot, User, ArrowLeft } from 'lucide-react'
+import { Send, Bot, User } from 'lucide-react'
 import { MessageTextWithLinks } from '@/utils/linkifyPaths'
 import { parseAIActions } from '@/utils/parseAIActions'
 import { sendAIChatStream, getAIStatus, type AIStatus } from '@/services/ai'
@@ -214,19 +214,7 @@ export function AIChatPage() {
   }, [setSelectionAsk])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] min-h-[400px]">
-      {!isFullPageAI && (
-        <div className="mb-2">
-          <button
-            type="button"
-            onClick={() => navigate(backTo)}
-            className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
-            aria-label={t('back')}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-[400px] overflow-hidden">
 
       <div className="flex-1 flex flex-col min-h-0 border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
         {messages.length === 0 && !loading ? (
@@ -234,7 +222,7 @@ export function AIChatPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10"
+            className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8"
           >
             <motion.div
               initial={{ opacity: 0, y: 10 }}

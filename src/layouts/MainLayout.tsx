@@ -27,6 +27,7 @@ export function MainLayout() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
   const showSidebar = isAuthenticated && isSidebarPath(location.pathname)
+  const isFixedHeightPage = location.pathname === '/ai'
 
   const { navItems, navBottomItems } = useMemo(() => {
     if (role === 'student') {
@@ -167,8 +168,8 @@ export function MainLayout() {
       {showSidebar && navItems.length > 0 ? (
         <div className="flex">
           <Sidebar items={navItems} bottomItems={navBottomItems} />
-          <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-            <main className="p-3 sm:p-4 min-h-[calc(100vh-4rem)]">
+          <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200 flex flex-col min-h-0', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
+            <main className={cn('p-3 sm:p-4 flex-1 min-h-0 flex flex-col', isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)]')}>
               <div className="max-w-content mx-auto w-full">
                 <Suspense fallback={<ContentFallback />}>
                   <Outlet />
@@ -179,7 +180,7 @@ export function MainLayout() {
           <BottomNav items={bottomNavItems} />
         </div>
       ) : (
-        <main className="p-3 sm:p-4 min-h-[calc(100vh-4rem)]">
+        <main className={cn('p-2 sm:p-2 min-h-full', isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)] flex flex-col')}>
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

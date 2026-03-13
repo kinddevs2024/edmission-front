@@ -89,13 +89,16 @@ export function Compare() {
         ) : allOptions.length === 0 ? (
           <p className="text-[var(--color-text-muted)] mb-4">{t('student:noUniversitiesInList')}</p>
         ) : (
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Select
-              options={[{ value: '', label: t('common:addUniversity') }, ...allOptions.filter((o) => !selectedIds.includes(o.value))]}
-              value=""
-              onChange={(e) => { const v = e.target.value; if (v) addId(v) }}
-              className="max-w-xs"
-            />
+          <div className="flex flex-wrap items-end gap-4 mb-4">
+            <div className="min-w-[200px]">
+              <Select
+                label={t('common:addUniversity')}
+                options={[{ value: '', label: t('common:addUniversity') }, ...allOptions.filter((o) => !selectedIds.includes(o.value))]}
+                value=""
+                onChange={(e) => { const v = e.target.value; if (v) addId(v) }}
+                className="w-full"
+              />
+            </div>
             {selectedIds.map((id) => {
               const opt = allOptions.find((o) => o.value === id)
               return (

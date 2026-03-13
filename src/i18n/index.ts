@@ -1,20 +1,36 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { supportedLngs, defaultNS, fallbackLng, namespaces, getInitialLanguage } from './config'
+import { studentEn, commonEn } from './fallbackEn'
+
+/** Inline fallback when fetch returns empty (always works). */
+const FALLBACK_EN: Record<string, object> = { student: studentEn, common: commonEn }
 
 /** Namespaces needed for first paint (landing + common + student for sidebar). Load rest in background. */
 const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student']
 const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
 
+function getLocalesBaseUrl(): string {
+  if (typeof window === 'undefined') return ''
+  const base = import.meta.env.BASE_URL || '/'
+  const origin = window.location.origin
+  const path = base.endsWith('/') ? `${base}locales` : `${base}/locales`
+  return `${origin}${path}`
+}
+
 async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<Record<string, object>> {
+  const baseUrl = getLocalesBaseUrl()
   const out: Record<string, object> = {}
   await Promise.all(
     nsList.map(async (ns) => {
       try {
-        const r = await fetch(`/locales/${lng}/${ns}.json`)
-        out[ns] = r.ok ? await r.json() : {}
+        const url = baseUrl ? `${baseUrl}/${lng}/${ns}.json` : `/locales/${lng}/${ns}.json`
+        const r = await fetch(url, { cache: 'no-cache' })
+        const data = r.ok ? await r.json() : null
+        const loaded = data && typeof data === 'object' && Object.keys(data).length > 0 ? data : {}
+        out[ns] = Object.keys(loaded).length > 0 ? loaded : (lng === 'en' && FALLBACK_EN[ns] ? FALLBACK_EN[ns] : {})
       } catch {
-        out[ns] = {}
+        out[ns] = lng === 'en' && FALLBACK_EN[ns] ? FALLBACK_EN[ns] : {}
       }
     })
   )

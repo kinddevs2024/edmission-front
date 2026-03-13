@@ -1,6 +1,6 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Input as MTInput } from '@material-tailwind/react'
+import { cn } from '@/utils/cn'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -48,7 +48,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <button
         type="button"
         tabIndex={-1}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-black/10 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+        className="p-1 rounded hover:bg-black/10 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
         onClick={isControlled ? onPasswordVisibilityToggle : () => setInternalShow((v) => !v)}
         aria-label={showPassword ? t('hidePassword') : t('showPassword')}
       >
@@ -57,29 +57,38 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ) : right)
 
     return (
-      <div className="w-full relative">
-        <MTInput
-          ref={ref as React.Ref<HTMLInputElement>}
-          id={inputId}
-          type={effectiveType}
-          label={label}
-          error={!!error}
-          success={!!success}
-          variant="outlined"
-          size="md"
-          color={'green' as 'green'}
-          icon={icon ? <span className="flex items-center justify-center w-5 h-5">{icon}</span> : undefined}
-          className={className}
-          placeholder={placeholder ?? ' '}
-          aria-invalid={!!error}
-          aria-describedby={[error ? `${inputId}-error` : null, hint ? `${inputId}-hint` : null].filter(Boolean).join(' ') || undefined}
-          crossOrigin={undefined}
-          onResize={undefined}
-          onResizeCapture={undefined}
-          onPointerEnterCapture={undefined}
-          onPointerLeaveCapture={undefined}
-          {...props}
-        />
+      <div className="w-full">
+        {label && (
+          <label htmlFor={inputId} className="block text-sm font-medium text-[var(--color-text)] mb-1">
+            {label}
+          </label>
+        )}
+        <div className="relative">
+          <input
+            ref={ref}
+            id={inputId}
+            type={effectiveType}
+            placeholder={placeholder}
+            className={cn(
+              'w-full rounded-input border bg-transparent px-3 py-2.5 text-[var(--color-text)]',
+              'placeholder:text-[var(--color-text-muted)]/60',
+              'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0 focus:border-transparent',
+              error && 'border-red-500 focus:ring-red-500',
+              success && 'border-green-500',
+              !error && !success && 'border-[var(--color-border)]',
+              icon && 'pr-10',
+              className
+            )}
+            aria-invalid={!!error}
+            aria-describedby={[error ? `${inputId}-error` : null, hint ? `${inputId}-hint` : null].filter(Boolean).join(' ') || undefined}
+            {...props}
+          />
+          {icon && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8">
+              {icon}
+            </div>
+          )}
+        </div>
         {error && (
           <p id={`${inputId}-error`} className="mt-1 text-sm text-red-500">{error}</p>
         )}

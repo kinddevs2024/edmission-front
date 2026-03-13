@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -9,10 +10,18 @@ import { showInterest, getApplications, getInterestLimit } from '@/services/stud
 import { getImageUrl } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
 import { MessageCircle } from 'lucide-react'
+import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import type { UniversityProfile, Program, Scholarship, Faculty } from '@/types/university'
+
+const COUNTRY_OPTIONS: { code: string; label: string }[] = [
+  { code: 'UZ', label: 'Uzbekistan' }, { code: 'KZ', label: 'Kazakhstan' }, { code: 'TJ', label: 'Tajikistan' },
+  { code: 'KG', label: 'Kyrgyzstan' }, { code: 'TM', label: 'Turkmenistan' }, { code: 'TR', label: 'Turkey' },
+  { code: 'AE', label: 'UAE' }, { code: 'CN', label: 'China' },
+]
 
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
+  const { t } = useTranslation(['common', 'student', 'university'])
   const [uni, setUni] = useState<UniversityProfile | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [scholarships, setScholarships] = useState<Scholarship[]>([])
@@ -97,7 +106,11 @@ export function UniversityDetail() {
               {[uni.country, uni.city].filter(Boolean).join(' · ')}
               {uni.rating != null && ` · Rating ${uni.rating}`}
             </p>
-            {uni.slogan && <p className="text-sm mt-1">{uni.slogan}</p>}
+            {(uni.slogan ?? (uni as { tagline?: string }).tagline) && (
+              <p className="text-sm mt-1 text-[var(--color-text-muted)]">
+                {uni.slogan ?? (uni as { tagline?: string }).tagline}
+              </p>
+            )}
           </div>
         </div>
         {matchScore != null && (
@@ -106,14 +119,61 @@ export function UniversityDetail() {
       </div>
 
       <Card>
-        <CardTitle>Overview</CardTitle>
+        <CardTitle>{t('common:overview', 'Overview')}</CardTitle>
         <p className="text-[var(--color-text-muted)] whitespace-pre-wrap">{uni.description ?? 'No description.'}</p>
-        {uni.foundedYear && <p className="mt-2 text-sm">Founded: {uni.foundedYear}</p>}
-        {uni.studentCount != null && <p className="text-sm">Students: {uni.studentCount}</p>}
-        {uni.accreditation && <p className="text-sm">Accreditation: {uni.accreditation}</p>}
-        {uni.minLanguageLevel && <p className="text-sm">Minimum requirements: {uni.minLanguageLevel}</p>}
-        {uni.tuitionPrice != null && <p className="text-sm">Tuition: {uni.tuitionPrice === 0 ? 'Free' : `${uni.tuitionPrice.toLocaleString()} per year`}</p>}
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          {(uni.foundedYear ?? (uni as { establishedYear?: number }).establishedYear) != null && (
+            <div><span className="text-[var(--color-text-muted)]">{t('university:establishedYear', 'Founded')}:</span> {uni.foundedYear ?? (uni as { establishedYear?: number }).establishedYear}</div>
+          )}
+          {uni.studentCount != null && (
+            <div><span className="text-[var(--color-text-muted)]">{t('university:studentCount', 'Students')}:</span> {uni.studentCount.toLocaleString()}</div>
+          )}
+          {uni.accreditation && (
+            <div><span className="text-[var(--color-text-muted)]">{t('university:accreditation', 'Accreditation')}:</span> {uni.accreditation}</div>
+          )}
+          {uni.minLanguageLevel && (
+            <div><span className="text-[var(--color-text-muted)]">{t('university:minRequirements', 'Min. requirements')}:</span> {uni.minLanguageLevel}</div>
+          )}
+          {uni.tuitionPrice != null && (
+            <div><span className="text-[var(--color-text-muted)]">{t('university:tuitionPrice', 'Tuition')}:</span> {uni.tuitionPrice === 0 ? 'Free' : `${uni.tuitionPrice.toLocaleString()} /yr`}</div>
+          )}
+        </div>
       </Card>
+
+      {((uni.targetStudentCountries ?? []) as string[]).length > 0 && (
+        <Card>
+          <CardTitle>{t('university:targetStudentCountries', 'Target student countries')}</CardTitle>
+          <div className="flex flex-wrap gap-2">
+            {(uni.targetStudentCountries ?? []).map((code: string) => (
+              <Badge key={code} variant="info">{COUNTRY_OPTIONS.find((c) => c.code === code)?.label ?? code}</Badge>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {((uni.facultyCodes ?? []) as string[]).length > 0 && (
+        <Card>
+          <CardTitle>{t('university:facultiesListTitle', 'Fields of study')}</CardTitle>
+          <div className="space-y-3">
+            {(uni.facultyCodes ?? []).map((code: string) => {
+              const cat = FIELD_OF_STUDY.find((c) => c.id === code)
+              const items = (uni.facultyItems ?? {})[code] ?? cat?.items ?? []
+              return (
+                <div key={code} className="border-b border-[var(--color-border)] last:border-0 pb-3 last:pb-0">
+                  <p className="font-medium text-[var(--color-text)]">{cat ? t(cat.titleKey) : code}</p>
+                  {Array.isArray(items) && items.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {items.map((item) => (
+                        <Badge key={item} variant="secondary" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
 
       {programs.length > 0 && (
         <Card>

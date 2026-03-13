@@ -16,6 +16,7 @@ export function UniversityLayout() {
   const location = useLocation()
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
+  const isFixedHeightPage = location.pathname === '/university/ai'
 
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed)
@@ -87,7 +88,10 @@ export function UniversityLayout() {
     <div className="flex">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200 flex flex-col', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-        <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1">
+        <div className={cn(
+          'max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1',
+          isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)] min-h-0 flex flex-col'
+        )}>
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

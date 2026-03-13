@@ -54,6 +54,8 @@ export function AdminUniversities() {
   const [formTagline, setFormTagline] = useState('')
   const [formEstablishedYear, setFormEstablishedYear] = useState('')
   const [formStudentCount, setFormStudentCount] = useState('')
+  const [formMinRequirements, setFormMinRequirements] = useState('')
+  const [formMinTuition, setFormMinTuition] = useState('')
   const [formFacultyCodes, setFormFacultyCodes] = useState<string[]>([])
   const [formFacultyItems, setFormFacultyItems] = useState<Record<string, string[]>>({})
   const [formTargetCountries, setFormTargetCountries] = useState<string[]>([])
@@ -91,6 +93,8 @@ export function AdminUniversities() {
     setFormTagline('')
     setFormEstablishedYear('')
     setFormStudentCount('')
+    setFormMinRequirements('')
+    setFormMinTuition('')
     setFormFacultyCodes([])
     setFormFacultyItems({})
     setFormTargetCountries([])
@@ -112,6 +116,8 @@ export function AdminUniversities() {
       setFormTagline(u.tagline ?? '')
       setFormEstablishedYear(u.establishedYear != null ? String(u.establishedYear) : '')
       setFormStudentCount(u.studentCount != null ? String(u.studentCount) : '')
+      setFormMinRequirements((u as { minLanguageLevel?: string }).minLanguageLevel ?? '')
+      setFormMinTuition((u as { tuitionPrice?: number }).tuitionPrice != null ? String((u as { tuitionPrice?: number }).tuitionPrice) : '')
       setFormFacultyCodes(u.facultyCodes ?? [])
       setFormFacultyItems((u as { facultyItems?: Record<string, string[]> }).facultyItems ?? {})
       setFormTargetCountries(u.targetStudentCountries ?? [])
@@ -151,6 +157,8 @@ export function AdminUniversities() {
       tagline: formTagline.trim() || undefined,
       establishedYear: formEstablishedYear ? Number(formEstablishedYear) : undefined,
       studentCount: formStudentCount ? Number(formStudentCount) : undefined,
+      minLanguageLevel: formMinRequirements.trim() || undefined,
+      tuitionPrice: formMinTuition ? Number(formMinTuition) : undefined,
       facultyCodes: formFacultyCodes.length ? formFacultyCodes : undefined,
       facultyItems: Object.keys(formFacultyItems).length ? formFacultyItems : undefined,
       targetStudentCountries: formTargetCountries.length ? formTargetCountries : undefined,
@@ -300,6 +308,19 @@ export function AdminUniversities() {
             value={formDescription}
             onChange={(e) => setFormDescription(e.target.value)}
             rows={3}
+          />
+          <Input
+            label={t('university:minRequirements', 'Minimum requirements')}
+            value={formMinRequirements}
+            onChange={(e) => setFormMinRequirements(e.target.value)}
+            placeholder="e.g. IELTS 6.5, TOEFL 90, CEFR B2, GPA 3.0"
+          />
+          <Input
+            label={t('university:minTuition', 'Minimum tuition (annual)')}
+            type="number"
+            value={formMinTuition}
+            onChange={(e) => setFormMinTuition(e.target.value)}
+            placeholder="Annual cost in main currency"
           />
           <Input
             label={t('university:foundedYear', 'Founded year')}

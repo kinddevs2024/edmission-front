@@ -24,6 +24,8 @@ export function StudentLayout() {
     if (location.pathname === '/student/chat' && collapsed) setSidebarCollapsed(false)
   }, [location.pathname, collapsed, setSidebarCollapsed])
 
+  const isFixedHeightPage = location.pathname === '/student/ai' || location.pathname === '/student/chat'
+
   const navItems = useMemo(() => {
     const base = [
       { to: '/student/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
@@ -68,10 +70,13 @@ export function StudentLayout() {
     <div className="flex">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-0 bg-pattern-subtle min-h-screen flex flex-col',
+        'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-0 bg-pattern-subtle min-h-full flex flex-col',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
-        <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1">
+        <div className={cn(
+          'max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1',
+          isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] min-h-0 flex flex-col'
+        )}>
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

@@ -190,7 +190,7 @@ export function ChatView() {
   const showThread = mobileView === 'thread'
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)]">
+    <div className="flex flex-col h-full min-h-0">
       <div className="flex flex-1 min-h-0 border border-[var(--color-border)] rounded-card overflow-hidden bg-[var(--color-card)]">
         <div
           className={cn(

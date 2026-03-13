@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { getProfile, updateProfile, getApiError, logout as logoutApi } from '@/services/auth'
+import { useAuthStore } from '@/store/authStore'
 import { setup2FA, verifyAndEnable2FA, disable2FA } from '@/services/twoFactor'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -76,7 +77,10 @@ export function Profile() {
     if (user?.role !== 'student') return
     setAvatarUrl(url)
     updateStudentProfile({ avatarUrl: url })
-      .then(() => getProfile())
+      .then(async () => {
+        const u = await getProfile()
+        useAuthStore.getState().setUser({ ...u, avatar: url || u.avatar })
+      })
       .catch(toastApiError)
   }
 
