@@ -10,7 +10,8 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
   const schemaRef = useRef<HTMLScriptElement | null>(null)
 
-  const items = t('faq.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+  const rawItems = t('faq.items', { returnObjects: true })
+  const items = Array.isArray(rawItems) ? (rawItems as Array<{ q: string; a: string }>) : []
 
   useEffect(() => {
     if (schemaRef.current) {

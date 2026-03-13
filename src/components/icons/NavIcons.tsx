@@ -64,9 +64,9 @@ const iconMap: Record<string, LucideIcon> = {
 export type NavIconName = keyof typeof iconMap
 
 export function getNavIcon(name: string | undefined, className?: string, size = 20): React.ReactNode {
-  if (!name) return null
+  if (!name) return <span aria-hidden />
   const Icon = iconMap[name]
-  if (!Icon) return null
+  if (!Icon) return <span aria-hidden />
   return <Icon className={className} size={size} aria-hidden />
 }
 

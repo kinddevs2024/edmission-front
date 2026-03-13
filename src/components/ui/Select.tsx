@@ -56,17 +56,19 @@ export function Select({
     ...rest,
   }
 
+  const optionElements = [
+    ...(placeholder ? [<Option key="_placeholder" value="">{String(placeholder)}</Option>] : []),
+    ...options.map((opt) => (
+      <Option key={opt.value} value={opt.value}>
+        {String(opt.label ?? '')}
+      </Option>
+    )),
+  ]
+
   return (
     <div className="w-full">
       <MTSelect {...(selectProps as React.ComponentProps<typeof MTSelect>)}>
-        {placeholder && (
-          <Option value="">{placeholder}</Option>
-        )}
-        {options.map((opt) => (
-          <Option key={opt.value} value={opt.value}>
-            {opt.label}
-          </Option>
-        ))}
+        {optionElements}
       </MTSelect>
       {error && (
         <p className="mt-1 text-sm text-red-500">{error}</p>

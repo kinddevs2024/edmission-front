@@ -57,7 +57,7 @@ export function Button({
     <>
       {loading && <Spinner className={size === 'sm' ? 'h-3.5 w-3.5' : undefined} />}
       {!loading && icon && <span className="shrink-0 flex items-center [&>svg]:size-4">{icon}</span>}
-      {children}
+      {children != null ? children : ''}
     </>
   )
   if (to && !loading) {
