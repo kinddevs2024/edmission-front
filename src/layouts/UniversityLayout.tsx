@@ -31,7 +31,6 @@ export function UniversityLayout() {
             { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
           ]
         : [
-            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
             { to: '/university/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
             { to: '/university/profile', label: t('navProfile'), icon: 'User' },
             { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
@@ -42,6 +41,7 @@ export function UniversityLayout() {
             { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
             { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
             { to: '/payment', label: 'Subscription', icon: 'CreditCard' },
+            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
           ],
     [t, isSelect, isPending]
   )
@@ -64,11 +64,10 @@ export function UniversityLayout() {
             { to: '/support', label: 'Support', icon: 'HelpCircle' },
           ]
         : [
-            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
             { to: '/university/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
             { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
             { to: '/university/profile', label: t('navProfile'), icon: 'User' },
-            { to: '/support', label: 'Support', icon: 'HelpCircle' },
+            { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
           ],
     [t, isSelect, isPending]
   )

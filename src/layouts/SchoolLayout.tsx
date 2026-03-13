@@ -14,8 +14,8 @@ export function SchoolLayout() {
 
   const navItems = useMemo(
     () => [
-      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/school/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
       { to: '/school/join-requests', label: t('joinRequests'), icon: 'Users' as const },
@@ -31,12 +31,13 @@ export function SchoolLayout() {
     [t]
   )
 
+  // Mobile bottom bar: no AI, no Support (old version only)
   const bottomNavItems = useMemo(
     () => [
-      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/school/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
-      { to: '/support', label: 'Support', icon: 'HelpCircle' as const },
+      { to: '/school/join-requests', label: t('joinRequests'), icon: 'Users' as const },
     ],
     [t]
   )

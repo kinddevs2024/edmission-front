@@ -56,6 +56,7 @@ const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ 
 const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
 const AdminInvestors = lazy(() => import('@/pages/admin/AdminInvestors').then((m) => ({ default: m.AdminInvestors })))
+const AdminLandingCertificates = lazy(() => import('@/pages/admin/AdminLandingCertificates').then((m) => ({ default: m.AdminLandingCertificates })))
 const AdminUniversityRequests = lazy(() => import('@/pages/admin/AdminUniversityRequests').then((m) => ({ default: m.AdminUniversityRequests })))
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings').then((m) => ({ default: m.AdminSettings })))
 const CounsellorSchoolProfile = lazy(() => import('@/pages/admin/CounsellorSchoolProfile').then((m) => ({ default: m.CounsellorSchoolProfile })))
@@ -198,6 +199,7 @@ export function Router() {
           <Route path="universities" element={<AdminUniversities />} />
           <Route path="university-requests" element={<AdminUniversityRequests />} />
           <Route path="investors" element={<AdminInvestors />} />
+          <Route path="landing-certificates" element={<AdminLandingCertificates />} />
           <Route path="documents" element={<AdminDocuments />} />
           <Route path="offers" element={<AdminOffers />} />
           <Route path="interests" element={<AdminInterests />} />

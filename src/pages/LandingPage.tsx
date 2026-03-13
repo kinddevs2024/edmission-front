@@ -3,6 +3,7 @@ import { HeroSection } from '@/components/sections/landing/HeroSection'
 import { TrustedSection } from '@/components/sections/landing/TrustedSection'
 import { AccreditationSection } from '@/components/sections/landing/AccreditationSection'
 import { CertificationsSection } from '@/components/sections/landing/CertificationsSection'
+import { StudentTestimonialsSection } from '@/components/sections/landing/StudentTestimonialsSection'
 import { TestimonialsSection } from '@/components/sections/landing/TestimonialsSection'
 import { ProblemSection } from '@/components/sections/landing/ProblemSection'
 import { CtaBlock } from '@/components/sections/landing/CtaBlock'
@@ -24,6 +25,7 @@ export function LandingPage() {
       <TrustedSection />
       <AccreditationSection />
       <CertificationsSection />
+      <StudentTestimonialsSection />
       <TestimonialsSection />
       <ProblemSection />
       <CtaBlock />

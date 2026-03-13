@@ -41,7 +41,8 @@ export function StudentDashboard() {
     getRecommendations({ limit: 5 })
       .then((recs) => {
         if (cancelled || !recs.data?.length) return
-        const ids = recs.data.map((r) => r.universityId).slice(0, 5)
+        const toId = (v: unknown) => (typeof v === 'string' ? v : (v && typeof v === 'object' && ('id' in v || '_id' in v) ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '') : ''))
+        const ids = recs.data.map((r) => toId(r.universityId)).filter(Boolean).slice(0, 5)
         return getCompareUniversities(ids)
       })
       .then((list) => {

@@ -68,6 +68,10 @@ export default {
           from: { transform: 'translateX(-100%)' },
           to: { transform: 'translateX(0)' },
         },
+        'drawer-in-right': {
+          from: { transform: 'translateX(100%)' },
+          to: { transform: 'translateX(0)' },
+        },
       },
       animation: {
         'page-enter': 'fade-in 0.35s ease-out forwards',
@@ -75,6 +79,7 @@ export default {
         'modal-enter': 'scale-in 0.25s ease-out',
         'list-enter': 'slide-in-right 0.3s ease-out forwards',
         'drawer-enter': 'drawer-in 0.25s ease-out forwards',
+        'drawer-enter-right': 'drawer-in-right 0.25s ease-out forwards',
       },
       transitionProperty: {
         'press': 'transform, box-shadow',

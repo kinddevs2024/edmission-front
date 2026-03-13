@@ -76,6 +76,35 @@
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 
+/* Subtle background pattern (Telegram-like dots) for student/explore pages */
+.bg-pattern-subtle {
+  background-image: radial-gradient(circle at 1px 1px, var(--color-border) 1px, transparent 0);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  background-color: var(--color-bg);
+}
+.dark .bg-pattern-subtle {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
+}
+
+/* Drawer slide-in from right */
+@keyframes drawer-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes drawer-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
 /* Landing page: scroll-in and self-animations */
 @keyframes landing-fade-in {
   from {

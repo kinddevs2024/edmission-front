@@ -51,6 +51,7 @@
   },
   "testimonials": {
     "eyebrow": "Голоса",
+    "studentSectionTitle": "Отзывы студентов",
     "title": "Что говорят студенты и университеты",
     "description": "Реальный опыт нашей сообщества.",
     "item1": {
@@ -250,6 +251,9 @@
     "register": "Регистрация",
     "howItWorks": "Как это работает",
     "forUniversities": "Университетам",
+    "trustedBy": "Нам доверяют",
+    "certifications": "Сертификаты",
+    "testimonials": "Отзывы",
     "faq": "Вопросы"
   }
 }

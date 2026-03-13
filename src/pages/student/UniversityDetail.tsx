@@ -111,6 +111,8 @@ export function UniversityDetail() {
         {uni.foundedYear && <p className="mt-2 text-sm">Founded: {uni.foundedYear}</p>}
         {uni.studentCount != null && <p className="text-sm">Students: {uni.studentCount}</p>}
         {uni.accreditation && <p className="text-sm">Accreditation: {uni.accreditation}</p>}
+        {uni.minLanguageLevel && <p className="text-sm">Min. language level: {uni.minLanguageLevel}</p>}
+        {uni.tuitionPrice != null && <p className="text-sm">Tuition: {uni.tuitionPrice === 0 ? 'Free' : `${uni.tuitionPrice.toLocaleString()} per year`}</p>}
       </Card>
 
       {programs.length > 0 && (

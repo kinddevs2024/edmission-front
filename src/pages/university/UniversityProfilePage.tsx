@@ -25,6 +25,8 @@ const schema = z.object({
   facultyCodes: z.array(z.string()).optional(),
   facultyItems: z.record(z.string(), z.array(z.string())).optional(),
   targetStudentCountries: z.array(z.string()).optional(),
+  minLanguageLevel: z.string().optional(),
+  tuitionPrice: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
 })
 
 type FormData = z.infer<typeof schema>
@@ -68,6 +70,8 @@ export function UniversityProfilePage() {
           facultyCodes: data.facultyCodes ?? [],
           facultyItems: data.facultyItems ?? {},
           targetStudentCountries: data.targetStudentCountries ?? [],
+          minLanguageLevel: data.minLanguageLevel ?? '',
+          tuitionPrice: data.tuitionPrice ?? undefined,
         })
       })
       .catch((e) => setError(getApiError(e).message))
@@ -90,6 +94,8 @@ export function UniversityProfilePage() {
         facultyCodes: data.facultyCodes ?? [],
         facultyItems: data.facultyItems ?? undefined,
         targetStudentCountries: data.targetStudentCountries ?? [],
+        minLanguageLevel: data.minLanguageLevel || undefined,
+        tuitionPrice: data.tuitionPrice ?? undefined,
       })
       setProfile(updated)
     } catch (e) {
@@ -144,6 +150,14 @@ export function UniversityProfilePage() {
           <div className="mt-4 space-y-4">
             <Input label={t('university:country')} {...register('country')} />
             <Input label={t('university:city')} {...register('city')} />
+          </div>
+        </Card>
+
+        <Card>
+          <CardTitle>{t('university:sectionRequirements', 'Requirements & Tuition')}</CardTitle>
+          <div className="mt-4 space-y-4">
+            <Input label={t('university:minLanguageLevel', 'Min. language level')} {...register('minLanguageLevel')} placeholder="e.g. IELTS 6.5, TOEFL 90, C1" />
+            <Input label={t('university:tuitionPrice', 'Tuition price')} type="number" {...register('tuitionPrice')} placeholder="Annual cost in main currency" />
           </div>
         </Card>
 

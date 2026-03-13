@@ -2,7 +2,7 @@ import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { UniversityProfile, Scholarship, Faculty } from '@/types/university'
 
-type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number }
+type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number; minLanguageLevel?: string; tuitionPrice?: number }
 
 export interface CatalogUniversity {
   id: string
@@ -37,6 +37,8 @@ export async function getProfile(): Promise<UniversityProfile> {
     facultyCodes: (data as unknown as { facultyCodes?: string[] }).facultyCodes ?? [],
     facultyItems: (data as unknown as { facultyItems?: Record<string, string[]> }).facultyItems ?? undefined,
     targetStudentCountries: (data as unknown as { targetStudentCountries?: string[] }).targetStudentCountries ?? [],
+    minLanguageLevel: data.minLanguageLevel ?? undefined,
+    tuitionPrice: data.tuitionPrice ?? undefined,
   }
 }
 
@@ -54,6 +56,8 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
   if (patch.facultyCodes != null) body.facultyCodes = patch.facultyCodes
   if (patch.facultyItems != null) body.facultyItems = patch.facultyItems
   if (patch.targetStudentCountries != null) body.targetStudentCountries = patch.targetStudentCountries
+  if (patch.minLanguageLevel != null) body.minLanguageLevel = patch.minLanguageLevel
+  if (patch.tuitionPrice != null) body.tuitionPrice = patch.tuitionPrice
   const { data } = await api.put<UniversityProfileResponse | null>('/university/profile', body)
   const raw = data ?? {}
   return {

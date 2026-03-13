@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { Send, Bot, User, ArrowLeft } from 'lucide-react'
@@ -27,6 +27,8 @@ export function AIChatPage() {
   const { t } = useTranslation('common')
   const { role, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const isFullPageAI = location.pathname === '/ai'
   const messages = useAIChatStore((s) => s.messages)
   const addMessage = useAIChatStore((s) => s.addMessage)
   const updateMessage = useAIChatStore((s) => s.updateMessage)
@@ -214,14 +216,16 @@ export function AIChatPage() {
     <div className="flex flex-col h-[calc(100vh-8rem)] min-h-[400px]">
       <div className="flex flex-col gap-1 mb-4">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(backTo)}
-            className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
-            aria-label={t('back')}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+          {!isFullPageAI && (
+            <button
+              type="button"
+              onClick={() => navigate(backTo)}
+              className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
+              aria-label={t('back')}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
           <PageTitle title={t('aiChatTitle')} icon="Bot" />
         </div>
         <p className="text-xs text-[var(--color-text-muted)] pl-11">

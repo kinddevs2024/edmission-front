@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -49,29 +50,37 @@ export function UniversityDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardTitle className="flex items-center gap-2">
-            <Users size={18} /> {t('university:newInterests', 'New interests')}
-          </CardTitle>
-          <p className="text-2xl font-semibold mt-1">{loading ? '—' : interestedCount}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">Total: {loading ? '—' : totalInterests}</p>
-        </Card>
-        <Card>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle size={18} /> {t('university:activeChats', 'Active chats')}
-          </CardTitle>
-          <p className="text-2xl font-semibold mt-1">{loading ? '—' : chatCount}</p>
-        </Card>
-        <Card>
-          <CardTitle className="flex items-center gap-2">
-            <Send size={18} /> {t('university:offersSent', 'Offers sent')}
-          </CardTitle>
-          <p className="text-2xl font-semibold mt-1">{loading ? '—' : offerSentCount}</p>
-        </Card>
-        <Card>
-          <CardTitle>{t('university:acceptanceRate', 'Acceptance rate')}</CardTitle>
-          <p className="text-2xl font-semibold mt-1">{loading ? '—' : `${acceptanceRate}%`}</p>
-        </Card>
+        <Link to="/university/pipeline">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle className="flex items-center gap-2">
+              <Users size={18} /> {t('university:newInterests', 'New interests')}
+            </CardTitle>
+            <p className="text-2xl font-semibold mt-1">{loading ? '—' : interestedCount}</p>
+            <p className="text-sm text-[var(--color-text-muted)]">Total: {loading ? '—' : totalInterests}</p>
+          </Card>
+        </Link>
+        <Link to="/university/chat">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle size={18} /> {t('university:activeChats', 'Active chats')}
+            </CardTitle>
+            <p className="text-2xl font-semibold mt-1">{loading ? '—' : chatCount}</p>
+          </Card>
+        </Link>
+        <Link to="/university/pipeline">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle className="flex items-center gap-2">
+              <Send size={18} /> {t('university:offersSent', 'Offers sent')}
+            </CardTitle>
+            <p className="text-2xl font-semibold mt-1">{loading ? '—' : offerSentCount}</p>
+          </Card>
+        </Link>
+        <Link to="/university/analytics">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('university:acceptanceRate', 'Acceptance rate')}</CardTitle>
+            <p className="text-2xl font-semibold mt-1">{loading ? '—' : `${acceptanceRate}%`}</p>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

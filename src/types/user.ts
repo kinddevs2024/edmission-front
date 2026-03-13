@@ -29,7 +29,7 @@ export interface User {
   mustChangePassword?: boolean
   subscription?: SubscriptionSummary
   notificationPreferences?: NotificationPreferences
-  studentProfile?: { id: string; verifiedAt?: string | null }
+  studentProfile?: { id: string; verifiedAt?: string | null; educationStatus?: 'in_school' | 'finished_school' | 'in_university' | 'finished_university' }
   universityProfile?: { id: string; verified?: boolean; universityName?: string }
   totpEnabled?: boolean
 }

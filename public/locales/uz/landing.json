@@ -51,6 +51,7 @@
   },
   "testimonials": {
     "eyebrow": "Ovozlar",
+    "studentSectionTitle": "Talaba sharhlari",
     "title": "Talabalar va universitetlar nima deydi",
     "description": "Jamoamizdan haqiqiy tajribalar.",
     "item1": {
@@ -250,6 +251,9 @@
     "register": "Ro'yxatdan o'tish",
     "howItWorks": "Qanday ishlaydi",
     "forUniversities": "Universitetlar",
+    "trustedBy": "Ishonchli",
+    "certifications": "Sertifikatlar",
+    "testimonials": "Sharhlar",
     "faq": "Savollar"
   }
 }

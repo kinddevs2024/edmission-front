@@ -1,16 +1,17 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
 import { Menu, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
+import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 
 export function LandingHeader() {
   const { t } = useTranslation('landing')
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [isClosing, setIsClosing] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -18,169 +19,189 @@ export function LandingHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
-      }
+  const lockScroll = useCallback((lock: boolean) => {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    if (lock) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.paddingRight = ''
+      document.body.style.overflow = ''
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   useEffect(() => {
-    if (menuOpen) document.body.style.overflow = 'hidden'
-    else document.body.style.overflow = ''
-    return () => { document.body.style.overflow = '' }
-  }, [menuOpen])
+    if (menuOpen) lockScroll(true)
+    else lockScroll(false)
+    return () => lockScroll(false)
+  }, [menuOpen, lockScroll])
+
+  const closeMenu = useCallback(() => {
+    if (isClosing) return
+    setIsClosing(true)
+    setTimeout(() => {
+      setMenuOpen(false)
+      setIsClosing(false)
+    }, 280)
+  }, [isClosing])
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-    setMenuOpen(false)
+    closeMenu()
   }
 
   const menuItems = [
     { id: 'how-it-works', label: t('header.howItWorks') },
     { id: 'for-universities', label: t('header.forUniversities') },
+    { id: 'trusted-by', label: t('header.trustedBy') },
     { id: 'faq', label: t('header.faq') },
   ]
+
+  const NavLink = ({ item }: { item: (typeof menuItems)[number] }) => (
+    <button
+      type="button"
+      onClick={() => scrollTo(item.id)}
+      className="text-xs font-medium text-[var(--color-text)] hover:text-primary-accent transition-colors whitespace-nowrap"
+    >
+      {item.label}
+    </button>
+  )
 
   return (
     <header
       className={clsx(
-        'sticky top-0 z-50 w-full border-b transition-all duration-200',
+        'sticky top-0 w-full border-b transition-all duration-200 z-50',
         scrolled
           ? 'border-[var(--color-border)] bg-[var(--color-card)]/95 shadow-[var(--shadow-card)] backdrop-blur-sm'
           : 'border-transparent bg-transparent'
       )}
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)]">
+        <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)] shrink-0">
           <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" aria-hidden />
           {t('footer.brand')}
         </Link>
 
-        <nav className="flex items-center gap-3 sm:gap-4">
-          {/* Desktop: dropdown with nav + Login */}
-          <div className="relative hidden sm:block" ref={dropdownRef}>
-            <button
-              type="button"
-              onClick={() => setDropdownOpen((v) => !v)}
-              className="flex items-center gap-2 rounded-input border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-card)] transition-colors"
-              aria-expanded={dropdownOpen}
-              aria-haspopup="true"
+        {/* Desktop: nav links - compact, left to right */}
+        <nav className="hidden lg:flex items-center gap-4">
+          {menuItems.map((item) => (
+            <NavLink key={item.id} item={item} />
+          ))}
+        </nav>
+
+        <nav className="flex items-center gap-2 sm:gap-3">
+          {/* Desktop: Language, Theme, Login, Register */}
+          <div className="hidden lg:flex items-center gap-2">
+            <LanguageMenu />
+            <ThemeSwitch />
+            <Link
+              to="/login"
+              className="rounded-input border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
             >
-              <Menu className="h-4 w-4" aria-hidden />
-              {t('header.menu', 'Menu')}
-            </button>
-            {dropdownOpen && (
-              <div
-                className="absolute right-0 top-full mt-1 min-w-[200px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50 animate-modal-enter"
-                role="menu"
-              >
-                {menuItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="menuitem"
-                    onClick={() => { scrollTo(item.id); setDropdownOpen(false) }}
-                    className="w-full px-3 py-2 text-left text-sm text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-                <div className="border-t border-[var(--color-border)] my-1" />
-                <Link
-                  to="/login"
-                  role="menuitem"
-                  onClick={() => setDropdownOpen(false)}
-                  className="block px-3 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
-                >
-                  {t('header.login')}
-                </Link>
-              </div>
-            )}
+              {t('header.login')}
+            </Link>
+            <Link
+              to="/register"
+              className="rounded-input bg-primary-accent px-3 py-2 text-sm font-medium text-primary-dark hover:opacity-90 transition-colors"
+            >
+              {t('header.register')}
+            </Link>
           </div>
 
-          {/* Mobile: two equal-size buttons — Menu and Register, no language */}
-          <div className="sm:hidden flex items-center gap-2 flex-1 max-w-[240px] justify-end">
-            <button
-              type="button"
-              onClick={() => setMenuOpen(true)}
-              className="flex-1 min-w-0 flex items-center justify-center gap-2 rounded-full h-11 px-4 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] text-sm font-medium hover:bg-[var(--color-border)]/20 transition-colors"
-              aria-label="Open menu"
-            >
-              <Menu className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="truncate">{t('header.menu', 'Menu')}</span>
-            </button>
+          {/* Mobile: Register + Menu or Close */}
+          <div className="lg:hidden flex items-center gap-2 flex-1 max-w-[240px] justify-end">
             <Link
               to="/register"
               className="flex-1 min-w-0 flex items-center justify-center rounded-full h-11 px-4 bg-primary-accent text-primary-dark text-sm font-medium hover:opacity-90 transition-colors"
             >
               <span className="truncate">{t('header.register')}</span>
             </Link>
-          </div>
-
-          {/* Desktop: Register + Language */}
-          <Link
-            to="/register"
-            className="hidden sm:flex rounded-input bg-primary-accent px-3 py-2 text-sm font-medium text-primary-dark hover:opacity-90 min-h-[44px] min-w-[44px] items-center justify-center"
-          >
-            {t('header.register')}
-          </Link>
-          <div className="hidden sm:block">
-            <LanguageMenu />
+            {menuOpen ? (
+              <button
+                type="button"
+                onClick={closeMenu}
+                className="flex items-center justify-center rounded-full h-11 w-11 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5 shrink-0" aria-hidden />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMenuOpen(true)}
+                className="flex items-center justify-center gap-2 rounded-full h-11 w-11 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5 shrink-0" aria-hidden />
+              </button>
+            )}
           </div>
         </nav>
       </div>
 
-      {/* Mobile full-screen menu */}
-      {menuOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-black/50 sm:hidden"
-            aria-hidden
-            onClick={() => setMenuOpen(false)}
-          />
-          <aside
-            className="fixed top-0 left-0 z-50 h-full w-full max-w-[280px] bg-[var(--color-card)] border-r border-[var(--color-border)] shadow-xl sm:hidden flex flex-col animate-drawer-enter"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation menu"
-          >
-            <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-              <span className="font-semibold text-[var(--color-text)]">{t('header.menu', 'Menu')}</span>
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                className="p-2 rounded-input hover:bg-[var(--color-border)]/30 transition-colors"
-                aria-label="Close menu"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <nav className="flex-1 p-4 space-y-1">
-              {menuItems.map((item) => (
+      {/* Mobile drawer - portal to body to avoid header's backdrop-filter breaking fixed positioning */}
+      {menuOpen &&
+        createPortal(
+          <>
+            <div
+              className={`fixed inset-0 z-[9999] bg-black/50 lg:hidden transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+              aria-hidden
+              onClick={closeMenu}
+            />
+            <aside
+              className="fixed top-0 right-0 z-[10000] h-full w-full max-w-[280px] bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl lg:hidden flex flex-col"
+              style={{ animation: isClosing ? 'drawer-out-right 0.28s ease-in forwards' : 'drawer-in-right 0.3s ease-out both' }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
+            >
+              <div className="flex items-center justify-between h-16 px-4 border-b border-[var(--color-border)]">
+                <span className="font-semibold text-[var(--color-text)]">{t('header.menu', 'Menu')}</span>
                 <button
-                  key={item.id}
                   type="button"
-                  onClick={() => scrollTo(item.id)}
-                  className="block w-full px-3 py-3 text-left text-base text-[var(--color-text)] hover:bg-[var(--color-border)]/20 rounded-input transition-colors"
+                  onClick={closeMenu}
+                  className="flex items-center justify-center rounded-full h-10 w-10 border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+                  aria-label="Close menu"
                 >
-                  {item.label}
+                  <X className="h-5 w-5 shrink-0" aria-hidden />
                 </button>
-              ))}
-              <Link
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className="block px-3 py-3 text-base font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 rounded-input transition-colors"
-              >
-                {t('header.login')}
-              </Link>
-            </nav>
-          </aside>
-        </>
-      )}
+              </div>
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                {menuItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => scrollTo(item.id)}
+                    className="block w-full px-3 py-3 text-left text-base text-[var(--color-text)] hover:bg-[var(--color-border)]/20 rounded-input transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <div className="flex gap-2 pt-2">
+                  <Link
+                    to="/login"
+                    onClick={closeMenu}
+                    className="flex-1 flex items-center justify-center rounded-input border border-[var(--color-border)] px-3 py-2.5 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+                  >
+                    {t('header.login')}
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={closeMenu}
+                    className="flex-1 flex items-center justify-center rounded-input bg-primary-accent px-3 py-2.5 text-sm font-medium text-primary-dark hover:opacity-90 transition-colors"
+                  >
+                    {t('header.register')}
+                  </Link>
+                </div>
+              </nav>
+              <div className="p-4 border-t border-[var(--color-border)] flex items-center gap-3">
+                <LanguageMenu />
+                <ThemeSwitch />
+              </div>
+            </aside>
+          </>,
+          document.body
+        )}
     </header>
   )
 }

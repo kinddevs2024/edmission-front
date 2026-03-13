@@ -18,10 +18,13 @@ export function Compare() {
   const [allOptions, setAllOptions] = useState<{ value: string; label: string }[]>([])
   const [loading, setLoading] = useState(true)
 
+  const toUniversityId = (v: unknown): string =>
+    typeof v === 'string' ? v : (v && typeof v === 'object' && ('id' in v || '_id' in v) ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '') : '')
+
   useEffect(() => {
     getApplications({ limit: 100 })
       .then((res) => {
-        const ids = [...new Set((res.data ?? []).map((a) => a.universityId))]
+        const ids = [...new Set((res.data ?? []).map((a) => toUniversityId(a.universityId)).filter(Boolean))]
         if (ids.length === 0) {
           setAllOptions([])
           return

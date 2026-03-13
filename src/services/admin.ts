@@ -471,6 +471,34 @@ export async function deleteInvestor(id: string): Promise<{ deleted: boolean }> 
   return data ?? { deleted: true }
 }
 
+export interface LandingCertificateItem {
+  id: string
+  type: 'university' | 'student'
+  title: string
+  imageUrl: string
+  order?: number
+}
+
+export async function getLandingCertificates(): Promise<LandingCertificateItem[]> {
+  const { data } = await api.get<LandingCertificateItem[]>('/admin/landing-certificates')
+  return data ?? []
+}
+
+export async function createLandingCertificate(payload: { type: 'university' | 'student'; title: string; imageUrl: string; order?: number }): Promise<LandingCertificateItem> {
+  const { data } = await api.post<LandingCertificateItem>('/admin/landing-certificates', payload)
+  return data!
+}
+
+export async function updateLandingCertificate(id: string, payload: { type?: 'university' | 'student'; title?: string; imageUrl?: string; order?: number }): Promise<LandingCertificateItem> {
+  const { data } = await api.patch<LandingCertificateItem>(`/admin/landing-certificates/${id}`, payload)
+  return data!
+}
+
+export async function deleteLandingCertificate(id: string): Promise<{ deleted: boolean }> {
+  const { data } = await api.delete<{ deleted: boolean }>(`/admin/landing-certificates/${id}`)
+  return data ?? { deleted: true }
+}
+
 export async function getScholarshipsSummary(): Promise<ScholarshipSummaryItem[]> {
   const { data } = await api.get<unknown>('/admin/scholarships')
   const list: Record<string, unknown>[] = Array.isArray(data) ? data : []

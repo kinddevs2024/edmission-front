@@ -24,7 +24,7 @@
     }
   },
   "trusted": {
-    "title": "Trusted by universities and students across the region",
+    "title": "Trusted by universities and students across the World ",
     "statUniversities": "50+",
     "statUniversitiesLabel": "Universities",
     "statStudents": "10,000+",
@@ -37,11 +37,11 @@
     "title": "Accreditation & Standards",
     "description": "Edmission operates to recognized quality and trust standards in education.",
     "qualityTitle": "Quality Assurance",
-    "qualityDesc": "We follow best practices for transparent admissions and student-university matching.",
+    "qualityDesc": "We follow best practices for transparent admissions and student-universi ty matching.",
     "trustTitle": "Trust & Security",
     "trustDesc": "Your data is secure and our processes are designed for fairness and reliability.",
     "standardsTitle": "Industry Standards",
-    "standardsDesc": "Our platform aligns with institutional and regional admission standards."
+    "standardsDesc": "Our platform aligns with institutional and worldwide admission standards."
   },
   "certifications": {
     "eyebrow": "Proof of Partnership",
@@ -51,6 +51,7 @@
   },
   "testimonials": {
     "eyebrow": "Voices",
+    "studentSectionTitle": "Student Testimonial",
     "title": "What Students and Universities Say",
     "description": "Real experiences from our community.",
     "item1": {
@@ -250,6 +251,9 @@
     "register": "Register",
     "howItWorks": "How it works",
     "forUniversities": "For universities",
+    "trustedBy": "Trusted by",
+    "certifications": "Certifications",
+    "testimonials": "Testimonials",
     "faq": "FAQ"
   }
 }

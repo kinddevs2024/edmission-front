@@ -14,19 +14,20 @@ export function AdminLayout() {
 
   const navItems = useMemo(
     () => [
-      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
       { to: '/admin/users', label: t('users'), icon: 'Users' as const },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
       { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
       { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' as const },
       { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
+      { to: '/admin/landing-certificates', label: t('landingCertificates', 'Landing Certificates'), icon: 'Award' as const },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
       { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
       { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' as const },
       { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
       { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
       { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
+      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
     ],
     [t]
   )
@@ -38,12 +39,13 @@ export function AdminLayout() {
     [t]
   )
 
+  // Mobile bottom bar: no AI, no Support
   const bottomNavItems = useMemo(
     () => [
-      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
       { to: '/admin/users', label: t('users'), icon: 'Users' as const },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
+      { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
       { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
     ],
     [t]

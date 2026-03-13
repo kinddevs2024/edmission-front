@@ -10,6 +10,9 @@ export interface UniversityListItem {
   hasScholarship?: boolean
   matchScore?: number
   matchBreakdown?: Record<string, number>
+  minLanguageLevel?: string
+  tuitionPrice?: number
+  facultyCodes?: string[]
 }
 
 export interface UniversityProfile {
@@ -33,6 +36,8 @@ export interface UniversityProfile {
   /** Per-category included items: category id -> item names. If missing, all catalog items for that category. */
   facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
+  minLanguageLevel?: string
+  tuitionPrice?: number
 }
 
 export interface Program {
