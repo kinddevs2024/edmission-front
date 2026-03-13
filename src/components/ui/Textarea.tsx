@@ -5,6 +5,9 @@ interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'size'> {
   label?: string
   error?: boolean
   resize?: boolean
+  variant?: 'outlined' | 'standard' | 'static'
+  color?: 'green' | 'blue' | 'gray' | 'amber' | 'red'
+  size?: 'md' | 'lg'
 }
 
 export const Textarea = forwardRef<HTMLDivElement, TextareaProps>(
@@ -12,16 +15,15 @@ export const Textarea = forwardRef<HTMLDivElement, TextareaProps>(
     return (
       <MTTextarea
         ref={ref}
-        variant={variant as 'outlined'}
-        size={size as 'md'}
-        color={color as 'green'}
+        variant={variant}
+        size={size}
+        color={color}
         label={label}
         error={!!error}
         resize={resize}
         className={className}
         placeholder={props.placeholder ?? ' '}
         containerProps={{ className: 'min-w-0 w-full' }}
-        crossOrigin={undefined}
         onResize={undefined}
         onResizeCapture={undefined}
         onPointerEnterCapture={undefined}

@@ -303,7 +303,9 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                     disabled={loading || !input.trim()}
                     className="shrink-0 w-9 h-9 min-w-9 min-h-9 rounded-full p-0 flex items-center justify-center"
                     icon={<Send className="w-4 h-4" />}
-                  />
+                  >
+                    {null}
+                  </Button>
                 </div>
               </form>
               <p className="text-xs text-[var(--color-text-muted)] mb-2">
@@ -439,7 +441,9 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               className="flex-1 min-h-[36px] max-h-28 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
               disabled={loading}
             />
-            <Button type="submit" disabled={loading || (!input.trim() && !selectionAsk)} className="shrink-0 w-9 h-9 min-w-9 min-h-9 rounded-full p-0 flex items-center justify-center" icon={<Send className="w-4 h-4" />} />
+            <Button type="submit" disabled={loading || (!input.trim() && !selectionAsk)} className="shrink-0 w-9 h-9 min-w-9 min-h-9 rounded-full p-0 flex items-center justify-center" icon={<Send className="w-4 h-4" />}>
+              {null}
+            </Button>
           </div>
         </form>
         )}

@@ -51,7 +51,7 @@ export function AIChatPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
-  const [aiStatus, setAIStatus] = useState<AIStatus | null>(null)
+  const [, setAIStatus] = useState<AIStatus | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
