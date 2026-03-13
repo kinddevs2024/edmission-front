@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 interface ModalProps {
   open: boolean
   onClose: () => void
-  title?: string
+  title?: ReactNode
   children: ReactNode
   footer?: ReactNode
 }
@@ -20,11 +20,15 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
       >
-        {title && (
+        {title != null && (
           <div className="px-4 py-3 border-b border-[var(--color-border)]">
-            <h2 id="modal-title" className="text-lg font-semibold">
-              {title}
-            </h2>
+            {typeof title === 'string' ? (
+              <h2 id="modal-title" className="text-lg font-semibold">{title}</h2>
+            ) : (
+              <div id="modal-title" className="flex items-center justify-between gap-4">
+                {title}
+              </div>
+            )}
           </div>
         )}
         <div className="px-4 py-3 overflow-y-auto flex-1">{children}</div>

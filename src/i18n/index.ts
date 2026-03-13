@@ -2,8 +2,8 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { supportedLngs, defaultNS, fallbackLng, namespaces, getInitialLanguage } from './config'
 
-/** Namespaces needed for first paint (landing + common). Load rest in background. */
-const CRITICAL_NS: readonly string[] = ['common', 'landing']
+/** Namespaces needed for first paint (landing + common + student for sidebar). Load rest in background. */
+const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student']
 const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
 
 async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<Record<string, object>> {

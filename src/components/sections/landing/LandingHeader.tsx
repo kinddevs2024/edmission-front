@@ -195,7 +195,7 @@ export function LandingHeader() {
                 </div>
               </nav>
               <div className="p-4 border-t border-[var(--color-border)] flex items-center gap-3">
-                <LanguageMenu />
+                <LanguageMenu placement="top" />
                 <ThemeSwitch />
               </div>
             </aside>

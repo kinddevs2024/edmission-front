@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import type { Role } from '@/types/user'
@@ -138,10 +138,19 @@ function DocumentTitle() {
   return null
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
+
 export function Router() {
   return (
     <Suspense fallback={<PageFallback />}>
     <DocumentTitle />
+    <ScrollToTop />
     <Routes>
       <Route path="/maintenance" element={<Maintenance />} />
       <Route element={<AuthLayout />}>

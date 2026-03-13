@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { NotificationsDropdown } from './NotificationsDropdown'
 import { LanguageMenu } from './LanguageMenu'
+import { GlobalSearch } from './GlobalSearch'
 import { MobileNavDrawer } from './MobileNavDrawer'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
@@ -63,6 +64,9 @@ export function TopBar() {
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <MobileNavDrawer />
         <span className="text-[var(--color-text-muted)] text-sm hidden sm:block truncate">{t('appName')}</span>
+      </div>
+      <div className="hidden md:flex flex-1 max-w-md mx-4">
+        <GlobalSearch />
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
         <div

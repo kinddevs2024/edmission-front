@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { OnboardingTutorialModal, hasSeenTutorial, markTutorialSeen } from '@/components/onboarding/OnboardingTutorialModal'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -15,6 +16,10 @@ import { CheckCircle, Circle } from 'lucide-react'
 
 export function StudentDashboard() {
   const { t } = useTranslation('student')
+  const [showTutorial, setShowTutorial] = useState(false)
+  useEffect(() => {
+    if (!hasSeenTutorial('student')) setShowTutorial(true)
+  }, [])
   const [profilePercent, setProfilePercent] = useState(0)
   const [minimalComplete, setMinimalComplete] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
@@ -66,7 +71,8 @@ export function StudentDashboard() {
   const onboardingDone = onboardingSteps.every((s) => s.done)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <OnboardingTutorialModal open={showTutorial} onClose={() => { markTutorialSeen('student'); setShowTutorial(false) }} variant="student" />
       <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
 
       {!onboardingDone && (
@@ -125,7 +131,7 @@ export function StudentDashboard() {
         </Link>
       </div>
 
-      <Link to="/student/universities">
+      <Link to="/student/universities" className="block">
         <Card className="cursor-pointer hover:border-primary-accent transition-colors" interactive>
           <CardTitle>{t('recommendedUniversities')}</CardTitle>
         {loadingRecs ? (

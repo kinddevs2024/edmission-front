@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/utils/cn'
 import { getNavIcon } from '@/components/icons/NavIcons'
@@ -20,18 +21,27 @@ function NavLinkItem({
       to={to}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200',
-          isActive
-            ? 'bg-primary-accent/20 text-primary-accent shadow-sm'
-            : 'text-dark-muted hover:bg-white/5 hover:text-white'
+          'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200',
+          isActive ? 'text-primary-accent' : 'text-dark-muted hover:bg-white/5 hover:text-white'
         )
       }
-    >
-      <span className="shrink-0 w-5 h-5 flex items-center justify-center">
-        {getNavIcon(icon, 'size-5')}
-      </span>
-      {!collapsed && <span className="flex-1 truncate">{label}</span>}
-    </NavLink>
+      children={({ isActive }) => (
+        <>
+          {isActive && (
+            <motion.div
+              layoutId="sidebar-active"
+              className="absolute inset-0 rounded-xl bg-primary-accent/20 shadow-sm"
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              aria-hidden
+            />
+          )}
+          <span className="relative z-10 shrink-0 w-5 h-5 flex items-center justify-center">
+            {getNavIcon(icon, 'size-5')}
+          </span>
+          {!collapsed && <span className="relative z-10 flex-1 truncate">{label}</span>}
+        </>
+      )}
+    />
   )
 }
 

@@ -10,7 +10,7 @@ const LANGUAGE_LABELS: Record<SupportedLng, string> = {
   uz: "O'zbek",
 }
 
-export function LanguageMenu() {
+export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 'top' }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const currentLng = (i18n.language?.split('-')[0] || 'en') as SupportedLng
@@ -63,7 +63,10 @@ export function LanguageMenu() {
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 min-w-[160px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50 animate-modal-enter"
+          className={cn(
+            'absolute right-0 min-w-[160px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50 animate-modal-enter',
+            placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}
           role="menu"
         >
           {supportedLngs.map((lng) => (

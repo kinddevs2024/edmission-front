@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { Send, Bot, User, ArrowLeft } from 'lucide-react'
@@ -28,6 +28,7 @@ export function AIChatPage() {
   const { role, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const isFullPageAI = location.pathname === '/ai' || location.pathname === '/admin/ai'
   const messages = useAIChatStore((s) => s.messages)
   const addMessage = useAIChatStore((s) => s.addMessage)
@@ -45,7 +46,8 @@ export function AIChatPage() {
           : role === 'school_counsellor'
             ? '/school/dashboard'
             : '/'
-  const [input, setInput] = useState('')
+  const initialQ = searchParams.get('q') ?? ''
+  const [input, setInput] = useState(initialQ)
   const [placeholder, setPlaceholder] = useState(() => getRandomPlaceholder())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
