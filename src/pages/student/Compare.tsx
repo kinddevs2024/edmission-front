@@ -74,7 +74,7 @@ export function Compare() {
       if (v == null) return '—'
       return v === 0 ? 'Free' : `${v.toLocaleString()}/yr`
     }
-    return String((u as Record<string, unknown>)[key] ?? '—')
+    return String((u as unknown as Record<string, unknown>)[key] ?? '—')
   }
 
   return (
