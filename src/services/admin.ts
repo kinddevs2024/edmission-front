@@ -43,6 +43,8 @@ export interface AdminUniversityProfile {
   facultyCodes?: string[]
   facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
+  minLanguageLevel?: string
+  tuitionPrice?: number
 }
 
 export interface CreateAdminUserPayload {
@@ -242,6 +244,8 @@ export async function getUniversityProfileByUser(userId: string): Promise<AdminU
       ? raw.facultyItems as Record<string, string[]>
       : undefined,
     targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
+    minLanguageLevel: raw.minLanguageLevel != null ? String(raw.minLanguageLevel) : undefined,
+    tuitionPrice: raw.tuitionPrice != null ? Number(raw.tuitionPrice) : undefined,
   }
 }
 
@@ -259,6 +263,8 @@ export async function updateUniversityProfileByUser(
     facultyCodes?: string[]
     facultyItems?: Record<string, string[]>
     targetStudentCountries?: string[]
+    minLanguageLevel?: string
+    tuitionPrice?: number
   }
 ): Promise<AdminUniversityProfile> {
   const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/university-profile`, payload)
@@ -276,6 +282,8 @@ export async function updateUniversityProfileByUser(
     logoUrl: raw.logoUrl != null ? String(raw.logoUrl) : undefined,
     facultyCodes: Array.isArray(raw.facultyCodes) ? raw.facultyCodes.map((x) => String(x)) : [],
     targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
+    minLanguageLevel: raw.minLanguageLevel != null ? String(raw.minLanguageLevel) : undefined,
+    tuitionPrice: raw.tuitionPrice != null ? Number(raw.tuitionPrice) : undefined,
   }
 }
 

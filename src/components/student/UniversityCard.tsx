@@ -3,22 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { MatchScore } from './MatchScore'
 import { getImageUrl } from '@/services/upload'
-import { Wallet, Wrench, Code, FlaskConical, Palette, Heart, Scale, GraduationCap, type LucideIcon } from 'lucide-react'
 import type { UniversityListItem } from '@/types/university'
-
-const FACULTY_ICONS: Record<string, LucideIcon> = {
-  business_management_economics: Wallet,
-  engineering_technology: Wrench,
-  computer_science_digital_technologies: Code,
-  natural_sciences: FlaskConical,
-  health_medical_sciences: Heart,
-  social_sciences_humanities: Palette,
-  creative_arts_media_design: Palette,
-  education: GraduationCap,
-  environment_agriculture_sustainability: FlaskConical,
-  hospitality_tourism_service: Wallet,
-  law_legal_studies: Scale,
-}
 
 interface UniversityCardProps {
   university: UniversityListItem
@@ -41,11 +26,7 @@ export function UniversityCard({ university, showMatch = true, onInterest, inter
     matchBreakdown,
     minLanguageLevel,
     tuitionPrice,
-    facultyCodes,
   } = university
-
-  const firstFaculty = facultyCodes?.[0]
-  const FacultyIcon = firstFaculty ? (FACULTY_ICONS[firstFaculty] ?? GraduationCap) : GraduationCap
 
   return (
     <Card
@@ -53,9 +34,6 @@ export function UniversityCard({ university, showMatch = true, onInterest, inter
       interactive
       tilt
     >
-      <div className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-[var(--color-card)]/80 dark:bg-[var(--color-card)]/90 flex items-center justify-center text-[var(--color-text-muted)]">
-        <FacultyIcon className="w-4 h-4" aria-hidden />
-      </div>
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-3 min-w-0">
           {logo ? (

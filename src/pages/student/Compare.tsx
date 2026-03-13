@@ -60,10 +60,22 @@ export function Compare() {
     { label: t('student:compareName'), key: 'name' as const },
     { label: t('student:compareCountry'), key: 'country' as const },
     { label: t('student:compareCity'), key: 'city' as const },
+    { label: t('student:compareMinRequirements', 'Minimum requirements'), key: 'minLanguageLevel' as const },
+    { label: t('student:compareTuition', 'Tuition'), key: 'tuitionPrice' as const },
     { label: t('student:compareRating'), key: 'rating' as const },
     { label: t('student:compareMatch'), key: 'matchScore' as const },
     { label: t('student:compareScholarship'), key: 'hasScholarship' as const },
   ]
+
+  const formatCellValue = (u: UniversityListItem, key: string): string => {
+    if (key === 'hasScholarship') return u.hasScholarship ? 'Yes' : 'No'
+    if (key === 'tuitionPrice') {
+      const v = u.tuitionPrice
+      if (v == null) return '—'
+      return v === 0 ? 'Free' : `${v.toLocaleString()}/yr`
+    }
+    return String((u as Record<string, unknown>)[key] ?? '—')
+  }
 
   return (
     <div className="space-y-4">
@@ -120,7 +132,7 @@ export function Compare() {
                     <TableTd className="font-medium">{label}</TableTd>
                     {universities.map((u) => (
                       <TableTd key={u.id}>
-                        {key === 'hasScholarship' ? (u.hasScholarship ? 'Yes' : 'No') : String((u as unknown as Record<string, unknown>)[key] ?? '—')}
+                        {formatCellValue(u, key)}
                       </TableTd>
                     ))}
                   </TableRow>

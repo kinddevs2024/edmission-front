@@ -28,7 +28,6 @@ export function AdminLandingCertificates() {
   const [formType, setFormType] = useState<'university' | 'student'>('university')
   const [formTitle, setFormTitle] = useState('')
   const [formImageUrl, setFormImageUrl] = useState('')
-  const [formOrder, setFormOrder] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -49,7 +48,6 @@ export function AdminLandingCertificates() {
     setFormType('university')
     setFormTitle('')
     setFormImageUrl('')
-    setFormOrder('')
     setAddOpen(true)
   }
 
@@ -58,7 +56,6 @@ export function AdminLandingCertificates() {
     setFormType(item.type)
     setFormTitle(item.title)
     setFormImageUrl(item.imageUrl)
-    setFormOrder(String(item.order ?? ''))
   }
 
   const handleAdd = () => {
@@ -68,7 +65,6 @@ export function AdminLandingCertificates() {
       type: formType,
       title: formTitle.trim(),
       imageUrl: formImageUrl.trim(),
-      order: formOrder ? Number(formOrder) : undefined,
     })
       .then(() => {
         setAddOpen(false)
@@ -85,7 +81,6 @@ export function AdminLandingCertificates() {
       type: formType,
       title: formTitle.trim(),
       imageUrl: formImageUrl.trim(),
-      order: formOrder ? Number(formOrder) : undefined,
     })
       .then(() => {
         setEditTarget(null)
@@ -132,13 +127,6 @@ export function AdminLandingCertificates() {
         value={formImageUrl}
         onChange={setFormImageUrl}
         accept="image/jpeg,image/png,image/gif,image/webp"
-      />
-      <Input
-        label={t('admin:certificateOrder', 'Order')}
-        type="number"
-        value={formOrder}
-        onChange={(e) => setFormOrder(e.target.value)}
-        placeholder="0"
       />
     </div>
   )

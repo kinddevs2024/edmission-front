@@ -156,7 +156,7 @@ export function UniversityProfilePage() {
         <Card>
           <CardTitle>{t('university:sectionRequirements', 'Requirements & Tuition')}</CardTitle>
           <div className="mt-4 space-y-4">
-            <Input label={t('university:minLanguageLevel', 'Min. language level')} {...register('minLanguageLevel')} placeholder="e.g. IELTS 6.5, TOEFL 90, C1" />
+            <Input label={t('university:minRequirements', 'Minimum requirements')} {...register('minLanguageLevel')} placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0" />
             <Input label={t('university:tuitionPrice', 'Tuition price')} type="number" {...register('tuitionPrice')} placeholder="Annual cost in main currency" />
           </div>
         </Card>

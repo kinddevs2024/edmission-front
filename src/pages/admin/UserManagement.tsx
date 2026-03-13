@@ -83,6 +83,8 @@ export function UserManagement() {
   const [uniFacultyItems, setUniFacultyItems] = useState<Record<string, string[]>>({})
   const [uniOpenFacultyId, setUniOpenFacultyId] = useState<string | null>(null)
   const [uniTargetCountries, setUniTargetCountries] = useState<string[]>([])
+  const [uniMinRequirements, setUniMinRequirements] = useState('')
+  const [uniTuitionPrice, setUniTuitionPrice] = useState('')
   const [editUserTarget, setEditUserTarget] = useState<AdminUser | null>(null)
   const [editUserRole, setEditUserRole] = useState<Role>('student')
   const [editUserName, setEditUserName] = useState('')
@@ -185,6 +187,8 @@ export function UserManagement() {
         setUniFacultyCodes(p.facultyCodes ?? [])
         setUniFacultyItems((p as { facultyItems?: Record<string, string[]> }).facultyItems ?? {})
         setUniTargetCountries(p.targetStudentCountries ?? [])
+        setUniMinRequirements(p.minLanguageLevel ?? '')
+        setUniTuitionPrice(p.tuitionPrice != null ? String(p.tuitionPrice) : '')
       })
       .catch((e) => {
         toastApiError(e)
@@ -209,6 +213,8 @@ export function UserManagement() {
     setUniFacultyItems({})
     setUniOpenFacultyId(null)
     setUniTargetCountries([])
+    setUniMinRequirements('')
+    setUniTuitionPrice('')
   }
 
   const handleUniversitySave = () => {
@@ -227,6 +233,8 @@ export function UserManagement() {
       facultyCodes: uniFacultyCodes,
       facultyItems: Object.keys(uniFacultyItems).length ? uniFacultyItems : undefined,
       targetStudentCountries: uniTargetCountries,
+      minLanguageLevel: uniMinRequirements.trim() || undefined,
+      tuitionPrice: uniTuitionPrice.trim() ? Number(uniTuitionPrice) : undefined,
     })
       .then(() => {
         closeUniversityEditor()
@@ -440,6 +448,19 @@ export function UserManagement() {
             />
             <Input label={t('university:city', 'City')} value={uniCity} onChange={(e) => setUniCity(e.target.value)} />
             <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} />
+            <Input
+              label={t('university:minRequirements', 'Minimum requirements')}
+              value={uniMinRequirements}
+              onChange={(e) => setUniMinRequirements(e.target.value)}
+              placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0"
+            />
+            <Input
+              label={t('university:tuitionPrice', 'Tuition price')}
+              type="number"
+              value={uniTuitionPrice}
+              onChange={(e) => setUniTuitionPrice(e.target.value)}
+              placeholder="Annual cost in main currency"
+            />
             <label className="block">
               <span className="block text-sm font-medium mb-1">{t('university:description', 'Description')}</span>
               <textarea

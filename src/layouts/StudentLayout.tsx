@@ -46,11 +46,12 @@ export function StudentLayout() {
     ],
     [t]
   )
-  // Mobile bottom bar: HOME → EXPLORE → PROFILES → CHAT (no AI, no Support)
+  // Mobile bottom bar: HOME → EXPLORE → APPLICATIONS → PROFILE → CHAT (fixed, same on all pages)
   const bottomNavItems = useMemo(
     () => [
       { to: '/student/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
       { to: '/student/universities', label: t('navExplore'), icon: 'GraduationCap' },
+      { to: '/student/applications', label: t('navApplications'), icon: 'FileCheck' },
       { to: '/student/profile', label: t('navProfile'), icon: 'User' },
       { to: '/student/chat', label: t('navChat'), icon: 'MessageCircle' },
     ],
