@@ -79,8 +79,15 @@ export function AdminChats() {
     setSending(true)
     sendAdminChatMessage(modalChatId, messageText.trim())
       .then((newMsg) => {
-        const msg = newMsg as { id?: string; message?: string; text?: string; createdAt?: string; senderId?: string }
-        setMessages((prev) => [...prev, { ...msg, id: msg.id ?? `m-${Date.now()}`, message: msg.message ?? msg.text ?? '' }])
+        const msg = newMsg as AdminChatMessage & { text?: string }
+        setMessages((prev) => [...prev, {
+          id: msg.id ?? `m-${Date.now()}`,
+          chatId: modalChatId,
+          type: msg.type ?? 'text',
+          message: msg.message ?? msg.text ?? '',
+          senderId: msg.senderId ?? '',
+          createdAt: msg.createdAt ?? new Date().toISOString(),
+        }])
         setMessageText('')
       })
       .catch(toastApiError)

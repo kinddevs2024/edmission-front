@@ -92,7 +92,7 @@ export function useSocket() {
   }, [])
 
   const onNotification = useCallback(
-    (callback: (payload: { id: string; type: string; title: string; body?: string; link?: string; referenceId?: string; createdAt?: string }) => void) => {
+    (callback: (payload: { id: string; type: string; title: string; body?: string; link?: string; referenceId?: string; createdAt?: string; metadata?: Record<string, unknown> }) => void) => {
       if (!socketInstance) return () => {}
       socketInstance.on('notification', callback)
       return () => socketInstance?.off('notification', callback)
