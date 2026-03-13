@@ -28,7 +28,7 @@ export function AIChatPage() {
   const { role, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const isFullPageAI = location.pathname === '/ai'
+  const isFullPageAI = location.pathname === '/ai' || location.pathname === '/admin/ai'
   const messages = useAIChatStore((s) => s.messages)
   const addMessage = useAIChatStore((s) => s.addMessage)
   const updateMessage = useAIChatStore((s) => s.updateMessage)

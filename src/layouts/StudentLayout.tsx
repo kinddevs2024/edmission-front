@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo } from 'react'
 import { useUIStore } from '@/store/uiStore'
@@ -7,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { cn } from '@/utils/cn'
+import { ContentFallback } from '@/components/layout/ContentFallback'
 
 export function StudentLayout() {
   const { t } = useTranslation('student')
@@ -70,7 +72,9 @@ export function StudentLayout() {
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter">
-          <Outlet />
+          <Suspense fallback={<ContentFallback />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
       <BottomNav items={bottomNavItems} />

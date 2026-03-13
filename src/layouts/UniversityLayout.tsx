@@ -1,4 +1,5 @@
 import { Outlet, useLocation, Navigate } from 'react-router-dom'
+import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -7,6 +8,7 @@ import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { cn } from '@/utils/cn'
+import { ContentFallback } from '@/components/layout/ContentFallback'
 
 export function UniversityLayout() {
   const { user } = useAuth()
@@ -86,7 +88,9 @@ export function UniversityLayout() {
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter">
-          <Outlet />
+          <Suspense fallback={<ContentFallback />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
       <BottomNav items={bottomNavItems} />

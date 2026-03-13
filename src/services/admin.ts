@@ -311,6 +311,7 @@ export interface AdminInterest {
   studentId: string
   universityId: string
   status: string
+  source?: 'profile' | 'catalog'
   createdAt?: string
 }
 
@@ -327,12 +328,18 @@ export interface AdminChat {
   id: string
   studentId: string
   universityId: string
+  universityName?: string
+  studentName?: string
   createdAt?: string
   updatedAt?: string
 }
 
-export async function getChats(params?: PaginationParams): Promise<PaginatedResponse<AdminChat>> {
-  const { data } = await api.get<PaginatedResponse<AdminChat>>('/admin/chats', { params })
+export interface AdminChatsResponse extends PaginatedResponse<AdminChat> {
+  universities?: { id: string; name: string }[]
+}
+
+export async function getChats(params?: PaginationParams & { universityId?: string }): Promise<AdminChatsResponse> {
+  const { data } = await api.get<AdminChatsResponse>('/admin/chats', { params })
   return data
 }
 
@@ -347,6 +354,11 @@ export interface AdminChatMessage {
 
 export async function getChatMessages(chatId: string, params?: { limit?: number }) {
   const { data } = await api.get<{ chat: AdminChat; messages: AdminChatMessage[] }>(`/admin/chats/${chatId}/messages`, { params })
+  return data
+}
+
+export async function sendAdminChatMessage(chatId: string, text: string): Promise<AdminChatMessage> {
+  const { data } = await api.post<AdminChatMessage>(`/admin/chats/${chatId}/messages`, { text })
   return data
 }
 

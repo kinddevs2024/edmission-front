@@ -33,17 +33,17 @@ export function CertificationsSection() {
               href={item.imageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] transition hover:border-primary-accent/50 hover:shadow-[var(--shadow-card-hover)]"
+              className="group flex flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] transition hover:border-primary-accent/50 hover:shadow-[var(--shadow-card-hover)]"
             >
-              <p className="px-4 pt-4 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
-              <div className="aspect-[3/4] overflow-hidden bg-[var(--color-border)]/30">
+              <div className="h-52 sm:h-64 shrink-0 overflow-hidden bg-[var(--color-border)]/30">
                 <img
                   src={item.imageUrl}
                   alt={item.title}
-                  className="h-full w-full object-cover transition group-hover:scale-105"
+                  className="h-full w-full object-contain transition group-hover:scale-105"
                   loading="lazy"
                 />
               </div>
+              <p className="shrink-0 px-4 py-3 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
             </a>
           </Reveal>
         ))}

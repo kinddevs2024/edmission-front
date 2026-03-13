@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { logout as logoutApi } from '@/services/auth'
 import { useSocket } from '@/hooks/useSocket'
 import { useNotificationStore } from '@/store/notificationStore'
+import { buildNotificationLink } from '@/services/notifications'
 import { Button } from '@/components/ui/Button'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { NotificationsDropdown } from './NotificationsDropdown'
@@ -16,22 +17,46 @@ import { toastApiError } from '@/utils/toastError'
 export function TopBar() {
   const { t } = useTranslation('common')
   const { user } = useAuth()
+  const role = (user as { role?: string })?.role ?? null
   const { onNotification } = useSocket()
   const addNotification = useNotificationStore((s) => s.addNotification)
 
   useEffect(() => {
     const unsubscribe = onNotification((payload) => {
+      const link = payload.link ?? buildNotificationLink(
+        payload.type ?? 'info',
+        payload.referenceId,
+        payload.metadata,
+        role as import('@/types/user').Role
+      )
       addNotification({
         id: payload.id,
         type: payload.type as import('@/store/notificationStore').NotificationType,
         title: payload.title,
         body: payload.body,
-        link: payload.link,
+        link,
+        referenceId: payload.referenceId,
+        metadata: payload.metadata,
         createdAt: payload.createdAt ?? new Date().toISOString(),
       })
+
+      // Browser notification when tab is in background
+      if (typeof window !== 'undefined' && 'Notification' in window && document.hidden) {
+        if (Notification.permission === 'granted') {
+          const n = new Notification(payload.title ?? 'Edmission', {
+            body: payload.body ?? '',
+            icon: '/favicon.svg',
+          })
+          n.onclick = () => {
+            window.focus()
+            if (link) window.location.href = link
+            n.close()
+          }
+        }
+      }
     })
     return unsubscribe
-  }, [onNotification, addNotification])
+  }, [onNotification, addNotification, role])
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b bg-[var(--color-card)] border-[var(--color-border)] flex items-center justify-between px-3 sm:px-4 gap-2">

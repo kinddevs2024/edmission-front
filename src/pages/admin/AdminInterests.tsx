@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -20,6 +21,7 @@ const STATUS_OPTIONS = [
 ]
 
 export function AdminInterests() {
+  const { t } = useTranslation('admin')
   const [items, setItems] = useState<AdminInterest[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -53,7 +55,7 @@ export function AdminInterests() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Interests" icon="Heart" />
+      <PageTitle title={t('admin:interests')} icon="Heart" />
 
       <Card>
         <div className="flex flex-wrap gap-4 mb-4">
@@ -72,9 +74,9 @@ export function AdminInterests() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>ID</TableTh>
-                  <TableTh>StudentProfile</TableTh>
-                  <TableTh>UniversityProfile</TableTh>
+                  <TableTh>Student</TableTh>
+                  <TableTh>University</TableTh>
+                  <TableTh>Source</TableTh>
                   <TableTh>Status</TableTh>
                   <TableTh>Created</TableTh>
                   <TableTh>Actions</TableTh>
@@ -83,9 +85,9 @@ export function AdminInterests() {
               <TableBody>
                 {items.map((x) => (
                   <TableRow key={x.id}>
-                    <TableTd className="font-mono text-xs">{x.id}</TableTd>
                     <TableTd className="font-mono text-xs">{String(x.studentId)}</TableTd>
                     <TableTd className="font-mono text-xs">{String(x.universityId)}</TableTd>
+                    <TableTd>{(x as { source?: string }).source === 'catalog' ? t('admin:catalogUniversity', 'Catalog') : t('admin:verifiedUniversity', 'Verified')}</TableTd>
                     <TableTd>{x.status}</TableTd>
                     <TableTd>{x.createdAt ? formatDateTime(x.createdAt) : '—'}</TableTd>
                     <TableTd>

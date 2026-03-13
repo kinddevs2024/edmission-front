@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +11,7 @@ import { Users, UserPlus, Building2, Inbox, ChevronRight, Mail, BarChart3 } from
 
 export function SchoolDashboard() {
   const { t } = useTranslation('school')
+  const navigate = useNavigate()
   const [schoolName, setSchoolName] = useState('')
   const [studentsTotal, setStudentsTotal] = useState(0)
   const [pendingTotal, setPendingTotal] = useState(0)
@@ -62,32 +63,36 @@ export function SchoolDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="border-primary-accent/20 bg-primary-accent/5">
-          <CardTitle className="flex items-center gap-2">
-            <Users size={20} className="text-primary-accent" />
-            {t('statsStudents')}
-          </CardTitle>
-          <p className="text-3xl font-bold mt-1">{loading ? '—' : studentsTotal}</p>
-          <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
-            {t('myStudents')}
-          </p>
-          <Button to="/school/my-students" variant="secondary" size="sm" className="mt-3">
-            {t('viewAll')} <ChevronRight size={14} />
-          </Button>
-        </Card>
-        <Card className={pendingTotal > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}>
-          <CardTitle className="flex items-center gap-2">
-            <Inbox size={20} className={pendingTotal > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--color-text-muted)]'} />
-            {t('statsPending')}
-          </CardTitle>
-          <p className="text-3xl font-bold mt-1">{loading ? '—' : pendingTotal}</p>
-          <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
-            {t('joinRequests')}
-          </p>
-          <Button to="/school/join-requests" variant="secondary" size="sm" className="mt-3">
-            {t('viewAll')} <ChevronRight size={14} />
-          </Button>
-        </Card>
+        <Link to="/school/my-students">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors border-primary-accent/20 bg-primary-accent/5" interactive>
+            <CardTitle className="flex items-center gap-2">
+              <Users size={20} className="text-primary-accent" />
+              {t('statsStudents')}
+            </CardTitle>
+            <p className="text-3xl font-bold mt-1">{loading ? '—' : studentsTotal}</p>
+            <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
+              {t('myStudents')}
+            </p>
+            <span className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
+              {t('viewAll')} <ChevronRight size={14} />
+            </span>
+          </Card>
+        </Link>
+        <Link to="/school/join-requests">
+          <Card className={`h-full cursor-pointer hover:border-primary-accent transition-colors ${pendingTotal > 0 ? 'border-amber-500/30 bg-amber-500/5' : ''}`} interactive>
+            <CardTitle className="flex items-center gap-2">
+              <Inbox size={20} className={pendingTotal > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--color-text-muted)]'} />
+              {t('statsPending')}
+            </CardTitle>
+            <p className="text-3xl font-bold mt-1">{loading ? '—' : pendingTotal}</p>
+            <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
+              {t('joinRequests')}
+            </p>
+            <span className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
+              {t('viewAll')} <ChevronRight size={14} />
+            </span>
+          </Card>
+        </Link>
         <Link to="/school/my-school">
           <Card className="h-full hover:border-primary-accent transition-colors cursor-pointer border-dashed">
             <CardTitle className="flex items-center gap-2">
@@ -127,11 +132,12 @@ export function SchoolDashboard() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus size={18} />
-            {t('recentRequests')}
-          </CardTitle>
+        <Link to="/school/join-requests">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus size={18} />
+              {t('recentRequests')}
+            </CardTitle>
           {loading ? (
             <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('common:loading', 'Loading...')}</p>
           ) : recentRequests.length === 0 ? (
@@ -151,19 +157,19 @@ export function SchoolDashboard() {
                       </p>
                     )}
                   </div>
-                  <Button to="/school/join-requests" variant="secondary" size="sm" className="shrink-0">
-                    {t('viewAll')}
-                  </Button>
+                  <button type="button" className="text-sm text-primary-accent hover:underline shrink-0">{t('viewAll')}</button>
                 </li>
               ))}
             </ul>
           )}
-          <Button to="/school/join-requests" variant="secondary" size="sm" className="mt-4">
+          <span className="inline-block mt-4 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
             {t('viewAll')} {t('joinRequests')}
-          </Button>
-        </Card>
+          </span>
+          </Card>
+        </Link>
 
-        <Card>
+        <Link to="/school/my-students">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
           <CardTitle className="flex items-center gap-2">
             <Users size={18} />
             {t('recentStudents')}
@@ -185,17 +191,22 @@ export function SchoolDashboard() {
                       <p className="text-xs text-[var(--color-text-muted)] truncate">{s.email}</p>
                     )}
                   </div>
-                  <Button to={`/school/students/${s.userId}/profile`} variant="ghost" size="sm" className="shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/school/students/${s.userId}/profile`) }}
+                    className="text-sm text-primary-accent hover:underline shrink-0"
+                  >
                     {t('profile')}
-                  </Button>
+                  </button>
                 </li>
               ))}
             </ul>
           )}
-          <Button to="/school/my-students" variant="secondary" size="sm" className="mt-4">
+          <span className="inline-block mt-4 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
             {t('viewAll')} {t('myStudents')}
-          </Button>
-        </Card>
+          </span>
+          </Card>
+        </Link>
       </div>
 
       <Card className="border-[var(--color-border)]">

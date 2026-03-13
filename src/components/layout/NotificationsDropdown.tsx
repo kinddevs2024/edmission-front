@@ -83,31 +83,36 @@ export function NotificationsDropdown() {
               <>
               {items.slice(0, MAX_VISIBLE).map((n) => (
                 <li key={n.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleMarkRead(n.id)
-                      if (n.link) setOpen(false)
-                    }}
-                    className={cn(
-                      'w-full text-left px-4 py-3 hover:bg-[var(--color-border)]/20 transition-colors border-b border-[var(--color-border)] last:border-0',
-                      !n.read && 'bg-primary-accent/5'
-                    )}
-                  >
-                    {n.link ? (
-                      <Link to={n.link} className="block" onClick={() => setOpen(false)}>
-                        <p className="text-sm font-medium">{n.title}</p>
-                        {n.body && <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{n.body}</p>}
-                        <p className="text-xs text-[var(--color-text-muted)] mt-1">{formatDate(n.createdAt)}</p>
-                      </Link>
-                    ) : (
-                      <>
-                        <p className="text-sm font-medium">{n.title}</p>
-                        {n.body && <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{n.body}</p>}
-                        <p className="text-xs text-[var(--color-text-muted)] mt-1">{formatDate(n.createdAt)}</p>
-                      </>
-                    )}
-                  </button>
+                  {n.link ? (
+                    <Link
+                      to={n.link}
+                      className={cn(
+                        'block w-full text-left px-4 py-3 hover:bg-[var(--color-border)]/20 transition-colors border-b border-[var(--color-border)] last:border-0',
+                        !n.read && 'bg-primary-accent/5'
+                      )}
+                      onClick={() => {
+                        handleMarkRead(n.id)
+                        setOpen(false)
+                      }}
+                    >
+                      <p className="text-sm font-medium">{n.title}</p>
+                      {n.body && <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{n.body}</p>}
+                      <p className="text-xs text-[var(--color-text-muted)] mt-1">{formatDate(n.createdAt)}</p>
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleMarkRead(n.id)}
+                      className={cn(
+                        'w-full text-left px-4 py-3 hover:bg-[var(--color-border)]/20 transition-colors border-b border-[var(--color-border)] last:border-0',
+                        !n.read && 'bg-primary-accent/5'
+                      )}
+                    >
+                      <p className="text-sm font-medium">{n.title}</p>
+                      {n.body && <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{n.body}</p>}
+                      <p className="text-xs text-[var(--color-text-muted)] mt-1">{formatDate(n.createdAt)}</p>
+                    </button>
+                  )}
                 </li>
               ))}
               <li className="border-t border-[var(--color-border)]">

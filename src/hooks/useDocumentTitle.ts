@@ -56,6 +56,7 @@ const PATH_TITLES: Record<string, string> = {
   '/admin/support': 'admin:support',
   '/admin/logs': 'admin:logs',
   '/admin/health': 'admin:systemHealth',
+  '/admin/ai': 'common:edmissionAi',
   '/school/dashboard': 'school:dashboard',
   '/school/my-school': 'school:mySchool',
   '/school/my-students': 'school:myStudents',

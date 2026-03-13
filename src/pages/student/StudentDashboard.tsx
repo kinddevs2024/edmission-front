@@ -91,34 +91,43 @@ export function StudentDashboard() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="animate-card-enter">
-          <CardTitle>{t('profileCompletion')}</CardTitle>
-          <div className="mt-2">
-            <div className="h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
-                style={{ width: `${profilePercent}%` }}
-              />
+        <Link to="/student/profile">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter" interactive>
+            <CardTitle>{t('profileCompletion')}</CardTitle>
+            <div className="mt-2">
+              <div className="h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
+                  style={{ width: `${profilePercent}%` }}
+                />
+              </div>
+              <p className="text-2xl font-semibold text-primary-accent mt-1">{profilePercent}%</p>
             </div>
-            <p className="text-2xl font-semibold text-primary-accent mt-1">{profilePercent}%</p>
-          </div>
-        </Card>
-        <Card className="animate-card-enter animate-stagger-1">
-          <CardTitle>{t('activeApplications')}</CardTitle>
-          <p className="text-2xl font-semibold">{activeApplications.length}</p>
-        </Card>
-        <Card className="animate-card-enter animate-stagger-2">
-          <CardTitle>{t('offers')}</CardTitle>
-          <p className="text-2xl font-semibold">{offers.length}</p>
-        </Card>
-        <Card className="animate-card-enter animate-stagger-3">
-          <CardTitle>{t('accepted')}</CardTitle>
-          <p className="text-2xl font-semibold">{acceptedCount}</p>
-        </Card>
+          </Card>
+        </Link>
+        <Link to="/student/applications">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-1" interactive>
+            <CardTitle>{t('activeApplications')}</CardTitle>
+            <p className="text-2xl font-semibold">{activeApplications.length}</p>
+          </Card>
+        </Link>
+        <Link to="/student/offers">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-2" interactive>
+            <CardTitle>{t('offers')}</CardTitle>
+            <p className="text-2xl font-semibold">{offers.length}</p>
+          </Card>
+        </Link>
+        <Link to="/student/applications">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-3" interactive>
+            <CardTitle>{t('accepted')}</CardTitle>
+            <p className="text-2xl font-semibold">{acceptedCount}</p>
+          </Card>
+        </Link>
       </div>
 
-      <Card>
-        <CardTitle>{t('recommendedUniversities')}</CardTitle>
+      <Link to="/student/universities">
+        <Card className="cursor-pointer hover:border-primary-accent transition-colors" interactive>
+          <CardTitle>{t('recommendedUniversities')}</CardTitle>
         {loadingRecs ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
             <CardSkeleton /><CardSkeleton /><CardSkeleton />
@@ -138,12 +147,14 @@ export function StudentDashboard() {
         ) : (
           <p className="text-[var(--color-text-muted)] mt-2">{t('completeProfileForRecs')}</p>
         )}
-        <Button to="/student/universities" className="mt-4">{t('exploreUniversities')}</Button>
-      </Card>
+        <span className="inline-block mt-4 px-4 py-2 text-sm font-medium rounded-input bg-primary-accent text-primary-dark">{t('exploreUniversities')}</span>
+        </Card>
+      </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardTitle>{t('activeApplications')}</CardTitle>
+        <Link to="/student/applications">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('activeApplications')}</CardTitle>
           {activeApplications.length === 0 ? (
             <p className="text-[var(--color-text-muted)]">{t('noActiveApplications')}</p>
           ) : (
@@ -152,14 +163,16 @@ export function StudentDashboard() {
                 <li key={a.id} className="flex justify-between items-center">
                   <span>{a.universityName ?? a.universityId}</span>
                   <span className="text-sm text-[var(--color-text-muted)]">{a.status}</span>
-                  <Button to={`/student/applications`} variant="ghost" size="sm">{t('view')}</Button>
+                  <button type="button" className="text-sm text-primary-accent hover:underline">{t('view')}</button>
                 </li>
               ))}
             </ul>
           )}
-          <Button to="/student/applications" variant="secondary" className="mt-3">{t('allApplications')}</Button>
-        </Card>
-        <Card>
+          <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allApplications')}</span>
+          </Card>
+        </Link>
+        <Link to="/student/offers">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
           <CardTitle>{t('recentOffers')}</CardTitle>
           {offers.length === 0 ? (
             <p className="text-[var(--color-text-muted)]">{t('noOffersYet')}</p>
@@ -168,13 +181,14 @@ export function StudentDashboard() {
               {offers.slice(0, 3).map((o) => (
                 <li key={o.id} className="flex justify-between items-center">
                   <span>{o.universityName ?? o.universityId}</span>
-                  <Button to="/student/offers" variant="ghost" size="sm">{t('view')}</Button>
+                  <button type="button" className="text-sm text-primary-accent hover:underline">{t('view')}</button>
                 </li>
               ))}
             </ul>
           )}
-          <Button to="/student/offers" variant="secondary" className="mt-3">{t('allOffers')}</Button>
-        </Card>
+          <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allOffers')}</span>
+          </Card>
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-2">

@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMemo, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,6 +12,7 @@ import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { cn } from '@/utils/cn'
+import { ContentFallback } from '@/components/layout/ContentFallback'
 
 const SIDEBAR_PATHS = ['/profile', '/notifications', '/ai', '/payment', '/payment/success', '/payment/cancel', '/support']
 
@@ -158,7 +160,9 @@ export function MainLayout() {
           <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
             <main className="p-3 sm:p-4 min-h-[calc(100vh-4rem)]">
               <div className="max-w-content mx-auto w-full">
-                <Outlet />
+                <Suspense fallback={<ContentFallback />}>
+                  <Outlet />
+                </Suspense>
               </div>
             </main>
           </div>
@@ -166,7 +170,9 @@ export function MainLayout() {
         </div>
       ) : (
         <main className="p-3 sm:p-4 min-h-[calc(100vh-4rem)]">
-          <Outlet />
+          <Suspense fallback={<ContentFallback />}>
+            <Outlet />
+          </Suspense>
         </main>
       )}
       {isAuthenticated && <FloatingAIButton />}

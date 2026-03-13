@@ -24,6 +24,9 @@ export function Profile() {
       .catch(toastApiError)
   }
 
+  const [browserNotifStatus, setBrowserNotifStatus] = useState<'default' | 'granted' | 'denied'>(() =>
+    typeof window !== 'undefined' && 'Notification' in window ? (Notification.permission as 'default' | 'granted' | 'denied') : 'denied'
+  )
   const [twoFaStep, setTwoFaStep] = useState<'idle' | 'setup' | 'verify' | 'disable'>('idle')
   const [twoFaSecret, setTwoFaSecret] = useState<{ secret: string; qrUrl: string } | null>(null)
   const [twoFaCode, setTwoFaCode] = useState('')
@@ -119,6 +122,31 @@ export function Profile() {
             />
             <span className="text-sm">Trial ending reminder (2 days before)</span>
           </label>
+          {typeof window !== 'undefined' && 'Notification' in window && (
+            <div className="pt-2 border-t border-[var(--color-border)] flex items-center justify-between gap-2">
+              <span className="text-sm text-[var(--color-text-muted)]">
+                {browserNotifStatus === 'granted'
+                  ? 'Browser notifications enabled'
+                  : browserNotifStatus === 'denied'
+                    ? 'Browser notifications blocked (enable in browser settings)'
+                    : 'Get browser popups when you receive messages (while the tab is in background)'}
+              </span>
+              {browserNotifStatus !== 'granted' && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    Notification.requestPermission().then((p) =>
+                      setBrowserNotifStatus(p as 'default' | 'granted' | 'denied')
+                    )
+                  }
+                  disabled={browserNotifStatus === 'denied'}
+                >
+                  Enable
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </Card>
 

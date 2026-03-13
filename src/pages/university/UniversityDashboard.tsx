@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -20,6 +20,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 export function UniversityDashboard() {
   const { t } = useTranslation(['common', 'university'])
+  const navigate = useNavigate()
   const [dashboard, setDashboard] = useState<UniversityDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -84,10 +85,11 @@ export function UniversityDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 size={18} /> {t('university:pipelineFunnel', 'Pipeline')}
-          </CardTitle>
+        <Link to="/university/pipeline">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 size={18} /> {t('university:pipelineFunnel', 'Pipeline')}
+            </CardTitle>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
             Interested → Contacted → Evaluating → Offer Sent → Accepted
           </p>
@@ -102,12 +104,14 @@ export function UniversityDashboard() {
               </li>
             ))}
           </ul>
-          <Button to="/university/analytics" variant="secondary" size="sm" className="mt-3">
+          <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
             {t('university:viewAnalytics', 'Full analytics')}
-          </Button>
-        </Card>
+          </span>
+          </Card>
+        </Link>
 
-        <Card>
+        <Link to="/university/students">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
           <CardTitle>{t('university:topRecommendations', 'Top recommended students')}</CardTitle>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">Best match score</p>
           {loading ? (
@@ -126,18 +130,23 @@ export function UniversityDashboard() {
                     <span className="text-[var(--color-text-muted)]">
                       {r.matchScore != null ? `${r.matchScore}%` : ''} {st?.country ?? ''}
                     </span>
-                    <Button to={`/university/students/${studentId}`} variant="ghost" size="sm">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/university/students/${studentId}`) }}
+                      className="text-sm text-primary-accent hover:underline"
+                    >
                       Profile
-                    </Button>
+                    </button>
                   </li>
                 )
               })}
             </ul>
           )}
-          <Button to="/university/students" variant="secondary" size="sm" className="mt-3">
+          <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
             {t('university:navDiscovery')}
-          </Button>
-        </Card>
+          </span>
+          </Card>
+        </Link>
       </div>
 
       <Card className="border-primary-accent/20 bg-primary-accent/5">

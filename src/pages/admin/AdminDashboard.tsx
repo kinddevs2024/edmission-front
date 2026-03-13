@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
@@ -40,22 +41,30 @@ export function AdminDashboard() {
       <PageTitle title={t('dashboard')} icon="LayoutDashboard" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardTitle>{t('students')}</CardTitle>
-          <p className="text-2xl font-semibold">{stats?.studentsCount ?? 0}</p>
-        </Card>
-        <Card>
-          <CardTitle>{t('universities')}</CardTitle>
-          <p className="text-2xl font-semibold">{stats?.universitiesCount ?? 0}</p>
-        </Card>
-        <Card>
-          <CardTitle>{t('activeOffers')}</CardTitle>
-          <p className="text-2xl font-semibold">{stats?.activeOffersCount ?? 0}</p>
-        </Card>
-        <Card>
-          <CardTitle>{t('systemHealth')}</CardTitle>
-          <p className={`text-2xl font-semibold ${healthClass}`}>{healthLabel}</p>
-        </Card>
+        <Link to="/admin/users">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('students')}</CardTitle>
+            <p className="text-2xl font-semibold">{stats?.studentsCount ?? 0}</p>
+          </Card>
+        </Link>
+        <Link to="/admin/universities">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('universities')}</CardTitle>
+            <p className="text-2xl font-semibold">{stats?.universitiesCount ?? 0}</p>
+          </Card>
+        </Link>
+        <Link to="/admin/offers">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('activeOffers')}</CardTitle>
+            <p className="text-2xl font-semibold">{stats?.activeOffersCount ?? 0}</p>
+          </Card>
+        </Link>
+        <Link to="/admin/health">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('systemHealth')}</CardTitle>
+            <p className={`text-2xl font-semibold ${healthClass}`}>{healthLabel}</p>
+          </Card>
+        </Link>
       </div>
 
       {(stats?.mrr != null || (stats?.subscriptionsByPlan && Object.keys(stats.subscriptionsByPlan).length > 0)) && (
@@ -75,13 +84,17 @@ export function AdminDashboard() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardTitle>{t('verificationQueue')}</CardTitle>
-          <p className="text-[var(--color-text-muted)] mb-3">
-            {t('verificationPending', { count: verificationCount })}
-          </p>
-          <Button to="/admin/verification" variant="secondary">{t('viewQueue')}</Button>
-        </Card>
+        <Link to="/admin/verification">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('verificationQueue')}</CardTitle>
+            <p className="text-[var(--color-text-muted)] mb-3">
+              {t('verificationPending', { count: verificationCount })}
+            </p>
+            <span className="inline-block px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)] text-[var(--color-text-muted)]">
+              {t('viewQueue')}
+            </span>
+          </Card>
+        </Link>
         <Card>
           <CardTitle>{t('quickLinks')}</CardTitle>
           <div className="flex flex-wrap gap-2 mt-2">

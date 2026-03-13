@@ -33,7 +33,7 @@ export function StudentTestimonialsSection() {
               href={item.imageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative block aspect-[3/4] overflow-hidden rounded-card border border-[var(--color-border)] shadow-[var(--shadow-card)] transition hover:border-primary-accent/50 hover:shadow-[var(--shadow-card-hover)]"
+              className="group relative block h-52 sm:h-64 w-full overflow-hidden rounded-card border border-[var(--color-border)] shadow-[var(--shadow-card)] transition hover:border-primary-accent/50 hover:shadow-[var(--shadow-card-hover)]"
             >
               <img
                 src={item.imageUrl}
