@@ -7,6 +7,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { updateProfile } from '@/services/university'
 import { getApiError } from '@/services/auth'
 
@@ -92,10 +93,11 @@ export function UniversityOnboarding() {
             <Input label="Number of students" type="number" {...register('studentCount')} />
             <Input label="Accreditation" {...register('accreditation')} />
             <Input label="Rating (0-100)" type="number" {...register('rating')} />
-            <label className="block">
-              <span className="block text-sm font-medium mb-1">Description</span>
-              <textarea className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2" rows={4} {...register('description')} />
-            </label>
+            <Textarea
+              label="Description"
+              rows={4}
+              {...register('description')}
+            />
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting} loading={submitting}>Next</Button>
               <Button type="button" variant="ghost" onClick={() => navigate('/university/dashboard')}>Skip</Button>

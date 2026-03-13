@@ -6,7 +6,9 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { ChipSelect } from '@/components/ui/ChipSelect'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { useTranslation } from 'react-i18next'
 import { getProfile, updateProfile } from '@/services/university'
 import { getApiError } from '@/services/auth'
@@ -133,15 +135,12 @@ export function UniversityProfilePage() {
             <Input label={t('university:foundedYear')} type="number" {...register('foundedYear')} placeholder={t('university:foundedPlaceholder')} />
             <Input label={t('university:studentCount')} type="number" {...register('studentCount')} placeholder={t('university:studentCountPlaceholder')} />
             <Input label={t('university:logoUrl')} {...register('logo')} placeholder="https://..." />
-            <label className="block">
-              <span className="block text-sm font-medium mb-1">{t('university:description')}</span>
-              <textarea
-                className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 min-h-[120px]"
-                rows={4}
-                {...register('description')}
-                placeholder={t('university:descriptionPlaceholder')}
-              />
-            </label>
+            <Textarea
+              label={t('university:description')}
+              rows={4}
+              placeholder={t('university:descriptionPlaceholder')}
+              {...register('description')}
+            />
           </div>
         </Card>
 
@@ -179,26 +178,18 @@ export function UniversityProfilePage() {
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3 p-3">
-                      <label className="flex items-center gap-3 min-w-0 cursor-pointer flex-1">
-                        <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-[var(--color-border)] bg-[var(--color-bg)]">
-                          {selected && (
-                            <span className="h-2.5 w-2.5 rounded-sm bg-primary-accent" />
-                          )}
-                          <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={(e) => {
-                              const current = watch('facultyCodes') ?? []
-                              const next = e.target.checked
-                                ? Array.from(new Set([...current, cat.id])).slice(0, 50)
-                                : current.filter((x) => x !== cat.id)
-                              setValue('facultyCodes', next, { shouldDirty: true })
-                            }}
-                            className="sr-only"
-                          />
-                        </span>
-                        <span className="text-sm font-medium text-[var(--color-text)] truncate">{t(cat.titleKey)}</span>
-                      </label>
+                      <Checkbox
+                        checked={selected}
+                        onChange={(e) => {
+                          const current = watch('facultyCodes') ?? []
+                          const next = e.target.checked
+                            ? Array.from(new Set([...current, cat.id])).slice(0, 50)
+                            : current.filter((x) => x !== cat.id)
+                          setValue('facultyCodes', next, { shouldDirty: true })
+                        }}
+                        label={<span className="text-sm font-medium text-[var(--color-text)] truncate">{t(cat.titleKey)}</span>}
+                        className="flex-1 min-w-0"
+                      />
                       <button
                         type="button"
                         onClick={() => setOpenFacultyId(open ? null : cat.id)}
@@ -220,20 +211,17 @@ export function UniversityProfilePage() {
                             const checked = included.includes(it)
                             return (
                               <li key={it} className="flex items-center gap-2">
-                                <label className="flex items-center gap-2 cursor-pointer flex-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => {
-                                      const current = watch('facultyItems') ?? {}
-                                      const list = current[cat.id] ?? cat.items
-                                      const next = checked ? list.filter((x) => x !== it) : [...list, it]
-                                      setValue('facultyItems', { ...current, [cat.id]: next }, { shouldDirty: true })
-                                    }}
-                                    className="rounded border-[var(--color-border)]"
-                                  />
-                                  <span className={checked ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>
-                                </label>
+                                <Checkbox
+                                  checked={checked}
+                                  onChange={() => {
+                                    const current = watch('facultyItems') ?? {}
+                                    const list = current[cat.id] ?? cat.items
+                                    const next = checked ? list.filter((x) => x !== it) : [...list, it]
+                                    setValue('facultyItems', { ...current, [cat.id]: next }, { shouldDirty: true })
+                                  }}
+                                  label={<span className={checked ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>}
+                                  className="flex-1"
+                                />
                               </li>
                             )
                           })}

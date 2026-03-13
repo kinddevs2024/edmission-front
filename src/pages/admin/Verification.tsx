@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { Textarea } from '@/components/ui/Textarea'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getVerificationQueue, approveUniversity, rejectUniversity } from '@/services/admin'
 import { formatDate } from '@/utils/format'
@@ -125,16 +126,13 @@ export function Verification() {
         {actionModal && (
           <div className="space-y-3">
             <p className="text-sm text-[var(--color-text-muted)]">{actionModal.item.name}</p>
-            <label className="block">
-              <span className="block text-sm font-medium mb-1">Comment (optional)</span>
-              <textarea
-                className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 text-sm"
-                rows={3}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder={t('admin:addComment')}
-              />
-            </label>
+            <Textarea
+              label="Comment (optional)"
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={t('admin:addComment')}
+            />
           </div>
         )}
       </Modal>

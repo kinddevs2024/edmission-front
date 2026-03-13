@@ -32,6 +32,18 @@ export function ChatView() {
   }, [role])
 
   useEffect(() => {
+    const chatId = searchParams.get('chat')
+    if (chatId && chats.length > 0 && !chatsLoading) {
+      const existing = chats.find((c) => c.id === chatId)
+      if (existing) {
+        setSelectedChat(existing)
+        setMobileView('thread')
+        setSearchParams({}, { replace: true })
+      }
+    }
+  }, [searchParams, chats, chatsLoading, setSearchParams])
+
+  useEffect(() => {
     const studentId = searchParams.get('studentId')
     const universityId = searchParams.get('universityId')
     if ((studentId || universityId) && role && chats.length >= 0 && !chatsLoading) {

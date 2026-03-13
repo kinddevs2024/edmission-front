@@ -32,8 +32,8 @@ export function MainLayout() {
     if (role === 'student') {
       return {
         navItems: [
-          { to: '/ai', label: t('student:navEdmissionAi'), icon: 'Bot' },
           { to: '/student/dashboard', label: t('student:dashboard'), icon: 'LayoutDashboard' },
+          { to: '/ai', label: t('student:navEdmissionAi'), icon: 'Bot' },
           { to: '/student/profile', label: t('student:navProfile'), icon: 'User' },
           { to: '/student/universities', label: t('student:navUniversities'), icon: 'GraduationCap' },
           { to: '/student/applications', label: t('student:navApplications'), icon: 'FileCheck' },
@@ -53,8 +53,8 @@ export function MainLayout() {
     if (role === 'university') {
       return {
         navItems: [
-          { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/university/dashboard', label: t('university:dashboard'), icon: 'LayoutDashboard' },
+          { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/university/profile', label: t('university:navProfile'), icon: 'User' },
           { to: '/university/students', label: t('university:navDiscovery'), icon: 'Users' },
           { to: '/university/pipeline', label: t('university:navPipeline'), icon: 'GitBranch' },
@@ -73,8 +73,8 @@ export function MainLayout() {
     if (role === 'admin') {
       return {
         navItems: [
-          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
           { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
           { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
@@ -91,8 +91,8 @@ export function MainLayout() {
     if (role === 'school_counsellor') {
       return {
         navItems: [
-          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' },
+          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' },
           { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' },
@@ -150,6 +150,16 @@ export function MainLayout() {
     if (showSidebar) setNavItems([...navItems, ...navBottomItems])
     return () => setNavItems(null)
   }, [showSidebar, navItems, navBottomItems, setNavItems])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      const t = setTimeout(() => {
+        Notification.requestPermission().catch(() => {})
+      }, 1500)
+      return () => clearTimeout(t)
+    }
+  }, [isAuthenticated])
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">

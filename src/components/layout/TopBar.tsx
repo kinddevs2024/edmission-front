@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,13 +11,16 @@ import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { NotificationsDropdown } from './NotificationsDropdown'
 import { LanguageMenu } from './LanguageMenu'
 import { GlobalSearch } from './GlobalSearch'
+import { MobileSearch } from './MobileSearch'
 import { MobileNavDrawer } from './MobileNavDrawer'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
+import { getStudentAvatarUrl } from '@/services/upload'
 
 export function TopBar() {
   const { t } = useTranslation('common')
   const { user } = useAuth()
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const role = (user as { role?: string })?.role ?? null
   const { onNotification } = useSocket()
   const addNotification = useNotificationStore((s) => s.addNotification)
@@ -65,30 +68,48 @@ export function TopBar() {
         <MobileNavDrawer />
         <span className="text-[var(--color-text-muted)] text-sm hidden sm:block truncate">{t('appName')}</span>
       </div>
-      <div className="hidden md:flex flex-1 max-w-md mx-4">
-        <GlobalSearch />
-      </div>
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div
-          className={cn(
-            'hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)]',
-            'min-[0px]:gap-1.5'
-          )}
-          aria-label="Language and theme"
-        >
-          <LanguageMenu />
-          <ThemeSwitch />
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
+        <div className="hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] shrink-0">
+          <GlobalSearch />
         </div>
-        <NotificationsDropdown />
-        <Link
-          to="/profile"
-          className="text-sm text-[var(--color-text)] hover:text-primary-accent transition-colors truncate max-w-[120px] sm:max-w-[180px]"
-        >
-          {user?.name || user?.email}
-        </Link>
-        <Button variant="ghost" size="sm" onClick={() => logoutApi().catch(toastApiError)}>
-          {t('logout')}
-        </Button>
+        <div className={cn('md:hidden flex-1 min-w-0 flex justify-end', mobileSearchOpen && 'flex-1')}>
+          <MobileSearch
+            open={mobileSearchOpen}
+            onOpen={() => setMobileSearchOpen(true)}
+            onClose={() => setMobileSearchOpen(false)}
+          />
+        </div>
+        {!mobileSearchOpen && (
+          <>
+            <div
+              className={cn(
+                'hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)]',
+                'min-[0px]:gap-1.5'
+              )}
+              aria-label="Language and theme"
+            >
+              <LanguageMenu />
+              <ThemeSwitch />
+            </div>
+            <NotificationsDropdown />
+            <Link
+              to="/profile"
+              className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)] bg-[var(--color-bg)] hover:border-primary-accent/50 transition-colors"
+              aria-label={user?.name || user?.email || t('profile')}
+            >
+              {user?.avatar ? (
+                <img src={getStudentAvatarUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-sm font-medium text-[var(--color-text-muted)]">
+                  {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </Link>
+            <Button variant="ghost" size="sm" onClick={() => logoutApi().catch(toastApiError)}>
+              {t('logout')}
+            </Button>
+          </>
+        )}
       </div>
     </header>
   )

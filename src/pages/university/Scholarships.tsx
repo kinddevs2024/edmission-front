@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { getScholarships, createScholarship } from '@/services/university'
 import { formatDate } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
@@ -102,10 +103,12 @@ export function Scholarships() {
           <Input label={t('university:coveragePercent')} type="number" value={coveragePercent} onChange={(e) => setCoveragePercent(Number(e.target.value))} />
           <Input label={t('university:maxSlots')} type="number" value={maxSlots} onChange={(e) => setMaxSlots(Number(e.target.value))} />
           <Input label={t('university:deadline')} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
-          <label className="block">
-            <span className="block text-sm font-medium mb-1">{t('university:eligibility')}</span>
-            <textarea className="w-full rounded-input border px-3 py-2" rows={3} value={eligibility} onChange={(e) => setEligibility(e.target.value)} />
-          </label>
+          <Textarea
+            label={t('university:eligibility')}
+            rows={3}
+            value={eligibility}
+            onChange={(e) => setEligibility(e.target.value)}
+          />
         </div>
       </Modal>
     </div>

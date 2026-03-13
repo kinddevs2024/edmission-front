@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { Modal } from '@/components/ui/Modal'
+import { Select } from '@/components/ui/Select'
 import { PageTitle } from '@/components/ui/PageTitle'
 import {
   getLandingCertificates,
@@ -104,17 +105,15 @@ export function AdminLandingCertificates() {
 
   const formContent = (
     <div className="space-y-3">
-      <label className="block">
-        <span className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('admin:certificateType', 'Type')}</span>
-        <select
-          value={formType}
-          onChange={(e) => setFormType(e.target.value as 'university' | 'student')}
-          className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)]"
-        >
-          <option value="university">{t('admin:certificateTypeUniversity', 'University')}</option>
-          <option value="student">{t('admin:certificateTypeStudent', 'Student')}</option>
-        </select>
-      </label>
+      <Select
+        label={t('admin:certificateType', 'Type')}
+        value={formType}
+        onChange={(e) => setFormType(e.target.value as 'university' | 'student')}
+        options={[
+          { value: 'university', label: t('admin:certificateTypeUniversity', 'University') },
+          { value: 'student', label: t('admin:certificateTypeStudent', 'Student') },
+        ]}
+      />
       <Input
         label={t('admin:certificateTitle', 'Title')}
         value={formTitle}

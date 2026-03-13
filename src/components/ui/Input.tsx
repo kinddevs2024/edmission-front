@@ -1,26 +1,6 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { cn } from '@/utils/cn'
-
-function EyeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  )
-}
-
-function EyeOffIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-      <line x1="2" y1="2" x2="22" y2="22" />
-    </svg>
-  )
-}
+import { Input as MTInput } from '@material-tailwind/react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -29,15 +9,33 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   success?: boolean
   left?: ReactNode
   right?: ReactNode
-  /** When type="password": controlled visibility (sync two fields with one eye). */
   passwordVisible?: boolean
   onPasswordVisibilityToggle?: () => void
-  /** When type="password" and controlled: show the eye button (set false on second field to avoid duplicate). */
   showPasswordToggle?: boolean
 }
 
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOffIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
+  )
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ label, error, hint, success, left, right, passwordVisible, onPasswordVisibilityToggle, showPasswordToggle = true, className, id, type, ...props }, ref) {
+  function Input({ label, error, hint, success, left, right, passwordVisible, onPasswordVisibilityToggle, showPasswordToggle = true, className, id, type, placeholder, size: _size, color: _color, ...props }, ref) {
     const { t } = useTranslation('common')
     const [internalShow, setInternalShow] = useState(false)
     const isPassword = type === 'password'
@@ -45,54 +43,48 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const showPassword = isControlled ? passwordVisible : internalShow
     const effectiveType = isPassword ? (showPassword ? 'text' : 'password') : type
     const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-')
-    const rightContent = isPassword && showPasswordToggle ? (
+
+    const icon = left ?? (isPassword && showPasswordToggle ? (
       <button
         type="button"
         tabIndex={-1}
-        className="p-1 rounded hover:bg-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-black/10 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
         onClick={isControlled ? onPasswordVisibilityToggle : () => setInternalShow((v) => !v)}
         aria-label={showPassword ? t('hidePassword') : t('showPassword')}
       >
         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
       </button>
-    ) : right
+    ) : right)
 
     return (
-      <div className="w-full">
-        {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-[var(--color-text)] mb-1">
-            {label}
-          </label>
-        )}
-        <div className="relative flex">
-          {left && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">{left}</div>}
-          <input
-            ref={ref}
-            id={inputId}
-            type={effectiveType}
-            className={cn(
-              'w-full rounded-input border bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent',
-              error && 'border-red-500',
-              success && 'border-green-500',
-              left && 'pl-9',
-              (rightContent || right) && 'pr-10',
-              className
-            )}
-            aria-invalid={!!error}
-            aria-describedby={[error ? `${inputId}-error` : null, hint ? `${inputId}-hint` : null].filter(Boolean).join(' ') || undefined}
-            {...props}
-          />
-          {rightContent && <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] flex items-center">{rightContent}</div>}
-        </div>
+      <div className="w-full relative">
+        <MTInput
+          ref={ref as React.Ref<HTMLInputElement>}
+          id={inputId}
+          type={effectiveType}
+          label={label}
+          error={!!error}
+          success={!!success}
+          variant="outlined"
+          size="md"
+          color={'green' as 'green'}
+          icon={icon ? <span className="flex items-center justify-center w-5 h-5">{icon}</span> : undefined}
+          className={className}
+          placeholder={placeholder ?? ' '}
+          aria-invalid={!!error}
+          aria-describedby={[error ? `${inputId}-error` : null, hint ? `${inputId}-hint` : null].filter(Boolean).join(' ') || undefined}
+          crossOrigin={undefined}
+          onResize={undefined}
+          onResizeCapture={undefined}
+          onPointerEnterCapture={undefined}
+          onPointerLeaveCapture={undefined}
+          {...props}
+        />
         {error && (
-          <p id={`${inputId}-error`} className="mt-1 text-sm text-red-500">
-            {error}
-          </p>
+          <p id={`${inputId}-error`} className="mt-1 text-sm text-red-500">{error}</p>
         )}
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="mt-1 text-sm text-[var(--color-text-muted)]">
-            {hint}
-          </p>
+          <p id={`${inputId}-hint`} className="mt-1 text-sm text-gray-500 dark:text-gray-400">{hint}</p>
         )}
       </div>
     )

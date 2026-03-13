@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { Select } from '@/components/ui/Select'
 import axios from 'axios'
 import { listJoinRequests, acceptJoinRequest, rejectJoinRequest, type JoinRequestItem } from '@/services/counsellor'
 import { toastApiError } from '@/utils/toastError'
@@ -83,16 +84,18 @@ export function CounsellorJoinRequests() {
 
       <Card>
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <select
+          <Select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-            className="rounded-input border bg-[var(--color-card)] px-3 py-2 text-sm"
-          >
-            <option value="">{t('admin:allStatuses')}</option>
-            <option value="pending">{t('admin:pending', 'Pending')}</option>
-            <option value="accepted">{t('admin:accepted', 'Accepted')}</option>
-            <option value="rejected">{t('admin:rejected', 'Rejected')}</option>
-          </select>
+            placeholder={t('admin:allStatuses')}
+            options={[
+              { value: '', label: t('admin:allStatuses') },
+              { value: 'pending', label: t('admin:pending', 'Pending') },
+              { value: 'accepted', label: t('admin:accepted', 'Accepted') },
+              { value: 'rejected', label: t('admin:rejected', 'Rejected') },
+            ]}
+            className="min-w-[140px]"
+          />
         </div>
         <CardTitle>{t('admin:requestsList', 'Requests')}</CardTitle>
         {loading ? (

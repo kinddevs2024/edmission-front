@@ -11,6 +11,7 @@ import i18n, { loadLanguage } from '@/i18n'
 import { isBrowserLanguageSupported, getBrowserPreferredLanguage, STORAGE_KEY } from '@/i18n/config'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { GraduationCap, Building2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
@@ -311,19 +312,19 @@ export function Register() {
           </div>
           <input type="hidden" {...register('role')} />
         </div>
-        <label className="flex items-start gap-2 cursor-pointer">
-          <input
-            type="checkbox"
+        <div className="flex items-start gap-2">
+          <Checkbox
             {...register('acceptTerms')}
-            className="mt-1 rounded border-[var(--color-border)]"
+            label={
+              <span className="text-sm text-[var(--color-text)]">
+                {t('auth:acceptTerms')}{' '}
+                <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
+                  {t('common:privacy')}
+                </Link>
+              </span>
+            }
           />
-          <span className="text-sm text-[var(--color-text)]">
-            {t('auth:acceptTerms')}{' '}
-            <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
-              {t('common:privacy')}
-            </Link>
-          </span>
-        </label>
+        </div>
         {errors.acceptTerms && (
           <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>
         )}

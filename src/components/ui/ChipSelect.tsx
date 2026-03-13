@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Chip } from '@material-tailwind/react'
 import { cn } from '@/utils/cn'
 
 interface ChipSelectProps {
@@ -37,14 +38,17 @@ export function ChipSelect({
             key={`${opt}-${i}`}
             type="button"
             onClick={() => toggle(opt)}
-            className={cn(
-              'px-3 py-1.5 rounded-full text-sm font-medium transition-colors border',
-              selectedSet.has(opt)
-                ? 'bg-primary-accent/20 border-primary-accent text-primary-accent'
-                : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-bg)]'
-            )}
+            className="p-0 border-0 bg-transparent cursor-pointer"
           >
-            {opt}
+            <Chip
+              value={opt}
+              variant={selectedSet.has(opt) ? 'filled' : 'outlined'}
+              color="green"
+              className={cn(
+                'transition-all pointer-events-none',
+                selectedSet.has(opt) && '!bg-primary-accent/90 !text-primary-dark !border-primary-accent'
+              )}
+            />
           </button>
         ))}
       </div>

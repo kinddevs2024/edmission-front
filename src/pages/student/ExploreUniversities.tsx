@@ -30,7 +30,6 @@ const SORT_OPTIONS = [
 export function ExploreUniversities() {
   const { t } = useTranslation('student')
   const [searchParams, setSearchParams] = useSearchParams()
-  const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [country, setCountry] = useState(searchParams.get('country') ?? '')
   const [city, setCity] = useState(searchParams.get('city') ?? '')
   const [sort, setSort] = useState(searchParams.get('sort') ?? 'match')
@@ -92,13 +91,12 @@ export function ExploreUniversities() {
 
   useEffect(() => {
     const params: Record<string, string> = {}
-    if (search) params.q = search
     if (country) params.country = country
     if (city) params.city = city
     if (sort) params.sort = sort
     if (page > 1) params.page = String(page)
     setSearchParams(params, { replace: true })
-  }, [search, country, city, sort, page, setSearchParams])
+  }, [country, city, sort, page, setSearchParams])
 
   const handleInterest = (id: string) => {
     if (interestedIds.has(id) || !limit.allowed) return
@@ -109,11 +107,10 @@ export function ExploreUniversities() {
   const interestLabel = limit.limit != null ? `${limit.current}/${limit.limit}` : `${limit.current}`
 
   const totalPages = Math.max(1, Math.ceil(total / limitSize))
-  const hasFilters = search.trim() !== '' || country !== '' || city.trim() !== '' || sort !== 'match' || useProfileFilters
+  const hasFilters = country !== '' || city.trim() !== '' || sort !== 'match' || useProfileFilters
   const profileCriteriaCount = profileCriteria.faculties + profileCriteria.countries
 
   const handleClearFilters = () => {
-    setSearch('')
     setCountry('')
     setCity('')
     setSort('match')
@@ -155,14 +152,6 @@ export function ExploreUniversities() {
             placeholder="City"
             value={city}
             onChange={(e) => { setCity(e.target.value); handleFilterChange() }}
-            className="text-sm py-1.5 h-8"
-          />
-        </div>
-        <div className="w-[150px] shrink-0">
-          <Input
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); handleFilterChange() }}
             className="text-sm py-1.5 h-8"
           />
         </div>

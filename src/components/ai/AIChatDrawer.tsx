@@ -287,7 +287,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                 {t('aiSuggestedIntro', 'Спросите об университетах, заявках или стипендиях.')}
               </p>
               <form onSubmit={handleSubmit} className="w-full mb-5">
-                <div className="flex gap-2 items-end w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
+                <div className="flex gap-2 items-center w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
                   <textarea
                     ref={textareaRef}
                     value={input}
@@ -295,18 +295,15 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder}
                     rows={1}
-                    className="flex-1 min-h-[40px] max-h-24 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
+                    className="flex-1 min-h-[36px] max-h-24 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
                     disabled={loading}
                   />
                   <Button
                     type="submit"
-                    size="sm"
                     disabled={loading || !input.trim()}
-                    className="shrink-0 rounded-lg"
+                    className="shrink-0 w-9 h-9 min-w-9 min-h-9 rounded-full p-0 flex items-center justify-center"
                     icon={<Send className="w-4 h-4" />}
-                  >
-                    {t('send')}
-                  </Button>
+                  />
                 </div>
               </form>
               <p className="text-xs text-[var(--color-text-muted)] mb-2">
@@ -431,7 +428,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               {t('askingAboutSelection')}
             </p>
           )}
-          <div className="flex gap-2 items-end rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
+          <div className="flex gap-2 items-center rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
             <textarea
               ref={textareaRef}
               value={input}
@@ -439,12 +436,10 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               onKeyDown={handleKeyDown}
               placeholder={selectionAsk ? t('aiPlaceholderSelection', 'Уточните выделенный фрагмент…') : placeholder}
               rows={1}
-              className="flex-1 min-h-[40px] max-h-28 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
+              className="flex-1 min-h-[36px] max-h-28 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
               disabled={loading}
             />
-            <Button type="submit" size="sm" disabled={loading || (!input.trim() && !selectionAsk)} className="shrink-0 rounded-lg" icon={<Send className="w-4 h-4" />}>
-              {t('send')}
-            </Button>
+            <Button type="submit" disabled={loading || (!input.trim() && !selectionAsk)} className="shrink-0 w-9 h-9 min-w-9 min-h-9 rounded-full p-0 flex items-center justify-center" icon={<Send className="w-4 h-4" />} />
           </div>
         </form>
         )}

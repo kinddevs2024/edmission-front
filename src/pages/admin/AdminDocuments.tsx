@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { Textarea } from '@/components/ui/Textarea'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getPendingDocuments, reviewDocument, type PendingDocumentItem } from '@/services/admin'
 import { getApiError } from '@/services/auth'
@@ -113,17 +114,14 @@ export function AdminDocuments() {
               {modal.item.studentName} — {modal.item.type?.replace(/_/g, ' ')}
             </p>
             {modal.decision === 'rejected' && (
-              <label className="block">
-                <span className="block text-sm font-medium mb-1">{t('admin:rejectionReasonOptional', 'Rejection reason (optional)')}</span>
-                <textarea
-                  className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 text-sm"
-                  rows={2}
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={t('admin:reasonForRejection', 'Reason for rejection')}
-                  aria-label={t('admin:rejectionReasonOptional')}
-                />
-              </label>
+              <Textarea
+                label={t('admin:rejectionReasonOptional', 'Rejection reason (optional)')}
+                rows={2}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={t('admin:reasonForRejection', 'Reason for rejection')}
+                aria-label={t('admin:rejectionReasonOptional')}
+              />
             )}
             {error && <p className="text-sm text-red-500">{error}</p>}
           </div>

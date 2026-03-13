@@ -12,7 +12,9 @@ import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { ChipSelect } from '@/components/ui/ChipSelect'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
@@ -461,15 +463,12 @@ export function UserManagement() {
               onChange={(e) => setUniTuitionPrice(e.target.value)}
               placeholder="Annual cost in main currency"
             />
-            <label className="block">
-              <span className="block text-sm font-medium mb-1">{t('university:description', 'Description')}</span>
-              <textarea
-                rows={4}
-                value={uniDescription}
-                onChange={(e) => setUniDescription(e.target.value)}
-                className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-              />
-            </label>
+            <Textarea
+              label={t('university:description', 'Description')}
+              rows={4}
+              value={uniDescription}
+              onChange={(e) => setUniDescription(e.target.value)}
+            />
             <div>
               <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
                 {t('university:facultiesListTitle', 'Faculties')}
@@ -486,24 +485,21 @@ export function UserManagement() {
                       className={`rounded-lg border-2 p-2 transition-all ${selected ? 'border-primary-accent' : 'border-[var(--color-border)]'}`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
-                          <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={(e) => {
-                              const next = e.target.checked
-                                ? [...uniFacultyCodes, cat.id].slice(0, 50)
-                                : uniFacultyCodes.filter((x) => x !== cat.id)
-                              setUniFacultyCodes(next)
-                              if (!e.target.checked) {
-                                const { [cat.id]: _, ...rest } = uniFacultyItems
-                                setUniFacultyItems(rest)
-                              }
-                            }}
-                            className="rounded border-[var(--color-border)]"
-                          />
-                          <span className="text-sm truncate">{t(cat.titleKey)}</span>
-                        </label>
+                        <Checkbox
+                          checked={selected}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...uniFacultyCodes, cat.id].slice(0, 50)
+                              : uniFacultyCodes.filter((x) => x !== cat.id)
+                            setUniFacultyCodes(next)
+                            if (!e.target.checked) {
+                              const { [cat.id]: _, ...rest } = uniFacultyItems
+                              setUniFacultyItems(rest)
+                            }
+                          }}
+                          label={<span className="text-sm truncate">{t(cat.titleKey)}</span>}
+                          className="flex-1 min-w-0"
+                        />
                         {selected && (
                           <button
                             type="button"
@@ -522,19 +518,17 @@ export function UserManagement() {
                           {cat.items.map((it) => {
                             const inc = items.includes(it)
                             return (
-                              <label key={it} className="flex items-center gap-2 cursor-pointer text-xs">
-                                <input
-                                  type="checkbox"
-                                  checked={inc}
-                                  onChange={() => {
-                                    const list = uniFacultyItems[cat.id] ?? cat.items
-                                    const next = inc ? list.filter((x) => x !== it) : [...list, it]
-                                    setUniFacultyItems({ ...uniFacultyItems, [cat.id]: next })
-                                  }}
-                                  className="rounded border-[var(--color-border)]"
-                                />
-                                <span className={inc ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>
-                              </label>
+                              <Checkbox
+                                key={it}
+                                checked={inc}
+                                onChange={() => {
+                                  const list = uniFacultyItems[cat.id] ?? cat.items
+                                  const next = inc ? list.filter((x) => x !== it) : [...list, it]
+                                  setUniFacultyItems({ ...uniFacultyItems, [cat.id]: next })
+                                }}
+                                label={<span className={inc ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>}
+                                className="text-xs"
+                              />
                             )
                           })}
                         </div>

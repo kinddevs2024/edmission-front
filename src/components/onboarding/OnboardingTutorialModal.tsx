@@ -4,6 +4,8 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ChevronLeft, ChevronRight, User, LayoutDashboard, Search, Bot, FileText } from 'lucide-react'
+import { updateProfile } from '@/services/auth'
+import { toastApiError } from '@/utils/toastError'
 
 const STORAGE_KEY_STUDENT = 'edmission_tutorial_student_seen'
 const STORAGE_KEY_UNIVERSITY = 'edmission_tutorial_university_seen'
@@ -12,7 +14,11 @@ export function getTutorialStorageKey(role: 'student' | 'university') {
   return role === 'student' ? STORAGE_KEY_STUDENT : STORAGE_KEY_UNIVERSITY
 }
 
-export function hasSeenTutorial(role: 'student' | 'university'): boolean {
+export function hasSeenTutorial(role: 'student' | 'university', user?: { onboardingTutorialSeen?: { student?: boolean; university?: boolean } } | null): boolean {
+  if (user?.onboardingTutorialSeen) {
+    const seen = role === 'student' ? user.onboardingTutorialSeen.student : user.onboardingTutorialSeen.university
+    if (seen === true) return true
+  }
   try {
     return localStorage.getItem(getTutorialStorageKey(role)) === '1'
   } catch {
@@ -40,8 +46,20 @@ export function OnboardingTutorialModal({ open, onClose, variant }: OnboardingTu
   const [step, setStep] = useState(0)
   const slideCount = 5
 
-  const handleClose = () => {
+  const persistTutorialSeen = () => {
+    updateProfile({
+      onboardingTutorialSeen: variant === 'student' ? { student: true } : { university: true },
+    }).catch(toastApiError)
     markTutorialSeen(variant)
+  }
+
+  const handleClose = () => {
+    persistTutorialSeen()
+    onClose()
+  }
+
+  const handleSkip = () => {
+    persistTutorialSeen()
     onClose()
   }
 
@@ -72,14 +90,19 @@ export function OnboardingTutorialModal({ open, onClose, variant }: OnboardingTu
       title={
         <>
           <span className="text-lg font-semibold">{t('tutorial.welcome')}</span>
-          <LanguageMenu placement="top" />
+          <LanguageMenu placement="bottom" />
         </>
       }
       footer={
         <div className="flex items-center justify-between w-full">
-          <Button variant="ghost" onClick={handleBack} disabled={step === 0}>
-            <ChevronLeft className="h-4 w-4" /> {t('common:back')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleSkip} className="text-[var(--color-text-muted)]">
+              {t('common:skip', 'Skip')}
+            </Button>
+            <Button variant="ghost" onClick={handleBack} disabled={step === 0}>
+              <ChevronLeft className="h-4 w-4" /> {t('common:back')}
+            </Button>
+          </div>
           <div className="flex items-center gap-2">
             {Array.from({ length: slideCount }).map((_, i) => (
               <div

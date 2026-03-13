@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { OnboardingTutorialModal, hasSeenTutorial, markTutorialSeen } from '@/components/onboarding/OnboardingTutorialModal'
+import { getProfile } from '@/services/auth'
+import { useAuthStore } from '@/store/authStore'
+import { OnboardingTutorialModal, hasSeenTutorial } from '@/components/onboarding/OnboardingTutorialModal'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -18,7 +20,10 @@ export function StudentDashboard() {
   const { t } = useTranslation('student')
   const [showTutorial, setShowTutorial] = useState(false)
   useEffect(() => {
-    if (!hasSeenTutorial('student')) setShowTutorial(true)
+    getProfile().then(() => {
+      const u = useAuthStore.getState().user
+      if (!hasSeenTutorial('student', u)) setShowTutorial(true)
+    }).catch(() => {})
   }, [])
   const [profilePercent, setProfilePercent] = useState(0)
   const [minimalComplete, setMinimalComplete] = useState(false)
@@ -72,7 +77,7 @@ export function StudentDashboard() {
 
   return (
     <div className="space-y-8">
-      <OnboardingTutorialModal open={showTutorial} onClose={() => { markTutorialSeen('student'); setShowTutorial(false) }} variant="student" />
+      <OnboardingTutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} variant="student" />
       <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
 
       {!onboardingDone && (

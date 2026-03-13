@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MessageBubble } from './MessageBubble'
 import { Button } from '@/components/ui/Button'
+import { Textarea } from '@/components/ui/Textarea'
 import { uploadFile } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
@@ -279,16 +280,13 @@ export function MessageThread({
                   className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">{t('chat:congratulatoryMessage')}</label>
-                <textarea
-                  value={acceptForm.congratulatoryMessage}
-                  onChange={(e) => setAcceptForm((f) => ({ ...f, congratulatoryMessage: e.target.value }))}
-                  placeholder={t('chat:congratulatoryPlaceholder')}
-                  rows={3}
-                  className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-                />
-              </div>
+              <Textarea
+                label={t('chat:congratulatoryMessage')}
+                value={acceptForm.congratulatoryMessage}
+                onChange={(e) => setAcceptForm((f) => ({ ...f, congratulatoryMessage: e.target.value }))}
+                placeholder={t('chat:congratulatoryPlaceholder')}
+                rows={3}
+              />
             </div>
             <div className="flex gap-2 mt-4">
               <Button variant="secondary" onClick={() => setAcceptModalOpen(false)}>

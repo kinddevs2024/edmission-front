@@ -23,6 +23,7 @@ export interface User {
   role: Role
   name?: string
   avatar?: string
+  onboardingTutorialSeen?: { student?: boolean; university?: boolean }
   emailVerified?: boolean
   createdAt?: string
   /** When true, user must set a new password on next login (e.g. temp password from school counsellor). */

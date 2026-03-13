@@ -4,6 +4,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
 import {
   getAdminTickets,
   getAdminTicket,
@@ -150,12 +151,12 @@ export function AdminSupport() {
           <CardTitle>Reply as support</CardTitle>
           <form onSubmit={handleReply} className="mt-2">
             {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-            <textarea
-              className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-sm min-h-[100px]"
+            <Textarea
               placeholder="Your reply..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               disabled={submitting}
+              rows={4}
             />
             <Button type="submit" size="sm" className="mt-2" disabled={submitting || !replyText.trim()}>
               Send reply

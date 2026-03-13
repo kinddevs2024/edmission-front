@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
@@ -13,6 +14,7 @@ import { getStudentProfile, updateStudentProfile, type StudentProfileData, type 
 import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
 import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, ExternalLink } from 'lucide-react'
 import { cn } from '@/utils/cn'
@@ -763,10 +765,10 @@ export function StudentProfilePage() {
                       ))}
                     </select>
                   </div>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" {...register('schoolCompleted')} className="rounded border-[var(--color-border)]" />
-                    <span className="text-sm">{t('schoolCompleted')}</span>
-                  </label>
+                  <Checkbox
+                    {...register('schoolCompleted')}
+                    label={t('schoolCompleted')}
+                  />
                   <p className="text-sm font-medium text-[var(--color-text)]">{t('schoolsUniversitiesAttended')}</p>
                   <div className="space-y-3">
                 {schoolsAttendedFields.map((field, i) => (
@@ -805,14 +807,12 @@ export function StudentProfilePage() {
 
           {openSection === 'about' && (
             <>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('bio')}</label>
-                <textarea
-                  className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] min-h-[100px] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
-                  placeholder={t('bioPlaceholder')}
-                  {...register('bio')}
-                />
-              </div>
+              <Textarea
+                label={t('bio')}
+                placeholder={t('bioPlaceholder')}
+                rows={4}
+                {...register('bio')}
+              />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetAmount', 'Budget for studies')}</label>
@@ -927,26 +927,18 @@ export function StudentProfilePage() {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3 p-3">
-                        <label className="flex items-center gap-3 min-w-0 cursor-pointer flex-1">
-                          <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-[var(--color-border)] bg-[var(--color-bg)]">
-                            {selected && (
-                              <span className="h-2.5 w-2.5 rounded-sm bg-primary-accent" />
-                            )}
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              onChange={(e) => {
-                                const current = watch('interestedFaculties') ?? []
-                                const next = e.target.checked
-                                  ? Array.from(new Set([...current, cat.id])).slice(0, 10)
-                                  : current.filter((x) => x !== cat.id)
-                                setValue('interestedFaculties', next, { shouldDirty: true })
-                              }}
-                              className="sr-only"
-                            />
-                          </span>
-                          <span className="text-sm font-medium text-[var(--color-text)] truncate">{t(cat.titleKey)}</span>
-                        </label>
+                        <Checkbox
+                          checked={selected}
+                          onChange={(e) => {
+                            const current = watch('interestedFaculties') ?? []
+                            const next = e.target.checked
+                              ? Array.from(new Set([...current, cat.id])).slice(0, 10)
+                              : current.filter((x) => x !== cat.id)
+                            setValue('interestedFaculties', next, { shouldDirty: true })
+                          }}
+                          label={<span className="text-sm font-medium text-[var(--color-text)] truncate">{t(cat.titleKey)}</span>}
+                          className="flex-1 min-w-0"
+                        />
                         <button
                           type="button"
                           onClick={() => setOpenFacultyId(open ? null : cat.id)}
@@ -999,9 +991,10 @@ export function StudentProfilePage() {
                       <Input label={t('startDate')} type="date" {...register(`experiences.${i}.startDate`)} />
                       <Input label={t('endDate')} type="date" {...register(`experiences.${i}.endDate`)} />
                     </div>
-                    <textarea
-                      className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm min-h-[80px]"
+                    <Textarea
+                      label={t('description')}
                       placeholder={t('description')}
+                      rows={3}
                       {...register(`experiences.${i}.description`)}
                     />
                   </Card>
@@ -1024,9 +1017,10 @@ export function StudentProfilePage() {
                       </Button>
                     </div>
                     <Input label={t('workTitle')} {...register(`portfolioWorks.${i}.title`)} placeholder={t('workTitle')} />
-                    <textarea
-                      className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm min-h-[60px]"
+                    <Textarea
+                      label={t('workDescription')}
                       placeholder={t('workDescription')}
+                      rows={2}
                       {...register(`portfolioWorks.${i}.description`)}
                     />
                     <FileUpload

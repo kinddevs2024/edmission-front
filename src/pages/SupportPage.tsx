@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { Textarea } from '@/components/ui/Textarea'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { createTicket, getMyTickets, getTicket, addTicketReply } from '@/services/tickets'
@@ -118,12 +119,12 @@ export function SupportPage() {
           <Card>
             <form onSubmit={handleReply}>
               {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-              <textarea
-                className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-sm min-h-[100px]"
+              <Textarea
                 placeholder="Your reply..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 disabled={submitting}
+                rows={4}
               />
               <Button type="submit" size="sm" className="mt-2" disabled={submitting || !replyText.trim()}>
                 Send reply
@@ -151,12 +152,13 @@ export function SupportPage() {
             onChange={(e) => setSubject(e.target.value)}
             disabled={submitting}
           />
-          <textarea
-            className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-sm min-h-[120px]"
+          <Textarea
+            label={t('describeIssue')}
             placeholder={t('describeIssue')}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={submitting}
+            rows={5}
           />
           <Button type="submit" disabled={submitting || !subject.trim() || !message.trim()}>
             Send request

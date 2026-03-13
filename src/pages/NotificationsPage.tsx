@@ -6,6 +6,8 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { Select } from '@/components/ui/Select'
 import { getNavIcon } from '@/components/icons/NavIcons'
 import {
   getNotifications,
@@ -142,33 +144,24 @@ export function NotificationsPage() {
 
       <Card className="p-4 space-y-4">
         <div className="flex flex-wrap items-center gap-3">
-          <select
+          <Select
             value={filterType}
             onChange={(e) => {
               setFilterType(e.target.value)
               setPage(1)
             }}
-            className="rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
+            options={TYPE_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
+            className="min-w-[140px]"
             aria-label={t('filterByType')}
-          >
-            {TYPE_OPTIONS.map((o) => (
-              <option key={o.value || 'all'} value={o.value}>
-                {t(o.labelKey)}
-              </option>
-            ))}
-          </select>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={filterUnread}
-              onChange={(e) => {
-                setFilterUnread(e.target.checked)
-                setPage(1)
-              }}
-              className="rounded border-[var(--color-border)]"
-            />
-            {t('unreadOnly')}
-          </label>
+          />
+          <Checkbox
+            checked={filterUnread}
+            onChange={(e) => {
+              setFilterUnread(e.target.checked)
+              setPage(1)
+            }}
+            label={t('unreadOnly')}
+          />
           <div className="flex-1" />
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={handleMarkAllRead}>

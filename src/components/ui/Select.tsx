@@ -1,16 +1,19 @@
 import { type SelectHTMLAttributes } from 'react'
-import { cn } from '@/utils/cn'
+import { Select as MTSelect, Option } from '@material-tailwind/react'
+
 
 interface SelectOption {
   value: string
   label: string
 }
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'children'> {
   label?: string
   error?: string
   options: SelectOption[]
   placeholder?: string
+  value?: string
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }
 
 export function Select({
@@ -20,35 +23,51 @@ export function Select({
   placeholder,
   className,
   id,
-  ...props
+  value,
+  onChange,
+  disabled,
+  name,
+  size: _omitSize,
+  ...rest
 }: SelectProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-')
+
+  const handleChange = (val?: string) => {
+    if (onChange) {
+      const syntheticEvent = {
+        target: { value: val ?? '', name },
+      } as React.ChangeEvent<HTMLSelectElement>
+      onChange(syntheticEvent)
+    }
+  }
+
+  const selectProps = {
+    id: inputId,
+    label,
+    value: value ?? '',
+    onChange: (val?: string) => handleChange(val),
+    variant: 'outlined' as const,
+    size: 'md' as const,
+    color: 'green' as const,
+    error: !!error,
+    className,
+    disabled,
+    name,
+    ...rest,
+  }
+
   return (
     <div className="w-full">
-      {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-[var(--color-text)] mb-1">
-          {label}
-        </label>
-      )}
-      <select
-        id={inputId}
-        className={cn(
-          'w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-primary-accent',
-          error && 'border-red-500',
-          className
-        )}
-        aria-invalid={!!error}
-        {...props}
-      >
+      <MTSelect {...(selectProps as React.ComponentProps<typeof MTSelect>)}>
         {placeholder && (
-          <option value="">{placeholder}</option>
+          <Option value="">{placeholder}</Option>
         )}
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <Option key={opt.value} value={opt.value}>
             {opt.label}
-          </option>
+          </Option>
         ))}
-      </select>
+      </MTSelect>
       {error && (
         <p className="mt-1 text-sm text-red-500">{error}</p>
       )}

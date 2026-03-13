@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { getProfile, updateProfile, getApiError, logout as logoutApi } from '@/services/auth'
@@ -11,10 +11,18 @@ import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { toastApiError } from '@/utils/toastError'
 import type { NotificationPreferences } from '@/types/user'
+import { FileUpload } from '@/components/ui/FileUpload'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { updateStudentProfile } from '@/services/student'
 
 export function Profile() {
   const { t } = useTranslation('common')
   const { user } = useAuth()
+  const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar ?? '')
+  useEffect(() => {
+    if (user?.avatar !== undefined) setAvatarUrl(user.avatar ?? '')
+  }, [user?.avatar])
+
   const prefs = user?.notificationPreferences ?? { emailApplicationUpdates: true, emailTrialReminder: true }
 
   const handlePrefChange = (key: keyof NotificationPreferences, value: boolean) => {
@@ -64,12 +72,31 @@ export function Profile() {
 
   const totpEnabled = !!user?.totpEnabled
 
+  const handleAvatarChange = (url: string) => {
+    if (user?.role !== 'student') return
+    setAvatarUrl(url)
+    updateStudentProfile({ avatarUrl: url })
+      .then(() => getProfile())
+      .catch(toastApiError)
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <PageTitle title={t('profile')} icon="Settings" />
       <Card>
         <CardTitle>{t('profile')}</CardTitle>
-        <dl className="grid grid-cols-1 gap-2 mt-2">
+        {user?.role === 'student' && (
+          <div className="mt-4">
+            <FileUpload
+              label={t('avatar', 'Profile photo')}
+              variant="avatar"
+              value={avatarUrl || user?.avatar}
+              onChange={handleAvatarChange}
+              hint={t('uploadPhotoOrLink', 'Upload a photo or paste image URL')}
+            />
+          </div>
+        )}
+        <dl className="grid grid-cols-1 gap-2 mt-4">
           <dt className="text-[var(--color-text-muted)]">{t('common:email')}</dt>
           <dd>{user?.email}</dd>
           <dt className="text-[var(--color-text-muted)]">{t('common:name')}</dt>
@@ -102,26 +129,18 @@ export function Profile() {
         <CardTitle>Notification preferences</CardTitle>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">Choose which emails you want to receive.</p>
         <div className="mt-4 space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!!prefs.emailApplicationUpdates}
-              onChange={(e) => handlePrefChange('emailApplicationUpdates', e.target.checked)}
-              className="rounded border-[var(--color-border)]"
-              aria-label="Email when application status changes"
-            />
-            <span className="text-sm">Email when application status changes</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!!prefs.emailTrialReminder}
-              onChange={(e) => handlePrefChange('emailTrialReminder', e.target.checked)}
-              className="rounded border-[var(--color-border)]"
-              aria-label="Trial ending reminder"
-            />
-            <span className="text-sm">Trial ending reminder (2 days before)</span>
-          </label>
+          <Checkbox
+            checked={!!prefs.emailApplicationUpdates}
+            onChange={(e) => handlePrefChange('emailApplicationUpdates', e.target.checked)}
+            label="Email when application status changes"
+            aria-label="Email when application status changes"
+          />
+          <Checkbox
+            checked={!!prefs.emailTrialReminder}
+            onChange={(e) => handlePrefChange('emailTrialReminder', e.target.checked)}
+            label="Trial ending reminder (2 days before)"
+            aria-label="Trial ending reminder"
+          />
           {typeof window !== 'undefined' && 'Notification' in window && (
             <div className="pt-2 border-t border-[var(--color-border)] flex items-center justify-between gap-2">
               <span className="text-sm text-[var(--color-text-muted)]">

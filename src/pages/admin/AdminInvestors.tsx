@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getInvestors, createInvestor, deleteInvestor, type InvestorItem } from '@/services/admin'
@@ -171,18 +172,13 @@ export function AdminInvestors() {
             onChange={(e) => setFormWebsiteUrl(e.target.value)}
             placeholder="https://..."
           />
-          <label className="block">
-            <span className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              {t('admin:investorDescription', 'Description')}
-            </span>
-            <textarea
-              value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
-              rows={3}
-              className="w-full rounded-input border bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent"
-              placeholder={t('admin:investorDescriptionPlaceholder', 'Optional description')}
-            />
-          </label>
+          <Textarea
+            label={t('admin:investorDescription', 'Description')}
+            value={formDescription}
+            onChange={(e) => setFormDescription(e.target.value)}
+            rows={3}
+            placeholder={t('admin:investorDescriptionPlaceholder', 'Optional description')}
+          />
         </div>
       </Modal>
 

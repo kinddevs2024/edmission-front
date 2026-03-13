@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { TableSkeleton } from '@/components/ui/Skeleton'
+import { Select } from '@/components/ui/Select'
 import { getChats, getChatMessages, sendAdminChatMessage, type AdminChat, type AdminChatMessage } from '@/services/admin'
 import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
@@ -100,20 +101,14 @@ export function AdminChats() {
 
       <Card>
         <div className="flex flex-wrap gap-4 mb-4">
-          <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-[var(--color-text-muted)]">{t('admin:universityProfile', 'University')}</span>
-            <select
-              value={selectedUniversityId}
-              onChange={(e) => { setSelectedUniversityId(e.target.value); setPage(1) }}
-              className="rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm min-w-[200px]"
-              aria-label={t('admin:universityProfile', 'University')}
-            >
-              <option value="">{t('admin:allUniversities', 'All universities')}</option>
-              {universities.map((u) => (
-                <option key={u.id} value={u.id}>{u.name || u.id}</option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label={t('admin:universityProfile', 'University')}
+            value={selectedUniversityId}
+            onChange={(e) => { setSelectedUniversityId(e.target.value); setPage(1) }}
+            placeholder={t('admin:allUniversities', 'All universities')}
+            options={[{ value: '', label: t('admin:allUniversities', 'All universities') }, ...universities.map((u) => ({ value: u.id, label: u.name || u.id }))]}
+            className="min-w-[200px]"
+          />
         </div>
         <CardTitle>{t('admin:allChats', 'All chats')}</CardTitle>
         {loading ? (

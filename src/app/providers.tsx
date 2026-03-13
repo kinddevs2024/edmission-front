@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { I18nextProvider } from 'react-i18next'
 import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider as MTThemeProvider } from '@material-tailwind/react'
 import i18n from '@/i18n'
 import { useTheme } from '@/hooks/useTheme'
 import { checkBackendHealthOnce } from '@/services/health'
@@ -33,12 +34,14 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
     <I18nextProvider i18n={i18n}>
+      <MTThemeProvider>
       <BrowserRouter>
         <BackendHealthCheck />
         <ThemeSync />
         {children}
         <Toaster richColors position="top-center" />
       </BrowserRouter>
+      </MTThemeProvider>
     </I18nextProvider>
     </QueryClientProvider>
   )

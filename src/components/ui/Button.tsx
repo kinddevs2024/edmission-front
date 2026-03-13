@@ -23,9 +23,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
   className?: string
   to?: string
-  /** Иконка слева от текста */
   icon?: ReactNode
-  /** Показывать спиннер слева от текста и блокировать кнопку */
   loading?: boolean
 }
 
@@ -66,12 +64,7 @@ export function Button({
     return <Link to={to} className={classes}>{content}</Link>
   }
   return (
-    <button
-      type={props.type ?? 'button'}
-      className={classes}
-      disabled={isDisabled}
-      {...props}
-    >
+    <button type={props.type ?? 'button'} className={classes} disabled={isDisabled} {...props}>
       {content}
     </button>
   )

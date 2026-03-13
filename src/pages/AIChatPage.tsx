@@ -9,7 +9,6 @@ import { parseAIActions } from '@/utils/parseAIActions'
 import { sendAIChatStream, getAIStatus, type AIStatus } from '@/services/ai'
 import { updateStudentProfile } from '@/services/student'
 import { Button } from '@/components/ui/Button'
-import { PageTitle } from '@/components/ui/PageTitle'
 import { cn } from '@/utils/cn'
 import { useAIChatStore, type ChatMessage } from '@/store/aiChatStore'
 import { getRandomPlaceholder } from '@/utils/aiChatPlaceholders'
@@ -216,30 +215,18 @@ export function AIChatPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] min-h-[400px]">
-      <div className="flex flex-col gap-1 mb-4">
-        <div className="flex items-center gap-3">
-          {!isFullPageAI && (
-            <button
-              type="button"
-              onClick={() => navigate(backTo)}
-              className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
-              aria-label={t('back')}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          )}
-          <PageTitle title={t('aiChatTitle')} icon="Bot" />
+      {!isFullPageAI && (
+        <div className="mb-2">
+          <button
+            type="button"
+            onClick={() => navigate(backTo)}
+            className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text)]"
+            aria-label={t('back')}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
         </div>
-        <p className="text-xs text-[var(--color-text-muted)] pl-11">
-          {aiStatus?.ok
-            ? (aiStatus.model?.toLowerCase().includes('gpt')
-              ? t('aiPoweredByChatGPT', 'Powered by ChatGPT · Assistant connected')
-              : t('aiPoweredByDeepSeek', 'Powered by DeepSeek · Assistant connected'))
-            : aiStatus
-              ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable')
-              : null}
-        </p>
-      </div>
+      )}
 
       <div className="flex-1 flex flex-col min-h-0 border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
         {messages.length === 0 && !loading ? (
@@ -265,24 +252,24 @@ export function AIChatPage() {
                 onSubmit={handleSubmit}
                 className="w-full mb-6"
               >
-                <div className="flex gap-3 items-end w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-300">
+                <div className="flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-300">
                   <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder}
                     rows={1}
-                    className="flex-1 min-h-[48px] max-h-32 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-base py-2"
+                    className="flex-1 min-h-[36px] max-h-32 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-base py-1.5"
                     disabled={loading}
                   />
                   <Button
                     type="submit"
-                    size="md"
                     disabled={loading || !input.trim()}
-                    className="shrink-0 rounded-xl"
+                    className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
                     icon={<Send className="w-5 h-5" />}
+                    aria-label={t('send')}
                   >
-                    {t('send')}
+                    {null}
                   </Button>
                 </div>
               </form>
@@ -406,24 +393,24 @@ export function AIChatPage() {
           {selectionAsk && (
             <p className="text-xs text-[var(--color-text-muted)] mb-2">{t('askingAboutSelection')}</p>
           )}
-          <div className="flex gap-3 items-end w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
+          <div className="flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={selectionAsk ? t('aiPlaceholderSelection', 'Уточните выделенный фрагмент…') : placeholder}
-              rows={2}
-              className="flex-1 min-h-[44px] max-h-40 w-full bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-2"
+              rows={1}
+              className="flex-1 min-h-[36px] max-h-40 w-full bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
               disabled={loading}
             />
             <Button
               type="submit"
-              size="md"
               disabled={loading || (!input.trim() && !selectionAsk)}
-              className="shrink-0 rounded-xl"
-              icon={<Send className="w-4 h-4" />}
+              className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
+              icon={<Send className="w-5 h-5" />}
+              aria-label={t('send')}
             >
-              {t('send')}
+              {null}
             </Button>
           </div>
         </motion.form>

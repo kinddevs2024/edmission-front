@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { getFaculties, getProfile, createFaculty, updateFaculty, deleteFaculty, updateProfile } from '@/services/university'
 import type { Faculty } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
@@ -220,18 +221,17 @@ export function Faculties() {
                         const included = items.includes(it)
                         return (
                           <div key={it} className="flex items-center gap-2 group">
-                            <label className="flex items-center gap-2 cursor-pointer text-sm py-0.5 flex-1 min-w-0">
-                              <input
-                                type="checkbox"
-                                checked={included}
-                                onChange={() => handleToggleItem(catId, it, included)}
-                                disabled={savingProfile}
-                                className="rounded border-[var(--color-border)]"
-                              />
-                              <span className={included ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>
-                                {it}
-                              </span>
-                            </label>
+                            <Checkbox
+                              checked={included}
+                              onChange={() => handleToggleItem(catId, it, included)}
+                              disabled={savingProfile}
+                              label={
+                                <span className={included ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>
+                                  {it}
+                                </span>
+                              }
+                              className="flex-1 min-w-0"
+                            />
                             <button
                               type="button"
                               onClick={() => handleRemoveItem(catId, it)}

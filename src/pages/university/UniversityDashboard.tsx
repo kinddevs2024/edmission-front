@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { OnboardingTutorialModal, hasSeenTutorial, markTutorialSeen } from '@/components/onboarding/OnboardingTutorialModal'
+import { OnboardingTutorialModal, hasSeenTutorial } from '@/components/onboarding/OnboardingTutorialModal'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Badge } from '@/components/ui/Badge'
+import { getProfile } from '@/services/auth'
+import { useAuthStore } from '@/store/authStore'
 import { getDashboard, type UniversityDashboardData } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 import { Bot, Users, BarChart3, MessageCircle, Send, ShieldCheck } from 'lucide-react'
@@ -34,7 +36,12 @@ export function UniversityDashboard() {
   }, [])
 
   useEffect(() => {
-    if (dashboard?.verified && !hasSeenTutorial('university')) setShowTutorial(true)
+    if (dashboard?.verified) {
+      getProfile().then(() => {
+        const u = useAuthStore.getState().user
+        if (!hasSeenTutorial('university', u)) setShowTutorial(true)
+      }).catch(() => {})
+    }
   }, [dashboard?.verified])
 
   const pipeline = dashboard?.pipeline ?? []
@@ -47,7 +54,7 @@ export function UniversityDashboard() {
 
   return (
     <div className="space-y-6">
-      <OnboardingTutorialModal open={showTutorial} onClose={() => { markTutorialSeen('university'); setShowTutorial(false) }} variant="university" />
+      <OnboardingTutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} variant="university" />
       <div className="flex flex-wrap items-center gap-2">
         <PageTitle title={t('university:dashboard', 'Dashboard')} icon="LayoutDashboard" />
         {dashboard?.verified && (
