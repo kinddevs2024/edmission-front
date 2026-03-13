@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { Send, Bot, User } from 'lucide-react'
@@ -26,25 +26,13 @@ export function AIChatPage() {
   const { t } = useTranslation('common')
   const { role, user } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams] = useSearchParams()
-  const isFullPageAI = location.pathname === '/ai' || location.pathname === '/admin/ai'
   const messages = useAIChatStore((s) => s.messages)
   const addMessage = useAIChatStore((s) => s.addMessage)
   const updateMessage = useAIChatStore((s) => s.updateMessage)
   const removeMessage = useAIChatStore((s) => s.removeMessage)
   const selectionAsk = useAIChatStore((s) => s.selectionAsk)
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
-  const backTo =
-    role === 'student'
-      ? '/student/dashboard'
-      : role === 'university'
-        ? '/university/dashboard'
-        : role === 'admin'
-          ? '/admin'
-          : role === 'school_counsellor'
-            ? '/school/dashboard'
-            : '/'
   const initialQ = searchParams.get('q') ?? ''
   const [input, setInput] = useState(initialQ)
   const [placeholder, setPlaceholder] = useState(() => getRandomPlaceholder())

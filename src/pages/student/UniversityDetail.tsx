@@ -164,7 +164,7 @@ export function UniversityDetail() {
                   {Array.isArray(items) && items.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {items.map((item) => (
-                        <Badge key={item} variant="secondary" className="text-xs">{item}</Badge>
+                        <Badge key={item} variant="default" className="text-xs">{item}</Badge>
                       ))}
                     </div>
                   )}
