@@ -29,7 +29,7 @@ export function Compare() {
           setAllOptions([])
           return
         }
-        return getCompareUniversities(ids.slice(0, 50)).then((list) => {
+        return getCompareUniversities(ids.slice(0, 5)).then((list) => {
           setAllOptions(list.map((u) => ({ value: u.id, label: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '' })))
         })
       })

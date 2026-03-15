@@ -57,9 +57,9 @@ export function StudentOffers() {
         <Card>
           <EmptyState
             icon={<Gift className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
-            title={t('student:noOffers')}
-            description={t('student:noOffersDesc')}
-            actionLabel={t('student:exploreUniversities')}
+            title={t('student:noOffers', 'No offers yet')}
+            description={t('student:noOffersDesc', 'Show interest to universities and wait for offers.')}
+            actionLabel={t('student:exploreUniversities', 'Explore universities')}
             actionTo="/student/universities"
           />
         </Card>
