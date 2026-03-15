@@ -4,15 +4,17 @@ import { cn } from '@/utils/cn'
 interface CardProps {
   children: ReactNode
   className?: string
+  style?: React.CSSProperties
   /** Hover: lift + stronger shadow */
   interactive?: boolean
   /** Hover: subtle 3D tilt (use on cards in grids) */
   tilt?: boolean
 }
 
-export function Card({ children, className, interactive, tilt }: CardProps) {
+export function Card({ children, className, style, interactive, tilt }: CardProps) {
   return (
     <div
+      style={style}
       className={cn(
         'rounded-card bg-[var(--color-card)] border border-[var(--color-border)] p-4',
         interactive && 'card-interactive',
