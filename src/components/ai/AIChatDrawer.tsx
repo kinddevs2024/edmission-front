@@ -11,14 +11,14 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { useAIChatStore, type ChatMessage } from '@/store/aiChatStore'
 import { parseAIActions } from '@/utils/parseAIActions'
-import { getRandomPlaceholder } from '@/utils/aiChatPlaceholders'
 
-const SUGGESTED_QUESTIONS = [
-  'Как выбрать университет?',
-  'Какие документы нужны?',
-  'Как работают стипендии?',
-  'Где указать GPA?',
-  'Помоги с профилем',
+const FALLBACK_PLACEHOLDERS = ['Type your question…', 'What would you like to ask?', 'How can I help?']
+const FALLBACK_SUGGESTED = [
+  'How to choose a university?',
+  'What documents are needed?',
+  'How do scholarships work?',
+  'Where do I enter my GPA?',
+  'Help me with my profile',
 ]
 
 interface AIChatDrawerProps {
@@ -28,6 +28,11 @@ interface AIChatDrawerProps {
 
 export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const { t } = useTranslation('common')
+  const suggestedQuestions = (t('aiSuggestedQuestions', { returnObjects: true }) as string[] | undefined) ?? FALLBACK_SUGGESTED
+  const placeholdersRaw = t('aiPlaceholders', { returnObjects: true })
+  const placeholders = Array.isArray(placeholdersRaw) ? (placeholdersRaw as string[]) : FALLBACK_PLACEHOLDERS
+  const [placeholderIndex, setPlaceholderIndex] = useState(() => Math.floor(Math.random() * Math.max(1, placeholders.length)))
+  const placeholder = placeholders[placeholderIndex % placeholders.length]
   const { role, user } = useAuth()
   const navigate = useNavigate()
   const messages = useAIChatStore((s) => s.messages)
@@ -37,7 +42,6 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const selectionAsk = useAIChatStore((s) => s.selectionAsk)
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
   const [input, setInput] = useState('')
-  const [placeholder, setPlaceholder] = useState(() => getRandomPlaceholder())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
@@ -63,7 +67,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
       if (!trimmed || loading) return
 
       setInput('')
-      setPlaceholder(getRandomPlaceholder())
+      setPlaceholderIndex((i) => (i + 1 + Math.floor(Math.random() * Math.max(1, placeholders.length - 1))) % Math.max(1, placeholders.length))
       setError(null)
       setRateLimitMessage(null)
       setSelectionAsk(null)
@@ -152,7 +156,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         }
       }
     },
-    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, setPlaceholder, role, user?.id]
+    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -281,10 +285,10 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               className="flex flex-col items-center w-full"
             >
               <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">
-                {t('aiWelcome', 'С чего начнём?')}
+                {t('aiWelcome')}
               </h2>
               <p className="text-xs text-[var(--color-text-muted)] mb-6 text-center">
-                {t('aiSuggestedIntro', 'Спросите об университетах, заявках или стипендиях.')}
+                {t('aiSuggestedIntro')}
               </p>
               <form onSubmit={handleSubmit} className="w-full mb-5">
                 <div className="flex gap-2 items-center w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
@@ -308,10 +312,10 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                 </div>
               </form>
               <p className="text-xs text-[var(--color-text-muted)] mb-2">
-                {t('aiSuggestedLabel', 'Примеры:')}
+                {t('aiSuggestedLabel')}
               </p>
               <div className="flex flex-wrap justify-center gap-1.5">
-                {SUGGESTED_QUESTIONS.map((q, i) => (
+                {suggestedQuestions.map((q, i) => (
                   <motion.button
                     key={q}
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -408,13 +412,13 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
             {selectionAsk && (
               <div className="p-2 rounded-card bg-primary-accent/10 border border-primary-accent/30 space-y-2">
                 <p className="text-xs text-[var(--color-text-muted)]">
-                  {t('askingAboutSelection', 'Asking about selected text:')}
+                  {t('askingAboutSelection')}
                 </p>
                 <p className="text-sm truncate" title={selectionAsk.text}>
                   &quot;{selectionAsk.text.length > 80 ? selectionAsk.text.slice(0, 80) + '…' : selectionAsk.text}&quot;
                 </p>
                 <p className="text-xs text-[var(--color-text-muted)]">
-                  {t('aiTypeQuestionBelow', 'Type your question in the input below and press Send.')}
+                  {t('aiTypeQuestionBelow')}
                 </p>
               </div>
             )}
@@ -435,7 +439,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={selectionAsk ? t('aiPlaceholderSelection', 'Уточните выделенный фрагмент…') : placeholder}
+              placeholder={selectionAsk ? t('aiPlaceholderSelection') : placeholder}
               rows={1}
               className="flex-1 min-h-[36px] max-h-28 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
               disabled={loading}

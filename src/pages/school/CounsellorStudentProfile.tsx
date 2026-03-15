@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { useTranslation } from 'react-i18next'
@@ -309,6 +310,29 @@ export function CounsellorStudentProfile() {
 
   const avatarUrl = watch('avatarUrl')
   const educationStatus = watch('educationStatus')
+  const educationStatusOptions = EDUCATION_STATUS_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const targetDegreeOptions = TARGET_DEGREE_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const gradingSchemeOptions = GRADING_SCHEME_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const gradeScaleOptions = GRADE_SCALE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))
+  const highestEducationOptions = HIGHEST_EDUCATION_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const institutionTypeOptions = [
+    { value: 'school', label: t('institutionTypeSchool') },
+    { value: 'university', label: t('institutionTypeUniversity') },
+  ]
+  const currencyOptions = [
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'UZS', label: 'UZS' },
+    { value: 'KZT', label: 'KZT' },
+    { value: 'RUB', label: 'RUB' },
+  ]
+  const experienceTypeOptions = [
+    { value: 'volunteer', label: t('volunteer') },
+    { value: 'internship', label: t('internship') },
+    { value: 'work', label: t('work') },
+  ]
+  const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+  const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
 
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
@@ -440,55 +464,15 @@ export function CounsellorStudentProfile() {
             {t('stepEducation', 'Education')}
           </CardTitle>
           <div className="space-y-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('educationStatusLabel')}</label>
-              <select {...register('educationStatus')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                <option value="">—</option>
-                {EDUCATION_STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('applyingForDegree')}</label>
-              <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                <option value="">—</option>
-                {TARGET_DEGREE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                ))}
-              </select>
-            </div>
+            <Select label={t('educationStatusLabel')} options={educationStatusOptions} placeholder="—" {...register('educationStatus')} />
+            <Select label={t('applyingForDegree')} options={targetDegreeOptions} placeholder="—" {...register('targetDegreeLevel')} />
             <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
             <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} />
             <Input label={t('schoolName')} {...register('schoolName')} placeholder={t('schoolName')} />
             <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradingScheme')}</label>
-              <select {...register('gradingScheme')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                <option value="">—</option>
-                {GRADING_SCHEME_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradeScaleOutOf')}</label>
-              <select {...register('gradeScale')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                <option value="">—</option>
-                {GRADE_SCALE_OPTIONS.map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('highestLevelOfEducation')}</label>
-              <select {...register('highestEducationLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                <option value="">—</option>
-                {HIGHEST_EDUCATION_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                ))}
-              </select>
-            </div>
+            <Select label={t('gradingScheme')} options={gradingSchemeOptions} placeholder="—" {...register('gradingScheme')} />
+            <Select label={t('gradeScaleOutOf')} options={gradeScaleOptions} placeholder="—" {...register('gradeScale')} />
+            <Select label={t('highestLevelOfEducation')} options={highestEducationOptions} placeholder="—" {...register('highestEducationLevel')} />
 
             {/* Languages */}
             <div className="pt-4 border-t border-[var(--color-border)]">
@@ -506,20 +490,12 @@ export function CounsellorStudentProfile() {
               )}
               <div className="flex flex-wrap gap-3 items-end">
                 <div className="min-w-[140px]">
-                  <select value={newLanguage} onChange={(e) => { setNewLanguage(e.target.value); if (e.target.value !== 'Other') setCustomLanguageName('') }} className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 text-sm">
-                    {LANGUAGE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+                  <Select value={newLanguage} onChange={(e) => { setNewLanguage(e.target.value); if (e.target.value !== 'Other') setCustomLanguageName('') }} options={languageOptions} />
                 </div>
                 {newLanguage === 'Other' && (
-                  <input type="text" value={customLanguageName} onChange={(e) => setCustomLanguageName(e.target.value)} placeholder="Language name" className="rounded-input border border-[var(--color-border)] px-3 py-2 text-sm min-w-[120px]" />
+                  <Input type="text" value={customLanguageName} onChange={(e) => setCustomLanguageName(e.target.value)} placeholder="Language name" className="min-w-[120px]" />
                 )}
-                <select value={newLevel} onChange={(e) => setNewLevel(e.target.value)} className="rounded-input border border-[var(--color-border)] px-3 py-2 text-sm">
-                  {LEVEL_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                <Select value={newLevel} onChange={(e) => setNewLevel(e.target.value)} options={levelOptions} className="min-w-[96px]" />
                 <Button type="button" size="sm" onClick={() => { const langToAdd = newLanguage === 'Other' ? customLanguageName.trim() : newLanguage; if (!langToAdd) return; appendLanguage({ language: langToAdd, level: newLevel }); if (newLanguage === 'Other') setCustomLanguageName('') }} icon={<Plus className="w-4 h-4" />} disabled={newLanguage === 'Other' && !customLanguageName.trim()}>
                   {t('common:add', 'Add')}
                 </Button>
@@ -535,11 +511,7 @@ export function CounsellorStudentProfile() {
                     <span className="text-sm font-medium">{t('entryNumber', { n: i + 1 })}</span>
                     <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)}><Trash2 className="w-4 h-4" /></Button>
                   </div>
-                  <select {...register(`schoolsAttended.${i}.institutionType`)} className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 text-sm mb-2">
-                    <option value="">—</option>
-                    <option value="school">{t('institutionTypeSchool')}</option>
-                    <option value="university">{t('institutionTypeUniversity')}</option>
-                  </select>
+                  <Select label={t('institutionTypeLabel')} options={institutionTypeOptions} placeholder="—" {...register(`schoolsAttended.${i}.institutionType`)} />
                   <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} />
                   <Input label={t('schoolName')} {...register(`schoolsAttended.${i}.institutionName`)} />
                   <Input label={t('gradeLevel')} {...register(`schoolsAttended.${i}.educationLevel`)} />
@@ -567,17 +539,10 @@ export function CounsellorStudentProfile() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetAmount', 'Budget')}</label>
-                <input type="number" min={0} step={100} className="w-full rounded-input border border-[var(--color-border)] px-3 py-2" {...register('budgetAmount', { valueAsNumber: true })} />
+                <Input type="number" min={0} step={100} {...register('budgetAmount', { valueAsNumber: true })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetCurrency', 'Currency')}</label>
-                <select className="w-full rounded-input border border-[var(--color-border)] px-3 py-2" {...register('budgetCurrency')}>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="UZS">UZS</option>
-                  <option value="KZT">KZT</option>
-                  <option value="RUB">RUB</option>
-                </select>
+                <Select label={t('student:budgetCurrency', 'Currency')} options={currencyOptions} {...register('budgetCurrency')} />
               </div>
             </div>
             <FileUpload label={t('avatarUrl')} variant="avatar" value={avatarUrl} onChange={(url) => setValue('avatarUrl', url)} hint={t('uploadPhotoOrLink')} />
@@ -664,11 +629,7 @@ export function CounsellorStudentProfile() {
             {experienceFields.map((field, i) => (
               <Card key={field.id} className="p-4 border border-[var(--color-border)]">
                 <div className="flex justify-between items-center mb-2">
-                  <select {...register(`experiences.${i}.type`)} className="rounded-input border border-[var(--color-border)] px-3 py-2 text-sm">
-                    <option value="volunteer">{t('volunteer')}</option>
-                    <option value="internship">{t('internship')}</option>
-                    <option value="work">{t('work')}</option>
-                  </select>
+                  <Select options={experienceTypeOptions} {...register(`experiences.${i}.type`)} className="min-w-[180px]" />
                   <Button type="button" variant="ghost" size="sm" onClick={() => removeExperience(i)}><Trash2 className="w-4 h-4" /></Button>
                 </div>
                 <Input label={t('title')} {...register(`experiences.${i}.title`)} />

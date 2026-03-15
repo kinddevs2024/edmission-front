@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
-import { Suspense } from 'react'
+import { Suspense, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { TopBar } from '@/components/layout/TopBar'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -24,10 +24,15 @@ export function MainLayout() {
   const { isAuthenticated, role } = useAuth()
   const { t } = useTranslation(['student', 'university', 'admin', 'school'])
   const location = useLocation()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
+
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0)
+    scrollContainerRef.current?.querySelector('main')?.scrollTo(0, 0)
+  }, [location.pathname])
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
   const showSidebar = isAuthenticated && isSidebarPath(location.pathname)
-  const isFixedHeightPage = location.pathname === '/ai'
 
   const { navItems, navBottomItems } = useMemo(() => {
     if (role === 'student') {
@@ -163,14 +168,15 @@ export function MainLayout() {
   }, [isAuthenticated])
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
+    <div className="h-screen overflow-hidden flex flex-col bg-[var(--color-bg)]">
       {isAuthenticated && <TopBar />}
-      {showSidebar && navItems.length > 0 ? (
-        <div className="flex">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-auto flex flex-col">
+        {showSidebar && navItems.length > 0 ? (
+          <div className="flex h-full min-h-0">
           <Sidebar items={navItems} bottomItems={navBottomItems} />
-          <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200 flex flex-col min-h-0', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-            <main className={cn('p-3 sm:p-4 flex-1 min-h-0 flex flex-col', isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)]')}>
-              <div className="max-w-content mx-auto w-full">
+          <div className={cn('flex-1 min-w-0 min-h-0 pb-20 md:pb-12 transition-[margin-left] duration-200 flex flex-col bg-pattern-subtle', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
+            <main className="p-3 sm:p-4 pb-12 flex-1 min-h-full flex flex-col overflow-auto bg-pattern-subtle">
+              <div className="max-w-content mx-auto w-full min-h-0 flex flex-col">
                 <Suspense fallback={<ContentFallback />}>
                   <Outlet />
                 </Suspense>
@@ -178,14 +184,15 @@ export function MainLayout() {
             </main>
           </div>
           <BottomNav items={bottomNavItems} />
-        </div>
-      ) : (
-        <main className={cn('p-2 sm:p-2 min-h-full', isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)] flex flex-col')}>
-          <Suspense fallback={<ContentFallback />}>
-            <Outlet />
-          </Suspense>
-        </main>
-      )}
+          </div>
+        ) : (
+          <main className="min-h-full flex-1 flex flex-col p-2 sm:p-2 pb-12">
+            <Suspense fallback={<ContentFallback />}>
+              <Outlet />
+            </Suspense>
+          </main>
+        )}
+      </div>
       {isAuthenticated && <FloatingAIButton />}
       <VersionBadge />
       <CookieConsentBanner />

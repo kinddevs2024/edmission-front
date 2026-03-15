@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
@@ -11,12 +12,12 @@ import { Textarea } from '@/components/ui/Textarea'
 import { updateProfile } from '@/services/university'
 import { getApiError } from '@/services/auth'
 
-const STEPS = [
-  { id: 1, title: 'Overview' },
-  { id: 2, title: 'Media & Location' },
-  { id: 3, title: 'Programs & Academics' },
-  { id: 4, title: 'Campus Life & Services' },
-  { id: 5, title: 'Contact & Review' },
+const STEPS: { id: number; titleKey: string }[] = [
+  { id: 1, titleKey: 'stepOverview' },
+  { id: 2, titleKey: 'stepMedia' },
+  { id: 3, titleKey: 'stepPrograms' },
+  { id: 4, titleKey: 'stepCampus' },
+  { id: 5, titleKey: 'stepContact' },
 ]
 
 const step1Schema = z.object({
@@ -32,6 +33,7 @@ const step1Schema = z.object({
 })
 
 export function UniversityOnboarding() {
+  const { t } = useTranslation(['university', 'common'])
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
@@ -68,7 +70,7 @@ export function UniversityOnboarding() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <PageTitle title="University onboarding" icon="GraduationCap" />
+      <PageTitle title={t('university:onboardingTitle')} icon="GraduationCap" />
 
       <div className="flex gap-2 overflow-x-auto pb-2">
         {STEPS.map((s) => (
@@ -80,87 +82,87 @@ export function UniversityOnboarding() {
               step === s.id ? 'bg-primary-accent text-primary-dark' : 'bg-[var(--color-border)]'
             }`}
           >
-            {s.id}. {s.title}
+            {s.id}. {t(`university:${s.titleKey}`)}
           </button>
         ))}
       </div>
 
       <Card>
-        <CardTitle>{STEPS[step - 1].title}</CardTitle>
+        <CardTitle>{t(`university:${STEPS[step - 1].titleKey}`)}</CardTitle>
 
         {step === 1 && (
           <form onSubmit={handleSubmit(onStep1)} className="space-y-4 mt-4">
             {error && <p className="text-sm text-red-500">{error}</p>}
-            <Input label="University name" error={errors.name?.message} {...register('name')} />
-            <Input label="Slogan" {...register('slogan')} />
-            <Input label="Founded year" type="number" {...register('foundedYear')} />
-            <Input label="Number of students" type="number" {...register('studentCount')} />
-            <Input label="Accreditation" {...register('accreditation')} />
-            <Input label="Rating (0-100)" type="number" {...register('rating')} />
+            <Input label={t('university:universityName')} error={errors.name?.message} {...register('name')} />
+            <Input label={t('university:slogan')} {...register('slogan')} />
+            <Input label={t('university:foundedYear')} type="number" {...register('foundedYear')} />
+            <Input label={t('university:studentCount')} type="number" {...register('studentCount')} />
+            <Input label={t('university:accreditation')} {...register('accreditation')} />
+            <Input label={t('university:rating')} type="number" {...register('rating')} />
             <Textarea
-              label="Description"
+              label={t('university:description')}
               rows={4}
               {...register('description')}
             />
             <Input
-              label="Minimum requirements (e.g. IELTS 6.5, TOEFL 90, certificates)"
+              label={t('university:minLanguageLevelLabel')}
               {...register('minLanguageLevel')}
-              placeholder="e.g. IELTS 6.5, CFR, GPA 3.0"
+              placeholder={t('university:minLanguageLevelPlaceholder')}
             />
             <Input
-              label="Minimum tuition (annual cost)"
+              label={t('university:tuitionPriceLabel')}
               type="number"
               {...register('tuitionPrice')}
-              placeholder="Annual cost in main currency"
+              placeholder={t('university:tuitionPricePlaceholder')}
             />
             <div className="flex gap-2">
-              <Button type="submit" disabled={submitting} loading={submitting}>Next</Button>
-              <Button type="button" variant="ghost" onClick={() => navigate('/university/dashboard')}>Skip</Button>
+              <Button type="submit" disabled={submitting} loading={submitting}>{t('common:next')}</Button>
+              <Button type="button" variant="ghost" onClick={() => navigate('/university/dashboard')}>{t('university:skip')}</Button>
             </div>
           </form>
         )}
 
         {step === 2 && (
           <div className="space-y-4 mt-4">
-            <Input label="Country" />
-            <Input label="City" />
-            <p className="text-sm text-[var(--color-text-muted)]">Campus photos & video upload (TODO)</p>
+            <Input label={t('university:country')} />
+            <Input label={t('university:city')} />
+            <p className="text-sm text-[var(--color-text-muted)]">{t('university:onboardingStep2Hint')}</p>
             <div className="flex gap-2">
-              <Button onClick={() => setStep(2 + 1)}>Next</Button>
-              <Button variant="secondary" onClick={() => setStep(1)}>Back</Button>
+              <Button onClick={() => setStep(2 + 1)}>{t('common:next')}</Button>
+              <Button variant="secondary" onClick={() => setStep(1)}>{t('common:back')}</Button>
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-4 mt-4">
-            <p className="text-sm text-[var(--color-text-muted)]">Programs, degrees, tuition, requirements (TODO)</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('university:onboardingStep3Hint')}</p>
             <div className="flex gap-2">
-              <Button onClick={() => setStep(3 + 1)}>Next</Button>
-              <Button variant="secondary" onClick={() => setStep(2)}>Back</Button>
+              <Button onClick={() => setStep(3 + 1)}>{t('common:next')}</Button>
+              <Button variant="secondary" onClick={() => setStep(2)}>{t('common:back')}</Button>
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="space-y-4 mt-4">
-            <p className="text-sm text-[var(--color-text-muted)]">Housing, clubs, facilities (TODO)</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('university:onboardingStep4Hint')}</p>
             <div className="flex gap-2">
-              <Button onClick={() => setStep(4 + 1)}>Next</Button>
-              <Button variant="secondary" onClick={() => setStep(3)}>Back</Button>
+              <Button onClick={() => setStep(4 + 1)}>{t('common:next')}</Button>
+              <Button variant="secondary" onClick={() => setStep(3)}>{t('common:back')}</Button>
             </div>
           </div>
         )}
 
         {step === 5 && (
           <div className="space-y-4 mt-4">
-            <Input label="Contact email" type="email" />
-            <Input label="Phone" />
-            <p className="text-sm text-[var(--color-text-muted)]">Review and submit. Data from step 1 will be saved.</p>
+            <Input label={t('university:contactEmail')} type="email" />
+            <Input label={t('university:phone')} />
+            <p className="text-sm text-[var(--color-text-muted)]">{t('university:onboardingStep5Hint')}</p>
             {error && <p className="text-sm text-red-500">{error}</p>}
             <div className="flex gap-2">
-              <Button type="button" onClick={() => handleSubmit(submitFull)()} disabled={submitting} loading={submitting}>Submit</Button>
-              <Button type="button" variant="secondary" onClick={() => setStep(4)}>Back</Button>
+              <Button type="button" onClick={() => handleSubmit(submitFull)()} disabled={submitting} loading={submitting}>{t('common:submit')}</Button>
+              <Button type="button" variant="secondary" onClick={() => setStep(4)}>{t('common:back')}</Button>
             </div>
           </div>
         )}

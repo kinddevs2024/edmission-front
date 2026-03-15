@@ -1,7 +1,6 @@
 import { type SelectHTMLAttributes } from 'react'
 import { Select as MTSelect, Option } from '@material-tailwind/react'
 
-
 interface SelectOption {
   value: string
   label: string

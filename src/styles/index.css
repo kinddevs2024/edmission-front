@@ -40,13 +40,16 @@
   html {
     @apply antialiased;
   }
+
   body {
     @apply bg-[var(--color-bg)] text-[var(--color-text)] font-sans text-base;
   }
+
   /* Focus visible for keyboard a11y (WCAG) */
   :focus {
     @apply outline-none;
   }
+
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-accent;
   }
@@ -57,17 +60,21 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-text-muted) transparent;
 }
+
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 *::-webkit-scrollbar-track {
   background: transparent;
 }
+
 *::-webkit-scrollbar-thumb {
   background: var(--color-text-muted);
   border-radius: 4px;
 }
+
 *::-webkit-scrollbar-thumb:hover {
   background: var(--color-text);
 }
@@ -83,8 +90,17 @@
   background-position: 0 0;
   background-color: var(--color-bg);
 }
+
 .dark .bg-pattern-subtle {
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+}
+
+/* Фон внутри карточки университета: белый сверху → светло-зелёный внизу */
+.university-card-bg {
+  background: linear-gradient(to bottom, #ffffff 0%, #f7fbf7 35%, #f2f9f2 70%, #e8f5e9 100%);
+}
+.dark .university-card-bg {
+  background: linear-gradient(to bottom, var(--color-card) 0%, rgba(15, 26, 15, 0.98) 50%, #0f1a0f 100%);
 }
 
 /* Drawer slide-in from right */
@@ -93,11 +109,13 @@
     opacity: 0;
     transform: translateX(12px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
+
 .animate-search-expand {
   animation: search-expand 0.25s var(--ease-out-smooth) forwards;
 }
@@ -106,14 +124,17 @@
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
 }
+
 @keyframes drawer-out-right {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(100%);
   }
@@ -125,57 +146,87 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 @keyframes landing-rotate {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
+
 @keyframes landing-float {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-6px);
   }
 }
+
 @keyframes landing-pulse {
+
   0%,
   100% {
     opacity: 0.7;
   }
+
   50% {
     opacity: 1;
   }
 }
+
 .landing-animate-in {
   animation: landing-fade-in 0.6s ease-out forwards;
 }
+
 .landing-animate-rotate {
   animation: landing-rotate 20s linear infinite;
 }
+
 .landing-animate-float {
   animation: landing-float 4s ease-in-out infinite;
 }
+
 .landing-animate-pulse {
   animation: landing-pulse 2s ease-in-out infinite;
 }
 
 /* Page and list animations */
-.animate-stagger-1 { animation-delay: 0.05s; }
-.animate-stagger-2 { animation-delay: 0.1s; }
-.animate-stagger-3 { animation-delay: 0.15s; }
-.animate-stagger-4 { animation-delay: 0.2s; }
-.animate-stagger-5 { animation-delay: 0.25s; }
-.animate-stagger-6 { animation-delay: 0.3s; }
+.animate-stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.animate-stagger-2 {
+  animation-delay: 0.1s;
+}
+
+.animate-stagger-3 {
+  animation-delay: 0.15s;
+}
+
+.animate-stagger-4 {
+  animation-delay: 0.2s;
+}
+
+.animate-stagger-5 {
+  animation-delay: 0.25s;
+}
+
+.animate-stagger-6 {
+  animation-delay: 0.3s;
+}
 
 /* Interactive card: lift + shadow on hover, optional 3D tilt */
 .card-interactive {
@@ -183,6 +234,7 @@
     box-shadow var(--duration-motion) var(--ease-out-smooth);
   box-shadow: var(--shadow-card);
 }
+
 .card-interactive:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-card-hover);
@@ -195,6 +247,7 @@
     box-shadow var(--duration-motion) var(--ease-out-smooth);
   box-shadow: var(--shadow-card);
 }
+
 .card-3d:hover {
   box-shadow: var(--shadow-card-hover);
 }
@@ -204,10 +257,12 @@
   from {
     transform: scaleX(0);
   }
+
   to {
     transform: scaleX(1);
   }
 }
+
 .animate-progress-fill {
   transform-origin: left;
   animation: progress-fill 0.6s var(--ease-out-smooth) forwards;
@@ -218,10 +273,12 @@
   stroke-dasharray: 2 2.5;
   animation: network-edge-flow 12s linear infinite;
 }
+
 @keyframes network-edge-flow {
   from {
     stroke-dashoffset: 0;
   }
+
   to {
     stroke-dashoffset: -9;
   }
@@ -232,10 +289,12 @@
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
 }
+
 .trusted-logos-marquee {
   animation: trusted-logos-scroll 40s linear infinite;
 }

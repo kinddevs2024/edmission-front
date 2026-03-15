@@ -76,7 +76,7 @@ export function StudentDashboard() {
   const onboardingDone = onboardingSteps.every((s) => s.done)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12 mb-4">
       <OnboardingTutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} variant="student" />
       <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
 
@@ -136,31 +136,34 @@ export function StudentDashboard() {
         </Link>
       </div>
 
-      <Link to="/student/universities" className="block">
-        <Card className="cursor-pointer hover:border-primary-accent transition-colors" interactive>
-          <CardTitle>{t('recommendedUniversities')}</CardTitle>
+      <div>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">{t('recommendedUniversities')}</h2>
         {loadingRecs ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <CardSkeleton /><CardSkeleton /><CardSkeleton />
           </div>
         ) : recommendations.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recommendations.slice(0, 5).map((u, index) => (
               <div
                 key={u.id}
                 className="animate-card-enter opacity-0"
-                style={{ animationDelay: `${index * 0.06}s`, animationFillMode: 'forwards' }}
+                style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
               >
-                <UniversityCard university={u} showMatch onInterest={() => {}} />
+                <UniversityCard university={u} showMatch showRequirements={false} onInterest={() => {}} />
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-[var(--color-text-muted)] mt-2">{t('completeProfileForRecs')}</p>
+          <p className="text-[var(--color-text-muted)]">{t('completeProfileForRecs')}</p>
         )}
-        <span className="inline-block mt-4 px-4 py-2 text-sm font-medium rounded-input bg-primary-accent text-primary-dark">{t('exploreUniversities')}</span>
-        </Card>
-      </Link>
+        <Link
+          to="/student/universities"
+          className="inline-block mt-4 px-4 py-2 text-sm font-medium rounded-input bg-primary-accent text-primary-dark hover:opacity-90 transition-opacity"
+        >
+          {t('exploreUniversities')}
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Link to="/student/applications">
@@ -169,12 +172,15 @@ export function StudentDashboard() {
           {activeApplications.length === 0 ? (
             <p className="text-[var(--color-text-muted)]">{t('noActiveApplications')}</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="mt-3 space-y-2">
               {activeApplications.slice(0, 5).map((a) => (
-                <li key={a.id} className="flex justify-between items-center">
-                  <span>{a.universityName ?? a.universityId}</span>
-                  <span className="text-sm text-[var(--color-text-muted)]">{a.status}</span>
-                  <button type="button" className="text-sm text-primary-accent hover:underline">{t('view')}</button>
+                <li
+                  key={a.id}
+                  className="grid grid-cols-[minmax(0,1fr)_104px_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
+                >
+                  <span className="truncate pr-2">{a.universityName ?? a.universityId}</span>
+                  <span className="justify-self-start text-sm text-[var(--color-text-muted)]">{a.status}</span>
+                  <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
                 </li>
               ))}
             </ul>
@@ -188,11 +194,14 @@ export function StudentDashboard() {
           {offers.length === 0 ? (
             <p className="text-[var(--color-text-muted)]">{t('noOffersYet')}</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="mt-3 space-y-2">
               {offers.slice(0, 3).map((o) => (
-                <li key={o.id} className="flex justify-between items-center">
-                  <span>{o.universityName ?? o.universityId}</span>
-                  <button type="button" className="text-sm text-primary-accent hover:underline">{t('view')}</button>
+                <li
+                  key={o.id}
+                  className="grid grid-cols-[minmax(0,1fr)_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
+                >
+                  <span className="truncate pr-2">{o.universityName ?? o.universityId}</span>
+                  <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
                 </li>
               ))}
             </ul>

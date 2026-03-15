@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -16,23 +17,31 @@ import { getApiError } from '@/services/api'
 import { formatDate } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'All' },
-  { value: 'open', label: 'Open' },
-  { value: 'in_progress', label: 'In progress' },
-  { value: 'resolved', label: 'Resolved' },
-  { value: 'closed', label: 'Closed' },
+const STATUS_OPTION_KEYS: { value: string; labelKey: string }[] = [
+  { value: '', labelKey: 'all' },
+  { value: 'open', labelKey: 'supportStatusOpen' },
+  { value: 'in_progress', labelKey: 'supportStatusInProgress' },
+  { value: 'resolved', labelKey: 'supportStatusResolved' },
+  { value: 'closed', labelKey: 'supportStatusClosed' },
 ]
 
-const STATUS_LABEL: Record<string, string> = {
-  open: 'Open',
-  in_progress: 'In progress',
-  resolved: 'Resolved',
-  closed: 'Closed',
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  open: 'supportStatusOpen',
+  in_progress: 'supportStatusInProgress',
+  resolved: 'supportStatusResolved',
+  closed: 'supportStatusClosed',
 }
 
 export function AdminSupport() {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
+  const statusLabel = (status: string) => t(STATUS_LABEL_KEYS[status] ?? status)
+  const statusOptions = STATUS_OPTION_KEYS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const roleOptions = [
+    { value: '', label: t('all') },
+    { value: 'student', label: t('student') },
+    { value: 'university', label: t('university') },
+  ]
   const { id } = useParams<{ id: string }>()
   const [tickets, setTickets] = useState<AdminTicket[]>([])
   const [ticket, setTicket] = useState<AdminTicket | null>(null)
@@ -102,14 +111,14 @@ export function AdminSupport() {
     return (
       <div className="max-w-2xl mx-auto space-y-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/support')}>
-          ← Back to tickets
+          ← {t('backToTickets')}
         </Button>
         <PageTitle title={ticket.subject} icon="HelpCircle" />
         <Card>
           <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]">
-            <span>From: {ticket.userEmail ?? ticket.userId}</span>
-            <span>Role: {ticket.role}</span>
-            <span>Created: {formatDate(ticket.createdAt)}</span>
+            <span>{t('from')}: {ticket.userEmail ?? ticket.userId}</span>
+            <span>{t('role')}: {ticket.role}</span>
+            <span>{t('created')}: {formatDate(ticket.createdAt)}</span>
           </div>
           <div className="mt-3 p-3 rounded-input bg-[var(--color-bg)] text-sm whitespace-pre-wrap">
             {ticket.message}
@@ -120,23 +129,23 @@ export function AdminSupport() {
               value={statusUpdate}
               onChange={(e) => setStatusUpdate(e.target.value)}
             >
-              {STATUS_OPTIONS.filter((o) => o.value).map((o) => (
+              {statusOptions.filter((o) => o.value).map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
             <Button size="sm" onClick={handleStatusChange} disabled={submitting}>
-              Update status
+              {t('updateStatus')}
             </Button>
           </div>
         </Card>
         {replies.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-semibold">Replies</h3>
+            <h3 className="font-semibold">{t('supportReplies')}</h3>
             {replies.map((r, i) => (
               <Card key={i}>
                 <div className="flex items-center gap-2 text-sm">
                   <span className={(r as { isStaff?: boolean }).isStaff ? 'text-primary-accent font-medium' : ''}>
-                    {(r as { isStaff?: boolean }).isStaff ? 'Support' : (r as { role?: string }).role}
+                    {(r as { isStaff?: boolean }).isStaff ? t('supportStaff') : (r as { role?: string }).role}
                   </span>
                   <span className="text-[var(--color-text-muted)]">
                     {formatDate((r as { createdAt?: string }).createdAt ?? '')}
@@ -148,18 +157,18 @@ export function AdminSupport() {
           </div>
         )}
         <Card>
-          <CardTitle>Reply as support</CardTitle>
+          <CardTitle>{t('replyAsSupport')}</CardTitle>
           <form onSubmit={handleReply} className="mt-2">
             {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
             <Textarea
-              placeholder="Your reply..."
+              placeholder={t('yourReply')}
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               disabled={submitting}
               rows={4}
             />
             <Button type="submit" size="sm" className="mt-2" disabled={submitting || !replyText.trim()}>
-              Send reply
+              {t('sendReply')}
             </Button>
           </form>
         </Card>
@@ -169,30 +178,26 @@ export function AdminSupport() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Support tickets" icon="HelpCircle" />
+      <PageTitle title={t('supportTickets')} icon="HelpCircle" />
       <Card>
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
-            label="Status"
-            options={STATUS_OPTIONS}
+            label={t('status')}
+            options={statusOptions}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           />
           <Select
-            label="Role"
-            options={[
-              { value: '', label: 'All' },
-              { value: 'student', label: 'Student' },
-              { value: 'university', label: 'University' },
-            ]}
+            label={t('role')}
+            options={roleOptions}
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
           />
         </div>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] text-sm">Loading…</p>
+          <p className="text-[var(--color-text-muted)] text-sm">{t('loading')}</p>
         ) : tickets.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] text-sm">No tickets.</p>
+          <p className="text-[var(--color-text-muted)] text-sm">{t('noTickets')}</p>
         ) : (
           <ul className="space-y-2">
             {tickets.map((t) => (
@@ -204,7 +209,7 @@ export function AdminSupport() {
                 >
                   <span className="font-medium">{t.subject}</span>
                   <span className="ml-2 text-xs text-[var(--color-text-muted)]">
-                    {t.userEmail ?? t.userId} · {STATUS_LABEL[t.status] ?? t.status} · {formatDate(t.createdAt)}
+                    {t.userEmail ?? t.userId} · {statusLabel(t.status)} · {formatDate(t.createdAt)}
                   </span>
                 </button>
               </li>

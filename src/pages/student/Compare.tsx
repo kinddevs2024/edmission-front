@@ -110,21 +110,21 @@ export function Compare() {
             })}
           </div>
         )}
-        <Button to="/student/universities" variant="secondary">Explore universities</Button>
+        <Button to="/student/universities" variant="secondary">{t('common:exploreUniversities')}</Button>
       </Card>
 
       {universities.length > 0 && (
         <Card>
-          <CardTitle>Comparison</CardTitle>
+          <CardTitle>{t('common:compareUniversities')}</CardTitle>
           <div className="overflow-x-auto">
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh className="min-w-[120px]">Criteria</TableTh>
+                  <TableTh className="min-w-[120px]">{t('student:compareName')}</TableTh>
                   {universities.map((u) => (
                     <TableTh key={u.id} className="min-w-[160px]">
                       <div className="font-medium">{u.name}</div>
-                      <Button to={`/student/universities/${u.id}`} variant="ghost" size="sm" className="mt-1">View</Button>
+                      <Button to={`/student/universities/${u.id}`} variant="ghost" size="sm" className="mt-1">{t('common:view')}</Button>
                     </TableTh>
                   ))}
                 </TableRow>

@@ -11,15 +11,16 @@ import { getApiError } from '@/services/api'
 import { formatDate } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
-const STATUS_LABEL: Record<string, string> = {
-  open: 'Open',
-  in_progress: 'In progress',
-  resolved: 'Resolved',
-  closed: 'Closed',
+const STATUS_KEYS: Record<string, string> = {
+  open: 'supportStatusOpen',
+  in_progress: 'supportStatusInProgress',
+  resolved: 'supportStatusResolved',
+  closed: 'supportStatusClosed',
 }
 
 export function SupportPage() {
   const { t } = useTranslation('common')
+  const statusLabel = (status: string) => t(STATUS_KEYS[status] ?? status)
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -54,7 +55,7 @@ export function SupportPage() {
     e.preventDefault()
     setError('')
     if (!subject.trim() || !message.trim()) {
-      setError('Please fill subject and message.')
+      setError(t('fillSubjectAndMessage'))
       return
     }
     setSubmitting(true)
@@ -87,13 +88,13 @@ export function SupportPage() {
     return (
       <div className="max-w-2xl mx-auto space-y-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/support')}>
-          ← Back to my tickets
+          ← {t('backToMyTickets')}
         </Button>
         <PageTitle title={ticket.subject} icon="HelpCircle" />
         <Card>
           <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-            <span>Status: {STATUS_LABEL[ticket.status] ?? ticket.status}</span>
-            <span>Created: {formatDate(ticket.createdAt)}</span>
+            <span>{t('status')}: {statusLabel(ticket.status)}</span>
+            <span>{t('created')}: {formatDate(ticket.createdAt)}</span>
           </div>
           <div className="mt-3 p-3 rounded-input bg-[var(--color-bg)] text-sm whitespace-pre-wrap">
             {ticket.message}
@@ -101,12 +102,12 @@ export function SupportPage() {
         </Card>
         {replies.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-semibold">Replies</h3>
+            <h3 className="font-semibold">{t('supportReplies')}</h3>
             {replies.map((r, i) => (
               <Card key={i}>
                 <div className="flex items-center gap-2 text-sm">
                   <span className={r.isStaff ? 'text-primary-accent font-medium' : ''}>
-                    {r.isStaff ? 'Support' : r.role}
+                    {r.isStaff ? t('supportStaff') : r.role}
                   </span>
                   <span className="text-[var(--color-text-muted)]">{formatDate((r as { createdAt: string }).createdAt)}</span>
                 </div>
@@ -120,14 +121,14 @@ export function SupportPage() {
             <form onSubmit={handleReply}>
               {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
               <Textarea
-                placeholder="Your reply..."
+                placeholder={t('yourReply')}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 disabled={submitting}
                 rows={4}
               />
               <Button type="submit" size="sm" className="mt-2" disabled={submitting || !replyText.trim()}>
-                Send reply
+                {t('sendReply')}
               </Button>
             </form>
           </Card>
@@ -161,17 +162,17 @@ export function SupportPage() {
             rows={5}
           />
           <Button type="submit" disabled={submitting || !subject.trim() || !message.trim()}>
-            Send request
+            {t('sendRequest')}
           </Button>
         </form>
       </Card>
 
       <Card>
-        <CardTitle>My requests</CardTitle>
+        <CardTitle>{t('myRequests')}</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] text-sm">Loading…</p>
+          <p className="text-[var(--color-text-muted)] text-sm">{t('loading')}</p>
         ) : tickets.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] text-sm">No tickets yet.</p>
+          <p className="text-[var(--color-text-muted)] text-sm">{t('noTicketsYet')}</p>
         ) : (
           <ul className="space-y-2">
             {tickets.map((t) => (
@@ -183,7 +184,7 @@ export function SupportPage() {
                 >
                   <span className="font-medium">{t.subject}</span>
                   <span className="ml-2 text-xs text-[var(--color-text-muted)]">
-                    {STATUS_LABEL[t.status] ?? t.status} · {formatDate(t.createdAt)}
+                    {statusLabel(t.status)} · {formatDate(t.createdAt)}
                   </span>
                 </button>
               </li>

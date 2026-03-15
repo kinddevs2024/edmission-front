@@ -50,10 +50,13 @@ export function SchoolLayout() {
   }, [setNavItems, navItems, navBottomItems])
 
   return (
-    <div className="flex">
+    <div className="flex min-h-full items-start">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
-      <div className={cn('flex-1 min-w-0 pb-20 md:pb-0 transition-[margin-left] duration-200 flex flex-col', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-        <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1">
+      <div className={cn(
+        'flex-1 min-w-0 min-h-screen pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
+      )}>
+        <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter min-h-full flex flex-col">
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

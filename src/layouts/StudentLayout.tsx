@@ -67,15 +67,15 @@ export function StudentLayout() {
   }, [navItems, navBottomItems, setNavItems])
 
   return (
-    <div className="flex">
+    <div className="flex min-h-full items-start">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-0 bg-pattern-subtle min-h-full flex flex-col',
+        'flex-1 min-w-0 min-h-screen transition-[margin-left] duration-200 pb-20 md:pb-12 bg-pattern-subtle flex flex-col',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(
-          'max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex-1',
-          isFixedHeightPage && 'overflow-hidden h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] min-h-0 flex flex-col'
+          'max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex flex-col',
+          isFixedHeightPage ? 'flex-1 min-h-0 overflow-hidden' : 'min-h-full'
         )}>
           <Suspense fallback={<ContentFallback />}>
             <Outlet />

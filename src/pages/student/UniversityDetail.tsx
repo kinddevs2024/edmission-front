@@ -220,10 +220,10 @@ export function UniversityDetail() {
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={handleInterest} disabled={interested || !interestLimit.allowed}>
-          {interested ? 'Interested' : !interestLimit.allowed ? 'Interest limit reached' : 'Show interest'}
+          {interested ? t('student:interestedButton') : !interestLimit.allowed ? t('student:interestLimitReached') : t('student:showInterest')}
         </Button>
-        <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>Message</Button>
-        <Button to="/student/compare" variant="ghost">Add to compare</Button>
+        <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>{t('common:messageButton')}</Button>
+        <Button to="/student/compare" variant="ghost">{t('common:addToCompare')}</Button>
       </div>
     </div>
   )

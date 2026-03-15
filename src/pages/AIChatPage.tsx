@@ -11,19 +11,24 @@ import { updateStudentProfile } from '@/services/student'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { useAIChatStore, type ChatMessage } from '@/store/aiChatStore'
-import { getRandomPlaceholder } from '@/utils/aiChatPlaceholders'
 
-const SUGGESTED_QUESTIONS = [
-  'Как выбрать университет?',
-  'Какие документы нужны для поступления?',
-  'Как работает процесс стипендий?',
-  'Где указать GPA?',
-  'Помоги заполнить профиль',
-  'Подбери мне университеты',
+const FALLBACK_PLACEHOLDERS = ['Type your question…', 'What would you like to ask?', 'How can I help?']
+const FALLBACK_SUGGESTED = [
+  'How to choose a university?',
+  'What documents are needed for admission?',
+  'How does the scholarship process work?',
+  'Where do I enter my GPA?',
+  'Help me fill out my profile',
+  'Find universities for me',
 ]
 
 export function AIChatPage() {
   const { t } = useTranslation('common')
+  const suggestedQuestions = (t('aiSuggestedQuestions', { returnObjects: true }) as string[] | undefined) ?? FALLBACK_SUGGESTED
+  const placeholdersRaw = t('aiPlaceholders', { returnObjects: true })
+  const placeholders = Array.isArray(placeholdersRaw) ? (placeholdersRaw as string[]) : FALLBACK_PLACEHOLDERS
+  const [placeholderIndex, setPlaceholderIndex] = useState(() => Math.floor(Math.random() * Math.max(1, placeholders.length)))
+  const placeholder = placeholders[placeholderIndex % placeholders.length]
   const { role, user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -35,7 +40,6 @@ export function AIChatPage() {
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
   const initialQ = searchParams.get('q') ?? ''
   const [input, setInput] = useState(initialQ)
-  const [placeholder, setPlaceholder] = useState(() => getRandomPlaceholder())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
@@ -58,7 +62,7 @@ export function AIChatPage() {
       if (!trimmed || loading) return
 
       setInput('')
-      setPlaceholder(getRandomPlaceholder())
+      setPlaceholderIndex((i) => (i + 1 + Math.floor(Math.random() * Math.max(1, placeholders.length - 1))) % Math.max(1, placeholders.length))
       setError(null)
       setRateLimitMessage(null)
       setSelectionAsk(null)
@@ -145,7 +149,7 @@ export function AIChatPage() {
         }
       }
     },
-    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, setPlaceholder, role, user?.id]
+    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -248,10 +252,10 @@ export function AIChatPage() {
                 </div>
               </form>
               <p className="text-xs text-[var(--color-text-muted)] mb-3">
-                {t('aiSuggestedLabel', 'Примеры вопросов:')}
+                {t('aiSuggestedLabel')}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                {SUGGESTED_QUESTIONS.map((q, i) => (
+                {suggestedQuestions.map((q, i) => (
                   <motion.button
                     key={q}
                     initial={{ opacity: 0, y: 8 }}
@@ -303,7 +307,7 @@ export function AIChatPage() {
                 >
                   {m.role === 'assistant' && m.thinking != null && m.thinking.length > 0 && (
                     <div className="mb-3 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)]/60 px-3 py-2 text-xs text-[var(--color-text-muted)]">
-                      <p className="font-medium mb-1 opacity-80">Thinking</p>
+                      <p className="font-medium mb-1 opacity-80">{t('aiThinking')}</p>
                       <p className="whitespace-pre-wrap break-words">{m.thinking}</p>
                     </div>
                   )}
@@ -342,13 +346,13 @@ export function AIChatPage() {
             {selectionAsk && (
               <div className="p-3 rounded-card bg-primary-accent/10 border border-primary-accent/30 max-w-3xl space-y-2">
                 <p className="text-xs text-[var(--color-text-muted)]">
-                  {t('askingAboutSelection', 'Asking about selected text:')}
+                  {t('askingAboutSelection')}
                 </p>
                 <p className="text-sm truncate" title={selectionAsk.text}>
                   &quot;{selectionAsk.text.length > 80 ? selectionAsk.text.slice(0, 80) + '…' : selectionAsk.text}&quot;
                 </p>
                 <p className="text-xs text-[var(--color-text-muted)]">
-                  {t('aiTypeQuestionBelow', 'Type your question in the input below and press Send.')}
+                  {t('aiTypeQuestionBelow')}
                 </p>
               </div>
             )}
@@ -372,7 +376,7 @@ export function AIChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={selectionAsk ? t('aiPlaceholderSelection', 'Уточните выделенный фрагмент…') : placeholder}
+              placeholder={selectionAsk ? t('aiPlaceholderSelection') : placeholder}
               rows={1}
               className="flex-1 min-h-[36px] max-h-40 w-full bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
               disabled={loading}

@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react'
 import { GlobalSearch } from './GlobalSearch'
+import { cn } from '@/utils/cn'
 
 interface MobileSearchProps {
   open: boolean
@@ -10,7 +11,7 @@ interface MobileSearchProps {
 export function MobileSearch({ open, onOpen, onClose }: MobileSearchProps) {
 
   return (
-    <div className="md:hidden flex items-center overflow-hidden">
+    <div className={cn('md:hidden flex items-center', open ? 'overflow-visible' : 'overflow-hidden')}>
       {!open ? (
         <button
           type="button"

@@ -2,7 +2,7 @@ import { ChatView } from '@/components/chat/ChatView'
 
 export function UniversityChat() {
   return (
-    <div className="space-y-4">
+    <div className="h-full min-h-[320px] overflow-hidden flex flex-col">
       <ChatView />
     </div>
   )

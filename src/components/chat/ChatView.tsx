@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getChats, getMessages, sendMessage, markAsRead, createChat, acceptStudent } from '@/services/chat'
 import { useSocket } from '@/hooks/useSocket'
 import { useAuthStore } from '@/store/authStore'
@@ -11,6 +12,7 @@ import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
 
 export function ChatView() {
+  const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
   const currentUserId = useAuthStore((s) => s.user?.id)
   const role = useAuthStore((s) => s.user?.role) as 'student' | 'university' | undefined
@@ -43,28 +45,37 @@ export function ChatView() {
     }
   }, [searchParams, chats, chatsLoading, setSearchParams])
 
+  // MongoDB ObjectId: 24 hex chars (required for createChat)
+  const isValidObjectId = (id: string | null) =>
+    typeof id === 'string' && id.trim().length === 24 && /^[a-f0-9]{24}$/i.test(id.trim())
+
   useEffect(() => {
     const studentId = searchParams.get('studentId')
     const universityId = searchParams.get('universityId')
-    if ((studentId || universityId) && role && chats.length >= 0 && !chatsLoading) {
-      const existing = chats.find((c) =>
-        studentId ? c.participant.id === studentId : universityId ? c.participant.id === universityId : false
-      )
-      if (existing) {
-        setSelectedChat(existing)
+    const hasValidId = (studentId && isValidObjectId(studentId)) || (universityId && isValidObjectId(universityId))
+    if (!hasValidId || !role || chatsLoading) return
+
+    const existing = chats.find((c) =>
+      studentId ? c.participant.id === studentId : universityId ? c.participant.id === universityId : false
+    )
+    if (existing) {
+      setSelectedChat(existing)
+      setMobileView('thread')
+      setSearchParams({}, { replace: true })
+      return
+    }
+    const params = studentId ? { studentId } : { universityId: universityId! }
+    createChat(params)
+      .then((chat) => {
+        setChats((prev) => (prev.some((c) => c.id === chat.id) ? prev : [...prev, chat]))
+        setSelectedChat(chat)
         setMobileView('thread')
         setSearchParams({}, { replace: true })
-      } else {
-        createChat(studentId ? { studentId } : { universityId: universityId! })
-          .then((chat) => {
-            setChats((prev) => (prev.some((c) => c.id === chat.id) ? prev : [...prev, chat]))
-            setSelectedChat(chat)
-            setMobileView('thread')
-            setSearchParams({}, { replace: true })
-          })
-          .catch((e) => { toastApiError(e); setSearchParams({}, { replace: true }) })
-      }
-    }
+      })
+      .catch((e) => {
+        toastApiError(e)
+        setSearchParams({}, { replace: true })
+      })
   }, [searchParams, role, chats, chatsLoading, setSearchParams])
 
   useEffect(() => {
@@ -190,21 +201,22 @@ export function ChatView() {
   const showThread = mobileView === 'thread'
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="flex flex-1 min-h-0 border border-[var(--color-border)] rounded-card overflow-hidden bg-[var(--color-card)]">
+    <div className="flex flex-col flex-1 min-h-0 mt-4 mb-4">
+      <div className="flex-1 min-h-0 flex flex-col border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
         <div
           className={cn(
-            'flex flex-col w-full md:w-80 md:max-w-sm border-r border-[var(--color-border)] bg-[var(--color-card)]',
+            'flex flex-col h-full w-full min-h-0 md:w-80 md:max-w-sm border-r border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden',
             showList ? 'flex' : 'hidden md:flex'
           )}
         >
           <div className="p-2 border-b border-[var(--color-border)] flex items-center gap-2 md:hidden">
             {showThread && (
               <Button variant="ghost" size="sm" onClick={() => setMobileView('list')}>
-                Back
+                {t('back')}
               </Button>
             )}
-            <span className="font-medium">Chats</span>
+            <span className="font-medium">{t('chats')}</span>
           </div>
           <ChatList
             chats={chats}
@@ -218,14 +230,14 @@ export function ChatView() {
         </div>
         <div
           className={cn(
-            'flex-1 flex flex-col min-w-0',
+            'flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-[var(--color-card)]',
             showThread ? 'flex' : 'hidden md:flex'
           )}
         >
           <div className="p-2 border-b border-[var(--color-border)] flex items-center gap-2 md:hidden">
             {showList && selectedChat && (
               <Button variant="ghost" size="sm" onClick={() => setMobileView('thread')}>
-                Open
+                {t('open')}
               </Button>
             )}
           </div>
@@ -239,6 +251,7 @@ export function ChatView() {
             role={role}
             onAcceptStudent={role === 'university' ? handleAcceptStudent : undefined}
           />
+        </div>
         </div>
       </div>
     </div>

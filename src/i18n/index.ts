@@ -64,6 +64,15 @@ export async function initI18n() {
     resourcesMap[initialLng][ns] = {}
   }
 
+  // Preload English so fallbackLng has resources (e.g. student profile in EN when current is ru/uz)
+  if (initialLng !== fallbackLng) {
+    const enCritical = await loadNamespaces(fallbackLng, CRITICAL_NS)
+    resourcesMap[fallbackLng] = { ...enCritical }
+    for (const ns of OTHER_NS) {
+      resourcesMap[fallbackLng][ns] = {}
+    }
+  }
+
   await i18n.use(initReactI18next).init({
     resources: resourcesMap,
     lng: initialLng,
@@ -74,6 +83,7 @@ export async function initI18n() {
     interpolation: { escapeValue: false },
   })
   loadedLanguages.add(initialLng)
+  if (initialLng !== fallbackLng) loadedLanguages.add(fallbackLng)
   try {
     localStorage.setItem('i18nextLng', initialLng)
   } catch {
@@ -83,6 +93,11 @@ export async function initI18n() {
   loadNamespaces(initialLng, OTHER_NS).then((otherRes) => {
     OTHER_NS.forEach((ns) => i18n.addResourceBundle(initialLng, ns, otherRes[ns], true))
   })
+  if (initialLng !== fallbackLng) {
+    loadNamespaces(fallbackLng, OTHER_NS).then((otherRes) => {
+      OTHER_NS.forEach((ns) => i18n.addResourceBundle(fallbackLng, ns, otherRes[ns], true))
+    })
+  }
   return i18n
 }
 

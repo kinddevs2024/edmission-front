@@ -13,9 +13,9 @@ interface ChatListProps {
 export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps) {
   if (loading) {
     return (
-      <div className="p-2 space-y-2">
+      <div className="p-3 space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 rounded-input bg-[var(--color-border)] animate-pulse" />
+          <div key={i} className="h-16 rounded-2xl bg-[var(--color-border)] animate-pulse" />
         ))}
       </div>
     )
@@ -30,15 +30,15 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
   }
 
   return (
-    <ul className="divide-y divide-[var(--color-border)]">
+    <ul className="p-3 space-y-2 overflow-y-auto">
       {chats.map((chat) => (
         <li key={chat.id}>
           <button
             type="button"
             onClick={() => onSelect(chat)}
             className={cn(
-              'w-full flex items-center gap-3 p-3 text-left hover:bg-[var(--color-border)]/20 transition-colors',
-              selectedId === chat.id && 'bg-primary-accent/10'
+              'w-full flex items-center gap-3 rounded-2xl border border-transparent p-3 text-left transition-all duration-200 hover:border-[var(--color-border)] hover:bg-[var(--color-border)]/20',
+              selectedId === chat.id && 'border-primary-accent/30 bg-primary-accent/10 shadow-[0_10px_24px_-18px_rgba(132,204,22,0.6)]'
             )}
           >
             {chat.participant.avatar ? (

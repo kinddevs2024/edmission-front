@@ -70,7 +70,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={effectiveType}
             placeholder={placeholder}
             className={cn(
-              'w-full rounded-input border bg-transparent px-3 py-2.5 text-[var(--color-text)]',
+              'min-h-[44px] w-full rounded-input border bg-transparent px-3 py-2.5 text-[var(--color-text)]',
               'placeholder:text-[var(--color-text-muted)]/60',
               'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0 focus:border-transparent',
               error && 'border-red-500 focus:ring-red-500',

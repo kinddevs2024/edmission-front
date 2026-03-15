@@ -429,6 +429,37 @@ export async function updateCatalogUniversity(id: string, body: Record<string, u
   return data!
 }
 
+export async function deleteCatalogUniversity(id: string): Promise<{ deleted: boolean }> {
+  const { data } = await api.delete<{ deleted: boolean }>(`/admin/universities/${id}`)
+  return data!
+}
+
+/** Download universities Excel template (triggers file save in browser). */
+export async function downloadUniversitiesTemplate(): Promise<void> {
+  const { data } = await api.get<Blob>('/admin/universities/template', { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'universities_template.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export interface UniversitiesImportResult {
+  created: number
+  errors: Array<{ row: number; name: string; message: string }>
+}
+
+/** Upload Excel file to import universities. */
+export async function uploadUniversitiesExcel(file: File): Promise<UniversitiesImportResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<UniversitiesImportResult>('/admin/universities/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data!
+}
+
 // ——— University verification requests (catalog → profile) ———
 
 export interface UniversityVerificationRequestItem {

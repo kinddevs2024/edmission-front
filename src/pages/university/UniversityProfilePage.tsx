@@ -109,14 +109,14 @@ export function UniversityProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-4">
+      <div className="w-full">
         <p className="text-[var(--color-text-muted)]">{t('university:loadingProfile')}</p>
       </div>
     )
   }
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="w-full space-y-6">
       <PageTitle title={t('university:profileTitle')} icon="User" />
       <p className="text-[var(--color-text-muted)]">{t('university:profileIntro')}</p>
 

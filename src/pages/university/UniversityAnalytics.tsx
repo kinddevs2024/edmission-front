@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import {
@@ -18,33 +19,34 @@ import {
 import { getFunnelAnalytics } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 
-const STAGE_LABELS: Record<string, string> = {
-  interested: 'Interested',
-  under_review: 'Under review',
-  chat_opened: 'Contacted',
-  offer_sent: 'Offer sent',
-  rejected: 'Rejected',
-  accepted: 'Accepted',
+const STATUS_TO_KEY: Record<string, string> = {
+  interested: 'university:pipelineInterested',
+  under_review: 'university:pipelineEvaluating',
+  chat_opened: 'university:pipelineContacted',
+  offer_sent: 'university:pipelineOfferSent',
+  rejected: 'university:pipelineRejected',
+  accepted: 'university:pipelineAccepted',
 }
 const PIE_COLORS = ['#84CC16', '#3B82F6', '#64748B', '#F59E0B']
 
 export function UniversityAnalytics() {
+  const { t } = useTranslation('university')
   const [funnel, setFunnel] = useState<{ byStatus: Record<string, number>; total: number }>({ byStatus: {}, total: 0 })
   useEffect(() => {
     getFunnelAnalytics().then(setFunnel).catch(toastApiError)
   }, [])
-  const funnelBar = Object.entries(funnel.byStatus).map(([stage, count]) => ({
-    stage: STAGE_LABELS[stage] ?? stage,
+  const funnelBar = Object.entries(funnel.byStatus).map(([status, count]) => ({
+    stage: t(STATUS_TO_KEY[status] ?? status),
     count: Number(count) || 0,
   }))
 
   return (
     <div className="space-y-6">
-      <PageTitle title="Analytics" icon="BarChart3" />
+      <PageTitle title={t('navAnalytics')} icon="BarChart3" />
 
       <Card>
-        <CardTitle>Interest over time</CardTitle>
-        <p className="text-sm text-[var(--color-text-muted)] mt-1">Time-series data will appear here as students show interest.</p>
+        <CardTitle>{t('analyticsInterestOverTime')}</CardTitle>
+        <p className="text-sm text-[var(--color-text-muted)] mt-1">{t('analyticsInterestOverTimeHint')}</p>
         <div className="h-64 mt-2">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={funnelBar.length ? funnelBar.map((_, i) => ({ stage: String(i + 1), count: 0 })) : []}>
@@ -60,8 +62,8 @@ export function UniversityAnalytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardTitle>Pipeline funnel (applications by status)</CardTitle>
-          <p className="text-sm text-[var(--color-text-muted)]">Total: {funnel.total}</p>
+          <CardTitle>{t('analyticsPipelineFunnel')}</CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)]">{t('analyticsTotal')}: {funnel.total}</p>
           <div className="h-64 mt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={funnelBar.length ? funnelBar : [{ stage: '—', count: 0 }]} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
@@ -75,8 +77,8 @@ export function UniversityAnalytics() {
           </div>
         </Card>
         <Card>
-          <CardTitle>Applications by status (pie)</CardTitle>
-          <p className="text-sm text-[var(--color-text-muted)]">Same pipeline data by status.</p>
+          <CardTitle>{t('analyticsApplicationsByStatusPie')}</CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)]">{t('analyticsSamePipelineData')}</p>
           <div className="h-64 mt-2">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

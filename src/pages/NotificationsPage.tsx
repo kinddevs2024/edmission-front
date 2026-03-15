@@ -139,7 +139,7 @@ export function NotificationsPage() {
   const hasRead = readCount > 0
 
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-6">
       <PageTitle title={t('notifications')} icon="Bell" />
 
       <Card className="p-4 space-y-4">

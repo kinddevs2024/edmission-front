@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -14,12 +14,16 @@ import {
   createCatalogUniversity,
   getCatalogUniversity,
   updateCatalogUniversity,
+  deleteCatalogUniversity,
+  downloadUniversitiesTemplate,
+  uploadUniversitiesExcel,
   type AdminCatalogUniversity,
 } from '@/services/admin'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Download, Upload } from 'lucide-react'
 
 const COUNTRY_OPTIONS = [
   { code: 'UZ', label: 'Uzbekistan' },
@@ -64,6 +68,10 @@ export function AdminUniversities() {
   const [formScholarships, setFormScholarships] = useState<Array<{ name: string; coveragePercent: number; maxSlots: number; deadline?: string; eligibility?: string }>>([])
   const [showPrograms, setShowPrograms] = useState(false)
   const [showScholarships, setShowScholarships] = useState(false)
+  const [importingExcel, setImportingExcel] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const load = () => {
     setLoading(true)
@@ -197,13 +205,72 @@ export function AdminUniversities() {
 
   const totalPages = Math.max(1, Math.ceil(total / limit))
 
+  const openDeleteModal = (u: AdminCatalogUniversity) => {
+    setDeleteTarget({ id: u.id, name: u.name || u.universityName || u.id })
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return
+    setDeletingId(deleteTarget.id)
+    deleteCatalogUniversity(deleteTarget.id)
+      .then(() => {
+        setDeleteTarget(null)
+        load()
+        toast.success(t('admin:universityDeleted', 'University removed from catalog.'))
+      })
+      .catch(toastApiError)
+      .finally(() => setDeletingId(null))
+  }
+
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:universityCatalog', 'University catalog')} icon="Building2">
         {!isCounsellor && (
-          <Button size="sm" onClick={openAdd}>
-            {t('admin:addUniversity', 'Add university')}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => downloadUniversitiesTemplate().catch(toastApiError)} icon={<Download size={16} />}>
+              {t('admin:downloadTemplate', 'Download template')}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                e.target.value = ''
+                setImportingExcel(true)
+                uploadUniversitiesExcel(file)
+                  .then((res) => {
+                    if (res.created > 0) {
+                      load()
+                      toast.success(t('admin:importSuccess', '{{count}} universities imported.', { count: res.created }))
+                    }
+                    if (res.errors.length > 0) {
+                      toast.error(
+                        t('admin:importErrors', '{{count}} row(s) failed.', { count: res.errors.length }) +
+                          ' ' +
+                          res.errors.slice(0, 3).map((x) => `${x.name}: ${x.message}`).join('; ')
+                      )
+                    }
+                  })
+                  .catch(toastApiError)
+                  .finally(() => setImportingExcel(false))
+              }}
+            />
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={importingExcel}
+              onClick={() => fileInputRef.current?.click()}
+              icon={<Upload size={16} />}
+            >
+              {importingExcel ? t('common:loading', 'Loading...') : t('admin:uploadExcel', 'Upload Excel')}
+            </Button>
+            <Button size="sm" onClick={openAdd}>
+              {t('admin:addUniversity', 'Add university')}
+            </Button>
+          </div>
         )}
       </PageTitle>
 
@@ -243,9 +310,23 @@ export function AdminUniversities() {
                       <td className="py-3">{u.city ?? '—'}</td>
                       <td className="py-3 text-right">
                         {!isCounsellor && (
-                          <Button size="sm" variant="ghost" onClick={() => openEdit(u.id)}>
-                            {t('common:edit', 'Edit')}
-                          </Button>
+                          <span className="inline-flex items-center gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => openEdit(u.id)}>
+                              {t('common:edit', 'Edit')}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                              onClick={() => openDeleteModal(u)}
+                              disabled={deletingId === u.id}
+                              loading={deletingId === u.id}
+                              icon={<Trash2 size={14} />}
+                              aria-label={t('common:delete', 'Delete')}
+                            >
+                              {t('common:delete', 'Delete')}
+                            </Button>
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -486,6 +567,34 @@ export function AdminUniversities() {
             )}
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title={t('admin:deleteUniversityTitle', 'Delete university')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={!!deletingId}>
+              {t('common:cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmDelete}
+              loading={!!deletingId}
+              disabled={!!deletingId}
+              icon={<Trash2 size={16} />}
+            >
+              {t('common:delete', 'Delete')}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-[var(--color-text)]">
+          {t('admin:deleteUniversityConfirm', 'Delete "{{name}}" from the catalog? This cannot be undone.', {
+            name: deleteTarget?.name ?? '',
+          })}
+        </p>
       </Modal>
     </div>
   )

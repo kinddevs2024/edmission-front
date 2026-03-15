@@ -85,40 +85,40 @@ export function Profile() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
       <PageTitle title={t('profile')} icon="Settings" />
       <Card>
         <CardTitle>{t('profile')}</CardTitle>
         {user?.role === 'student' && (
           <div className="mt-4">
             <FileUpload
-              label={t('avatar', 'Profile photo')}
+              label={t('avatar')}
               variant="avatar"
               value={avatarUrl || user?.avatar}
               onChange={handleAvatarChange}
-              hint={t('uploadPhotoOrLink', 'Upload a photo or paste image URL')}
+              hint={t('uploadPhotoOrLink')}
             />
           </div>
         )}
         <dl className="grid grid-cols-1 gap-2 mt-4">
-          <dt className="text-[var(--color-text-muted)]">{t('common:email')}</dt>
+          <dt className="text-[var(--color-text-muted)]">{t('email')}</dt>
           <dd>{user?.email}</dd>
-          <dt className="text-[var(--color-text-muted)]">{t('common:name')}</dt>
+          <dt className="text-[var(--color-text-muted)]">{t('name')}</dt>
           <dd>{user?.name ?? '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{t('common:role')}</dt>
+          <dt className="text-[var(--color-text-muted)]">{t('role')}</dt>
           <dd>{user?.role}</dd>
         </dl>
       </Card>
 
       <Card>
-        <CardTitle>{t('settings', 'Settings')}</CardTitle>
+        <CardTitle>{t('settings')}</CardTitle>
         <div className="mt-4 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm text-[var(--color-text-muted)]">{t('language', 'Language')}</span>
+            <span className="text-sm text-[var(--color-text-muted)]">{t('language')}</span>
             <LanguageMenu />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm text-[var(--color-text-muted)]">{t('theme', 'Theme')}</span>
+            <span className="text-sm text-[var(--color-text-muted)]">{t('theme')}</span>
             <ThemeSwitch />
           </div>
           <div className="pt-2 border-t border-[var(--color-border)]">
@@ -130,29 +130,29 @@ export function Profile() {
       </Card>
 
       <Card>
-        <CardTitle>Notification preferences</CardTitle>
-        <p className="text-sm text-[var(--color-text-muted)] mt-1">Choose which emails you want to receive.</p>
+        <CardTitle>{t('notificationPreferences')}</CardTitle>
+        <p className="text-sm text-[var(--color-text-muted)] mt-1">{t('notificationPreferencesHint')}</p>
         <div className="mt-4 space-y-3">
           <Checkbox
             checked={!!prefs.emailApplicationUpdates}
             onChange={(e) => handlePrefChange('emailApplicationUpdates', e.target.checked)}
-            label="Email when application status changes"
-            aria-label="Email when application status changes"
+            label={t('emailApplicationUpdates')}
+            aria-label={t('emailApplicationUpdates')}
           />
           <Checkbox
             checked={!!prefs.emailTrialReminder}
             onChange={(e) => handlePrefChange('emailTrialReminder', e.target.checked)}
-            label="Trial ending reminder (2 days before)"
-            aria-label="Trial ending reminder"
+            label={t('emailTrialReminder')}
+            aria-label={t('emailTrialReminder')}
           />
           {typeof window !== 'undefined' && 'Notification' in window && (
             <div className="pt-2 border-t border-[var(--color-border)] flex items-center justify-between gap-2">
               <span className="text-sm text-[var(--color-text-muted)]">
                 {browserNotifStatus === 'granted'
-                  ? 'Browser notifications enabled'
+                  ? t('browserNotificationsGranted')
                   : browserNotifStatus === 'denied'
-                    ? 'Browser notifications blocked (enable in browser settings)'
-                    : 'Get browser popups when you receive messages (while the tab is in background)'}
+                    ? t('browserNotificationsDenied')
+                    : t('browserNotificationsPrompt')}
               </span>
               {browserNotifStatus !== 'granted' && (
                 <Button
@@ -165,7 +165,7 @@ export function Profile() {
                   }
                   disabled={browserNotifStatus === 'denied'}
                 >
-                  Enable
+                  {t('enable')}
                 </Button>
               )}
             </div>
@@ -174,30 +174,30 @@ export function Profile() {
       </Card>
 
       <Card>
-        <CardTitle>Two-factor authentication (2FA)</CardTitle>
+        <CardTitle>{t('twoFactorTitle')}</CardTitle>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          Add an extra layer of security to your account with an authenticator app (e.g. Google Authenticator).
+          {t('twoFactorHint')}
         </p>
         {twoFaError && <p className="text-sm text-red-500 mt-2">{twoFaError}</p>}
         {twoFaStep === 'idle' && (
           <div className="mt-4">
             {totpEnabled ? (
               <>
-                <p className="text-sm text-green-600 dark:text-green-400 mb-2">2FA is enabled.</p>
+                <p className="text-sm text-green-600 dark:text-green-400 mb-2">{t('twoFaEnabled')}</p>
                 <Button size="sm" variant="secondary" onClick={() => { setTwoFaStep('disable'); setTwoFaCode('') }}>
-                  Disable 2FA
+                  {t('disable2FA')}
                 </Button>
               </>
             ) : (
               <Button size="sm" onClick={handleSetup2FA} loading={twoFaLoading}>
-                Enable 2FA
+                {t('enable2FA')}
               </Button>
             )}
           </div>
         )}
         {twoFaStep === 'setup' && twoFaSecret && (
           <div className="mt-4 space-y-3">
-            <p className="text-sm">Scan this QR code with your authenticator app, or enter the secret manually:</p>
+            <p className="text-sm">{t('twoFaScanHint')}</p>
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(twoFaSecret.qrUrl)}`}
               alt="QR code for 2FA"
@@ -208,7 +208,7 @@ export function Profile() {
             <p className="text-xs font-mono text-[var(--color-text-muted)] break-all">{twoFaSecret.secret}</p>
             <div className="flex gap-2 items-end">
               <Input
-                label="Verification code"
+                label={t('verificationCode')}
                 value={twoFaCode}
                 onChange={(e) => setTwoFaCode(e.target.value)}
                 placeholder="000000"
@@ -216,18 +216,18 @@ export function Profile() {
                 className="w-32"
               />
               <Button size="sm" onClick={handleVerify2FA} disabled={twoFaCode.length < 6} loading={twoFaLoading}>
-                Verify and enable
+                {t('verifyAndEnable')}
               </Button>
             </div>
             <Button variant="ghost" size="sm" onClick={() => { setTwoFaStep('idle'); setTwoFaSecret(null); setTwoFaCode('') }}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         )}
         {twoFaStep === 'disable' && (
           <div className="mt-4 space-y-3">
             <Input
-              label="Enter your current 2FA code to disable"
+              label={t('enter2FAToDisable')}
               value={twoFaCode}
               onChange={(e) => setTwoFaCode(e.target.value)}
               placeholder="000000"
@@ -236,10 +236,10 @@ export function Profile() {
             />
             <div className="flex gap-2">
               <Button size="sm" variant="danger" onClick={handleDisable2FA} disabled={twoFaCode.length < 6} loading={twoFaLoading}>
-                Disable 2FA
+                {t('disable2FA')}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => { setTwoFaStep('idle'); setTwoFaCode('') }}>
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
           </div>

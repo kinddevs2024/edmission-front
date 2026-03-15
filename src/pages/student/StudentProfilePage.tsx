@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { useTranslation } from 'react-i18next'
@@ -210,7 +211,7 @@ const COUNTRY_CODE_OPTIONS = [
 ] as const
 
 export function StudentProfilePage() {
-  const { t } = useTranslation(['student', 'common'])
+  const { t } = useTranslation('student', { useSuspense: false })
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -251,6 +252,28 @@ export function StudentProfilePage() {
 
   const avatarUrl = watch('avatarUrl')
   const educationStatus = watch('educationStatus')
+  const gradingSchemeOptions = GRADING_SCHEME_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const gradeScaleOptions = GRADE_SCALE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))
+  const highestEducationOptions = HIGHEST_EDUCATION_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const targetDegreeOptions = TARGET_DEGREE_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
+  const institutionTypeOptions = [
+    { value: 'school', label: t('institutionTypeSchool') },
+    { value: 'university', label: t('institutionTypeUniversity') },
+  ]
+  const currencyOptions = [
+    { value: 'USD', label: 'USD' },
+    { value: 'EUR', label: 'EUR' },
+    { value: 'UZS', label: 'UZS' },
+    { value: 'KZT', label: 'KZT' },
+    { value: 'RUB', label: 'RUB' },
+  ]
+  const experienceTypeOptions = [
+    { value: 'volunteer', label: t('volunteer') },
+    { value: 'internship', label: t('internship') },
+    { value: 'work', label: t('work') },
+  ]
+  const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+  const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
 
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
@@ -417,7 +440,7 @@ export function StudentProfilePage() {
   }
 
   return (
-    <div className="p-3 sm:p-4 max-w-4xl mx-auto space-y-5 min-h-0">
+    <div className="w-full space-y-5 min-h-0">
       <div className="flex flex-wrap items-center gap-4">
         <img
           src={getStudentAvatarUrl(profile?.avatarUrl)}
@@ -425,7 +448,12 @@ export function StudentProfilePage() {
           className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
         />
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">{t('portfolioTitle')}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
+            {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || t('portfolioTitle')}
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
+            {[profile?.firstName, profile?.lastName].filter(Boolean).length > 0 ? t('portfolioTitle') : null}
+          </p>
           {verified && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400 mt-1" title={t('common:verified')}>
               <span aria-hidden>✓</span> {t('common:verified')}
@@ -605,13 +633,7 @@ export function StudentProfilePage() {
                 ))}
               </div>
 
-              <p className="text-base font-medium text-[var(--color-text)] mb-2">{t('applyingForDegree')}</p>
-              <select {...register('targetDegreeLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-base mb-5">
-                <option value="">—</option>
-                {TARGET_DEGREE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                ))}
-              </select>
+              <Select label={t('applyingForDegree')} options={targetDegreeOptions} placeholder="—" {...register('targetDegreeLevel')} className="mb-5 text-base" />
 
               {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
                 <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
@@ -670,19 +692,16 @@ export function StudentProfilePage() {
                 <Card className="p-3 border border-dashed border-[var(--color-border)] bg-[var(--color-bg)]">
                   <div className="flex flex-wrap gap-2 items-end">
                     <div className="min-w-[100px]">
-                      <select
+                      <Select
                         value={newLanguage}
                         onChange={(e) => {
                           setNewLanguage(e.target.value)
                           if (e.target.value !== 'Other') setCustomLanguageName('')
                         }}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent transition-shadow"
+                        options={languageOptions}
                         aria-label="Language"
-                      >
-                        {LANGUAGE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                        className="rounded-xl bg-[var(--color-card)]"
+                      />
                     </div>
                     {newLanguage === 'Other' && (
                       <div className="min-w-[120px]">
@@ -696,16 +715,13 @@ export function StudentProfilePage() {
                       </div>
                     )}
                     <div className="min-w-[80px]">
-                      <select
+                      <Select
                         value={newLevel}
                         onChange={(e) => setNewLevel(e.target.value)}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent transition-shadow"
+                        options={levelOptions}
                         aria-label="Level"
-                      >
-                        {LEVEL_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
+                        className="rounded-xl bg-[var(--color-card)]"
+                      />
                     </div>
                     <Button
                       type="button"
@@ -737,34 +753,10 @@ export function StudentProfilePage() {
               {educationShowAdvanced && (
                 <div className="space-y-4 pt-2 border-t border-[var(--color-border)]">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradingScheme')}</label>
-                      <select {...register('gradingScheme')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                        <option value="">—</option>
-                        {GRADING_SCHEME_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('gradeScaleOutOf')}</label>
-                      <select {...register('gradeScale')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                        <option value="">—</option>
-                        {GRADE_SCALE_OPTIONS.map((n) => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <Select label={t('gradingScheme')} options={gradingSchemeOptions} placeholder="—" {...register('gradingScheme')} />
+                    <Select label={t('gradeScaleOutOf')} options={gradeScaleOptions} placeholder="—" {...register('gradeScale')} />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('highestLevelOfEducation')}</label>
-                    <select {...register('highestEducationLevel')} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                      <option value="">—</option>
-                      {HIGHEST_EDUCATION_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select label={t('highestLevelOfEducation')} options={highestEducationOptions} placeholder="—" {...register('highestEducationLevel')} />
                   <Checkbox
                     {...register('schoolCompleted')}
                     label={t('schoolCompleted')}
@@ -777,14 +769,7 @@ export function StudentProfilePage() {
                       <span className="text-sm font-medium">{t('entryNumber', { n: i + 1 })}</span>
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label="Remove"><Trash2 className="w-4 h-4" /></Button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('institutionTypeLabel')}</label>
-                      <select {...register(`schoolsAttended.${i}.institutionType`)} className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm mb-2">
-                        <option value="">—</option>
-                        <option value="school">{t('institutionTypeSchool')}</option>
-                        <option value="university">{t('institutionTypeUniversity')}</option>
-                      </select>
-                    </div>
+                    <Select label={t('institutionTypeLabel')} options={institutionTypeOptions} placeholder="—" {...register(`schoolsAttended.${i}.institutionType`)} />
                     <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
                     <Input label={t('schoolName')} {...register(`schoolsAttended.${i}.institutionName`)} placeholder={t('schoolName')} />
                     <Input label={t('gradeLevel')} {...register(`schoolsAttended.${i}.educationLevel`)} placeholder={t('gradePlaceholder')} />
@@ -816,27 +801,16 @@ export function StudentProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetAmount', 'Budget for studies')}</label>
-                  <input
+                  <Input
                     type="number"
                     min={0}
                     step={100}
-                    className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
                     placeholder={t('student:budgetPlaceholder', 'e.g. 10000')}
                     {...register('budgetAmount', { valueAsNumber: true })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetCurrency', 'Currency')}</label>
-                  <select
-                    className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-accent)]"
-                    {...register('budgetCurrency')}
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="UZS">UZS</option>
-                    <option value="KZT">KZT</option>
-                    <option value="RUB">RUB</option>
-                  </select>
+                  <Select label={t('student:budgetCurrency', 'Currency')} options={currencyOptions} {...register('budgetCurrency')} />
                 </div>
               </div>
               <FileUpload
@@ -976,11 +950,7 @@ export function StudentProfilePage() {
                 {experienceFields.map((field, i) => (
                   <Card key={field.id} className="p-4 space-y-3 border border-[var(--color-border)]">
                     <div className="flex justify-between items-center">
-                      <select {...register(`experiences.${i}.type`)} className="rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm">
-                        <option value="volunteer">{t('volunteer')}</option>
-                        <option value="internship">{t('internship')}</option>
-                        <option value="work">{t('work')}</option>
-                      </select>
+                      <Select options={experienceTypeOptions} {...register(`experiences.${i}.type`)} className="min-w-[180px]" />
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeExperience(i)} aria-label={t('removeExperience')}>
                         <Trash2 className="w-4 h-4" />
                       </Button>

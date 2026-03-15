@@ -7,17 +7,25 @@ interface CheckboxProps extends Omit<React.ComponentProps<'input'>, 'size'> {
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  function Checkbox({ label, color = 'green', className, ...props }, ref) {
+  function Checkbox(
+    {
+      label,
+      color = 'green',
+      className,
+      onPointerEnterCapture: _onPointerEnterCapture,
+      onPointerLeaveCapture: _onPointerLeaveCapture,
+      onResize: _onResize,
+      onResizeCapture: _onResizeCapture,
+      ...props
+    },
+    ref
+  ) {
     return (
       <MTCheckbox
         ref={ref}
         color={color as 'green'}
         label={label}
         crossOrigin={undefined}
-        onResize={undefined}
-        onResizeCapture={undefined}
-        onPointerEnterCapture={undefined}
-        onPointerLeaveCapture={undefined}
         className={className}
         {...props}
       />

@@ -124,7 +124,7 @@ export function MessageThread({
 
   if (!chat) {
     return (
-      <div className="flex-1 flex items-center justify-center text-[var(--color-text-muted)] bg-[var(--color-bg)]">
+      <div className="flex-1 flex items-center justify-center text-[var(--color-text-muted)] bg-[var(--color-card)]">
         {t('common:selectConversation')}
       </div>
     )
@@ -139,7 +139,7 @@ export function MessageThread({
       : null
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[var(--color-bg)]">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-[var(--color-card)]">
       <div className="px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-card)] flex items-center justify-between gap-2 flex-wrap">
         <div>
           <p className="font-medium">{chat.participant.name}</p>
@@ -173,7 +173,7 @@ export function MessageThread({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto bg-[var(--color-bg)] p-4 space-y-3">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -193,25 +193,25 @@ export function MessageThread({
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="p-3 border-t border-[var(--color-border)] bg-[var(--color-card)]">
-        <div className="flex gap-2 items-end">
-          <div className="relative">
+      <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
+        <div className="relative flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
+          <div className="relative flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={() => setEmotionOpen((v) => !v)}
-              className="p-2 rounded-input hover:bg-[var(--color-border)]/30 text-[var(--color-text-muted)]"
+              className="p-2 rounded-full hover:bg-[var(--color-border)]/30 text-[var(--color-text-muted)] transition-colors"
               aria-label={t('chat:emotions')}
             >
               <Smile className="w-5 h-5" />
             </button>
             {emotionOpen && (
-              <div className="absolute bottom-full left-0 mb-1 p-2 rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg flex flex-wrap gap-1 max-w-[200px]">
+              <div className="absolute bottom-full left-0 mb-1 p-2 rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg flex flex-wrap gap-1 max-w-[200px] z-10">
                 {EMOTION_OPTIONS.map((emoji) => (
                   <button
                     key={emoji}
                     type="button"
                     onClick={() => handleSendEmotion(emoji)}
-                    className="text-2xl p-1 hover:bg-[var(--color-border)]/30 rounded"
+                    className="text-2xl p-1 hover:bg-[var(--color-border)]/30 rounded-lg transition-colors"
                   >
                     {emoji}
                   </button>
@@ -228,6 +228,7 @@ export function MessageThread({
               type="button"
               variant="ghost"
               size="sm"
+              className="!p-2 !min-w-0 rounded-full"
               onClick={startRecording}
               icon={<Mic className="w-5 h-5" />}
               aria-label={t('chat:voiceMessage')}
@@ -240,11 +241,17 @@ export function MessageThread({
             ref={inputRef}
             type="text"
             placeholder={t('common:typeMessage')}
-            className="flex-1 rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent"
+            className="flex-1 min-w-0 bg-transparent px-1 py-1.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none"
             disabled={loading}
           />
-          <Button type="submit" size="sm" icon={<Send className="w-4 h-4" />}>
-            {t('common:send')}
+          <Button
+            type="submit"
+            size="sm"
+            className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
+            icon={<Send className="w-5 h-5" />}
+            aria-label={t('common:send')}
+          >
+            <span className="sr-only">{t('common:send')}</span>
           </Button>
         </div>
       </form>

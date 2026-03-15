@@ -10,25 +10,12 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
-import { Building2 } from 'lucide-react'
+import { Building2, SlidersHorizontal } from 'lucide-react'
 import { getUniversities, showInterest, getInterestedUniversityIds, getInterestLimit, getStudentProfile } from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
 
-const COUNTRY_OPTIONS = [
-  { value: '', label: 'All countries' },
-  { value: 'USA', label: 'USA' },
-  { value: 'UK', label: 'UK' },
-  { value: 'Germany', label: 'Germany' },
-  { value: 'Netherlands', label: 'Netherlands' },
-]
-const SORT_OPTIONS = [
-  { value: 'match', label: 'Match score' },
-  { value: 'name', label: 'Name' },
-  { value: 'rating', label: 'Rating' },
-]
-
 export function ExploreUniversities() {
-  const { t } = useTranslation('student')
+  const { t, i18n } = useTranslation('student')
   const [searchParams, setSearchParams] = useSearchParams()
   const [country, setCountry] = useState(searchParams.get('country') ?? '')
   const [city, setCity] = useState(searchParams.get('city') ?? '')
@@ -109,6 +96,35 @@ export function ExploreUniversities() {
   const totalPages = Math.max(1, Math.ceil(total / limitSize))
   const hasFilters = country !== '' || city.trim() !== '' || sort !== 'match' || useProfileFilters
   const profileCriteriaCount = profileCriteria.faculties + profileCriteria.countries
+  const isRu = i18n.resolvedLanguage?.startsWith('ru')
+  const isUz = i18n.resolvedLanguage?.startsWith('uz')
+  const localized = {
+    filtersTitle: isRu ? 'Фильтры' : isUz ? 'Filtrlar' : 'Filters',
+    refineUniversityList: isRu
+      ? 'Уточните список по релевантности, стране и городу.'
+      : isUz
+        ? "Ro'yxatni moslik, mamlakat va shahar bo'yicha aniqlashtiring."
+        : 'Refine the list by relevance, location, and city.',
+    sortByName: isRu ? 'Название' : isUz ? 'Nomi' : 'Name',
+    sortByRating: isRu ? 'Рейтинг' : isUz ? 'Reyting' : 'Rating',
+    enterCity: isRu ? 'Введите город' : isUz ? 'Shaharni kiriting' : 'Enter city',
+    countryUsa: isRu ? 'США' : isUz ? 'AQSH' : 'USA',
+    countryUk: isRu ? 'Великобритания' : isUz ? 'Buyuk Britaniya' : 'UK',
+    countryGermany: isRu ? 'Германия' : isUz ? 'Germaniya' : 'Germany',
+    countryNetherlands: isRu ? 'Нидерланды' : isUz ? 'Niderlandiya' : 'Netherlands',
+  }
+  const countryOptions = [
+    { value: '', label: t('allCountries') },
+    { value: 'USA', label: localized.countryUsa },
+    { value: 'UK', label: localized.countryUk },
+    { value: 'Germany', label: localized.countryGermany },
+    { value: 'Netherlands', label: localized.countryNetherlands },
+  ]
+  const sortOptions = [
+    { value: 'match', label: t('matchScore') },
+    { value: 'name', label: localized.sortByName },
+    { value: 'rating', label: localized.sortByRating },
+  ]
 
   const handleClearFilters = () => {
     setCountry('')
@@ -127,40 +143,67 @@ export function ExploreUniversities() {
     <div className="space-y-4">
       <PageTitle title={t('exploreUniversities')} icon="GraduationCap" />
 
-      {/* Filters: student-oriented first (sort, country, city, search) */}
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="min-w-[140px] w-[140px] shrink-0">
-          <Select
-            label="Sort"
-            options={SORT_OPTIONS}
-            value={sort}
-            onChange={(e) => { setSort(e.target.value); handleFilterChange() }}
-            className="text-sm py-1.5 h-8"
-          />
+      <section className="rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(248,250,252,0.82))] p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] backdrop-blur dark:bg-[linear-gradient(135deg,rgba(17,24,39,0.95),rgba(15,23,42,0.82))]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-primary-accent)]/12 text-[var(--color-primary-accent)]">
+              <SlidersHorizontal size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">
+                {localized.filtersTitle}
+              </p>
+              <p className="text-xs text-[var(--color-text-muted)]">
+                {localized.refineUniversityList}
+              </p>
+            </div>
+          </div>
+
+          {hasFilters && (
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="self-start rounded-2xl px-4 lg:self-auto">
+              {t('clearFilters')}
+            </Button>
+          )}
         </div>
-        <div className="min-w-[140px] w-[140px] shrink-0">
-          <Select
-            label="Country"
-            options={COUNTRY_OPTIONS}
-            value={country}
-            onChange={(e) => { setCountry(e.target.value); handleFilterChange() }}
-            className="text-sm py-1.5 h-8"
-          />
+
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.15fr)]">
+          <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-card)]/88 p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)]">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              {t('sort')}
+            </p>
+            <Select
+              options={sortOptions}
+              value={sort}
+              onChange={(e) => { setSort(e.target.value); handleFilterChange() }}
+              className="min-h-[46px] rounded-2xl border-none !text-sm !font-medium text-[var(--color-text)]"
+            />
+          </div>
+
+          <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-card)]/88 p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)]">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              {t('country')}
+            </p>
+            <Select
+              options={countryOptions}
+              value={country}
+              onChange={(e) => { setCountry(e.target.value); handleFilterChange() }}
+              className="min-h-[46px] rounded-2xl border-none !text-sm !font-medium text-[var(--color-text)]"
+            />
+          </div>
+
+          <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-card)]/88 p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)]">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              {t('city')}
+            </p>
+            <Input
+              placeholder={localized.enterCity}
+              value={city}
+              onChange={(e) => { setCity(e.target.value); handleFilterChange() }}
+              className="min-h-[46px] rounded-2xl border-none bg-[var(--color-bg)] px-4 text-sm"
+            />
+          </div>
         </div>
-        <div className="min-w-[120px] w-[120px] shrink-0">
-          <Input
-            placeholder="City"
-            value={city}
-            onChange={(e) => { setCity(e.target.value); handleFilterChange() }}
-            className="text-sm py-1.5 h-8"
-          />
-        </div>
-        {hasFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-            {t('clearFilters')}
-          </Button>
-        )}
-      </div>
+      </section>
 
       {useProfileFilters && profileCriteriaCount > 0 && (
         <p className="text-sm text-[var(--color-text-muted)]">

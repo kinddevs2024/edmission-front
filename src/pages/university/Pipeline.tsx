@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -10,13 +11,13 @@ import type { PipelineStage } from '@/types/university'
 import type { Scholarship } from '@/types/university'
 import { toastApiError } from '@/utils/toastError'
 
-const COLUMNS: { id: PipelineStage; title: string }[] = [
-  { id: 'interested', title: 'Interested' },
-  { id: 'contacted', title: 'Contacted' },
-  { id: 'evaluating', title: 'Evaluating' },
-  { id: 'offer_sent', title: 'Offer Sent' },
-  { id: 'accepted', title: 'Accepted' },
-  { id: 'rejected', title: 'Rejected' },
+const COLUMNS: { id: PipelineStage; titleKey: string }[] = [
+  { id: 'interested', titleKey: 'university:pipelineInterested' },
+  { id: 'contacted', titleKey: 'university:pipelineContacted' },
+  { id: 'evaluating', titleKey: 'university:pipelineEvaluating' },
+  { id: 'offer_sent', titleKey: 'university:pipelineOfferSent' },
+  { id: 'accepted', titleKey: 'university:pipelineAccepted' },
+  { id: 'rejected', titleKey: 'university:pipelineRejected' },
 ]
 
 const STAGE_TO_STATUS: Record<PipelineStage, 'interested' | 'under_review' | 'chat_opened' | 'offer_sent' | 'accepted' | 'rejected'> = {
@@ -64,6 +65,7 @@ function fetchPipeline(): Promise<PipelineStudent[]> {
 }
 
 export function Pipeline() {
+  const { t } = useTranslation(['university', 'common'])
   const [byStage, setByStage] = useState<Record<PipelineStage, PipelineStudent[]>>(() =>
     COLUMNS.reduce((acc, { id }) => ({ ...acc, [id]: [] }), {} as Record<PipelineStage, PipelineStudent[]>)
   )
@@ -130,17 +132,17 @@ export function Pipeline() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Pipeline" icon="GitBranch" />
+      <PageTitle title={t('university:navPipeline')} icon="GitBranch" />
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[320px]">
-        {COLUMNS.map(({ id, title }) => (
+        {COLUMNS.map(({ id, titleKey }) => (
           <Card key={id} className="min-w-[240px] sm:min-w-[260px] flex-shrink-0 flex flex-col" interactive>
             <CardTitle className="flex justify-between items-center">
-              <span>{title}</span>
+              <span>{t(titleKey)}</span>
               <span className="text-sm font-normal text-[var(--color-text-muted)]">{byStage[id]?.length ?? 0}</span>
             </CardTitle>
             <div className="flex-1 space-y-2 mt-2 overflow-y-auto">
               {(byStage[id] ?? []).length === 0 ? (
-                <p className="text-sm text-[var(--color-text-muted)]">No students</p>
+                <p className="text-sm text-[var(--color-text-muted)]">{t('university:noStudents')}</p>
               ) : (
                 (byStage[id] ?? []).map((s) => (
                   <div key={s.id} className="p-2 rounded-input bg-[var(--color-border)]/20 text-sm">
@@ -148,14 +150,14 @@ export function Pipeline() {
                     <p className="text-xs text-[var(--color-text-muted)]">{new Date(s.updatedAt).toLocaleDateString()}</p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       <Button to={`/university/students/${encodeURIComponent(s.id)}`} variant="ghost" size="sm" icon={<User size={16} />}>
-                        View profile
+                        {t('university:viewProfile')}
                       </Button>
                       <Button to={`/university/chat?studentId=${encodeURIComponent(s.id)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>
-                        Open chat
+                        {t('common:openChat')}
                       </Button>
                       {s.stage !== 'offer_sent' && s.stage !== 'accepted' && s.stage !== 'rejected' && (
                         <Button variant="ghost" size="sm" onClick={() => setOfferModal({ student: s })} icon={<Send size={16} />}>
-                          Send offer
+                          {t('university:sendOffer')}
                         </Button>
                       )}
                       {s.stage === 'interested' && (
@@ -166,7 +168,7 @@ export function Pipeline() {
                           onClick={() => handleStatusChange(s.applicationId, 'contacted')}
                           icon={<UserCheck size={16} />}
                         >
-                          Mark contacted
+                          {t('university:markContacted')}
                         </Button>
                       )}
                       {s.stage === 'contacted' && (
@@ -177,7 +179,7 @@ export function Pipeline() {
                           onClick={() => handleStatusChange(s.applicationId, 'evaluating')}
                           icon={<ArrowRight size={16} />}
                         >
-                          To evaluating
+                          {t('university:toEvaluating')}
                         </Button>
                       )}
                     </div>
@@ -192,14 +194,14 @@ export function Pipeline() {
       <Modal
         open={!!offerModal}
         onClose={() => setOfferModal(null)}
-        title={offerModal ? `Send offer to ${offerModal.student.name}` : ''}
+        title={offerModal ? t('university:sendOfferTo', { name: offerModal.student.name }) : ''}
         footer={
           <>
             <Button variant="secondary" onClick={() => setOfferModal(null)}>
-              Cancel
+              {t('common:cancel')}
             </Button>
             <Button onClick={handleSendOffer} disabled={offerSubmitting} loading={offerSubmitting} icon={<Send size={16} />}>
-              Send offer
+              {t('university:sendOffer')}
             </Button>
           </>
         }
@@ -207,13 +209,13 @@ export function Pipeline() {
         {offerModal && (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Scholarship (optional)</label>
+              <label className="block text-sm font-medium mb-1">{t('university:scholarshipOptional')}</label>
               <select
                 className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-input)] px-3 py-2"
                 value={offerForm.scholarshipId}
                 onChange={(e) => setOfferForm((f) => ({ ...f, scholarshipId: e.target.value }))}
               >
-                <option value="">None</option>
+                <option value="">{t('university:none')}</option>
                 {scholarships.map((sch) => (
                   <option key={sch.id} value={sch.id}>
                     {sch.name} ({sch.coveragePercent}%, {sch.remainingSlots ?? (sch.maxSlots - (sch.usedSlots ?? 0))} left)
@@ -222,7 +224,7 @@ export function Pipeline() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Coverage %</label>
+              <label className="block text-sm font-medium mb-1">{t('university:coveragePercent')}</label>
               <input
                 type="number"
                 min={0}
@@ -233,7 +235,7 @@ export function Pipeline() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Deadline (optional)</label>
+              <label className="block text-sm font-medium mb-1">{t('university:deadlineOptional')}</label>
               <input
                 type="date"
                 className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-input)] px-3 py-2"
