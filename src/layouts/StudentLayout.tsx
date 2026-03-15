@@ -70,7 +70,8 @@ export function StudentLayout() {
     <div className="flex min-h-full items-start">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 min-h-screen transition-[margin-left] duration-200 pb-20 md:pb-12 bg-pattern-subtle flex flex-col',
+        'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-12 bg-pattern-subtle flex flex-col',
+        isFixedHeightPage ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

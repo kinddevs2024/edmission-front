@@ -157,6 +157,20 @@ export async function updateSettings(patch: Partial<SystemSettings>): Promise<Sy
   return data ?? patch as SystemSettings
 }
 
+export interface UniversityInterestAnalyticsItem {
+  universityId: string
+  universityName: string
+  interestCount: number
+  source: 'profile' | 'catalog'
+}
+
+export async function getUniversityInterestAnalytics(limit?: number): Promise<UniversityInterestAnalyticsItem[]> {
+  const { data } = await api.get<UniversityInterestAnalyticsItem[]>('/admin/analytics/university-interests', {
+    params: limit != null ? { limit } : undefined,
+  })
+  return Array.isArray(data) ? data : []
+}
+
 export async function getAdminStats(): Promise<AdminStats> {
   const { data } = await api.get<AdminDashboardResponse>('/admin/dashboard')
   return {

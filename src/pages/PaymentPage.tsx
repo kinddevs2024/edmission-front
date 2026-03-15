@@ -8,6 +8,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getNavIcon } from '@/components/icons/NavIcons'
+import { cn } from '@/utils/cn'
 const STUDENT_PLANS = [
   { id: 'student_free_trial', name: 'Free Trial', apps: '3 applications', period: '14 days', chat: 'DeepSeek', highlight: false },
   { id: 'student_standard', name: 'Standard', apps: '15 applications', period: '—', chat: 'DeepSeek v16', highlight: true },
@@ -59,7 +60,7 @@ export function PaymentPage() {
 
   if (!user || (user.role !== 'student' && user.role !== 'university')) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <PageTitle title={t('subscription')} icon="CreditCard" />
         <Card>
           <p className="text-[var(--color-text-muted)]">{t('subscriptionPlansHint')}</p>
@@ -69,7 +70,7 @@ export function PaymentPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full max-w-5xl mx-auto space-y-6">
       <PageTitle title={t('subscriptionAndPayment')} icon="CreditCard" />
       {error && (
         <Card className="border-red-500/50 bg-red-500/5">
@@ -106,14 +107,14 @@ export function PaymentPage() {
       ) : (
         <>
           {isStudent && (
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-3">
               {STUDENT_PLANS.map((plan) => (
-                <Card key={plan.id} className={plan.highlight ? 'ring-2 ring-primary-accent' : ''} interactive>
+                <Card key={plan.id} className={cn('p-5 min-h-[200px] flex flex-col', plan.highlight && 'ring-2 ring-primary-accent')} interactive>
                   <div className="flex items-center gap-2">
                     {getNavIcon('CreditCard', 'size-5 text-primary-accent')}
-                    <CardTitle>{plan.name}</CardTitle>
+                    <CardTitle className="text-lg">{plan.name}</CardTitle>
                   </div>
-                  <ul className="mt-2 text-sm text-[var(--color-text-muted)] space-y-1">
+                  <ul className="mt-3 text-sm text-[var(--color-text-muted)] space-y-1.5 flex-1">
                     <li>{plan.apps}</li>
                     <li>Period: {plan.period}</li>
                     <li>Chat: {plan.chat}</li>
@@ -133,14 +134,14 @@ export function PaymentPage() {
             </div>
           )}
           {isUniversity && (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2">
               {UNIVERSITY_PLANS.map((plan) => (
-                <Card key={plan.id} className={plan.highlight ? 'ring-2 ring-primary-accent' : ''} interactive>
+                <Card key={plan.id} className={cn('p-5 min-h-[200px] flex flex-col', plan.highlight && 'ring-2 ring-primary-accent')} interactive>
                   <div className="flex items-center gap-2">
                     {getNavIcon('CreditCard', 'size-5 text-primary-accent')}
-                    <CardTitle>{plan.name}</CardTitle>
+                    <CardTitle className="text-lg">{plan.name}</CardTitle>
                   </div>
-                  <ul className="mt-2 text-sm text-[var(--color-text-muted)] space-y-1">
+                  <ul className="mt-3 text-sm text-[var(--color-text-muted)] space-y-1.5 flex-1">
                     <li>{plan.requests}</li>
                     <li>Chat: {plan.chat}</li>
                   </ul>

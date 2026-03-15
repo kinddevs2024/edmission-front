@@ -225,8 +225,8 @@ export function ExploreUniversities() {
         <Card>
           <EmptyState
             icon={<Building2 className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
-            title={t('noUniversitiesFound')}
-            description={t('tryChangingFiltersOrSearch')}
+            title={t('student:noUniversitiesFound')}
+            description={t('student:tryChangingFiltersOrSearch')}
             actionLabel={t('clearFilters')}
             onAction={handleClearFilters}
           />

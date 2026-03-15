@@ -86,7 +86,7 @@ export function SupportPage() {
   if (id && ticket) {
     const replies = ticket.replies ?? []
     return (
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="w-full max-w-5xl mx-auto space-y-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/support')}>
           ← {t('backToMyTickets')}
         </Button>
@@ -138,7 +138,7 @@ export function SupportPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-5xl mx-auto space-y-6">
       <PageTitle title={t('support')} icon="HelpCircle" />
 
       <Card>

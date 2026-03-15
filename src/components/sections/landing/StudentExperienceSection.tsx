@@ -44,7 +44,7 @@ export function StudentExperienceSection() {
                 </div>
               </div>
               <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-                <p className="text-xs text-[var(--color-text-muted)]">{t('student.activeApplications')}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">{t('landing:student.activeApplications')}</p>
                 <p className="mt-1 text-xl font-semibold">06</p>
               </div>
             </div>

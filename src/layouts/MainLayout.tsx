@@ -175,7 +175,7 @@ export function MainLayout() {
           <div className="flex h-full min-h-0">
           <Sidebar items={navItems} bottomItems={navBottomItems} />
           <div className={cn('flex-1 min-w-0 min-h-0 pb-20 md:pb-12 transition-[margin-left] duration-200 flex flex-col bg-pattern-subtle', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-            <main className="p-3 sm:p-4 pb-12 flex-1 min-h-full flex flex-col overflow-auto bg-pattern-subtle">
+            <main className="p-3 sm:p-4 pb-12 flex-1 min-h-0 flex flex-col overflow-auto bg-pattern-subtle">
               <div className="max-w-content mx-auto w-full min-h-0 flex flex-col">
                 <Suspense fallback={<ContentFallback />}>
                   <Outlet />

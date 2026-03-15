@@ -118,7 +118,7 @@ export function StudentDashboard() {
         </Link>
         <Link to="/student/applications">
           <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-1" interactive>
-            <CardTitle>{t('activeApplications')}</CardTitle>
+            <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
             <p className="text-2xl font-semibold">{activeApplications.length}</p>
           </Card>
         </Link>
@@ -168,7 +168,7 @@ export function StudentDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Link to="/student/applications">
           <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
-            <CardTitle>{t('activeApplications')}</CardTitle>
+            <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
           {activeApplications.length === 0 ? (
             <p className="text-[var(--color-text-muted)]">{t('noActiveApplications')}</p>
           ) : (
@@ -213,7 +213,7 @@ export function StudentDashboard() {
 
       <div className="flex flex-wrap gap-2">
         <Button to="/student/universities">{t('exploreUniversities')}</Button>
-        <Button to="/student/applications" variant="secondary">{t('myApplications')}</Button>
+        <Button to="/student/applications" variant="secondary">{t('myApplications', 'My applications')}</Button>
         <Button to="/student/chat" variant="ghost">{t('chats')}</Button>
       </div>
     </div>

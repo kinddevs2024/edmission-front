@@ -4,14 +4,15 @@ import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
-import { getAdminStats, getVerificationQueue } from '@/services/admin'
-import type { AdminStats as AdminStatsType } from '@/services/admin'
+import { getAdminStats, getVerificationQueue, getUniversityInterestAnalytics } from '@/services/admin'
+import type { AdminStats as AdminStatsType, UniversityInterestAnalyticsItem } from '@/services/admin'
 import { toastApiError } from '@/utils/toastError'
 
 export function AdminDashboard() {
   const { t } = useTranslation('admin')
   const [stats, setStats] = useState<AdminStatsType | null>(null)
   const [verificationCount, setVerificationCount] = useState(0)
+  const [universityInterests, setUniversityInterests] = useState<UniversityInterestAnalyticsItem[]>([])
 
   useEffect(() => {
     getAdminStats()
@@ -31,6 +32,12 @@ export function AdminDashboard() {
     getVerificationQueue()
       .then((list) => setVerificationCount(list.length))
       .catch((e) => { toastApiError(e); setVerificationCount(0) })
+  }, [])
+
+  useEffect(() => {
+    getUniversityInterestAnalytics(15)
+      .then(setUniversityInterests)
+      .catch((e) => { toastApiError(e); setUniversityInterests([]) })
   }, [])
 
   const healthLabel = stats?.healthStatus === 'ok' ? t('healthOk') : stats?.healthStatus === 'degraded' ? t('healthDegraded') : t('healthError')
@@ -66,6 +73,39 @@ export function AdminDashboard() {
           </Card>
         </Link>
       </div>
+
+      <Card>
+          <CardTitle>{t('universitiesByStudentInterest', 'Universities by student interest')}</CardTitle>
+          {universityInterests.length === 0 ? (
+            <p className="text-sm text-[var(--color-text-muted)] mt-2">{t('noDataYet', 'No data yet.')}</p>
+          ) : (
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--color-border)]">
+                    <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">#</th>
+                    <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">{t('universityProfile', 'University')}</th>
+                    <th className="text-right py-2 font-medium text-[var(--color-text-muted)]">{t('interests')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {universityInterests.map((row, i) => (
+                    <tr key={`${row.source}-${row.universityId}`} className="border-b border-[var(--color-border)]/50">
+                      <td className="py-2 text-[var(--color-text-muted)]">{i + 1}</td>
+                      <td className="py-2">
+                        <span className="font-medium">{row.universityName}</span>
+                        {row.source === 'catalog' && (
+                          <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">(catalog)</span>
+                        )}
+                      </td>
+                      <td className="py-2 text-right font-medium">{row.interestCount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
 
       {(stats?.mrr != null || (stats?.subscriptionsByPlan && Object.keys(stats.subscriptionsByPlan).length > 0)) && (
         <Card>
