@@ -12,6 +12,8 @@ import {
   updateMyStudent,
   deleteMyStudent,
   generateTempPassword,
+  searchStudentsForInvite,
+  inviteStudent,
   type CounsellorStudent,
   type CreateStudentResult,
 } from '@/services/counsellor'
@@ -24,7 +26,11 @@ export function CounsellorStudents() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState<'add' | 'edit' | null>(null)
+  const [modal, setModal] = useState<'add' | 'edit' | 'invite' | null>(null)
+  const [inviteSearch, setInviteSearch] = useState('')
+  const [inviteResults, setInviteResults] = useState<Array<{ id: string; email: string; name: string }>>([])
+  const [inviteSearching, setInviteSearching] = useState(false)
+  const [invitingId, setInvitingId] = useState<string | null>(null)
   const [editingStudent, setEditingStudent] = useState<CounsellorStudent | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [addEmail, setAddEmail] = useState('')
@@ -32,6 +38,7 @@ export function CounsellorStudents() {
   const [addFirstName, setAddFirstName] = useState('')
   const [addLastName, setAddLastName] = useState('')
   const [tempPassword, setTempPassword] = useState<string | null>(null)
+  const [createdStudentId, setCreatedStudentId] = useState<string | null>(null)
   const [editFirstName, setEditFirstName] = useState('')
   const [editLastName, setEditLastName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<CounsellorStudent | null>(null)
@@ -67,6 +74,24 @@ export function CounsellorStudents() {
     setModal('add')
   }
 
+  const doInviteSearch = () => {
+    const q = inviteSearch.trim()
+    if (q.length < 2) { setInviteResults([]); return }
+    setInviteSearching(true)
+    searchStudentsForInvite({ search: q })
+      .then((res) => setInviteResults(res.data ?? []))
+      .catch((e) => { toastApiError(e); setInviteResults([]) })
+      .finally(() => setInviteSearching(false))
+  }
+
+  const handleInvite = (userId: string) => {
+    setInvitingId(userId)
+    inviteStudent(userId)
+      .then(() => { load(); setInviteResults((prev) => prev.filter((r) => r.id !== userId)) })
+      .catch(toastApiError)
+      .finally(() => setInvitingId(null))
+  }
+
   const handleAdd = () => {
     if (!addEmail.trim()) return
     setSubmitting(true)
@@ -78,6 +103,7 @@ export function CounsellorStudents() {
     })
       .then((res: CreateStudentResult) => {
         setTempPassword(res.temporaryPassword)
+        setCreatedStudentId(res.user?.id ?? null)
         load()
         setAddEmail('')
         setAddName('')
@@ -134,6 +160,9 @@ export function CounsellorStudents() {
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:myStudents', 'My students')} icon="Users">
+        <Button size="sm" variant="secondary" onClick={() => { setModal('invite'); setInviteSearch(''); setInviteResults([]) }}>
+          {t('admin:inviteStudent', 'Invite student')}
+        </Button>
         <Button size="sm" onClick={openAdd}>{t('admin:addStudent', 'Add student')}</Button>
       </PageTitle>
 
@@ -193,11 +222,18 @@ export function CounsellorStudents() {
       {/* Add student modal */}
       <Modal
         open={modal === 'add'}
-        onClose={() => { setModal(null); setTempPassword(null) }}
+        onClose={() => { setModal(null); setTempPassword(null); setCreatedStudentId(null) }}
         title={t('admin:addStudent', 'Add student')}
         footer={
           tempPassword ? (
-            <Button onClick={() => { setModal(null); setTempPassword(null) }}>{t('common:close')}</Button>
+            <>
+              {createdStudentId && (
+                <Link to={`/school/students/${createdStudentId}/profile`}>
+                  <Button variant="secondary">{t('admin:editFullProfile', 'Edit full profile')}</Button>
+                </Link>
+              )}
+              <Button onClick={() => { setModal(null); setTempPassword(null); setCreatedStudentId(null) }}>{t('common:close')}</Button>
+            </>
           ) : (
             <>
               <Button variant="secondary" onClick={() => setModal(null)}>{t('common:cancel')}</Button>
@@ -212,6 +248,7 @@ export function CounsellorStudents() {
               <p className="text-sm font-medium text-[var(--color-text)] mb-2">{t('admin:tempPasswordTitle', 'Temporary password (show to student once)')}</p>
               <p className="font-mono text-lg break-all">{tempPassword}</p>
               <p className="text-xs text-[var(--color-text-muted)] mt-2">{t('admin:tempPasswordHint', 'Student must change it on first login.')}</p>
+              <p className="text-sm text-[var(--color-text-muted)] mt-3">{t('admin:editFullProfileHint', 'You can fill in all student data (profile, documents) on the profile page.')}</p>
             </div>
           ) : (
             <>
@@ -263,6 +300,44 @@ export function CounsellorStudents() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Invite existing student modal */}
+      <Modal
+        open={modal === 'invite'}
+        onClose={() => { setModal(null); setInviteSearch(''); setInviteResults([]) }}
+        title={t('admin:inviteStudent', 'Invite student')}
+        footer={<Button onClick={() => setModal(null)}>{t('common:close')}</Button>}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-[var(--color-text-muted)]">{t('admin:inviteStudentHint', 'Search for a student by email or name (already registered on the platform) and invite them to your school.')}</p>
+          <div className="flex gap-2">
+            <Input
+              placeholder={t('common:search', 'Search') + ' (email, name)'}
+              value={inviteSearch}
+              onChange={(e) => setInviteSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && doInviteSearch()}
+              className="flex-1"
+            />
+            <Button size="sm" onClick={doInviteSearch} disabled={inviteSearching || inviteSearch.trim().length < 2} loading={inviteSearching}>{t('common:search')}</Button>
+          </div>
+          {inviteResults.length > 0 && (
+            <ul className="border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)] max-h-60 overflow-y-auto">
+              {inviteResults.map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-2 px-3 py-2">
+                  <div>
+                    <span className="font-medium">{r.email}</span>
+                    {r.name && <span className="text-[var(--color-text-muted)] ml-2">({r.name})</span>}
+                  </div>
+                  <Button size="sm" onClick={() => handleInvite(r.id)} disabled={!!invitingId} loading={invitingId === r.id}>{t('admin:invite', 'Invite')}</Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {inviteSearch.trim().length >= 2 && !inviteSearching && inviteResults.length === 0 && (
+            <p className="text-sm text-[var(--color-text-muted)]">{t('admin:noStudentsToInvite', 'No students found or they are already in your school.')}</p>
+          )}
+        </div>
       </Modal>
 
       {/* Delete confirm */}

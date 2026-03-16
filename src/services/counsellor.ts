@@ -102,3 +102,43 @@ export async function addInterestForStudent(studentUserId: string, universityId:
   const { data } = await api.post(`/counsellor/students/${studentUserId}/interests/${universityId}`)
   return data
 }
+
+/** Search existing students (not in my school) for invite. */
+export async function searchStudentsForInvite(params: { search: string; limit?: number }): Promise<{ data: Array<{ id: string; email: string; name: string }> }> {
+  const { data } = await api.get('/counsellor/students/search-invite', { params })
+  return data
+}
+
+/** Invite existing student to my school. */
+export async function inviteStudent(userId: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await api.post('/counsellor/students/invite', { userId })
+  return data
+}
+
+export interface CounsellorStudentDocument {
+  id: string
+  type: string
+  name?: string
+  certificateType?: string
+  score?: string
+  fileUrl: string
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt?: string
+}
+
+export async function getStudentDocuments(studentUserId: string): Promise<CounsellorStudentDocument[]> {
+  const { data } = await api.get<CounsellorStudentDocument[]>(`/counsellor/students/${studentUserId}/documents`)
+  return data ?? []
+}
+
+export async function addStudentDocument(
+  studentUserId: string,
+  payload: { type: string; fileUrl: string; name?: string; certificateType?: string; score?: string }
+): Promise<CounsellorStudentDocument> {
+  const { data } = await api.post<CounsellorStudentDocument>(`/counsellor/students/${studentUserId}/documents`, payload)
+  return data
+}
+
+export async function deleteStudentDocument(studentUserId: string, documentId: string): Promise<void> {
+  await api.delete(`/counsellor/students/${studentUserId}/documents/${documentId}`)
+}

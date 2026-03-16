@@ -10,13 +10,13 @@ import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { useTranslation } from 'react-i18next'
-import { getStudentProfile, updateMyStudent } from '@/services/counsellor'
+import { getStudentProfile, updateMyStudent, getStudentDocuments, addStudentDocument, deleteStudentDocument, type CounsellorStudentDocument } from '@/services/counsellor'
 import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/api'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { PageTitle } from '@/components/ui/PageTitle'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ArrowLeft, FileStack } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 const schema = z.object({
@@ -284,6 +284,31 @@ export function CounsellorStudentProfile() {
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
+  const [documents, setDocuments] = useState<CounsellorStudentDocument[]>([])
+  const [documentsLoading, setDocumentsLoading] = useState(false)
+  const [docAdding, setDocAdding] = useState(false)
+  const [docType, setDocType] = useState<string>('transcript')
+  const [docName, setDocName] = useState('')
+  const [docCertificateType, setDocCertificateType] = useState('IELTS')
+  const [docScore, setDocScore] = useState('')
+  const [docFileUrl, setDocFileUrl] = useState('')
+
+  const DOC_TYPES = [
+    { value: 'transcript', label: 'Transcript' },
+    { value: 'diploma', label: 'Diploma' },
+    { value: 'language_certificate', label: 'Language certificate' },
+    { value: 'course_certificate', label: 'Course certificate' },
+    { value: 'passport', label: 'Passport' },
+    { value: 'id_card', label: 'ID card' },
+    { value: 'other', label: 'Other' },
+  ]
+  const LANGUAGE_CERT_TYPES = [
+    { value: 'IELTS', label: 'IELTS' },
+    { value: 'TOEFL', label: 'TOEFL' },
+    { value: 'Cambridge', label: 'Cambridge' },
+    { value: 'Duolingo', label: 'Duolingo' },
+    { value: 'other', label: 'Other' },
+  ]
 
   const { register, reset, control, watch, setValue, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -350,6 +375,52 @@ export function CounsellorStudentProfile() {
       .catch((e) => setError(getApiError(e).message))
       .finally(() => setLoading(false))
   }, [studentId, reset])
+
+  const loadDocuments = () => {
+    if (!studentId) return
+    setDocumentsLoading(true)
+    getStudentDocuments(studentId)
+      .then(setDocuments)
+      .catch(() => setDocuments([]))
+      .finally(() => setDocumentsLoading(false))
+  }
+
+  useEffect(() => {
+    if (studentId) loadDocuments()
+  }, [studentId])
+
+  const handleAddDocument = async () => {
+    if (!studentId || !docFileUrl.trim()) return
+    const name = docName.trim() || docType.replace(/_/g, ' ')
+    setDocAdding(true)
+    try {
+      await addStudentDocument(studentId, {
+        type: docType,
+        fileUrl: docFileUrl,
+        name: name || undefined,
+        certificateType: docType === 'language_certificate' ? docCertificateType : undefined,
+        score: docType === 'language_certificate' ? docScore : undefined,
+      })
+      setDocName('')
+      setDocScore('')
+      setDocFileUrl('')
+      loadDocuments()
+    } catch (e) {
+      setError(getApiError(e).message)
+    } finally {
+      setDocAdding(false)
+    }
+  }
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!studentId) return
+    try {
+      await deleteStudentDocument(studentId, docId)
+      loadDocuments()
+    } catch (e) {
+      setError(getApiError(e).message)
+    }
+  }
 
   const onSubmit = async (data: FormData) => {
     if (!studentId) return
@@ -668,6 +739,80 @@ export function CounsellorStudentProfile() {
             <Button type="button" variant="secondary" onClick={() => appendWork({ title: '', description: '', fileUrl: '', linkUrl: '' })} icon={<Plus className="w-4 h-4" />}>
               {t('addWork')}
             </Button>
+          </div>
+        </Card>
+
+        {/* Documents (certificates, transcripts, etc.) */}
+        <Card className="p-4">
+          <CardTitle className="flex items-center gap-2">
+            <FileStack className="w-4 h-4" />
+            {t('common:documents', 'Documents')}
+          </CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            {t('student:documentsHint', 'Add transcripts, diplomas, language certificates, passport, etc.')}
+          </p>
+          <div className="mt-4 space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('student:documentType', 'Document type')}</label>
+                <select
+                  value={docType}
+                  onChange={(e) => { setDocType(e.target.value); if (e.target.value !== 'language_certificate') setDocScore('') }}
+                  className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 bg-[var(--color-bg)]"
+                >
+                  {DOC_TYPES.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Input label={t('student:documentName', 'Name')} value={docName} onChange={(e) => setDocName(e.target.value)} placeholder={docType === 'language_certificate' ? 'e.g. IELTS' : 'e.g. High school diploma'} />
+              </div>
+            </div>
+            {docType === 'language_certificate' && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('student:certificateType', 'Certificate type')}</label>
+                  <select
+                    value={docCertificateType}
+                    onChange={(e) => setDocCertificateType(e.target.value)}
+                    className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 bg-[var(--color-bg)]"
+                  >
+                    {LANGUAGE_CERT_TYPES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <Input label={t('student:score', 'Score / level')} value={docScore} onChange={(e) => setDocScore(e.target.value)} placeholder="e.g. 7.0, B2" />
+              </div>
+            )}
+            <FileUpload label={t('student:file', 'File')} value={docFileUrl} onChange={setDocFileUrl} accept="image/*,application/pdf" />
+            <Button type="button" size="sm" onClick={handleAddDocument} disabled={docAdding || !docFileUrl.trim()} loading={docAdding} icon={<Plus className="w-4 h-4" />}>
+              {t('common:add', 'Add')} {t('common:documents', 'document')}
+            </Button>
+            {documentsLoading ? (
+              <p className="text-sm text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
+            ) : documents.length === 0 ? (
+              <p className="text-sm text-[var(--color-text-muted)]">{t('student:noDocumentsYet', 'No documents yet.')}</p>
+            ) : (
+              <ul className="divide-y divide-[var(--color-border)]">
+                {documents.map((d) => (
+                  <li key={d.id} className="py-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileText className="w-4 h-4 shrink-0 text-[var(--color-text-muted)]" />
+                      <span className="font-medium truncate">{d.name || d.type.replace(/_/g, ' ')}</span>
+                      {d.type === 'language_certificate' && (d.certificateType || d.score) && (
+                        <span className="text-xs text-[var(--color-text-muted)] shrink-0">{[d.certificateType, d.score].filter(Boolean).join(' — ')}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-accent hover:underline">{t('common:view')}</a>
+                      <Button type="button" variant="ghost" size="sm" className="text-red-500" onClick={() => handleDeleteDocument(d.id)}><Trash2 className="w-4 h-4" /></Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </Card>
 
