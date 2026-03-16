@@ -173,8 +173,8 @@ export function Router() {
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />
         <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentCancel /></ProtectedRoute>} />
-        <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university']}><SupportPage /></ProtectedRoute>} />
-        <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university']}><SupportPage /></ProtectedRoute>} />
+        <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
+        <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
 
         <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<StudentDashboard />} />
