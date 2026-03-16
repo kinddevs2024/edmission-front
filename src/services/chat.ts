@@ -3,10 +3,10 @@ import type { Chat, Message } from '@/types/chat'
 
 type RawChat = {
   id: string
-  universityId?: { universityName?: string; logoUrl?: string; _id?: unknown }
-  studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown }
-  university?: { universityName?: string; logoUrl?: string }
-  student?: { firstName?: string; lastName?: string; avatarUrl?: string }
+  universityId?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
+  studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
+  university?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
+  student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   lastMessage?: Array<{ message?: string; text?: string; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
   messages?: Array<{ message?: string; text?: string; createdAt?: string }>
   acceptedAt?: string
@@ -15,20 +15,37 @@ type RawChat = {
 }
 
 function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'): Chat {
-  const other = raw.universityId ?? raw.university ?? raw.studentId ?? raw.student
-  const name =
-    other && typeof other === 'object' && 'universityName' in other
-      ? String((other as { universityName?: string }).universityName ?? '')
-      : other && typeof other === 'object'
-        ? [((other as { firstName?: string }).firstName ?? ''), ((other as { lastName?: string }).lastName ?? '')].filter(Boolean).join(' ') || '—'
-        : '—'
-  const avatar = other && typeof other === 'object' && 'logoUrl' in other ? (other as { logoUrl?: string }).logoUrl : (other as { avatarUrl?: string } | undefined)?.avatarUrl
+  const uniLike = raw.universityId ?? raw.university
+  const stuLike = raw.studentId ?? raw.student
+  const other = currentUserRole === 'student' ? (uniLike ?? stuLike) : (stuLike ?? uniLike)
+
+  // Prefer underlying profile _id for participant id so profile links work
+  const participantId =
+    other && typeof other === 'object' && '_id' in other && (other as { _id?: unknown })._id != null
+      ? String((other as { _id: unknown })._id)
+      : raw.id
+
+  let name = '—'
+  if (other && typeof other === 'object') {
+    const o = other as { universityName?: string; firstName?: string; lastName?: string; name?: string; userEmail?: string }
+    if (o.universityName) {
+      name = String(o.universityName)
+    } else {
+      const combined = [o.firstName ?? '', o.lastName ?? ''].filter(Boolean).join(' ')
+      name = combined || o.name || o.userEmail || '—'
+    }
+  }
+
+  const avatar =
+    other && typeof other === 'object' && 'logoUrl' in other
+      ? (other as { logoUrl?: string }).logoUrl
+      : (other as { avatarUrl?: string } | undefined)?.avatarUrl
   const lastMsgArr = raw.lastMessage ?? raw.messages ?? []
   const lastMsg = lastMsgArr[0]
   return {
     id: raw.id,
     participant: {
-      id: other && typeof other === 'object' && '_id' in other ? String((other as { _id: unknown })._id) : raw.id,
+      id: participantId,
       name,
       avatar,
       type: currentUserRole === 'student' ? 'university' : 'student',

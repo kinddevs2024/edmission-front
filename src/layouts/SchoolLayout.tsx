@@ -20,6 +20,7 @@ export function SchoolLayout() {
       { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
       { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
+      { to: '/school/student-interests', label: t('studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' as const },
       { to: '/school/join-requests', label: t('joinRequests'), icon: 'Users' as const },
       { to: '/notifications', label: t('notifications'), icon: 'Bell' as const },
     ],
@@ -53,7 +54,8 @@ export function SchoolLayout() {
     <div className="flex min-h-full items-start">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 min-h-screen pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        'flex-1 min-w-0 pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        'h-screen max-h-[100%] overflow-hidden',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter min-h-full flex flex-col">

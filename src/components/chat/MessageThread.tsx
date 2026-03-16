@@ -43,6 +43,10 @@ export function MessageThread({
   const [acceptModalOpen, setAcceptModalOpen] = useState(false)
   const [acceptSending, setAcceptSending] = useState(false)
   const [acceptForm, setAcceptForm] = useState({ positionType: 'budget' as 'budget' | 'grant' | 'other', positionLabel: '', congratulatoryMessage: '' })
+  const [replyTo, setReplyTo] = useState<Message | null>(null)
+  const [contextMessage, setContextMessage] = useState<Message | null>(null)
+  const [contextPos, setContextPos] = useState<{ x: number; y: number } | null>(null)
+  const [hiddenIds, setHiddenIds] = useState<string[]>([])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -56,14 +60,35 @@ export function MessageThread({
     e.preventDefault()
     const text = inputRef.current?.value?.trim()
     if (!text || !chat) return
-    onSend(text)
+    const base: SendMessageParams = { text }
+    if (replyTo) {
+      base.metadata = {
+        ...(base.metadata ?? {}),
+        replyToMessageId: replyTo.id,
+        replyToPreview: replyTo.text,
+      }
+    }
+    onSend(base)
     inputRef.current!.value = ''
+    setReplyTo(null)
   }
 
   const handleSendEmotion = (emoji: string) => {
     if (!chat) return
-    onSend({ type: 'emotion', metadata: { emotion: emoji } })
+    onSend({
+      type: 'emotion',
+      metadata: {
+        emotion: emoji,
+        ...(replyTo
+          ? {
+              replyToMessageId: replyTo.id,
+              replyToPreview: replyTo.text,
+            }
+          : {}),
+      },
+    })
     setEmotionOpen(false)
+    setReplyTo(null)
   }
 
   const startRecording = () => {
@@ -90,7 +115,19 @@ export function MessageThread({
         const blob = new Blob(chunksRef.current, { type: actualMime })
         const file = new File([blob], `voice${ext}`, { type: actualMime })
         uploadFile(file).then((url) => {
-          onSend({ type: 'voice', attachmentUrl: url })
+          onSend({
+            type: 'voice',
+            attachmentUrl: url,
+            ...(replyTo
+              ? {
+                  metadata: {
+                    replyToMessageId: replyTo.id,
+                    replyToPreview: replyTo.text,
+                  },
+                }
+              : {}),
+          })
+          setReplyTo(null)
         }).catch(toastApiError)
       }
       mr.start()
@@ -173,7 +210,7 @@ export function MessageThread({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-[var(--color-bg)] p-4 space-y-3">
+      <div className="relative flex-1 overflow-y-auto bg-[var(--color-bg)] p-4 space-y-3">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -181,7 +218,23 @@ export function MessageThread({
             ))}
           </div>
         ) : (
-          messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+          messages
+            .filter((msg) => !hiddenIds.includes(msg.id))
+            .map((msg) => (
+              <div
+                key={msg.id}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  setContextMessage(msg)
+                  const bounds = (e.currentTarget.parentElement as HTMLElement | null)?.getBoundingClientRect()
+                  const offsetY = bounds ? e.clientY - bounds.top : e.clientY
+                  const offsetX = bounds ? e.clientX - bounds.left : e.clientX
+                  setContextPos({ x: offsetX, y: offsetY })
+                }}
+              >
+                <MessageBubble message={msg} />
+              </div>
+            ))
         )}
         {isTyping && (
           <div className="flex justify-start">
@@ -191,9 +244,69 @@ export function MessageThread({
           </div>
         )}
         <div ref={bottomRef} />
+
+        {contextMessage && contextPos && (
+          <div
+            className="absolute z-20 min-w-[160px] rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg text-sm"
+            style={{ top: contextPos.y, left: contextPos.x }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="w-full text-left px-3 py-2 hover:bg-[var(--color-border)]/20"
+              onClick={() => {
+                setReplyTo(contextMessage)
+                setContextMessage(null)
+                setContextPos(null)
+              }}
+            >
+              {t('chat:reply', 'Reply')}
+            </button>
+            <button
+              type="button"
+              className="w-full text-left px-3 py-2 hover:bg-[var(--color-border)]/20"
+              onClick={() => {
+                const txt = contextMessage.text ?? ''
+                if (txt) {
+                  navigator.clipboard?.writeText(txt).catch(() => {})
+                }
+                setContextMessage(null)
+                setContextPos(null)
+              }}
+            >
+              {t('chat:copy', 'Copy text')}
+            </button>
+            <button
+              type="button"
+              className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-500/10"
+              onClick={() => {
+                setHiddenIds((ids) => (ids.includes(contextMessage.id) ? ids : [...ids, contextMessage.id]))
+                setContextMessage(null)
+                setContextPos(null)
+              }}
+            >
+              {t('chat:deleteForMe', 'Delete for me')}
+            </button>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
+        {replyTo && (
+          <div className="mb-2 flex items-center justify-between rounded-card bg-[var(--color-bg)] px-3 py-1.5 text-xs text-[var(--color-text-muted)]">
+            <div className="truncate">
+              <span className="font-medium mr-1">{t('chat:replyingTo', 'Replying to')}:</span>
+              <span className="truncate">{replyTo.text}</span>
+            </div>
+            <button
+              type="button"
+              className="ml-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              onClick={() => setReplyTo(null)}
+            >
+              ×
+            </button>
+          </div>
+        )}
         <div className="relative flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
           <div className="relative flex items-center gap-1 shrink-0">
             <button

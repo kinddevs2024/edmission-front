@@ -46,4 +46,8 @@ export interface Offer {
   deadline: string
   isUrgent?: boolean
   createdAt: string
+  status?: 'pending' | 'waiting' | 'accepted' | 'declined' | 'expired'
+  expiresAt?: string
+  certificateTitle?: string
+  certificateBody?: string
 }

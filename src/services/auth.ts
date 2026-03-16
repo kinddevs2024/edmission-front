@@ -22,6 +22,9 @@ export type RegisterResult =
   | LoginResponse
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
+  // Всегда начинаем логин "с нуля": очищаем возможные старые токены/пользователя
+  clearAuth()
+  useAuthStore.getState().logout()
   const { data } = await api.post<LoginResponse>('/auth/login', payload)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)

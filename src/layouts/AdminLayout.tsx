@@ -64,7 +64,8 @@ export function AdminLayout() {
     <div className="flex min-h-full items-start">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 min-h-screen pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        'flex-1 min-w-0 pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        isFixedHeightPage ? 'h-screen max-h-[100%] overflow-hidden' : 'min-h-screen',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

@@ -247,6 +247,46 @@ export async function getStudentProfile(studentId: string): Promise<FullStudentP
   return data
 }
 
+export async function getOfferTemplates(): Promise<unknown[]> {
+  const { data } = await api.get<unknown[]>('/university/offer-templates')
+  return data ?? []
+}
+
+export async function createOfferTemplate(payload: {
+  name: string
+  layoutKey?: 'classic' | 'modern' | 'minimal'
+  primaryColor?: string
+  accentColor?: string
+  backgroundImageUrl?: string
+  bodyTemplate: string
+  titleTemplate?: string
+  isDefault?: boolean
+}): Promise<unknown> {
+  const { data } = await api.post<unknown>('/university/offer-templates', payload)
+  return data
+}
+
+export async function updateOfferTemplate(
+  id: string,
+  payload: {
+    name?: string
+    layoutKey?: 'classic' | 'modern' | 'minimal'
+    primaryColor?: string
+    accentColor?: string
+    backgroundImageUrl?: string
+    bodyTemplate?: string
+    titleTemplate?: string
+    isDefault?: boolean
+  }
+): Promise<unknown> {
+  const { data } = await api.patch<unknown>(`/university/offer-templates/${id}`, payload)
+  return data
+}
+
+export async function deleteOfferTemplate(id: string): Promise<void> {
+  await api.delete(`/university/offer-templates/${id}`)
+}
+
 export async function getPipeline(filters?: PipelineFilters): Promise<PipelineItem[]> {
   const params: Record<string, string> = {}
   if (filters?.skills?.length) params.skills = filters.skills.join(',')

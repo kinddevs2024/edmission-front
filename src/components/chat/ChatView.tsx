@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { getChats, getMessages, sendMessage, markAsRead, createChat, acceptStudent } from '@/services/chat'
+import { getChats, getMessages, sendMessage, createChat, acceptStudent } from '@/services/chat'
 import { useSocket } from '@/hooks/useSocket'
 import { useAuthStore } from '@/store/authStore'
 import { ChatList } from './ChatList'
@@ -107,6 +107,11 @@ export function ChatView() {
   useEffect(() => {
     const unsub = onNewMessage(({ chatId, message }) => {
       const msg = message as Message
+
+      // Если это сообщение от текущего пользователя, мы уже добавили его в handleSend → игнорируем сокетное дублирование
+      const senderId = (msg as { sender?: { id?: string } }).sender?.id
+      if (senderId && currentUserId && senderId === currentUserId) return
+
       const preview = msg.type === 'voice' ? '🎤 Voice' : msg.type === 'emotion' ? (msg.metadata?.emotion ?? '👍') : (msg.text ?? '')
       setMessages((prev) => {
         if (chatId !== selectedChat?.id) return prev
@@ -131,7 +136,7 @@ export function ChatView() {
       )
     })
     return unsub
-  }, [selectedChat?.id, onNewMessage])
+  }, [selectedChat?.id, onNewMessage, currentUserId])
 
   useEffect(() => {
     const unsub = onRead(({ chatId }) => {
@@ -189,12 +194,11 @@ export function ChatView() {
   )
 
   const handleMarkRead = useCallback(() => {
-    if (selectedChat?.id) {
-      markAsRead(selectedChat.id).catch(toastApiError)
-      setChats((prev) =>
-        prev.map((c) => (c.id === selectedChat.id ? { ...c, unreadCount: 0 } : c))
-      )
-    }
+    if (!selectedChat?.id) return
+    // Локально сбрасываем счётчик непрочитанных, чтобы избежать 500-ошибки /chat/:id/read
+    setChats((prev) =>
+      prev.map((c) => (c.id === selectedChat.id ? { ...c, unreadCount: 0 } : c))
+    )
   }, [selectedChat?.id])
 
   const showList = mobileView === 'list'
@@ -202,11 +206,11 @@ export function ChatView() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full">
-      <div className="flex-1 min-h-0 flex flex-col border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1  flex flex-col border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
         <div
           className={cn(
-            'flex flex-col h-full w-full min-h-0 md:w-80 md:max-w-sm border-r border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden',
+            'flex flex-col h-full w-full  md:w-80 md:max-w-sm bg-[var(--color-card)] overflow-hidden',
             showList ? 'flex' : 'hidden md:flex'
           )}
         >
@@ -230,7 +234,7 @@ export function ChatView() {
         </div>
         <div
           className={cn(
-            'flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-[var(--color-card)]',
+            'flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-[var(--color-card)] border-l border-[var(--color-border)]',
             showThread ? 'flex' : 'hidden md:flex'
           )}
         >

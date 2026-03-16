@@ -52,6 +52,11 @@ export function buildNotificationLink(
         return referenceId ? `/admin/chats?chatId=${referenceId}` : '/admin/chats'
       case 'university_verification_request':
         return '/admin/university-requests'
+      case 'school_join_request':
+        return '/school/join-requests'
+      case 'school_invitation_accepted':
+      case 'school_invitation_declined':
+        return '/school/my-students'
       default:
         return '/admin/dashboard'
     }
@@ -68,6 +73,9 @@ export function buildNotificationLink(
       return '/university/pipeline'
     case 'status_update':
       return '/student/applications'
+    case 'school_invitation':
+      // Страница, где студент видит приглашения от школ и может принять/отклонить
+      return '/student/school-invitations'
     default:
       return undefined
   }

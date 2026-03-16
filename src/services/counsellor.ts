@@ -136,6 +136,10 @@ export async function listMyInvitations(params?: { status?: 'pending' | 'accepte
   return data
 }
 
+export async function cancelInvitation(invitationId: string): Promise<void> {
+  await api.post(`/counsellor/invitations/${invitationId}/cancel`)
+}
+
 export interface CounsellorStudentDocument {
   id: string
   type: string

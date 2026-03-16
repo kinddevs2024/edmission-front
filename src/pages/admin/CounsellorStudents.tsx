@@ -15,6 +15,7 @@ import {
   searchStudentsForInvite,
   inviteStudent,
   listMyInvitations,
+  cancelInvitation,
   type CounsellorStudent,
   type CreateStudentResult,
   type CounsellorInvitationItem,
@@ -37,7 +38,6 @@ export function CounsellorStudents() {
   const [editingStudent, setEditingStudent] = useState<CounsellorStudent | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [addEmail, setAddEmail] = useState('')
-  const [addName, setAddName] = useState('')
   const [addFirstName, setAddFirstName] = useState('')
   const [addLastName, setAddLastName] = useState('')
   const [tempPassword, setTempPassword] = useState<string | null>(null)
@@ -48,12 +48,24 @@ export function CounsellorStudents() {
   const [passwordModal, setPasswordModal] = useState<{ student: CounsellorStudent; password: string } | null>(null)
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [pendingInvitations, setPendingInvitations] = useState<CounsellorInvitationItem[]>([])
+  const [cancellingInvitationId, setCancellingInvitationId] = useState<string | null>(null)
   const limit = 20
 
   const loadPendingInvitations = () => {
     listMyInvitations({ status: 'pending', limit: 50 })
       .then((res) => setPendingInvitations(res.data ?? []))
       .catch(() => setPendingInvitations([]))
+  }
+
+  const handleCancelInvitation = (invitationId: string) => {
+    setCancellingInvitationId(invitationId)
+    cancelInvitation(invitationId)
+      .then(() => {
+        toast.success(t('admin:invitationCancelled', 'Invitation cancelled.'))
+        setPendingInvitations((prev) => prev.filter((i) => i.id !== invitationId))
+      })
+      .catch(toastApiError)
+      .finally(() => setCancellingInvitationId(null))
   }
 
   const load = () => {
@@ -81,7 +93,6 @@ export function CounsellorStudents() {
 
   const openAdd = () => {
     setAddEmail('')
-    setAddName('')
     setAddFirstName('')
     setAddLastName('')
     setTempPassword(null)
@@ -116,7 +127,6 @@ export function CounsellorStudents() {
     setSubmitting(true)
     createStudent({
       email: addEmail.trim(),
-      name: addName.trim() || undefined,
       firstName: addFirstName.trim() || undefined,
       lastName: addLastName.trim() || undefined,
     })
@@ -125,7 +135,6 @@ export function CounsellorStudents() {
         setCreatedStudentId(res.user?.id ?? null)
         load()
         setAddEmail('')
-        setAddName('')
         setAddFirstName('')
         setAddLastName('')
       })
@@ -198,6 +207,7 @@ export function CounsellorStudents() {
                   <th className="text-left py-2 font-medium">Email</th>
                   <th className="text-left py-2 font-medium">{t('common:name')}</th>
                   <th className="text-left py-2 font-medium">{t('admin:statusLabel')}</th>
+                  <th className="text-right py-2 font-medium">{t('common:actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -206,6 +216,18 @@ export function CounsellorStudents() {
                     <td className="py-3">{inv.studentEmail}</td>
                     <td className="py-3">{inv.studentName || '—'}</td>
                     <td className="py-3 text-[var(--color-text-muted)]">{t('admin:awaitingResponse', 'Awaiting response')}</td>
+                    <td className="py-3 text-right">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500"
+                        onClick={() => handleCancelInvitation(inv.id)}
+                        disabled={cancellingInvitationId === inv.id}
+                        loading={cancellingInvitationId === inv.id}
+                      >
+                        {t('admin:cancelInvitation', 'Cancel invitation')}
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -301,7 +323,6 @@ export function CounsellorStudents() {
           ) : (
             <>
               <Input label={t('common:email')} type="email" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} required />
-              <Input label={t('common:name')} value={addName} onChange={(e) => setAddName(e.target.value)} />
               <Input label={t('admin:firstName', 'First name')} value={addFirstName} onChange={(e) => setAddFirstName(e.target.value)} />
               <Input label={t('admin:lastName', 'Last name')} value={addLastName} onChange={(e) => setAddLastName(e.target.value)} />
             </>

@@ -42,6 +42,7 @@ const UniversityAnalytics = lazy(() => import('@/pages/university/UniversityAnal
 const UniversityChat = lazy(() => import('@/pages/university/UniversityChat').then((m) => ({ default: m.UniversityChat })))
 const UniversityPendingVerification = lazy(() => import('@/pages/university/UniversityPendingVerification').then((m) => ({ default: m.UniversityPendingVerification })))
 const UniversitySelect = lazy(() => import('@/pages/university/UniversitySelect').then((m) => ({ default: m.UniversitySelect })))
+const OfferTemplates = lazy(() => import('@/pages/university/OfferTemplates').then((m) => ({ default: m.OfferTemplates })))
 
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
@@ -62,6 +63,7 @@ const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings').then((m) 
 const CounsellorSchoolProfile = lazy(() => import('@/pages/admin/CounsellorSchoolProfile').then((m) => ({ default: m.CounsellorSchoolProfile })))
 const CounsellorStudents = lazy(() => import('@/pages/admin/CounsellorStudents').then((m) => ({ default: m.CounsellorStudents })))
 const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRequests').then((m) => ({ default: m.CounsellorJoinRequests })))
+const CounsellorStudentInterests = lazy(() => import('@/pages/school/CounsellorStudentInterests').then((m) => ({ default: m.CounsellorStudentInterests })))
 const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
 const CounsellorStudentProfile = lazy(() => import('@/pages/school/CounsellorStudentProfile').then((m) => ({ default: m.CounsellorStudentProfile })))
 
@@ -204,6 +206,7 @@ export function Router() {
           <Route path="faculties" element={<Faculties />} />
           <Route path="analytics" element={<UniversityAnalytics />} />
           <Route path="chat" element={<UniversityChat />} />
+          <Route path="offer-templates" element={<OfferTemplates />} />
           <Route path="ai" element={<AIChatPage />} />
         </Route>
 
@@ -234,6 +237,7 @@ export function Router() {
           <Route path="dashboard" element={<SchoolDashboard />} />
           <Route path="my-school" element={<CounsellorSchoolProfile />} />
           <Route path="my-students" element={<CounsellorStudents />} />
+          <Route path="student-interests" element={<CounsellorStudentInterests />} />
           <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
           <Route path="join-requests" element={<CounsellorJoinRequests />} />
         </Route>

@@ -17,15 +17,10 @@ export function UniversityLayout() {
   const location = useLocation()
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
-  const isFixedHeightPage = location.pathname === '/university/ai'
+  const isFixedHeightPage = location.pathname === '/university/ai' || location.pathname === '/university/chat'
 
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
-  const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
-
-  useEffect(() => {
-    if (location.pathname === '/university/chat' && collapsed) setSidebarCollapsed(false)
-  }, [location.pathname, collapsed, setSidebarCollapsed])
 
   const navItems = useMemo(
     () =>
@@ -35,16 +30,17 @@ export function UniversityLayout() {
             { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
           ]
         : [
-            { to: '/university/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
-            { to: '/university/profile', label: t('navProfile'), icon: 'User' },
-            { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
-            { to: '/university/pipeline', label: t('navPipeline'), icon: 'GitBranch' },
-            { to: '/university/scholarships', label: t('navScholarships'), icon: 'Wallet' },
-            { to: '/university/faculties', label: t('navFaculties'), icon: 'Building2' },
-            { to: '/university/analytics', label: t('navAnalytics'), icon: 'BarChart3' },
-            { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
+            { to: '/university/dashboard', label: t('dashboard', 'Dashboard'), icon: 'LayoutDashboard' },
+            { to: '/university/profile', label: t('navProfile', 'Profile'), icon: 'User' },
+            { to: '/university/students', label: t('navDiscovery', 'Discovery'), icon: 'Users' },
+            { to: '/university/pipeline', label: t('navPipeline', 'Pipeline'), icon: 'GitBranch' },
+            { to: '/university/scholarships', label: t('navScholarships', 'Scholarships'), icon: 'Wallet' },
+            { to: '/university/faculties', label: t('navFaculties', 'Faculties'), icon: 'Building2' },
+            { to: '/university/analytics', label: t('navAnalytics', 'Analytics'), icon: 'BarChart3' },
+            { to: '/university/offer-templates', label: t('navOfferTemplates', 'Offer templates'), icon: 'Award' },
+            { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
             { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
-            { to: '/payment', label: 'Subscription', icon: 'CreditCard' },
+            { to: '/payment', label: t('navSubscription', 'Subscription'), icon: 'CreditCard' },
             { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
           ],
     [t, isSelect, isPending]
@@ -68,10 +64,10 @@ export function UniversityLayout() {
             { to: '/support', label: 'Support', icon: 'HelpCircle' },
           ]
         : [
-            { to: '/university/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
-            { to: '/university/students', label: t('navDiscovery'), icon: 'Users' },
-            { to: '/university/profile', label: t('navProfile'), icon: 'User' },
-            { to: '/university/chat', label: t('navChat'), icon: 'MessageCircle' },
+            { to: '/university/dashboard', label: t('navHome', 'Home'), icon: 'LayoutDashboard' },
+            { to: '/university/students', label: t('navDiscovery', 'Discovery'), icon: 'Users' },
+            { to: '/university/profile', label: t('navProfile', 'Profile'), icon: 'User' },
+            { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
           ],
     [t, isSelect, isPending]
   )
@@ -90,7 +86,8 @@ export function UniversityLayout() {
       <RoleOnboardingController role="university" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 min-h-screen pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        'flex-1 min-w-0 pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
+        isFixedHeightPage ? 'h-screen max-h-[100%] overflow-hidden' : 'min-h-screen',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

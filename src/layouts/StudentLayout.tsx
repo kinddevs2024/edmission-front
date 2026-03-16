@@ -16,31 +16,26 @@ export function StudentLayout() {
   const { user } = useAuth()
   const location = useLocation()
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
-  const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
   const educationStatus = user?.studentProfile?.educationStatus
   const showMySchools = educationStatus === 'in_school' || educationStatus === 'finished_school'
-
-  useEffect(() => {
-    if (location.pathname === '/student/chat' && collapsed) setSidebarCollapsed(false)
-  }, [location.pathname, collapsed, setSidebarCollapsed])
 
   const isFixedHeightPage = location.pathname === '/student/ai' || location.pathname === '/student/chat'
 
   const navItems = useMemo(() => {
     const base = [
-      { to: '/student/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' },
-      { to: '/student/ai', label: t('navEdmissionAi'), icon: 'Bot' },
-      { to: '/student/profile', label: t('navProfile'), icon: 'User' },
-      { to: '/student/universities', label: t('navUniversities'), icon: 'GraduationCap' },
+      { to: '/student/dashboard', label: t('dashboard', 'Dashboard'), icon: 'LayoutDashboard' },
+      { to: '/student/ai', label: t('navEdmissionAi', 'Edmission AI'), icon: 'Bot' },
+      { to: '/student/profile', label: t('navProfile', 'Profile'), icon: 'User' },
+      { to: '/student/universities', label: t('navUniversities', 'Universities'), icon: 'GraduationCap' },
       ...(showMySchools ? [{ to: '/student/schools', label: t('navMySchool', 'My school'), icon: 'Building2' as const }] : []),
-      { to: '/student/applications', label: t('navApplications'), icon: 'FileCheck' },
-      { to: '/student/documents', label: t('navDocuments'), icon: 'FileText' },
-      { to: '/student/offers', label: t('navOffers'), icon: 'Gift' },
-      { to: '/student/compare', label: t('navCompare'), icon: 'GitCompare' },
-      { to: '/student/chat', label: t('navChat'), icon: 'MessageCircle' },
-      { to: '/notifications', label: t('navNotifications'), icon: 'Bell' },
-      { to: '/payment', label: t('navSubscription'), icon: 'CreditCard' },
+      { to: '/student/applications', label: t('navApplications', 'Applications'), icon: 'FileCheck' },
+      { to: '/student/documents', label: t('navDocuments', 'Documents'), icon: 'FileText' },
+      { to: '/student/offers', label: t('navOffers', 'Offers'), icon: 'Gift' },
+      { to: '/student/compare', label: t('navCompare', 'Compare'), icon: 'GitCompare' },
+      { to: '/student/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
+      { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
+      { to: '/payment', label: t('navSubscription', 'Subscription'), icon: 'CreditCard' },
     ]
     return base
   }, [t, showMySchools])
@@ -54,11 +49,11 @@ export function StudentLayout() {
   // Mobile bottom bar: HOME → EXPLORE → APPLICATIONS → PROFILE → CHAT (fixed, same on all pages)
   const bottomNavItems = useMemo(
     () => [
-      { to: '/student/dashboard', label: t('navHome'), icon: 'LayoutDashboard' },
-      { to: '/student/universities', label: t('navExplore'), icon: 'GraduationCap' },
-      { to: '/student/applications', label: t('navApplications'), icon: 'FileCheck' },
-      { to: '/student/profile', label: t('navProfile'), icon: 'User' },
-      { to: '/student/chat', label: t('navChat'), icon: 'MessageCircle' },
+      { to: '/student/dashboard', label: t('navHome', 'Home'), icon: 'LayoutDashboard' },
+      { to: '/student/universities', label: t('navExplore', 'Explore'), icon: 'GraduationCap' },
+      { to: '/student/applications', label: t('navApplications', 'Applications'), icon: 'FileCheck' },
+      { to: '/student/profile', label: t('navProfile', 'Profile'), icon: 'User' },
+      { to: '/student/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
     ],
     [t]
   )
@@ -73,7 +68,7 @@ export function StudentLayout() {
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
         'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-12 bg-pattern-subtle flex flex-col',
-        isFixedHeightPage ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen',
+        isFixedHeightPage ? 'h-screen max-h-[100%] overflow-hidden' : 'min-h-screen',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

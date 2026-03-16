@@ -5,17 +5,20 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
-import { getOffers, acceptOffer, declineOffer } from '@/services/student'
+import { getOffers, acceptOffer, declineOffer, waitOffer } from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
-import { Check, X, Gift } from 'lucide-react'
+import { Check, X, Gift, PartyPopper } from 'lucide-react'
 import { formatDate, daysUntil } from '@/utils/format'
 import type { Offer } from '@/types/student'
+import { Modal } from '@/components/ui/Modal'
+import { OfferCertificateView } from '@/components/student/OfferCertificateView'
 
 export function StudentOffers() {
   const { t } = useTranslation(['common', 'student'])
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState<{ id: string; action: 'accept' | 'decline' } | null>(null)
+  const [actionLoading, setActionLoading] = useState<{ id: string; action: 'accept' | 'decline' | 'wait' } | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
     getOffers({ limit: 50 })
@@ -27,7 +30,10 @@ export function StudentOffers() {
   const handleAccept = (id: string) => {
     setActionLoading({ id, action: 'accept' })
     acceptOffer(id)
-      .then(() => setOffers((prev) => prev.filter((o) => o.id !== id)))
+      .then(() => {
+        setOffers((prev) => prev.filter((o) => o.id !== id))
+        setSelectedId(null)
+      })
       .catch(toastApiError)
       .finally(() => setActionLoading(null))
   }
@@ -35,7 +41,25 @@ export function StudentOffers() {
   const handleDecline = (id: string) => {
     setActionLoading({ id, action: 'decline' })
     declineOffer(id)
-      .then(() => setOffers((prev) => prev.filter((o) => o.id !== id)))
+      .then(() => {
+        setOffers((prev) => prev.filter((o) => o.id !== id))
+        setSelectedId(null)
+      })
+      .catch(toastApiError)
+      .finally(() => setActionLoading(null))
+  }
+
+  const handleWait = (id: string) => {
+    setActionLoading({ id, action: 'wait' })
+    waitOffer(id)
+      .then(() => {
+        setOffers((prev) =>
+          prev.map((o) => (o.id === id
+            ? { ...o, status: 'waiting' as any, expiresAt: (o as any).expiresAt ?? new Date().toISOString() }
+            : o))
+        )
+        setSelectedId(null)
+      })
       .catch(toastApiError)
       .finally(() => setActionLoading(null))
   }
@@ -79,14 +103,85 @@ export function StudentOffers() {
                   <p>Deadline: {formatDate(o.deadline)}</p>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button size="sm" onClick={() => handleAccept(o.id)} disabled={!!actionLoading} loading={actionLoading?.id === o.id && actionLoading?.action === 'accept'} icon={<Check size={16} />}>{t('student:accept')}</Button>
-                  <Button size="sm" variant="secondary" onClick={() => handleDecline(o.id)} disabled={!!actionLoading} loading={actionLoading?.id === o.id && actionLoading?.action === 'decline'} icon={<X size={16} />}>{t('student:decline')}</Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setSelectedId(o.id)}
+                    icon={<PartyPopper size={16} />}
+                  >
+                    {t('student:viewOffer', 'View offer')}
+                  </Button>
                 </div>
               </Card>
             )
           })}
         </div>
       )}
+
+      <Modal
+        open={!!selectedId}
+        onClose={() => !actionLoading && setSelectedId(null)}
+        title={(
+          <div className="flex items-center gap-2">
+            <PartyPopper className="w-5 h-5 text-[var(--color-primary-accent)]" />
+            <span>{t('student:offerCongratsTitle', 'Congratulations!')}</span>
+          </div>
+        )}
+        footer={selectedId ? (
+          <div className="flex w-full justify-between">
+            <div className="text-xs text-[var(--color-text-muted)] flex items-center">
+              {/* Timer/extra info can be added here later */}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => selectedId && handleWait(selectedId)}
+                disabled={!!actionLoading}
+                loading={actionLoading?.id === selectedId && actionLoading?.action === 'wait'}
+              >
+                {t('student:wait', 'Decide later')}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => selectedId && handleDecline(selectedId)}
+                disabled={!!actionLoading}
+                loading={actionLoading?.id === selectedId && actionLoading?.action === 'decline'}
+                icon={<X size={16} />}
+              >
+                {t('student:decline')}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => selectedId && handleAccept(selectedId)}
+                disabled={!!actionLoading}
+                loading={actionLoading?.id === selectedId && actionLoading?.action === 'accept'}
+                icon={<Check size={16} />}
+              >
+                {t('student:accept')}
+              </Button>
+            </div>
+          </div>
+        ) : undefined}
+      >
+        {selectedId && (
+          <div className="relative py-4">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="animate-float-slow absolute -left-10 top-0 h-32 w-32 rounded-full bg-pink-500/10 blur-2xl" />
+              <div className="animate-float-slow absolute -right-8 bottom-0 h-28 w-28 rounded-full bg-sky-500/10 blur-2xl" />
+            </div>
+            <div className="relative space-y-4">
+              <p className="text-center text-sm text-[var(--color-text-muted)]">
+                {t('student:offerCongratsBody', 'You have received a special offer. Here is your certificate.')}
+              </p>
+              <OfferCertificateView
+                offer={offers.find((o) => o.id === selectedId)! as any}
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
