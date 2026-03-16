@@ -195,6 +195,30 @@ export async function requestToJoinSchool(counsellorUserId: string): Promise<voi
   await api.post(`/student/schools/${counsellorUserId}/request`)
 }
 
+export interface SchoolInvitationItem {
+  id: string
+  counsellorUserId: string
+  schoolName: string
+  city: string
+  country: string
+  createdAt: string
+}
+
+export async function listSchoolInvitations(): Promise<SchoolInvitationItem[]> {
+  const { data } = await api.get<SchoolInvitationItem[]>('/student/school-invitations')
+  return data ?? []
+}
+
+export async function acceptSchoolInvitation(invitationId: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await api.post<{ success: boolean; message: string }>(`/student/school-invitations/${invitationId}/accept`)
+  return data
+}
+
+export async function declineSchoolInvitation(invitationId: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await api.post<{ success: boolean; message: string }>(`/student/school-invitations/${invitationId}/decline`)
+  return data
+}
+
 /** Fetch universities by ids (for compare or recommendations). Returns array. */
 export async function getCompareUniversities(ids: string[]): Promise<UniversityListItem[]> {
   if (ids.length === 0) return []

@@ -184,6 +184,7 @@ export function Router() {
           <Route path="applications" element={<StudentApplications />} />
           <Route path="documents" element={<StudentDocuments />} />
           <Route path="schools" element={<StudentSchools />} />
+          <Route path="school-invitations" element={<Navigate to="/student/schools" replace />} />
           <Route path="offers" element={<StudentOffers />} />
           <Route path="compare" element={<Compare />} />
           <Route path="chat" element={<StudentChat />} />

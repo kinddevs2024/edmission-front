@@ -14,9 +14,12 @@ import {
   generateTempPassword,
   searchStudentsForInvite,
   inviteStudent,
+  listMyInvitations,
   type CounsellorStudent,
   type CreateStudentResult,
+  type CounsellorInvitationItem,
 } from '@/services/counsellor'
+import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
 
 export function CounsellorStudents() {
@@ -44,7 +47,14 @@ export function CounsellorStudents() {
   const [deleteTarget, setDeleteTarget] = useState<CounsellorStudent | null>(null)
   const [passwordModal, setPasswordModal] = useState<{ student: CounsellorStudent; password: string } | null>(null)
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [pendingInvitations, setPendingInvitations] = useState<CounsellorInvitationItem[]>([])
   const limit = 20
+
+  const loadPendingInvitations = () => {
+    listMyInvitations({ status: 'pending', limit: 50 })
+      .then((res) => setPendingInvitations(res.data ?? []))
+      .catch(() => setPendingInvitations([]))
+  }
 
   const load = () => {
     setLoading(true)
@@ -64,6 +74,10 @@ export function CounsellorStudents() {
   useEffect(() => {
     load()
   }, [page, search])
+
+  useEffect(() => {
+    loadPendingInvitations()
+  }, [])
 
   const openAdd = () => {
     setAddEmail('')
@@ -87,7 +101,12 @@ export function CounsellorStudents() {
   const handleInvite = (userId: string) => {
     setInvitingId(userId)
     inviteStudent(userId)
-      .then(() => { load(); setInviteResults((prev) => prev.filter((r) => r.id !== userId)) })
+      .then((res) => {
+        toast.success(res.message || t('admin:invitationSent', 'Invitation sent.'))
+        load()
+        loadPendingInvitations()
+        setInviteResults((prev) => prev.filter((r) => r.id !== userId))
+      })
       .catch(toastApiError)
       .finally(() => setInvitingId(null))
   }
@@ -165,6 +184,35 @@ export function CounsellorStudents() {
         </Button>
         <Button size="sm" onClick={openAdd}>{t('admin:addStudent', 'Add student')}</Button>
       </PageTitle>
+
+      {pendingInvitations.length > 0 && (
+        <Card>
+          <CardTitle>{t('admin:pendingInvitations', 'Pending invitations')}</CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            {t('admin:pendingInvitationsHint', 'Students you invited. You cannot edit their data until they accept.')}
+          </p>
+          <div className="overflow-x-auto mt-2">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--color-border)]">
+                  <th className="text-left py-2 font-medium">Email</th>
+                  <th className="text-left py-2 font-medium">{t('common:name')}</th>
+                  <th className="text-left py-2 font-medium">{t('admin:statusLabel')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingInvitations.map((inv) => (
+                  <tr key={inv.id} className="border-b border-[var(--color-border)] last:border-0">
+                    <td className="py-3">{inv.studentEmail}</td>
+                    <td className="py-3">{inv.studentName || '—'}</td>
+                    <td className="py-3 text-[var(--color-text-muted)]">{t('admin:awaitingResponse', 'Awaiting response')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       <Card>
         <div className="flex flex-wrap items-center gap-2 mb-4">

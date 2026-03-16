@@ -5,17 +5,40 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PageTitle } from '@/components/ui/PageTitle'
 import axios from 'axios'
-import { listSchools, requestToJoinSchool, type SchoolsListResponse } from '@/services/student'
+import {
+  listSchools,
+  requestToJoinSchool,
+  listSchoolInvitations,
+  acceptSchoolInvitation,
+  declineSchoolInvitation,
+  type SchoolsListResponse,
+  type SchoolInvitationItem,
+} from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
 import { toast } from 'sonner'
 
 export function StudentSchools() {
-  const { t } = useTranslation(['common', 'admin'])
+  const { t } = useTranslation(['common', 'admin', 'student'])
   const [data, setData] = useState<SchoolsListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [requestingId, setRequestingId] = useState<string | null>(null)
+  const [invitations, setInvitations] = useState<SchoolInvitationItem[]>([])
+  const [invitationsLoading, setInvitationsLoading] = useState(true)
+  const [respondingId, setRespondingId] = useState<string | null>(null)
+
+  const loadInvitations = () => {
+    setInvitationsLoading(true)
+    listSchoolInvitations()
+      .then(setInvitations)
+      .catch(() => setInvitations([]))
+      .finally(() => setInvitationsLoading(false))
+  }
+
+  useEffect(() => {
+    loadInvitations()
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -62,12 +85,68 @@ export function StudentSchools() {
   const list = data?.data ?? []
   const totalPages = data ? Math.max(1, Math.ceil(data.total / (data.limit || 15))) : 1
 
+  const handleAcceptInvitation = (id: string) => {
+    setRespondingId(id)
+    acceptSchoolInvitation(id)
+      .then(() => {
+        toast.success(t('student:invitationAccepted', 'You have joined the school.'))
+        loadInvitations()
+      })
+      .catch(toastApiError)
+      .finally(() => setRespondingId(null))
+  }
+
+  const handleDeclineInvitation = (id: string) => {
+    setRespondingId(id)
+    declineSchoolInvitation(id)
+      .then(() => {
+        toast.success(t('student:invitationDeclined', 'Invitation declined.'))
+        loadInvitations()
+      })
+      .catch(toastApiError)
+      .finally(() => setRespondingId(null))
+  }
+
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:linkToSchool', 'Link to my school')} icon="Building2" />
       <p className="text-sm text-[var(--color-text-muted)]">
         {t('admin:linkToSchoolHint', 'Find your school and send a request. The counsellor will accept or reject.')}
       </p>
+
+      {invitations.length > 0 && (
+        <Card>
+          <CardTitle>{t('student:schoolInvitations', 'Invitations from schools')}</CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            {t('student:schoolInvitationsHint', 'A school invited you to join. Accept to connect or decline.')}
+          </p>
+          {invitationsLoading ? (
+            <p className="text-[var(--color-text-muted)] py-4">{t('common:loading', 'Loading...')}</p>
+          ) : (
+            <ul className="space-y-3 mt-4">
+              {invitations.map((inv) => (
+                <li
+                  key={inv.id}
+                  className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-lg border border-[var(--color-border)]"
+                >
+                  <div>
+                    <p className="font-medium text-[var(--color-text)]">{inv.schoolName || t('admin:unnamedSchool', 'Unnamed school')}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">{(inv.city && inv.country) ? `${inv.city}, ${inv.country}` : ''}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => handleDeclineInvitation(inv.id)} disabled={!!respondingId} loading={respondingId === inv.id}>
+                      {t('student:decline')}
+                    </Button>
+                    <Button size="sm" onClick={() => handleAcceptInvitation(inv.id)} disabled={!!respondingId} loading={respondingId === inv.id}>
+                      {t('student:accept')}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
 
       <Card>
         <div className="flex flex-wrap items-center gap-2 mb-4">

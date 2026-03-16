@@ -109,9 +109,30 @@ export async function searchStudentsForInvite(params: { search: string; limit?: 
   return data
 }
 
-/** Invite existing student to my school. */
+/** Invite existing student to my school. Sends request; student must accept or decline. */
 export async function inviteStudent(userId: string): Promise<{ success: boolean; message: string }> {
   const { data } = await api.post('/counsellor/students/invite', { userId })
+  return data
+}
+
+export interface CounsellorInvitationItem {
+  id: string
+  studentUserId: string
+  status: 'pending' | 'accepted' | 'declined'
+  createdAt: string
+  respondedAt?: string
+  studentEmail: string
+  studentName: string
+}
+
+export async function listMyInvitations(params?: { status?: 'pending' | 'accepted' | 'declined'; page?: number; limit?: number }): Promise<{
+  data: CounsellorInvitationItem[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}> {
+  const { data } = await api.get('/counsellor/invitations', { params })
   return data
 }
 
