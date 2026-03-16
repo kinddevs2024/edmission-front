@@ -38,7 +38,7 @@ export function OfferCertificateView({ offer }: OfferCertificateViewProps) {
               Dear {studentName},
             </p>
           )}
-          {body ? body.split('\n').map((line, idx) => (
+          {body ? body.split('\n').map((line: string, idx: number) => (
             <p key={idx}>{line}</p>
           )) : (
             <p>

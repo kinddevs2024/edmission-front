@@ -41,7 +41,7 @@ export function OfferTemplates() {
 
   useEffect(() => {
     getOfferTemplates()
-      .then((data) => setList(data ?? []))
+      .then((data) => setList((data ?? []) as OfferTemplate[]))
       .catch((e) => { toastApiError(e); setList([]) })
       .finally(() => setLoading(false))
   }, [])
@@ -160,7 +160,7 @@ export function OfferTemplates() {
                       </span>
                     )}
                     <Button
-                      size="icon"
+                      size="sm"
                       variant="ghost"
                       onClick={() => openEdit(tmpl)}
                       aria-label={t('common:edit', 'Edit')}
@@ -168,7 +168,7 @@ export function OfferTemplates() {
                       <Edit2 className="w-4 h-4" />
                     </Button>
                     <Button
-                      size="icon"
+                      size="sm"
                       variant="ghost"
                       className="text-red-500"
                       onClick={() => handleDelete(tmpl.id)}
@@ -222,13 +222,17 @@ export function OfferTemplates() {
             value={titleTemplate}
             onChange={(e) => setTitleTemplate(e.target.value)}
           />
-          <Textarea
-            label={t('university:bodyTemplate', 'Body')}
-            rows={6}
-            value={bodyTemplate}
-            onChange={(e) => setBodyTemplate(e.target.value)}
-            hint={t('university:bodyTemplateHint', 'Available placeholders: {{studentName}}, {{universityName}}, {{programName}}, {{date}}')}
-          />
+          <div className="space-y-1">
+            <Textarea
+              label={t('university:bodyTemplate', 'Body')}
+              rows={6}
+              value={bodyTemplate}
+              onChange={(e) => setBodyTemplate(e.target.value)}
+            />
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {t('university:bodyTemplateHint', 'Available placeholders: {{studentName}}, {{universityName}}, {{programName}}, {{date}}')}
+            </p>
+          </div>
         </div>
       </Modal>
     </div>

@@ -178,8 +178,7 @@ export function CounsellorStudentInterests() {
                       showMatch
                       onInterest={() => handleSendInterest(u.id)}
                       interested={false}
-                      interestDisabled={interestMutation.isLoading}
-                      interestLabel={t('school:studentInterestsMarkInterested', 'Interested')}
+                      interestDisabled={interestMutation.isPending}
                     />
                   </div>
                 ))}
