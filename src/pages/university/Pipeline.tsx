@@ -132,7 +132,9 @@ export function Pipeline() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('university:navPipeline')} icon="GitBranch" />
+      <div data-onboarding="university-pipeline-overview">
+        <PageTitle title={t('university:navPipeline')} icon="GitBranch" />
+      </div>
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[320px]">
         {COLUMNS.map(({ id, titleKey }) => (
           <Card key={id} className="min-w-[240px] sm:min-w-[260px] flex-shrink-0 flex flex-col" interactive>

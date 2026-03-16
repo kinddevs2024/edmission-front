@@ -133,7 +133,9 @@ export function Discovery() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('university:navDiscovery')} icon="Users" />
+      <div data-onboarding="university-discovery-overview">
+        <PageTitle title={t('university:navDiscovery')} icon="Users" />
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-[var(--color-text-muted)]">
           {list.length === 0 && !loading

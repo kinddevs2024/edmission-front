@@ -7,6 +7,7 @@ import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { RoleOnboardingController } from '@/components/onboarding/RoleOnboardingController'
 import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
 
@@ -86,6 +87,7 @@ export function UniversityLayout() {
 
   return (
     <div className="flex min-h-full items-start">
+      <RoleOnboardingController role="university" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
         'flex-1 min-w-0 min-h-screen pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',

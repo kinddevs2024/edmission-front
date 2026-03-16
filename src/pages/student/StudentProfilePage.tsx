@@ -441,7 +441,7 @@ export function StudentProfilePage() {
 
   return (
     <div className="w-full space-y-5 min-h-0">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
         <img
           src={getStudentAvatarUrl(profile?.avatarUrl)}
           alt=""

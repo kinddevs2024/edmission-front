@@ -141,7 +141,9 @@ export function ExploreUniversities() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('exploreUniversities')} icon="GraduationCap" />
+      <div data-onboarding="student-universities-overview">
+        <PageTitle title={t('exploreUniversities')} icon="GraduationCap" />
+      </div>
 
       <section className="rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(248,250,252,0.82))] p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] backdrop-blur dark:bg-[linear-gradient(135deg,rgba(17,24,39,0.95),rgba(15,23,42,0.82))]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

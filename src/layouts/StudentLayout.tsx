@@ -7,6 +7,7 @@ import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { useAuth } from '@/hooks/useAuth'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { RoleOnboardingController } from '@/components/onboarding/RoleOnboardingController'
 import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
 
@@ -68,6 +69,7 @@ export function StudentLayout() {
 
   return (
     <div className="flex min-h-full items-start">
+      <RoleOnboardingController role="student" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
         'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-12 bg-pattern-subtle flex flex-col',

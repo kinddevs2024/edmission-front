@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ChevronLeft, ChevronRight, User, LayoutDashboard, Search, Bot, FileText } from 'lucide-react'
 import { updateProfile } from '@/services/auth'
 import { toastApiError } from '@/utils/toastError'
@@ -14,10 +13,11 @@ export function getTutorialStorageKey(role: 'student' | 'university') {
   return role === 'student' ? STORAGE_KEY_STUDENT : STORAGE_KEY_UNIVERSITY
 }
 
+/** When user is provided, we trust only the server (DB). localStorage is used only when user is not loaded yet. */
 export function hasSeenTutorial(role: 'student' | 'university', user?: { onboardingTutorialSeen?: { student?: boolean; university?: boolean } } | null): boolean {
-  if (user?.onboardingTutorialSeen) {
+  if (user != null && user.onboardingTutorialSeen != null) {
     const seen = role === 'student' ? user.onboardingTutorialSeen.student : user.onboardingTutorialSeen.university
-    if (seen === true) return true
+    return seen === true
   }
   try {
     return localStorage.getItem(getTutorialStorageKey(role)) === '1'
@@ -87,12 +87,7 @@ export function OnboardingTutorialModal({ open, onClose, variant }: OnboardingTu
     <Modal
       open={open}
       onClose={handleClose}
-      title={
-        <>
-          <span className="text-lg font-semibold">{t('tutorial.welcome')}</span>
-          <LanguageMenu placement="bottom" />
-        </>
-      }
+      title={<span className="text-lg font-semibold">{t('tutorial.welcome')}</span>}
       footer={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">

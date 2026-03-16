@@ -24,10 +24,17 @@ export function BottomNav({ items }: { items: NavItem[] }) {
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
         aria-label="Main navigation"
       >
-        {items.map(({ to, label, icon }) => (
+        {items.map(({ to, label, icon }) => {
+          const onboardingId = to.startsWith('/student/')
+            ? `nav-${to.replace(/^\/student\//, '').replace(/\//g, '-')}`
+            : to.startsWith('/university/')
+              ? `nav-${to.replace(/^\/university\//, '').replace(/\//g, '-')}`
+              : undefined
+          return (
           <NavLink
             key={to}
             to={to}
+            {...(onboardingId ? { 'data-onboarding': onboardingId } : {})}
             className={({ isActive }) =>
               cn(
                 'flex flex-col items-center justify-center flex-1 py-2 px-1 text-xs font-medium transition-all duration-200 min-w-0 gap-1',
@@ -40,7 +47,8 @@ export function BottomNav({ items }: { items: NavItem[] }) {
             </span>
             <span className="truncate w-full text-center">{label}</span>
           </NavLink>
-        ))}
+          )
+        })}
       </nav>
     </>
   )

@@ -16,9 +16,15 @@ function NavLinkItem({
   icon,
   collapsed,
 }: NavItem & { collapsed: boolean }) {
+  const onboardingId = to.startsWith('/student/')
+    ? `nav-${to.replace(/^\/student\//, '').replace(/\//g, '-')}`
+    : to.startsWith('/university/')
+      ? `nav-${to.replace(/^\/university\//, '').replace(/\//g, '-')}`
+      : undefined
   return (
     <NavLink
       to={to}
+      {...(onboardingId ? { 'data-onboarding': onboardingId } : {})}
       className={({ isActive }) =>
         cn(
           'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200',

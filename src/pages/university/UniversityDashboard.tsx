@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react'
-import { OnboardingTutorialModal, hasSeenTutorial } from '@/components/onboarding/OnboardingTutorialModal'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Badge } from '@/components/ui/Badge'
-import { getProfile } from '@/services/auth'
-import { useAuthStore } from '@/store/authStore'
 import { getDashboard, type UniversityDashboardData } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 import { Bot, Users, BarChart3, MessageCircle, Send, ShieldCheck } from 'lucide-react'
@@ -24,7 +21,6 @@ const STAGE_LABELS: Record<string, string> = {
 export function UniversityDashboard() {
   const { t } = useTranslation(['common', 'university'])
   const navigate = useNavigate()
-  const [showTutorial, setShowTutorial] = useState(false)
   const [dashboard, setDashboard] = useState<UniversityDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -34,15 +30,6 @@ export function UniversityDashboard() {
       .catch((e) => { toastApiError(e); setDashboard(null) })
       .finally(() => setLoading(false))
   }, [])
-
-  useEffect(() => {
-    if (dashboard?.verified) {
-      getProfile().then(() => {
-        const u = useAuthStore.getState().user
-        if (!hasSeenTutorial('university', u)) setShowTutorial(true)
-      }).catch(() => {})
-    }
-  }, [dashboard?.verified])
 
   const pipeline = dashboard?.pipeline ?? []
   const interestedCount = dashboard?.interestedCount ?? 0
@@ -54,8 +41,7 @@ export function UniversityDashboard() {
 
   return (
     <div className="space-y-6">
-      <OnboardingTutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} variant="university" />
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2" data-onboarding="university-dashboard-overview">
         <PageTitle title={t('university:dashboard', 'Dashboard')} icon="LayoutDashboard" />
         {dashboard?.verified && (
           <Badge variant="success" className="inline-flex items-center gap-1">

@@ -15,6 +15,7 @@ export function FloatingAIButton() {
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
+        data-onboarding="floating-ai"
         className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-30 w-14 h-14 rounded-full bg-primary-accent text-primary-dark shadow-lg hover:bg-primary-accent/90 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 flex items-center justify-center"
         aria-label="Open Edmission AI"
       >

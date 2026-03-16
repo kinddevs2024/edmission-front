@@ -117,7 +117,9 @@ export function UniversityProfilePage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageTitle title={t('university:profileTitle')} icon="User" />
+      <div data-onboarding="university-profile-overview">
+        <PageTitle title={t('university:profileTitle')} icon="User" />
+      </div>
       <p className="text-[var(--color-text-muted)]">{t('university:profileIntro')}</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

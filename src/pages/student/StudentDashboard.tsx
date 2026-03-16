@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react'
-import { getProfile } from '@/services/auth'
-import { useAuthStore } from '@/store/authStore'
-import { OnboardingTutorialModal, hasSeenTutorial } from '@/components/onboarding/OnboardingTutorialModal'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -17,14 +14,7 @@ import { toastApiError } from '@/utils/toastError'
 import { CheckCircle, Circle } from 'lucide-react'
 
 export function StudentDashboard() {
-  const { t } = useTranslation('student')
-  const [showTutorial, setShowTutorial] = useState(false)
-  useEffect(() => {
-    getProfile().then(() => {
-      const u = useAuthStore.getState().user
-      if (!hasSeenTutorial('student', u)) setShowTutorial(true)
-    }).catch(() => {})
-  }, [])
+  const { t } = useTranslation(['student', 'common'])
   const [profilePercent, setProfilePercent] = useState(0)
   const [minimalComplete, setMinimalComplete] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
@@ -77,11 +67,12 @@ export function StudentDashboard() {
 
   return (
     <div className="space-y-8 pb-12 mb-4">
-      <OnboardingTutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} variant="student" />
-      <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
+      <div data-onboarding="student-dashboard-overview">
+        <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
+      </div>
 
       {!onboardingDone && (
-        <Card className="border-primary-accent/30">
+        <Card className="border-primary-accent/30" data-onboarding="dashboard-get-started">
           <CardTitle>{t('getStarted')}</CardTitle>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">{t('getStartedHint')}</p>
           <ul className="mt-3 space-y-2" role="list">
