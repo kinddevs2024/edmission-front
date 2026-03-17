@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { HelpTooltip } from '@/components/ui/HelpTooltip'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
@@ -35,9 +37,11 @@ export function DocumentEditor({
   onSave: (payload: EditableSceneDocument & { type: EditorDocumentType; name: string }) => Promise<void> | void
 }) {
   const imageInputRef = useRef<HTMLInputElement | null>(null)
+  const nameInputRef = useRef<HTMLInputElement | null>(null)
   const logoInputRef = useRef<HTMLInputElement | null>(null)
   const signatureInputRef = useRef<HTMLInputElement | null>(null)
   const backgroundInputRef = useRef<HTMLInputElement | null>(null)
+  const { t } = useTranslation(['documents', 'common'])
   const scene = useDocumentEditorStore((state) => state.scene)
   const selectedElementId = useDocumentEditorStore((state) => state.selectedElementId)
   const stageZoom = useDocumentEditorStore((state) => state.stageZoom)
@@ -57,8 +61,13 @@ export function DocumentEditor({
   const undo = useDocumentEditorStore((state) => state.undo)
   const redo = useDocumentEditorStore((state) => state.redo)
   const [showGuide, setShowGuide] = useState(false)
+  const [saveAttempted, setSaveAttempted] = useState(false)
   const isTemplateMode = mode === 'template'
   const selectedElement = scene.elements.find((element) => element.id === selectedElementId) ?? null
+  const trimmedName = metadata.name.trim()
+  const nameError = saveAttempted && !trimmedName
+    ? t('documents:editor.nameRequired', 'Enter a document name before saving.')
+    : undefined
   const effectivePreviewData = isTemplateMode
     ? mergePreviewData(createSamplePayload(isDocumentTemplateType(metadata.type) ? metadata.type : 'offer'), previewData)
     : {}
@@ -189,10 +198,17 @@ export function DocumentEditor({
   }
 
   const handleSave = async () => {
-    if (!metadata.name.trim()) return
+    if (!trimmedName) {
+      setSaveAttempted(true)
+      nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      nameInputRef.current?.focus()
+      return
+    }
+
+    setSaveAttempted(false)
     await onSave({
       id: metadata.id,
-      name: metadata.name.trim(),
+      name: trimmedName,
       type: metadata.type,
       status: metadata.status,
       pageFormat: metadata.pageFormat,
@@ -353,10 +369,15 @@ export function DocumentEditor({
               <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'center')} disabled={!selectedElement}>Center</Button>
               <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'up')} disabled={!selectedElement}>Layer +</Button>
               <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'down')} disabled={!selectedElement}>Layer -</Button>
-              <Button size="sm" onClick={handleSave} loading={saving} disabled={saving || !metadata.name.trim()}>
+              <Button size="sm" onClick={handleSave} loading={saving} disabled={saving}>
                 {saveLabel ?? (isTemplateMode ? 'Save template' : 'Save document')}
               </Button>
             </div>
+            {nameError ? (
+              <p className="w-full text-sm text-red-500 md:text-right">
+                {t('documents:editor.saveRequiresName', 'Add a document name first, then save again.')}
+              </p>
+            ) : null}
           </Card>
 
           <DocumentCanvasStage
@@ -375,7 +396,28 @@ export function DocumentEditor({
             <h3 className="mt-1 text-lg font-semibold">{selectedElement ? 'Element properties' : isTemplateMode ? 'Template settings' : 'Document settings'}</h3>
           </div>
 
-          <Input label={isTemplateMode ? 'Template name' : 'Document name'} value={metadata.name} onChange={(event) => setMetadata({ name: event.target.value })} />
+          <Input
+            ref={nameInputRef}
+            label={isTemplateMode ? 'Template name' : 'Document name'}
+            value={metadata.name}
+            error={nameError}
+            right={(
+              <HelpTooltip
+                content={t(
+                  isTemplateMode ? 'documents:editor.templateNameHelp' : 'documents:editor.documentNameHelp',
+                  isTemplateMode
+                    ? 'Name the template so it is easy to find in your documents list and ready to save.'
+                    : 'Name the document so it is easy to find later in the profile and documents list.'
+                )}
+              />
+            )}
+            onChange={(event) => {
+              setMetadata({ name: event.target.value })
+              if (saveAttempted && event.target.value.trim()) {
+                setSaveAttempted(false)
+              }
+            }}
+          />
           <Select
             label="Document type"
             value={metadata.type}

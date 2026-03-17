@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useNotificationStore } from '@/store/notificationStore'
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '@/services/notifications'
 import { useAuth } from '@/hooks/useAuth'
@@ -10,6 +11,7 @@ import { toastApiError } from '@/utils/toastError'
 const MAX_VISIBLE = 10
 
 export function NotificationsDropdown() {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { role } = useAuth()
@@ -47,7 +49,7 @@ export function NotificationsDropdown() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="relative p-2 rounded-input hover:bg-[var(--color-border)]/30 transition-colors"
-        aria-label="Notifications"
+        aria-label={t('notifications')}
         aria-expanded={open}
       >
         <svg className="w-5 h-5 text-[var(--color-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,25 +67,25 @@ export function NotificationsDropdown() {
           className={cn(
             'z-50 flex flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]',
             'fixed left-1/2 top-[calc(env(safe-area-inset-top)+4.25rem)] w-[min(calc(100vw-1rem),22rem)] -translate-x-1/2 max-h-[min(28rem,calc(100vh-5.5rem))] shadow-2xl',
-            'md:absolute md:right-0 md:left-auto md:top-full md:mt-1 md:w-80 md:max-h-[min(24rem,70vh)] md:translate-x-0 md:shadow-lg'
+            'origin-top animate-modal-enter md:absolute md:right-0 md:left-auto md:top-full md:mt-1 md:w-80 md:max-h-[min(24rem,70vh)] md:translate-x-0 md:origin-top-right md:shadow-lg'
           )}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--color-border)]">
-            <span className="font-medium text-sm">Notifications</span>
+            <span className="font-medium text-sm">{t('notifications')}</span>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={handleMarkAllRead}
                 className="text-xs text-primary-accent hover:underline"
               >
-                Mark all read
+                {t('markAllRead')}
               </button>
             )}
           </div>
           <ul className="overflow-y-auto flex-1">
             {items.length === 0 ? (
               <li className="px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">
-                No notifications
+                {t('noNotifications')}
               </li>
             ) : (
               <>
@@ -127,7 +129,7 @@ export function NotificationsDropdown() {
                   className="block px-4 py-2.5 text-center text-sm text-primary-accent hover:bg-[var(--color-border)]/20"
                   onClick={() => setOpen(false)}
                 >
-                  View all notifications
+                  {t('viewAllNotifications', 'View all notifications')}
                 </Link>
               </li>
               </>

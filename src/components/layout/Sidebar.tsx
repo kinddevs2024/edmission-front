@@ -1,8 +1,10 @@
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useUIStore } from '@/store/uiStore'
+import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 import { getNavIcon } from '@/components/icons/NavIcons'
+import { getDashboardPath } from '@/utils/dashboardPath'
 
 export interface NavItem {
   to: string
@@ -59,6 +61,8 @@ export function Sidebar({
   bottomItems?: NavItem[]
 }) {
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
+  const { user } = useAuth()
+  const dashboardPath = getDashboardPath(user)
 
   return (
     <aside
@@ -67,15 +71,17 @@ export function Sidebar({
         collapsed ? 'w-[72px]' : 'w-sidebar'
       )}
     >
-      <div
+      <Link
+        to={dashboardPath}
         className={cn(
-          'p-4 border-b border-white/10 h-16 flex items-center min-h-[64px] gap-2 shrink-0',
+          'p-4 border-b border-white/10 h-16 min-h-[64px] shrink-0 transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-accent/70',
+          'flex items-center gap-2',
           collapsed ? 'justify-center' : 'justify-start'
         )}
       >
         <img src="/logo/Group%201.png" alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" aria-hidden />
         {!collapsed && <span className="font-semibold text-primary-accent">Edmission</span>}
-      </div>
+      </Link>
       <nav className="flex-1 min-h-0 flex flex-col p-3">
         <div className="flex-1 overflow-y-auto space-y-0.5">
           {items.map((item) => (

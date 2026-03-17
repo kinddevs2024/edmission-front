@@ -66,6 +66,12 @@
       "referenceId": "Reference ID"
     }
   },
+  "editor": {
+    "nameRequired": "Enter a document name before saving.",
+    "saveRequiresName": "Add a document name first, then save again.",
+    "templateNameHelp": "Name the template so it is easy to find in your documents list and ready to save.",
+    "documentNameHelp": "Name the document so it is easy to find later in the profile and documents list."
+  },
   "celebration": {
     "receivedOfferTitle": "You received an Offer",
     "receivedScholarshipTitle": "You received a Scholarship",

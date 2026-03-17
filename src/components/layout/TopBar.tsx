@@ -16,12 +16,14 @@ import { MobileNavDrawer } from './MobileNavDrawer'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
 import { getStudentAvatarUrl } from '@/services/upload'
+import { getDashboardPath } from '@/utils/dashboardPath'
 
 export function TopBar() {
   const { t } = useTranslation('common')
   const { user } = useAuth()
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const role = (user as { role?: string })?.role ?? null
+  const dashboardPath = getDashboardPath(user)
   const { onNotification } = useSocket()
   const addNotification = useNotificationStore((s) => s.addNotification)
 
@@ -67,7 +69,12 @@ export function TopBar() {
     <header className="sticky top-0 z-30 h-16 border-b bg-[var(--color-card)] border-[var(--color-border)] flex items-center justify-between px-3 sm:px-4 gap-2">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <MobileNavDrawer />
-        <span className="text-[var(--color-text-muted)] text-sm hidden sm:block truncate">{t('appName')}</span>
+        <Link
+          to={dashboardPath}
+          className="hidden sm:block truncate rounded-md px-1.5 py-1 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+        >
+          {t('appName')}
+        </Link>
       </div>
       <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
         <div className="hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] shrink-0">

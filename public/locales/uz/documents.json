@@ -66,6 +66,12 @@
       "referenceId": "Hujjat ID"
     }
   },
+  "editor": {
+    "nameRequired": "Saqlashdan oldin hujjat nomini kiriting.",
+    "saveRequiresName": "Avval hujjat nomini kiriting, keyin yana saqlang.",
+    "templateNameHelp": "Shablonni keyin ro'yxatda tez topish va saqlash uchun unga aniq nom bering.",
+    "documentNameHelp": "Hujjatni keyin profil va hujjatlar ro'yxatida tez topish uchun unga aniq nom bering."
+  },
   "celebration": {
     "receivedOfferTitle": "Siz taklif oldingiz",
     "receivedScholarshipTitle": "Siz stipendiya oldingiz",

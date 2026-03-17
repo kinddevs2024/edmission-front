@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Menu, X } from 'lucide-react'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
+import { useAuth } from '@/hooks/useAuth'
 import { getNavIcon } from '@/components/icons/NavIcons'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { cn } from '@/utils/cn'
+import { getDashboardPath } from '@/utils/dashboardPath'
 
 export function MobileNavDrawer() {
   const { t } = useTranslation('common')
+  const { user } = useAuth()
   const navItems = useMobileMenuStore((s) => s.navItems)
   const [open, setOpen] = useState(false)
+  const dashboardPath = getDashboardPath(user)
 
   useEffect(() => {
     if (open) {
@@ -57,8 +61,14 @@ export function MobileNavDrawer() {
             aria-label="Navigation menu"
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-              <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
-              <span className="font-semibold text-[var(--color-text)]">{t('appName')}</span>
+              <Link
+                to={dashboardPath}
+                onClick={() => setOpen(false)}
+                className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-1 transition-colors hover:text-primary-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              >
+                <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
+                <span className="truncate font-semibold text-[var(--color-text)]">{t('appName')}</span>
+              </Link>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
