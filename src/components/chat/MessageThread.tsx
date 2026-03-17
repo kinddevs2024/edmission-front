@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MessageBubble } from './MessageBubble'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { SendDocumentModal } from '@/components/documents/SendDocumentModal'
 import { uploadFile } from '@/services/upload'
@@ -194,6 +196,21 @@ export function MessageThread({
     setRecordingState('idle')
   }
 
+  useEffect(() => {
+    if (!chat?.isReadOnly) return
+
+    setEmotionOpen(false)
+    setContextMenu(null)
+    setDeleteTarget(null)
+    setReplyTo(null)
+    setEditingMessage(null)
+    setComposerText('')
+    chunksRef.current = []
+    mediaRecorderRef.current = null
+    clearRecordingHelpers()
+    resetVoiceDraft()
+  }, [chat?.id, chat?.isReadOnly])
+
   const openContextMenu = (message: Message, anchorEl: HTMLElement) => {
     if (isCompactViewport) {
       setContextMenu({ message, top: 0, left: 0 })
@@ -242,7 +259,7 @@ export function MessageThread({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!chat || recordingState !== 'idle') return
+    if (!chat || chat.isReadOnly || recordingState !== 'idle') return
 
     const text = composerText.trim()
     if (!text) return
@@ -270,7 +287,7 @@ export function MessageThread({
   }
 
   const handleSendEmotion = async (emoji: string) => {
-    if (!chat) return
+    if (!chat || chat.isReadOnly) return
 
     try {
       await Promise.resolve(onSend({
@@ -288,7 +305,7 @@ export function MessageThread({
   }
 
   const startRecording = async () => {
-    if (!chat || !navigator.mediaDevices?.getUserMedia) return
+    if (!chat || chat.isReadOnly || !navigator.mediaDevices?.getUserMedia) return
     const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
     if (typeof MediaRecorder === 'undefined' || !AudioContextCtor) {
       toastApiError(new Error('Voice recording is not supported in this browser'))
@@ -389,7 +406,7 @@ export function MessageThread({
   }
 
   const sendVoiceDraft = async () => {
-    if (!voiceDraft) return
+    if (!voiceDraft || chat?.isReadOnly) return
     setVoiceSending(true)
     try {
       const attachmentUrl = await uploadFile(voiceDraft.file)
@@ -426,6 +443,7 @@ export function MessageThread({
   }
 
   const beginEdit = (message: Message) => {
+    if (isReadOnly) return
     setContextMenu(null)
     setReplyTo(null)
     setEditingMessage(message)
@@ -434,6 +452,7 @@ export function MessageThread({
   }
 
   const beginReply = (message: Message) => {
+    if (isReadOnly) return
     setContextMenu(null)
     setEditingMessage(null)
     setReplyTo(message)
@@ -441,6 +460,7 @@ export function MessageThread({
   }
 
   const confirmDelete = (message: Message) => {
+    if (isReadOnly) return
     setContextMenu(null)
     setDeleteTarget(message)
   }
@@ -473,6 +493,16 @@ export function MessageThread({
     )
   }
 
+  const isReadOnly = !!chat.isReadOnly
+  const readOnlyNotice =
+    chat.readOnlyReason === 'rejected'
+      ? t('chat:readOnlyRejected', 'This university closed the chat after rejecting your application. You can still read the conversation, but you can no longer send messages.')
+      : t('chat:readOnlyGeneric', 'This chat is read-only. You can still view the conversation, but you cannot send new messages.')
+  const acceptPositionOptions = [
+    { value: 'budget', label: t('chat:positionBudget') },
+    { value: 'grant', label: t('chat:positionGrant') },
+    { value: 'other', label: t('chat:positionOther') },
+  ]
   const showAcceptButton = role === 'university' && !chat.acceptedAt && onAcceptStudent
   const profileUrl = role === 'student'
     ? `/student/universities/${chat.participant.id}`
@@ -480,12 +510,18 @@ export function MessageThread({
       ? `/university/students/${chat.participant.id}`
       : null
   const menuMessage = contextMenu?.message
-  const canReply = menuMessage && menuMessage.type !== 'system'
+  const canReply = !isReadOnly && menuMessage && menuMessage.type !== 'system'
   const canCopy = !!menuMessage?.text
-  const canEdit = !!menuMessage?.isFromMe && menuMessage?.type === 'text'
-  const canDeleteForEveryone = !!deleteTarget?.isFromMe && deleteTarget.type !== 'system'
+  const canEdit = !isReadOnly && !!menuMessage?.isFromMe && menuMessage?.type === 'text'
+  const canDelete = !isReadOnly
+  const canDeleteForEveryone = canDelete && !!deleteTarget?.isFromMe && deleteTarget.type !== 'system'
   const composerMode = editingMessage ? 'edit' : replyTo ? 'reply' : null
   const menuPreviewText = getMessagePreviewText(menuMessage ?? null)
+  const canOpenContextMenu = (message: Message) => {
+    if (message.type === 'system') return false
+    if (isReadOnly) return !!(message.text ?? '').trim()
+    return true
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-[var(--color-card)]">
@@ -545,11 +581,12 @@ export function MessageThread({
               key={message.id}
               className="group relative"
               onContextMenu={(event) => {
+                if (!canOpenContextMenu(message)) return
                 event.preventDefault()
                 openContextMenu(message, event.currentTarget)
               }}
             >
-              {message.type !== 'system' ? (
+              {canOpenContextMenu(message) ? (
                 <button
                   type="button"
                   className={cn(
@@ -618,14 +655,16 @@ export function MessageThread({
                 <span>{t('chat:edit', 'Edit')}</span>
               </button>
             ) : null}
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-500/10"
-              onClick={() => confirmDelete(contextMenu.message)}
-            >
-              <Trash2 className="h-4 w-4" />
-              <span>{t('chat:delete', 'Delete')}</span>
-            </button>
+            {canDelete ? (
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-500/10"
+                onClick={() => confirmDelete(contextMenu.message)}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{t('chat:delete', 'Delete')}</span>
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -684,14 +723,16 @@ export function MessageThread({
                   <span>{t('chat:edit', 'Edit')}</span>
                 </button>
               ) : null}
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-500/10"
-                onClick={() => confirmDelete(contextMenu.message)}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span>{t('chat:delete', 'Delete')}</span>
-              </button>
+              {canDelete ? (
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-500/10"
+                  onClick={() => confirmDelete(contextMenu.message)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>{t('chat:delete', 'Delete')}</span>
+                </button>
+              ) : null}
               <Button variant="ghost" className="w-full" onClick={() => setContextMenu(null)}>
                 {t('common:cancel')}
               </Button>
@@ -723,206 +764,211 @@ export function MessageThread({
           </div>
         )}
 
-        <div className="relative flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
-          <div className="relative flex items-center gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation()
-                setEmotionOpen((open) => !open)
-              }}
-              className="p-2 rounded-full hover:bg-[var(--color-border)]/30 text-[var(--color-text-muted)] transition-colors"
-              aria-label={t('chat:emotions')}
-              disabled={recordingState !== 'idle'}
-            >
-              <Smile className="w-5 h-5" />
-            </button>
-            {emotionOpen && (
-              <div className="absolute bottom-full left-0 mb-1 p-2 rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg flex flex-wrap gap-1 max-w-[200px] z-10">
-                {EMOTION_OPTIONS.map((emoji) => (
-                  <button
-                    key={emoji}
+        {isReadOnly ? (
+          <div className="rounded-[22px] border border-rose-500/25 bg-rose-500/8 px-4 py-3">
+            <p className="text-sm font-semibold text-[var(--color-text)]">
+              {t('chat:chatClosedTitle', 'Chat closed')}
+            </p>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              {readOnlyNotice}
+            </p>
+          </div>
+        ) : (
+          <div className="relative flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
+            <div className="relative flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setEmotionOpen((open) => !open)
+                }}
+                className="p-2 rounded-full hover:bg-[var(--color-border)]/30 text-[var(--color-text-muted)] transition-colors"
+                aria-label={t('chat:emotions')}
+                disabled={recordingState !== 'idle'}
+              >
+                <Smile className="w-5 h-5" />
+              </button>
+              {emotionOpen && (
+                <div className="absolute bottom-full left-0 mb-1 p-2 rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg flex flex-wrap gap-1 max-w-[200px] z-10">
+                  {EMOTION_OPTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => handleSendEmotion(emoji)}
+                      className="text-2xl p-1 hover:bg-[var(--color-border)]/30 rounded-lg transition-colors"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {recordingState === 'idle' ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="!p-2 !min-w-0 rounded-full"
+                  onClick={startRecording}
+                  icon={<Mic className="w-5 h-5" />}
+                  aria-label={t('chat:voiceMessage')}
+                  title={t('chat:voiceMessage')}
+                  disabled={loading || messageSaving}
+                >
+                  <span className="sr-only">{t('chat:voiceMessage')}</span>
+                </Button>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={composerText}
+                  onChange={(event) => setComposerText(event.target.value)}
+                  placeholder={editingMessage ? t('chat:editPlaceholder', 'Edit your message') : t('common:typeMessage')}
+                  className="flex-1 min-w-0 bg-transparent px-1 py-1.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none"
+                  disabled={loading || messageSaving}
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
+                  icon={<Send className="w-5 h-5" />}
+                  aria-label={editingMessage ? t('chat:saveEdit', 'Save') : t('common:send')}
+                  loading={messageSaving}
+                  disabled={!composerText.trim()}
+                >
+                  <span className="sr-only">{editingMessage ? t('chat:saveEdit', 'Save') : t('common:send')}</span>
+                </Button>
+              </>
+            ) : (
+              <div className="flex flex-1 items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 text-xs text-[var(--color-text-muted)] mb-2">
+                    <span>
+                      {recordingState === 'recording'
+                        ? t('chat:recordingNow', 'Recording...')
+                        : recordingState === 'processing'
+                          ? t('chat:processingVoice', 'Preparing voice message...')
+                          : t('chat:voiceReady', 'Voice message ready')}
+                    </span>
+                    <span>{formatVoiceDuration(recordingDurationMs)}</span>
+                  </div>
+                  <VoiceWaveform levels={voiceDraft?.levels ?? waveLevels} active={recordingState === 'recording'} />
+                </div>
+
+                {recordingState === 'recording' ? (
+                  <Button
                     type="button"
-                    onClick={() => handleSendEmotion(emoji)}
-                    className="text-2xl p-1 hover:bg-[var(--color-border)]/30 rounded-lg transition-colors"
+                    variant="secondary"
+                    size="sm"
+                    onClick={stopRecording}
+                    icon={<Square className="w-4 h-4" />}
                   >
-                    {emoji}
-                  </button>
-                ))}
+                    {t('chat:stopRecording')}
+                  </Button>
+                ) : recordingState === 'review' ? (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-red-500 hover:border-red-500/40"
+                      onClick={resetVoiceDraft}
+                      aria-label={t('common:cancel')}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
+                      icon={<Send className="w-5 h-5" />}
+                      onClick={sendVoiceDraft}
+                      loading={voiceSending}
+                      disabled={!voiceDraft}
+                      aria-label={t('common:send')}
+                    >
+                      <span className="sr-only">{t('common:send')}</span>
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
-
-          {recordingState === 'idle' ? (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="!p-2 !min-w-0 rounded-full"
-                onClick={startRecording}
-                icon={<Mic className="w-5 h-5" />}
-                aria-label={t('chat:voiceMessage')}
-                title={t('chat:voiceMessage')}
-                disabled={loading || messageSaving}
-              >
-                <span className="sr-only">{t('chat:voiceMessage')}</span>
-              </Button>
-              <input
-                ref={inputRef}
-                type="text"
-                value={composerText}
-                onChange={(event) => setComposerText(event.target.value)}
-                placeholder={editingMessage ? t('chat:editPlaceholder', 'Edit your message') : t('common:typeMessage')}
-                className="flex-1 min-w-0 bg-transparent px-1 py-1.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none"
-                disabled={loading || messageSaving}
-              />
-              <Button
-                type="submit"
-                size="sm"
-                className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
-                icon={<Send className="w-5 h-5" />}
-                aria-label={editingMessage ? t('chat:saveEdit', 'Save') : t('common:send')}
-                loading={messageSaving}
-                disabled={!composerText.trim()}
-              >
-                <span className="sr-only">{editingMessage ? t('chat:saveEdit', 'Save') : t('common:send')}</span>
-              </Button>
-            </>
-          ) : (
-            <div className="flex flex-1 items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 text-xs text-[var(--color-text-muted)] mb-2">
-                  <span>
-                    {recordingState === 'recording'
-                      ? t('chat:recordingNow', 'Recording...')
-                      : recordingState === 'processing'
-                        ? t('chat:processingVoice', 'Preparing voice message...')
-                        : t('chat:voiceReady', 'Voice message ready')}
-                  </span>
-                  <span>{formatVoiceDuration(recordingDurationMs)}</span>
-                </div>
-                <VoiceWaveform levels={voiceDraft?.levels ?? waveLevels} active={recordingState === 'recording'} />
-              </div>
-
-              {recordingState === 'recording' ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={stopRecording}
-                  icon={<Square className="w-4 h-4" />}
-                >
-                  {t('chat:stopRecording')}
-                </Button>
-              ) : recordingState === 'review' ? (
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-red-500 hover:border-red-500/40"
-                    onClick={resetVoiceDraft}
-                    aria-label={t('common:cancel')}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
-                    icon={<Send className="w-5 h-5" />}
-                    onClick={sendVoiceDraft}
-                    loading={voiceSending}
-                    disabled={!voiceDraft}
-                    aria-label={t('common:send')}
-                  >
-                    <span className="sr-only">{t('common:send')}</span>
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
+        )}
       </form>
 
-      {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDeleteTarget(null)}>
-          <div
-            className="bg-[var(--color-card)] rounded-card shadow-xl max-w-sm w-full p-6 border border-[var(--color-border)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold mb-2">{t('chat:deleteMessageTitle', 'Delete message')}</h3>
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">
-              {canDeleteForEveryone
-                ? t('chat:deleteMessageHintAll', 'Choose whether to remove the message only for yourself or for everyone in this chat.')
-                : t('chat:deleteMessageHintMine', 'This message will be removed only from your chat history.')}
-            </p>
-            <div className="flex flex-col gap-2">
-              <Button variant="secondary" onClick={() => handleDelete('me')} loading={deleteBusy}>
-                {t('chat:deleteForMe', 'Delete for me')}
-              </Button>
-              {canDeleteForEveryone ? (
-                <Button variant="danger" onClick={() => handleDelete('everyone')} loading={deleteBusy}>
-                  {t('chat:deleteForEveryone', 'Delete for everyone')}
-                </Button>
-              ) : null}
-              <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={deleteBusy}>
-                {t('common:cancel')}
-              </Button>
-            </div>
-          </div>
+      <Modal
+        open={!!deleteTarget}
+        onClose={() => {
+          if (!deleteBusy) setDeleteTarget(null)
+        }}
+        title={t('chat:deleteMessageTitle', 'Delete message')}
+        panelClassName="max-w-sm"
+        contentClassName="space-y-4"
+      >
+        <p className="text-sm text-[var(--color-text-muted)]">
+          {canDeleteForEveryone
+            ? t('chat:deleteMessageHintAll', 'Choose whether to remove the message only for yourself or for everyone in this chat.')
+            : t('chat:deleteMessageHintMine', 'This message will be removed only from your chat history.')}
+        </p>
+        <div className="flex flex-col gap-2">
+          <Button variant="secondary" onClick={() => handleDelete('me')} loading={deleteBusy}>
+            {t('chat:deleteForMe', 'Delete for me')}
+          </Button>
+          {canDeleteForEveryone ? (
+            <Button variant="danger" onClick={() => handleDelete('everyone')} loading={deleteBusy}>
+              {t('chat:deleteForEveryone', 'Delete for everyone')}
+            </Button>
+          ) : null}
+          <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={deleteBusy}>
+            {t('common:cancel')}
+          </Button>
         </div>
-      )}
+      </Modal>
 
-      {acceptModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setAcceptModalOpen(false)}>
-          <div
-            className="bg-[var(--color-card)] rounded-card shadow-xl max-w-md w-full p-6 border border-[var(--color-border)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold mb-2">{t('chat:acceptStudent')}</h3>
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">{t('chat:acceptHint')}</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">{t('chat:positionType')}</label>
-                <select
-                  value={acceptForm.positionType}
-                  onChange={(event) => setAcceptForm((form) => ({ ...form, positionType: event.target.value as 'budget' | 'grant' | 'other' }))}
-                  className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-                >
-                  <option value="budget">{t('chat:positionBudget')}</option>
-                  <option value="grant">{t('chat:positionGrant')}</option>
-                  <option value="other">{t('chat:positionOther')}</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">{t('chat:positionLabel')}</label>
-                <input
-                  type="text"
-                  value={acceptForm.positionLabel}
-                  onChange={(event) => setAcceptForm((form) => ({ ...form, positionLabel: event.target.value }))}
-                  placeholder={t('chat:positionLabelPlaceholder')}
-                  className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
-                />
-              </div>
-              <Textarea
-                label={t('chat:congratulatoryMessage')}
-                value={acceptForm.congratulatoryMessage}
-                onChange={(event) => setAcceptForm((form) => ({ ...form, congratulatoryMessage: event.target.value }))}
-                placeholder={t('chat:congratulatoryPlaceholder')}
-                rows={3}
-              />
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="secondary" onClick={() => setAcceptModalOpen(false)}>
-                {t('common:cancel')}
-              </Button>
-              <Button onClick={handleAcceptSubmit} disabled={acceptSending} loading={acceptSending}>
-                {t('chat:accept')}
-              </Button>
-            </div>
-          </div>
+      <Modal
+        open={acceptModalOpen}
+        onClose={() => {
+          if (!acceptSending) setAcceptModalOpen(false)
+        }}
+        title={t('chat:acceptStudent')}
+        panelClassName="max-w-md"
+        contentClassName="space-y-3"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setAcceptModalOpen(false)} disabled={acceptSending}>
+              {t('common:cancel')}
+            </Button>
+            <Button onClick={handleAcceptSubmit} disabled={acceptSending} loading={acceptSending}>
+              {t('chat:accept')}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-[var(--color-text-muted)]">{t('chat:acceptHint')}</p>
+        <Select
+          label={t('chat:positionType')}
+          value={acceptForm.positionType}
+          onChange={(event) => setAcceptForm((form) => ({ ...form, positionType: event.target.value as 'budget' | 'grant' | 'other' }))}
+          options={acceptPositionOptions}
+        />
+        <div>
+          <label className="block text-sm font-medium mb-1">{t('chat:positionLabel')}</label>
+          <input
+            type="text"
+            value={acceptForm.positionLabel}
+            onChange={(event) => setAcceptForm((form) => ({ ...form, positionLabel: event.target.value }))}
+            placeholder={t('chat:positionLabelPlaceholder')}
+            className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm"
+          />
         </div>
-      )}
+        <Textarea
+          label={t('chat:congratulatoryMessage')}
+          value={acceptForm.congratulatoryMessage}
+          onChange={(event) => setAcceptForm((form) => ({ ...form, congratulatoryMessage: event.target.value }))}
+          placeholder={t('chat:congratulatoryPlaceholder')}
+          rows={3}
+        />
+      </Modal>
 
       {role === 'university' ? (
         <SendDocumentModal

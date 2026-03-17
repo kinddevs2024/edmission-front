@@ -148,16 +148,33 @@ export interface PipelineFilters {
 export interface StudentSearchParams {
   page?: number
   limit?: number
+  search?: string
   skills?: string[]
   interests?: string[]
   hobbies?: string[]
   country?: string
   city?: string
+  schoolName?: string
+  educationStatus?: string
+  targetDegreeLevel?: string
+  schoolCompleted?: boolean
   languages?: string[]
+  languageLevels?: string[]
   certType?: string
   certMinScore?: string
+  documentTypes?: string[]
+  documentQuery?: string
+  preferredCountries?: string[]
+  interestedFaculties?: string[]
   minBudget?: number
   maxBudget?: number
+  budgetCurrency?: string
+  gpaMin?: number
+  gpaMax?: number
+  graduationYearMin?: number
+  graduationYearMax?: number
+  verifiedOnly?: boolean
+  hasPortfolio?: boolean
   /** When false, backend does not filter by profile (targetStudentCountries, facultyCodes). Use after "Clear". */
   useProfileFilters?: boolean
 }
@@ -171,8 +188,16 @@ export interface DiscoverStudentItem {
     country?: string
     city?: string
     avatarUrl?: string
+    gpa?: number
+    schoolName?: string
+    graduationYear?: number
     budgetAmount?: number
     budgetCurrency?: string
+    targetDegreeLevel?: string
+    educationStatus?: string
+    verifiedAt?: string
+    portfolioCompletionPercent?: number
+    languages?: { language: string; level: string }[]
   }
   inPipeline: boolean
 }
@@ -189,16 +214,33 @@ export async function getStudents(params?: StudentSearchParams): Promise<Student
   const query: Record<string, string> = {}
   if (params?.page != null) query.page = String(params.page)
   if (params?.limit != null) query.limit = String(params.limit)
+  if (params?.search) query.search = params.search
   if (params?.skills?.length) query.skills = params.skills.join(',')
   if (params?.interests?.length) query.interests = params.interests.join(',')
   if (params?.hobbies?.length) query.hobbies = params.hobbies.join(',')
   if (params?.country) query.country = params.country
   if (params?.city) query.city = params.city
+  if (params?.schoolName) query.schoolName = params.schoolName
+  if (params?.educationStatus) query.educationStatus = params.educationStatus
+  if (params?.targetDegreeLevel) query.targetDegreeLevel = params.targetDegreeLevel
+  if (params?.schoolCompleted != null) query.schoolCompleted = params.schoolCompleted ? '1' : '0'
   if (params?.languages?.length) query.languages = params.languages.join(',')
+  if (params?.languageLevels?.length) query.languageLevels = params.languageLevels.join(',')
   if (params?.certType) query.certType = params.certType
   if (params?.certMinScore != null) query.certMinScore = params.certMinScore
+  if (params?.documentTypes?.length) query.documentTypes = params.documentTypes.join(',')
+  if (params?.documentQuery) query.documentQuery = params.documentQuery
+  if (params?.preferredCountries?.length) query.preferredCountries = params.preferredCountries.join(',')
+  if (params?.interestedFaculties?.length) query.interestedFaculties = params.interestedFaculties.join(',')
   if (params?.minBudget != null) query.minBudget = String(params.minBudget)
   if (params?.maxBudget != null) query.maxBudget = String(params.maxBudget)
+  if (params?.budgetCurrency) query.budgetCurrency = params.budgetCurrency
+  if (params?.gpaMin != null) query.gpaMin = String(params.gpaMin)
+  if (params?.gpaMax != null) query.gpaMax = String(params.gpaMax)
+  if (params?.graduationYearMin != null) query.graduationYearMin = String(params.graduationYearMin)
+  if (params?.graduationYearMax != null) query.graduationYearMax = String(params.graduationYearMax)
+  if (params?.verifiedOnly) query.verifiedOnly = '1'
+  if (params?.hasPortfolio) query.hasPortfolio = '1'
   if (params?.useProfileFilters === false) query.useProfileFilters = '0'
   const { data } = await api.get<StudentSearchResponse>('/university/students', { params: query })
   return data ?? { data: [], total: 0, page: 1, limit: 20, totalPages: 0 }

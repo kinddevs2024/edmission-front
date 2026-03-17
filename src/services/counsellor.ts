@@ -1,5 +1,7 @@
 import { api } from './api'
 import type { DocumentPageFormat } from '@/types/documentModule'
+import type { PaginatedResponse, PaginationParams } from '@/types/api'
+import type { UniversityListItem } from '@/types/university'
 
 export interface CounsellorProfile {
   id: string
@@ -102,6 +104,20 @@ export async function rejectJoinRequest(requestId: string): Promise<void> {
 export async function addInterestForStudent(studentUserId: string, universityId: string): Promise<unknown> {
   const { data } = await api.post(`/counsellor/students/${studentUserId}/interests/${universityId}`)
   return data
+}
+
+export interface CounsellorStudentUniversitiesParams extends PaginationParams {
+  country?: string
+  city?: string
+  useProfileFilters?: boolean
+}
+
+export async function listStudentUniversities(
+  studentUserId: string,
+  params?: CounsellorStudentUniversitiesParams
+): Promise<PaginatedResponse<UniversityListItem>> {
+  const { data } = await api.get<PaginatedResponse<UniversityListItem>>(`/counsellor/students/${studentUserId}/universities`, { params })
+  return data ?? { data: [], total: 0, page: 1 }
 }
 
 /** Search existing students (not in my school) for invite. */

@@ -168,3 +168,13 @@ export const commonEn: Record<string, string | Record<string, string>> = {
   compareUniversities: 'Compare Universities',
   view: 'View',
 }
+
+export const schoolEn: Record<string, string> = {
+  dashboard: 'Dashboard',
+  mySchool: 'My school',
+  myStudents: 'My students',
+  studentInterestsNav: 'Student interests',
+  joinRequests: 'Join requests',
+  notifications: 'Notifications',
+  account: 'Account',
+}

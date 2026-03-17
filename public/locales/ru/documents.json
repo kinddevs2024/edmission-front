@@ -1,0 +1,135 @@
+{
+  "type": {
+    "offer": "Оффер",
+    "scholarship": "Стипендия",
+    "offerDocument": "Документ-оффер",
+    "scholarshipDocument": "Документ о стипендии"
+  },
+  "status": {
+    "sent": "Отправлен",
+    "viewed": "Просмотрен",
+    "accepted": "Принят",
+    "declined": "Отклонён",
+    "postponed": "Отложен",
+    "expired": "Истёк",
+    "revoked": "Отозван"
+  },
+  "templateStatus": {
+    "draft": "Черновик",
+    "active": "Активный",
+    "archived": "Архивный"
+  },
+  "common": {
+    "document": "Документ",
+    "student": "Студент",
+    "university": "Университет",
+    "audit": "Аудит",
+    "timeline": "Хронология"
+  },
+  "sendModal": {
+    "title": "Отправить документ",
+    "titleWithName": "Отправить документ {{name}}",
+    "previewFinalDocument": "Предпросмотр финального документа",
+    "templates": "Шаблоны",
+    "noTemplatesFound": "Для этого типа документа шаблоны не найдены.",
+    "acceptDeadline": "Срок принятия",
+    "program": "Программа",
+    "degreeLevel": "Уровень степени",
+    "intake": "Набор",
+    "startDate": "Дата начала",
+    "tuitionFee": "Стоимость обучения",
+    "currency": "Валюта",
+    "scholarshipAmount": "Сумма стипендии",
+    "scholarshipPercent": "Процент стипендии",
+    "scholarshipType": "Тип стипендии",
+    "offerConditions": "Условия оффера",
+    "optionalUniversityMessage": "Сообщение от университета",
+    "preview": "Предпросмотр",
+    "previewDetails": "Детали предпросмотра"
+  },
+  "summary": {
+    "heading": "Сводка документа",
+    "fallbackDescription": "Проверьте ключевые условия ниже перед отправкой или принятием документа.",
+    "finePrint": "Эта сводка поясняет основные даты, стоимость, условия и детали стипендии, указанные в документе.",
+    "universityMessage": "Сообщение университета",
+    "openEnded": "Без срока",
+    "labels": {
+      "issued": "Выдан",
+      "acceptBy": "Принять до",
+      "program": "Программа",
+      "degree": "Степень",
+      "intake": "Набор",
+      "startDate": "Дата начала",
+      "tuition": "Стоимость",
+      "scholarship": "Стипендия",
+      "conditions": "Условия",
+      "referenceId": "ID документа"
+    }
+  },
+  "celebration": {
+    "receivedOfferTitle": "Вы получили оффер",
+    "receivedScholarshipTitle": "Вы получили стипендию",
+    "viewDocument": "Открыть документ",
+    "congratulations": "Поздравляем",
+    "offerDescription": "Ваш персональный оффер готов. Откройте его, чтобы изучить детали и принять решение.",
+    "scholarshipDescription": "Ваш персональный документ о стипендии готов. Откройте его, чтобы изучить детали и принять решение."
+  },
+  "templateCard": {
+    "default": "По умолчанию",
+    "noPreview": "Текст предпросмотра пока не добавлен.",
+    "edit": "Редактировать",
+    "duplicate": "Дублировать",
+    "archive": "Архивировать",
+    "setDefault": "Сделать основным"
+  },
+  "decisionPanel": {
+    "title": "Решение",
+    "description": "Выберите одно действие. Отложить можно только в рамках одного окна на 3/7/14 дней.",
+    "accept": "Принять",
+    "decideLater": "Решить позже",
+    "decline": "Отклонить",
+    "postponeDays_one": "Отложить на {{count}} день",
+    "postponeDays_few": "Отложить на {{count}} дня",
+    "postponeDays_many": "Отложить на {{count}} дней",
+    "postponeDays_other": "Отложить на {{count}} дня"
+  },
+  "studentOffers": {
+    "pageTitle": "Офферы и стипендии",
+    "emptyTitle": "Документов пока нет",
+    "emptyDescription": "Когда университет отправит вам оффер или стипендию, документ появится здесь.",
+    "type": "Тип",
+    "sent": "Отправлен",
+    "deadline": "Дедлайн",
+    "openDocument": "Открыть документ"
+  },
+  "studentDocument": {
+    "deadline": "Дедлайн",
+    "closedForFurtherActions": "Этот документ больше недоступен для действий.",
+    "backToOffers": "Назад к офферам"
+  },
+  "universityDocuments": {
+    "pageTitle": "Документы",
+    "tabs": {
+      "templates": "Шаблоны",
+      "sent": "Отправленные документы",
+      "drafts": "Черновики",
+      "settings": "Настройки"
+    },
+    "createTemplate": "Создать шаблон",
+    "noTemplatesYet": "Шаблонов пока нет.",
+    "noSentDocumentsYet": "Отправленных документов пока нет.",
+    "sentOn": "Отправлено {{date}}",
+    "loadingDocumentDetails": "Загрузка деталей документа...",
+    "revokeDocument": "Отозвать документ",
+    "deleteFromList": "Удалить из списка",
+    "deleteConfirm": "Удалить \"{{title}}\" из раздела документов?",
+    "selectDocumentToInspect": "Выберите отправленный документ, чтобы посмотреть его снимок и журнал событий.",
+    "noDrafts": "Черновиков нет.",
+    "moduleDecisions": "Решения по модулю",
+    "moduleDecisionsText": "Единый движок документов, один редактор для оффера и стипендии, единый сценарий отложенного решения, хранение снапшотов, истечение отдельно от отклонения.",
+    "defaultOfferTemplate": "Шаблон оффера по умолчанию",
+    "defaultScholarshipTemplate": "Шаблон стипендии по умолчанию",
+    "notSet": "Не задано",
+    "settingsFootnote": "Удаление шаблона не влияет на уже отправленные документы, потому что каждый документ студента хранит собственный замороженный снимок и отрендеренные данные."
+  }
+}

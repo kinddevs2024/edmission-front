@@ -1,8 +1,9 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { BackLink } from '@/components/ui/BackLink'
 import { Badge } from '@/components/ui/Badge'
 import { MatchScore } from '@/components/student/MatchScore'
 import { api } from '@/services/api'
@@ -74,7 +75,7 @@ export function UniversityDetail() {
   if (loading && !uni) {
     return (
       <div className="space-y-4">
-        <Link to="/student/universities" className="text-primary-accent hover:underline">← Back to list</Link>
+        <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
         <Card><div className="h-8 w-48 rounded bg-[var(--color-border)] animate-pulse" /></Card>
       </div>
     )
@@ -83,7 +84,7 @@ export function UniversityDetail() {
   if (!uni) {
     return (
       <div className="space-y-4">
-        <Link to="/student/universities" className="text-primary-accent hover:underline">← Back to list</Link>
+        <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
         <Card><p className="text-[var(--color-text-muted)]">University not found.</p></Card>
       </div>
     )
@@ -91,7 +92,7 @@ export function UniversityDetail() {
 
   return (
     <div className="space-y-6">
-      <Link to="/student/universities" className="text-primary-accent hover:underline">← Back to list</Link>
+      <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">

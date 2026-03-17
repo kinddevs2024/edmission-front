@@ -1,0 +1,133 @@
+{
+  "type": {
+    "offer": "Offer",
+    "scholarship": "Scholarship",
+    "offerDocument": "Offer document",
+    "scholarshipDocument": "Scholarship document"
+  },
+  "status": {
+    "sent": "Sent",
+    "viewed": "Viewed",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "postponed": "Postponed",
+    "expired": "Expired",
+    "revoked": "Revoked"
+  },
+  "templateStatus": {
+    "draft": "Draft",
+    "active": "Active",
+    "archived": "Archived"
+  },
+  "common": {
+    "document": "Document",
+    "student": "Student",
+    "university": "University",
+    "audit": "Audit",
+    "timeline": "Timeline"
+  },
+  "sendModal": {
+    "title": "Send document",
+    "titleWithName": "Send document to {{name}}",
+    "previewFinalDocument": "Preview final document",
+    "templates": "Templates",
+    "noTemplatesFound": "No templates found for this document type.",
+    "acceptDeadline": "Accept deadline",
+    "program": "Program",
+    "degreeLevel": "Degree level",
+    "intake": "Intake",
+    "startDate": "Start date",
+    "tuitionFee": "Tuition fee",
+    "currency": "Currency",
+    "scholarshipAmount": "Scholarship amount",
+    "scholarshipPercent": "Scholarship percent",
+    "scholarshipType": "Scholarship type",
+    "offerConditions": "Offer conditions",
+    "optionalUniversityMessage": "Optional university message",
+    "preview": "Preview",
+    "previewDetails": "Preview details"
+  },
+  "summary": {
+    "heading": "Document summary",
+    "fallbackDescription": "Review the key terms below before sending or accepting this document.",
+    "finePrint": "This summary clarifies the key dates, fees, conditions, and scholarship details attached to the document.",
+    "universityMessage": "University message",
+    "openEnded": "Open ended",
+    "labels": {
+      "issued": "Issued",
+      "acceptBy": "Accept by",
+      "program": "Program",
+      "degree": "Degree",
+      "intake": "Intake",
+      "startDate": "Start date",
+      "tuition": "Tuition",
+      "scholarship": "Scholarship",
+      "conditions": "Conditions",
+      "referenceId": "Reference ID"
+    }
+  },
+  "celebration": {
+    "receivedOfferTitle": "You received an Offer",
+    "receivedScholarshipTitle": "You received a Scholarship",
+    "viewDocument": "View document",
+    "congratulations": "Congratulations",
+    "offerDescription": "Your personalized offer is ready. Open it to review the full details and make a decision.",
+    "scholarshipDescription": "Your personalized scholarship is ready. Open it to review the full details and make a decision."
+  },
+  "templateCard": {
+    "default": "Default",
+    "noPreview": "No preview text yet.",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "archive": "Archive",
+    "setDefault": "Set default"
+  },
+  "decisionPanel": {
+    "title": "Decision",
+    "description": "Choose one action. Postpone is limited to a single 3/7/14 day decision window.",
+    "accept": "Accept",
+    "decideLater": "Decide later",
+    "decline": "Decline",
+    "postponeDays_one": "Postpone {{count}} day",
+    "postponeDays_other": "Postpone {{count}} days"
+  },
+  "studentOffers": {
+    "pageTitle": "Offers & Scholarships",
+    "emptyTitle": "No documents yet",
+    "emptyDescription": "When a university sends you an offer or scholarship, it will appear here.",
+    "type": "Type",
+    "sent": "Sent",
+    "deadline": "Deadline",
+    "openDocument": "Open document"
+  },
+  "studentDocument": {
+    "deadline": "Deadline",
+    "closedForFurtherActions": "This document is closed for further actions.",
+    "backToOffers": "Back to offers"
+  },
+  "universityDocuments": {
+    "pageTitle": "Documents",
+    "tabs": {
+      "templates": "Templates",
+      "sent": "Sent documents",
+      "drafts": "Drafts",
+      "settings": "Settings"
+    },
+    "createTemplate": "Create template",
+    "noTemplatesYet": "No templates yet.",
+    "noSentDocumentsYet": "No sent documents yet.",
+    "sentOn": "Sent {{date}}",
+    "loadingDocumentDetails": "Loading document details...",
+    "revokeDocument": "Revoke document",
+    "deleteFromList": "Delete from list",
+    "deleteConfirm": "Delete \"{{title}}\" from Documents?",
+    "selectDocumentToInspect": "Select any sent document to inspect its snapshot and audit trail.",
+    "noDrafts": "No drafts.",
+    "moduleDecisions": "Module decisions",
+    "moduleDecisionsText": "Unified documents engine, one editor for offer/scholarship, single postpone flow, snapshot storage, expired distinct from declined.",
+    "defaultOfferTemplate": "Default offer template",
+    "defaultScholarshipTemplate": "Default scholarship template",
+    "notSet": "Not set",
+    "settingsFootnote": "Deleting a template does not affect already sent documents because every student document stores its own frozen snapshot and rendered payload."
+  }
+}

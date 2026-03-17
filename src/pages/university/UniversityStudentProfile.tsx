@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { BackLink } from '@/components/ui/BackLink'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { getStudentProfile, type FullStudentProfile } from '@/services/university'
 import { getApiError } from '@/services/api'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
-import { ArrowLeft, MessageCircle, FileText, ExternalLink } from 'lucide-react'
+import { MessageCircle, FileText, ExternalLink } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
 
@@ -42,7 +43,7 @@ export function UniversityStudentProfile() {
   if (!studentId) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
+        <BackLink onClick={() => navigate(-1)}>{t('common:back')}</BackLink>
         <p className="text-[var(--color-text-muted)]">{t('university:invalidStudent', 'Invalid student.')}</p>
       </div>
     )
@@ -51,7 +52,7 @@ export function UniversityStudentProfile() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
+        <BackLink onClick={() => navigate(-1)}>{t('common:back')}</BackLink>
         <p className="text-[var(--color-text-muted)]">{t('common:loading')}</p>
       </div>
     )
@@ -60,7 +61,7 @@ export function UniversityStudentProfile() {
   if (error || !profile) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
+        <BackLink onClick={() => navigate(-1)}>{t('common:back')}</BackLink>
         <p className="text-red-500">{error || t('university:studentNotFound', 'Student not found.')}</p>
       </div>
     )
@@ -71,9 +72,7 @@ export function UniversityStudentProfile() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} icon={<ArrowLeft size={16} />}>
-          {t('common:back')}
-        </Button>
+        <BackLink onClick={() => navigate(-1)}>{t('common:back')}</BackLink>
         <Button to={`/university/chat?studentId=${encodeURIComponent(profile.id)}`} size="sm" icon={<MessageCircle size={16} />}>
           {t('university:navChat')}
         </Button>

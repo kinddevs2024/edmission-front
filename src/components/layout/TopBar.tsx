@@ -27,12 +27,13 @@ export function TopBar() {
 
   useEffect(() => {
     const unsubscribe = onNotification((payload) => {
-      const link = payload.link ?? buildNotificationLink(
+      const computedLink = buildNotificationLink(
         payload.type ?? 'info',
         payload.referenceId,
         payload.metadata,
         role as import('@/types/user').Role
       )
+      const link = computedLink ?? payload.link
       addNotification({
         id: payload.id,
         type: payload.type as import('@/store/notificationStore').NotificationType,

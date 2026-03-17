@@ -4,7 +4,7 @@ export type SupportedLng = (typeof supportedLngs)[number]
 export const defaultNS = 'common'
 export const fallbackLng = 'en'
 
-export const namespaces = ['common', 'auth', 'landing', 'cookies', 'student', 'university', 'admin', 'school', 'errors', 'chat'] as const
+export const namespaces = ['common', 'auth', 'landing', 'cookies', 'student', 'university', 'admin', 'school', 'documents', 'errors', 'chat'] as const
 
 export const STORAGE_KEY = 'i18nextLng'
 

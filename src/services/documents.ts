@@ -35,7 +35,7 @@ export async function duplicateDocumentTemplate(id: string) {
   return data
 }
 
-export async function renderDocumentTemplatePreview(id: string, payload?: { studentId?: string; acceptDeadline?: string; documentData?: Record<string, unknown> }) {
+export async function renderDocumentTemplatePreview(id: string, payload?: { studentId?: string; acceptDeadline?: string; universityMessage?: string; documentData?: Record<string, unknown> }) {
   const { data } = await api.post<RenderedTemplatePreview>(`/documents/templates/${id}/render-preview`, payload ?? {})
   return data
 }

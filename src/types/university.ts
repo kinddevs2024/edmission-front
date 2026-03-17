@@ -7,12 +7,15 @@ export interface UniversityListItem {
   city?: string
   description?: string
   rating?: number
+  foundedYear?: number
+  studentCount?: number
   hasScholarship?: boolean
   matchScore?: number
   matchBreakdown?: Record<string, number>
   minLanguageLevel?: string
   tuitionPrice?: number
   facultyCodes?: string[]
+  targetStudentCountries?: string[]
 }
 
 export interface UniversityProfile {

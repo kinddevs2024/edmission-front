@@ -32,6 +32,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   if (type === 'system') {
     const meta = message.metadata
     const isAcceptance = meta?.subtype === 'acceptance'
+    const isChatBlocked = meta?.subtype === 'chat_blocked'
     const isUniversityArea = typeof window !== 'undefined' && window.location.pathname.startsWith('/university')
     const documentLink = meta?.link ?? (
       meta?.documentId
@@ -45,7 +46,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           className={cn(
             'max-w-[85%] rounded-card px-4 py-3 text-center text-sm',
             'bg-[var(--color-border)]/50 border border-[var(--color-border)]',
-            isAcceptance && 'bg-primary-accent/15 border-primary-accent/40'
+            isAcceptance && 'bg-primary-accent/15 border-primary-accent/40',
+            isChatBlocked && 'bg-rose-500/10 border-rose-500/30'
           )}
         >
           {isAcceptance && (

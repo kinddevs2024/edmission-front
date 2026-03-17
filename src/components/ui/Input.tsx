@@ -1,6 +1,7 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
+import { DateInput } from '@/components/ui/DateInput'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -38,6 +39,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   function Input({ label, error, hint, success, left, right, passwordVisible, onPasswordVisibilityToggle, showPasswordToggle = true, className, id, type, placeholder, size: _size, color: _color, ...props }, ref) {
     const { t } = useTranslation('common')
     const [internalShow, setInternalShow] = useState(false)
+    if (type === 'date') {
+      return (
+        <DateInput
+          ref={ref}
+          id={id}
+          label={label}
+          error={error}
+          hint={hint}
+          success={success}
+          left={left}
+          right={right}
+          className={className}
+          placeholder={placeholder}
+          {...props}
+        />
+      )
+    }
     const isPassword = type === 'password'
     const isControlled = isPassword && typeof passwordVisible === 'boolean' && typeof onPasswordVisibilityToggle === 'function'
     const showPassword = isControlled ? passwordVisible : internalShow

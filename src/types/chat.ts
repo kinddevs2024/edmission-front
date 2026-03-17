@@ -18,6 +18,8 @@ export interface Chat {
   acceptedAt?: string
   acceptancePositionType?: string
   acceptancePositionLabel?: string
+  isReadOnly?: boolean
+  readOnlyReason?: string
 }
 
 export type MessageType = 'text' | 'voice' | 'emotion' | 'system'

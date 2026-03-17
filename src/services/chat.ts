@@ -12,6 +12,8 @@ type RawChat = {
   acceptedAt?: string
   acceptancePositionType?: string
   acceptancePositionLabel?: string
+  isReadOnly?: boolean
+  readOnlyReason?: string
 }
 
 function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'): Chat {
@@ -63,6 +65,8 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
     acceptedAt: raw.acceptedAt,
     acceptancePositionType: raw.acceptancePositionType,
     acceptancePositionLabel: raw.acceptancePositionLabel,
+    isReadOnly: raw.isReadOnly,
+    readOnlyReason: raw.readOnlyReason,
   }
 }
 

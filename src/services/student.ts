@@ -87,25 +87,69 @@ export async function updateStudentProfile(patch: Partial<StudentProfileData>): 
 }
 
 export interface UniversitiesParams extends PaginationParams {
+  search?: string
   country?: string
-  city?: string
-  degree?: string
   hasScholarship?: boolean
-  sort?: 'match' | 'name' | 'rating'
+  facultyCodes?: string[]
+  degreeLevels?: string[]
+  programLanguages?: string[]
+  targetStudentCountries?: string[]
+  minTuition?: number
+  maxTuition?: number
+  minEstablishedYear?: number
+  maxEstablishedYear?: number
+  minStudentCount?: number
+  maxStudentCount?: number
+  requirementsQuery?: string
+  programQuery?: string
+  sort?: 'match' | 'name' | 'rating' | 'tuition_asc' | 'tuition_desc' | 'newest'
   /** When false, backend does not filter by profile (interestedFaculties, preferredCountries). Use after "Clear". */
   useProfileFilters?: boolean
 }
 
-function normalizeUniversityItem(u: UniversityListItem & { universityName?: string; logoUrl?: string }): UniversityListItem {
+function normalizeUniversityItem(
+  u: UniversityListItem & {
+    universityName?: string
+    logoUrl?: string
+    breakdown?: Record<string, number>
+    matchBreakdown?: Record<string, number>
+    foundedYear?: number
+    establishedYear?: number
+    studentCount?: number
+    targetStudentCountries?: string[]
+  }
+): UniversityListItem {
   return {
     ...u,
     name: u.name ?? u.universityName ?? '',
     logo: u.logo ?? u.logoUrl,
+    matchBreakdown: u.matchBreakdown ?? u.breakdown,
   }
 }
 
 export async function getUniversities(params?: UniversitiesParams): Promise<PaginatedResponse<UniversityListItem>> {
-  const res = await api.get<PaginatedResponse<UniversityListItem & { universityName?: string }>>('/student/universities', { params })
+  const query: Record<string, string> = {}
+  if (params?.page != null) query.page = String(params.page)
+  if (params?.limit != null) query.limit = String(params.limit)
+  if (params?.search) query.search = params.search
+  if (params?.country) query.country = params.country
+  if (params?.hasScholarship) query.hasScholarship = '1'
+  if (params?.facultyCodes?.length) query.facultyCodes = params.facultyCodes.join(',')
+  if (params?.degreeLevels?.length) query.degreeLevels = params.degreeLevels.join(',')
+  if (params?.programLanguages?.length) query.programLanguages = params.programLanguages.join(',')
+  if (params?.targetStudentCountries?.length) query.targetStudentCountries = params.targetStudentCountries.join(',')
+  if (params?.minTuition != null) query.minTuition = String(params.minTuition)
+  if (params?.maxTuition != null) query.maxTuition = String(params.maxTuition)
+  if (params?.minEstablishedYear != null) query.minEstablishedYear = String(params.minEstablishedYear)
+  if (params?.maxEstablishedYear != null) query.maxEstablishedYear = String(params.maxEstablishedYear)
+  if (params?.minStudentCount != null) query.minStudentCount = String(params.minStudentCount)
+  if (params?.maxStudentCount != null) query.maxStudentCount = String(params.maxStudentCount)
+  if (params?.requirementsQuery) query.requirementsQuery = params.requirementsQuery
+  if (params?.programQuery) query.programQuery = params.programQuery
+  if (params?.sort) query.sort = params.sort
+  if (params?.useProfileFilters === false) query.useProfileFilters = '0'
+
+  const res = await api.get<PaginatedResponse<UniversityListItem & { universityName?: string }>>('/student/universities', { params: query })
   const body = res.data
   if (!body) return { data: [], total: 0, page: 1 }
   const list = (body as { data?: (UniversityListItem & { universityName?: string })[] }).data ?? []

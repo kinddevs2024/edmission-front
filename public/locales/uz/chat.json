@@ -20,5 +20,8 @@
   "congratulatoryPlaceholder": "Tabriklaymiz! Sizga taklif qilamiz...",
   "acceptDefaultMessage": "Tabriklaymiz! Siz qabul qilindingiz.",
   "accepted": "Qabul qilindi",
-  "openProfile": "Profilni ochish"
+  "openProfile": "Profilni ochish",
+  "chatClosedTitle": "Chat yopildi",
+  "readOnlyRejected": "Bu universitet arizangiz rad etilgandan keyin chatni yopdi. Siz yozishmalarni hali ham ko'ra olasiz, lekin endi yangi xabar yubora olmaysiz.",
+  "readOnlyGeneric": "Bu chat faqat o'qish uchun ochiq. Siz yozishmalarni ko'ra olasiz, lekin yangi xabar yubora olmaysiz."
 }

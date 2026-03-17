@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { CelebrationModal } from '@/components/documents/CelebrationModal'
 import { DocumentCanvasStage } from '@/components/documents/DocumentCanvasStage'
+import { DocumentSummaryPanel } from '@/components/documents/DocumentSummaryPanel'
 import { DocumentStatusBadge } from '@/components/documents/DocumentStatusBadge'
 import { StudentDecisionPanel } from '@/components/documents/StudentDecisionPanel'
 import { acceptIssuedDocument, declineIssuedDocument, getIssuedDocument, postponeIssuedDocument, viewIssuedDocument } from '@/services/documents'
@@ -13,6 +15,7 @@ import { toastApiError } from '@/utils/toastError'
 import type { UniversityDocumentSummary } from '@/types/documentModule'
 
 export function StudentReceivedDocument() {
+  const { t } = useTranslation(['documents', 'common'])
   const navigate = useNavigate()
   const { id } = useParams()
   const [document, setDocument] = useState<UniversityDocumentSummary | null>(null)
@@ -73,7 +76,7 @@ export function StudentReceivedDocument() {
   if (loading || !document || !scene) {
     return (
       <div className="space-y-4">
-        <PageTitle title="Document" icon="FileText" />
+        <PageTitle title={t('documents:common.document', 'Document')} icon="FileText" />
         <Card><div className="h-64 animate-pulse rounded-card bg-[var(--color-border)]" /></Card>
       </div>
     )
@@ -83,11 +86,11 @@ export function StudentReceivedDocument() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={document.title ?? 'Document'} icon="FileText" />
+      <PageTitle title={document.title ?? t('documents:common.document', 'Document')} icon="FileText" />
 
       <CelebrationModal
         open={celebrationOpen}
-        universityName={document.university?.name ?? 'University'}
+        universityName={document.university?.name ?? t('documents:common.university', 'University')}
         type={document.type}
         onView={handleViewDocument}
         onClose={() => setCelebrationOpen(false)}
@@ -95,13 +98,14 @@ export function StudentReceivedDocument() {
 
       <Card className="flex flex-wrap items-start justify-between gap-3 border border-[var(--color-border)]">
         <div>
-          <h2 className="text-2xl font-semibold">{document.university?.name ?? 'University'}</h2>
-          <p className="text-sm text-[var(--color-text-muted)]">Deadline: {document.expiresAt ? new Date(document.expiresAt).toLocaleDateString() : 'Open ended'}</p>
+          <h2 className="text-2xl font-semibold">{document.university?.name ?? t('documents:common.university', 'University')}</h2>
+          <p className="text-sm text-[var(--color-text-muted)]">{t('documents:studentDocument.deadline', 'Deadline')}: {document.expiresAt ? new Date(document.expiresAt).toLocaleDateString() : t('documents:summary.openEnded', 'Open ended')}</p>
         </div>
         <DocumentStatusBadge status={document.status} />
       </Card>
 
       <DocumentCanvasStage scene={scene} zoom={sceneZoom} />
+      <DocumentSummaryPanel payload={document.renderedPayload} fallbackDeadline={document.expiresAt} />
 
       {canDecide ? (
         <StudentDecisionPanel
@@ -113,13 +117,13 @@ export function StudentReceivedDocument() {
         />
       ) : (
         <Card className="border border-[var(--color-border)] text-sm text-[var(--color-text-muted)]">
-          This document is closed for further actions.
+          {t('documents:studentDocument.closedForFurtherActions', 'This document is closed for further actions.')}
         </Card>
       )}
 
       {document.events?.length ? (
         <Card className="space-y-3 border border-[var(--color-border)]">
-          <h3 className="text-lg font-semibold">Timeline</h3>
+          <h3 className="text-lg font-semibold">{t('documents:common.timeline', 'Timeline')}</h3>
           <div className="space-y-2">
             {document.events.map((event) => (
               <div key={event.id} className="rounded-[18px] border border-[var(--color-border)] px-3 py-2">
@@ -134,7 +138,7 @@ export function StudentReceivedDocument() {
       ) : null}
 
       <div className="flex justify-end">
-        <Button variant="secondary" onClick={() => navigate('/student/offers')}>Back to offers</Button>
+        <Button variant="secondary" onClick={() => navigate('/student/offers')}>{t('documents:studentDocument.backToOffers', 'Back to offers')}</Button>
       </div>
     </div>
   )

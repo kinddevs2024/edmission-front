@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { DocumentCanvasStage } from '@/components/documents/DocumentCanvasStage'
+import { DocumentSummaryPanel } from '@/components/documents/DocumentSummaryPanel'
 import { DocumentStatusBadge } from '@/components/documents/DocumentStatusBadge'
 import { TemplateCard } from '@/components/documents/TemplateCard'
 import { deleteIssuedDocument, duplicateDocumentTemplate, getIssuedDocument, getDocumentTemplates, listIssuedDocuments, revokeIssuedDocument, updateDocumentTemplate } from '@/services/documents'
@@ -14,6 +16,7 @@ import type { DocumentTemplate, UniversityDocumentSummary } from '@/types/docume
 type DocumentsTab = 'templates' | 'sent' | 'drafts' | 'settings'
 
 export function UniversityDocuments() {
+  const { t } = useTranslation(['documents', 'common'])
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [tab, setTab] = useState<DocumentsTab>('templates')
@@ -93,15 +96,15 @@ export function UniversityDocuments() {
   }
 
   const tabs: Array<{ id: DocumentsTab; label: string }> = [
-    { id: 'templates', label: 'Templates' },
-    { id: 'sent', label: 'Sent Documents' },
-    { id: 'drafts', label: 'Drafts' },
-    { id: 'settings', label: 'Settings' },
+    { id: 'templates', label: t('documents:universityDocuments.tabs.templates', 'Templates') },
+    { id: 'sent', label: t('documents:universityDocuments.tabs.sent', 'Sent documents') },
+    { id: 'drafts', label: t('documents:universityDocuments.tabs.drafts', 'Drafts') },
+    { id: 'settings', label: t('documents:universityDocuments.tabs.settings', 'Settings') },
   ]
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Documents" icon="FileText" />
+      <PageTitle title={t('documents:universityDocuments.pageTitle', 'Documents')} icon="FileText" />
 
       <Card className="flex flex-wrap items-center justify-between gap-3 border border-[var(--color-border)]">
         <div className="flex flex-wrap gap-2">
@@ -112,9 +115,9 @@ export function UniversityDocuments() {
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant={typeFilter === 'all' ? 'primary' : 'secondary'} size="sm" onClick={() => setTypeFilter('all')}>All</Button>
-          <Button variant={typeFilter === 'offer' ? 'primary' : 'secondary'} size="sm" onClick={() => setTypeFilter('offer')}>Offer</Button>
-          <Button variant={typeFilter === 'scholarship' ? 'primary' : 'secondary'} size="sm" onClick={() => setTypeFilter('scholarship')}>Scholarship</Button>
+          <Button variant={typeFilter === 'all' ? 'primary' : 'secondary'} size="sm" onClick={() => setTypeFilter('all')}>{t('common:all', 'All')}</Button>
+          <Button variant={typeFilter === 'offer' ? 'primary' : 'secondary'} size="sm" onClick={() => setTypeFilter('offer')}>{t('documents:type.offer', 'Offer')}</Button>
+          <Button variant={typeFilter === 'scholarship' ? 'primary' : 'secondary'} size="sm" onClick={() => setTypeFilter('scholarship')}>{t('documents:type.scholarship', 'Scholarship')}</Button>
         </div>
       </Card>
 
@@ -122,19 +125,19 @@ export function UniversityDocuments() {
         <Card className="space-y-4 border border-[var(--color-border)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">
-              <Button variant={statusFilter === 'all' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('all')}>All</Button>
-              <Button variant={statusFilter === 'draft' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('draft')}>Draft</Button>
-              <Button variant={statusFilter === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('active')}>Active</Button>
-              <Button variant={statusFilter === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('archived')}>Archived</Button>
+              <Button variant={statusFilter === 'all' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('all')}>{t('common:all', 'All')}</Button>
+              <Button variant={statusFilter === 'draft' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('draft')}>{t('documents:templateStatus.draft', 'Draft')}</Button>
+              <Button variant={statusFilter === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('active')}>{t('documents:templateStatus.active', 'Active')}</Button>
+              <Button variant={statusFilter === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('archived')}>{t('documents:templateStatus.archived', 'Archived')}</Button>
             </div>
-            <Button onClick={() => navigate('/university/documents/templates/new')}>Create template</Button>
+            <Button onClick={() => navigate('/university/documents/templates/new')}>{t('documents:universityDocuments.createTemplate', 'Create template')}</Button>
           </div>
 
           {loading ? (
-            <p className="text-sm text-[var(--color-text-muted)]">Loading...</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
           ) : templates.length === 0 ? (
             <Card className="border border-dashed border-[var(--color-border)] text-sm text-[var(--color-text-muted)]">
-              No templates yet.
+              {t('documents:universityDocuments.noTemplatesYet', 'No templates yet.')}
             </Card>
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -159,7 +162,7 @@ export function UniversityDocuments() {
           <Card className="space-y-4 border border-[var(--color-border)]">
             {documents.length === 0 ? (
               <Card className="border border-dashed border-[var(--color-border)] text-sm text-[var(--color-text-muted)]">
-                No sent documents yet.
+                {t('documents:universityDocuments.noSentDocumentsYet', 'No sent documents yet.')}
               </Card>
             ) : (
               documents.map((document) => (
@@ -171,9 +174,9 @@ export function UniversityDocuments() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
-                      <h3 className="text-base font-semibold">{document.title ?? 'Document'}</h3>
-                      <p className="text-sm text-[var(--color-text-muted)]">{document.student?.fullName ?? 'Student'}</p>
-                      <p className="text-xs text-[var(--color-text-muted)]">Sent {new Date(document.sentAt).toLocaleString()}</p>
+                      <h3 className="text-base font-semibold">{document.title ?? t('documents:common.document', 'Document')}</h3>
+                      <p className="text-sm text-[var(--color-text-muted)]">{document.student?.fullName ?? t('documents:common.student', 'Student')}</p>
+                      <p className="text-xs text-[var(--color-text-muted)]">{t('documents:universityDocuments.sentOn', { date: new Date(document.sentAt).toLocaleString(), defaultValue: 'Sent {{date}}' })}</p>
                     </div>
                     <DocumentStatusBadge status={document.status} />
                   </div>
@@ -184,7 +187,7 @@ export function UniversityDocuments() {
 
           <Card className="space-y-4 border border-[var(--color-border)]">
             {detailLoading ? (
-              <p className="text-sm text-[var(--color-text-muted)]">Loading document details...</p>
+              <p className="text-sm text-[var(--color-text-muted)]">{t('documents:universityDocuments.loadingDocumentDetails', 'Loading document details...')}</p>
             ) : selectedDocument && detailScene ? (
               <>
                 <div className="flex items-center justify-between gap-3">
@@ -195,9 +198,10 @@ export function UniversityDocuments() {
                   <DocumentStatusBadge status={selectedDocument.status} />
                 </div>
                 <DocumentCanvasStage scene={detailScene} zoom={detailZoom} />
+                <DocumentSummaryPanel payload={selectedDocument.renderedPayload} fallbackDeadline={selectedDocument.expiresAt} />
                 {selectedDocument.events?.length ? (
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold">Audit</p>
+                    <p className="text-sm font-semibold">{t('documents:common.audit', 'Audit')}</p>
                     <div className="space-y-2">
                       {selectedDocument.events.map((event) => (
                         <div key={event.id} className="rounded-[18px] border border-[var(--color-border)] px-3 py-2 text-sm">
@@ -210,13 +214,13 @@ export function UniversityDocuments() {
                 ) : null}
                 {['sent', 'viewed', 'postponed'].includes(selectedDocument.status) ? (
                   <Button variant="danger" onClick={() => revokeIssuedDocument(selectedDocument.id).then((doc) => { setSelectedDocument(doc); loadDocuments() }).catch(toastApiError)}>
-                    Revoke document
+                    {t('documents:universityDocuments.revokeDocument', 'Revoke document')}
                   </Button>
                 ) : null}
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    if (!window.confirm(`Delete "${selectedDocument.title}" from Documents?`)) return
+                    if (!window.confirm(t('documents:universityDocuments.deleteConfirm', { title: selectedDocument.title ?? t('documents:common.document', 'Document'), defaultValue: 'Delete "{{title}}" from Documents?' }))) return
                     deleteIssuedDocument(selectedDocument.id)
                       .then(() => {
                         setSelectedDocument(null)
@@ -225,12 +229,12 @@ export function UniversityDocuments() {
                       .catch(toastApiError)
                   }}
                 >
-                  Delete from list
+                  {t('documents:universityDocuments.deleteFromList', 'Delete from list')}
                 </Button>
               </>
             ) : (
               <div className="rounded-[24px] border border-dashed border-[var(--color-border)] p-6 text-sm text-[var(--color-text-muted)]">
-                Select any sent document to inspect its snapshot and audit trail.
+                {t('documents:universityDocuments.selectDocumentToInspect', 'Select any sent document to inspect its snapshot and audit trail.')}
               </div>
             )}
           </Card>
@@ -240,7 +244,7 @@ export function UniversityDocuments() {
       {tab === 'drafts' ? (
         <Card className="space-y-4 border border-[var(--color-border)]">
           {draftTemplates.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">No drafts.</p>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('documents:universityDocuments.noDrafts', 'No drafts.')}</p>
           ) : (
             draftTemplates.map((template) => (
               <TemplateCard
@@ -259,21 +263,21 @@ export function UniversityDocuments() {
       {tab === 'settings' ? (
         <Card className="space-y-4 border border-[var(--color-border)]">
           <div>
-            <h3 className="text-lg font-semibold">Module decisions</h3>
-            <p className="text-sm text-[var(--color-text-muted)]">Unified documents engine, one editor for offer/scholarship, single postpone flow, snapshot storage, expired distinct from declined.</p>
+            <h3 className="text-lg font-semibold">{t('documents:universityDocuments.moduleDecisions', 'Module decisions')}</h3>
+            <p className="text-sm text-[var(--color-text-muted)]">{t('documents:universityDocuments.moduleDecisionsText', 'Unified documents engine, one editor for offer/scholarship, single postpone flow, snapshot storage, expired distinct from declined.')}</p>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="rounded-[24px] border border-[var(--color-border)] p-4">
-              <p className="text-sm font-semibold">Default offer template</p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{templates.find((template) => template.type === 'offer' && template.isDefault)?.name ?? 'Not set'}</p>
+              <p className="text-sm font-semibold">{t('documents:universityDocuments.defaultOfferTemplate', 'Default offer template')}</p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{templates.find((template) => template.type === 'offer' && template.isDefault)?.name ?? t('documents:universityDocuments.notSet', 'Not set')}</p>
             </div>
             <div className="rounded-[24px] border border-[var(--color-border)] p-4">
-              <p className="text-sm font-semibold">Default scholarship template</p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{templates.find((template) => template.type === 'scholarship' && template.isDefault)?.name ?? 'Not set'}</p>
+              <p className="text-sm font-semibold">{t('documents:universityDocuments.defaultScholarshipTemplate', 'Default scholarship template')}</p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">{templates.find((template) => template.type === 'scholarship' && template.isDefault)?.name ?? t('documents:universityDocuments.notSet', 'Not set')}</p>
             </div>
           </div>
           <div className="rounded-[24px] border border-[var(--color-border)] p-4 text-sm text-[var(--color-text-muted)]">
-            Deleting a template does not affect already sent documents because every student document stores its own frozen snapshot and rendered payload.
+            {t('documents:universityDocuments.settingsFootnote', 'Deleting a template does not affect already sent documents because every student document stores its own frozen snapshot and rendered payload.')}
           </div>
         </Card>
       ) : null}

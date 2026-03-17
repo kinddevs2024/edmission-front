@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/Badge'
 import type { StudentDocumentStatus } from '@/types/documentModule'
 
@@ -22,6 +23,7 @@ const STATUS_VARIANTS: Record<StudentDocumentStatus, 'default' | 'success' | 'wa
 }
 
 export function DocumentStatusBadge({ status }: { status: StudentDocumentStatus }) {
-  return <Badge variant={STATUS_VARIANTS[status]}>{STATUS_LABELS[status]}</Badge>
-}
+  const { t } = useTranslation('documents')
 
+  return <Badge variant={STATUS_VARIANTS[status]}>{t(`status.${status}`, STATUS_LABELS[status])}</Badge>
+}

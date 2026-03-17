@@ -339,15 +339,8 @@ export function Pipeline() {
           studentName={sendDocumentStudent.name}
           onClose={() => setSendDocumentStudent(null)}
           onSent={() => {
-            const currentStudent = sendDocumentStudent
             setSendDocumentStudent(null)
-            if (!currentStudent || currentStudent.stage === 'offer_sent') {
-              loadPipeline()
-              return
-            }
-            updateInterestStatus(currentStudent.applicationId, 'offer_sent')
-              .catch(toastApiError)
-              .finally(() => loadPipeline())
+            loadPipeline()
           }}
         />
       ) : null}

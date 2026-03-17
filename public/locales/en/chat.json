@@ -20,5 +20,8 @@
   "congratulatoryPlaceholder": "Congratulations! We are pleased to offer you...",
   "acceptDefaultMessage": "Congratulations! You have been accepted.",
   "accepted": "Accepted",
-  "openProfile": "Open profile"
+  "openProfile": "Open profile",
+  "chatClosedTitle": "Chat closed",
+  "readOnlyRejected": "This university closed the chat after rejecting your application. You can still read the conversation, but you can no longer send messages.",
+  "readOnlyGeneric": "This chat is read-only. You can still view the conversation, but you cannot send new messages."
 }

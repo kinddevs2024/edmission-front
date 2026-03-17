@@ -1,13 +1,13 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { supportedLngs, defaultNS, fallbackLng, namespaces, getInitialLanguage } from './config'
-import { studentEn, commonEn } from './fallbackEn'
+import { studentEn, commonEn, schoolEn } from './fallbackEn'
 
 /** Inline fallback when fetch returns empty (always works). */
-const FALLBACK_EN: Record<string, object> = { student: studentEn, common: commonEn }
+const FALLBACK_EN: Record<string, object> = { student: studentEn, common: commonEn, school: schoolEn }
 
-/** Namespaces needed for first paint (landing + common + student for sidebar). Load rest in background. */
-const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student']
+/** Namespaces needed for first paint (common nav + school sidebar + documents UI). Load rest in background. */
+const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student', 'school', 'documents']
 const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
 
 function getLocalesBaseUrl(): string {

@@ -10,26 +10,26 @@ import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
 
 export function SchoolLayout() {
-  const { t } = useTranslation('school')
+  const { t } = useTranslation(['school', 'common'])
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
 
   const navItems = useMemo(
     () => [
-      { to: '/school/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
-      { to: '/ai', label: 'Edmission AI', icon: 'Bot' as const },
-      { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
-      { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
-      { to: '/school/student-interests', label: t('studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' as const },
-      { to: '/school/join-requests', label: t('joinRequests'), icon: 'Users' as const },
-      { to: '/notifications', label: t('notifications'), icon: 'Bell' as const },
+      { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
+      { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' as const },
+      { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' as const },
+      { to: '/school/student-interests', label: t('school:studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' as const },
+      { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' as const },
+      { to: '/notifications', label: t('school:notifications'), icon: 'Bell' as const },
     ],
     [t]
   )
   const navBottomItems = useMemo(
     () => [
-      { to: '/support', label: 'Support', icon: 'HelpCircle' as const },
-      { to: '/profile', label: t('account', 'Account'), icon: 'Settings' as const },
+      { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' as const },
+      { to: '/profile', label: t('school:account', 'Account'), icon: 'Settings' as const },
     ],
     [t]
   )
@@ -37,10 +37,10 @@ export function SchoolLayout() {
   // Mobile bottom bar: no AI, no Support (old version only)
   const bottomNavItems = useMemo(
     () => [
-      { to: '/school/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
-      { to: '/school/my-school', label: t('mySchool'), icon: 'Building2' as const },
-      { to: '/school/my-students', label: t('myStudents'), icon: 'Users' as const },
-      { to: '/school/join-requests', label: t('joinRequests'), icon: 'Users' as const },
+      { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' as const },
+      { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' as const },
+      { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' as const },
     ],
     [t]
   )
@@ -55,7 +55,7 @@ export function SchoolLayout() {
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
         'flex-1 min-w-0 pb-20 md:pb-12 transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
-        'h-screen max-h-[100%] overflow-hidden',
+        'min-h-screen',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter min-h-full flex flex-col">

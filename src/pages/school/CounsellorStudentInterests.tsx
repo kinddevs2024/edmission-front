@@ -10,8 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CardSkeleton } from '@/components/ui/Skeleton'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { Building2 } from 'lucide-react'
-import { listMyStudents, addInterestForStudent, type CounsellorStudent } from '@/services/counsellor'
-import { getUniversities, type UniversitiesParams } from '@/services/student'
+import { listMyStudents, addInterestForStudent, listStudentUniversities, type CounsellorStudent, type CounsellorStudentUniversitiesParams } from '@/services/counsellor'
 import { toastApiError } from '@/utils/toastError'
 
 export function CounsellorStudentInterests() {
@@ -22,6 +21,7 @@ export function CounsellorStudentInterests() {
   const [country, setCountry] = useState<string>('')
   const [city, setCity] = useState<string>('')
   const [page, setPage] = useState(1)
+  const [useProfileFilters, setUseProfileFilters] = useState(true)
 
   const { data: studentsRes, isLoading: studentsLoading } = useQuery({
     queryKey: ['counsellor', 'students', 'for-interests'],
@@ -36,17 +36,17 @@ export function CounsellorStudentInterests() {
     }
   }, [students, selectedStudentId])
 
-  const vars: UniversitiesParams = {
+  const vars: CounsellorStudentUniversitiesParams = {
     page,
     limit: 12,
     country: country || undefined,
     city: city.trim() || undefined,
-    useProfileFilters: true,
+    useProfileFilters,
   }
 
   const { data: universitiesRes, isLoading: universitiesLoading } = useQuery({
-    queryKey: ['counsellor', 'student-universities', vars.page, vars.country, vars.city],
-    queryFn: () => getUniversities(vars),
+    queryKey: ['counsellor', 'student-universities', selectedStudentId, vars.page, vars.country, vars.city, vars.useProfileFilters],
+    queryFn: () => listStudentUniversities(selectedStudentId, vars),
     enabled: !!selectedStudentId,
     staleTime: 30 * 1000,
   })
@@ -70,6 +70,11 @@ export function CounsellorStudentInterests() {
     interestMutation.mutate({ studentId: selectedStudentId, universityId })
   }
 
+  const handleFilterChange = () => {
+    setPage(1)
+    setUseProfileFilters(true)
+  }
+
   const isRu = i18n.resolvedLanguage?.startsWith('ru')
   const isUz = i18n.resolvedLanguage?.startsWith('uz')
   const localized = {
@@ -91,6 +96,7 @@ export function CounsellorStudentInterests() {
     setCountry('')
     setCity('')
     setPage(1)
+    setUseProfileFilters(false)
   }
 
   const headerTitle = t('school:studentInterestsTitle', 'Student interests')
@@ -115,7 +121,13 @@ export function CounsellorStudentInterests() {
               <Select
                 label={localized.studentLabel}
                 value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
+                onChange={(e) => {
+                  setSelectedStudentId(e.target.value)
+                  setCountry('')
+                  setCity('')
+                  setPage(1)
+                  setUseProfileFilters(true)
+                }}
                 options={[
                   { value: '', label: localized.selectStudentPlaceholder },
                   ...students.map((s: CounsellorStudent) => ({
@@ -129,13 +141,13 @@ export function CounsellorStudentInterests() {
               <Select
                 label={t('student:country')}
                 value={country}
-                onChange={(e) => { setCountry(e.target.value); setPage(1) }}
+                onChange={(e) => { setCountry(e.target.value); handleFilterChange() }}
                 options={countryOptions}
               />
               <Input
                 label={t('student:city')}
                 value={city}
-                onChange={(e) => { setCity(e.target.value); setPage(1) }}
+                onChange={(e) => { setCity(e.target.value); handleFilterChange() }}
               />
               <div className="flex items-end">
                 <Button variant="secondary" className="w-full" onClick={handleClearFilters}>
@@ -211,4 +223,3 @@ export function CounsellorStudentInterests() {
     </div>
   )
 }
-

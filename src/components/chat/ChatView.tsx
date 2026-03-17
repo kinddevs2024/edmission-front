@@ -48,7 +48,7 @@ export function ChatView() {
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list')
 
-  const { joinChat, leaveChat, onNewMessage, onRead, onMessageUpdated, onMessageDeleted } = useSocket()
+  const { joinChat, leaveChat, onNewMessage, onRead, onNotification, onMessageUpdated, onMessageDeleted } = useSocket()
 
   const normalizeMessage = useCallback((message: Message | Record<string, unknown>) => {
     const raw = message as Message & { sender?: { id?: string; _id?: unknown }; senderId?: string | { _id?: unknown } }
@@ -77,6 +77,28 @@ export function ChatView() {
     } as Message
   }, [currentUserId])
 
+  const loadChats = useCallback(
+    async (options?: { selectedChatId?: string | null; selectChatId?: string; openThread?: boolean }) => {
+      const roleOrStudent = role ?? 'student'
+      const list = await getChats(roleOrStudent)
+      setChats(list)
+
+      const targetChatId = options?.selectChatId ?? options?.selectedChatId ?? null
+      if (targetChatId) {
+        const match = list.find((chat) => chat.id === targetChatId) ?? null
+        setSelectedChat(match)
+        if (match && options?.openThread) {
+          setMobileView('thread')
+        }
+      } else if (list.length === 0) {
+        setSelectedChat(null)
+      }
+
+      return list
+    },
+    [role]
+  )
+
   const syncChatPreview = useCallback((chatId: string, nextMessages: Message[]) => {
     const lastMessage = nextMessages.length > 0 ? getMessagePreview(nextMessages[nextMessages.length - 1]!) : undefined
 
@@ -104,12 +126,10 @@ export function ChatView() {
   }, [])
 
   useEffect(() => {
-    const roleOrStudent = role ?? 'student'
-    getChats(roleOrStudent)
-      .then(setChats)
+    loadChats()
       .catch((e) => { toastApiError(e); setChats([]) })
       .finally(() => setChatsLoading(false))
-  }, [role])
+  }, [loadChats])
 
   useEffect(() => {
     const chatId = searchParams.get('chat')
@@ -123,6 +143,31 @@ export function ChatView() {
     }
   }, [searchParams, chats, chatsLoading, setSearchParams])
 
+  useEffect(() => {
+    const unsubscribe = onNotification((payload) => {
+      const hasChatMetadata = typeof payload.metadata?.chatId === 'string' && payload.metadata.chatId.trim().length > 0
+      if (payload.type !== 'message' && !hasChatMetadata) return
+
+      const chatId =
+        typeof payload.referenceId === 'string' && payload.referenceId.trim()
+          ? payload.referenceId
+          : hasChatMetadata && typeof payload.metadata?.chatId === 'string' && payload.metadata.chatId.trim()
+            ? payload.metadata.chatId
+            : undefined
+
+      if (!chatId) return
+
+      const shouldAutoOpen = payload.type === 'message' && payload.metadata?.subtype === 'chat_opened'
+      loadChats({
+        selectedChatId: selectedChat?.id ?? null,
+        selectChatId: shouldAutoOpen ? chatId : undefined,
+        openThread: shouldAutoOpen,
+      }).catch(() => {})
+    })
+
+    return unsubscribe
+  }, [onNotification, loadChats, selectedChat?.id])
+
   const isValidObjectId = (id: string | null) =>
     typeof id === 'string' && id.trim().length === 24 && /^[a-f0-9]{24}$/i.test(id.trim())
 
@@ -132,20 +177,14 @@ export function ChatView() {
     const hasValidId = (studentId && isValidObjectId(studentId)) || (universityId && isValidObjectId(universityId))
     if (!hasValidId || !role || chatsLoading) return
 
-    const existing = chats.find((c) =>
-      studentId ? c.participant.id === studentId : universityId ? c.participant.id === universityId : false
-    )
-    if (existing) {
-      setSelectedChat(existing)
-      setMobileView('thread')
-      setSearchParams({}, { replace: true })
-      return
-    }
-
     const params = studentId ? { studentId } : { universityId: universityId! }
     createChat(params)
       .then((chat) => {
-        setChats((prev) => (prev.some((c) => c.id === chat.id) ? prev : [...prev, chat]))
+        setChats((prev) => (
+          prev.some((current) => current.id === chat.id)
+            ? prev.map((current) => (current.id === chat.id ? { ...current, ...chat } : current))
+            : [...prev, chat]
+        ))
         setSelectedChat(chat)
         setMobileView('thread')
         setSearchParams({}, { replace: true })
@@ -154,7 +193,7 @@ export function ChatView() {
         toastApiError(e)
         setSearchParams({}, { replace: true })
       })
-  }, [searchParams, role, chats, chatsLoading, setSearchParams])
+  }, [searchParams, role, chatsLoading, setSearchParams])
 
   useEffect(() => {
     if (!selectedChat?.id) {

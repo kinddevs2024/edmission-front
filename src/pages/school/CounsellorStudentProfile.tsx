@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { BackLink } from '@/components/ui/BackLink'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
@@ -17,7 +18,7 @@ import { getApiError } from '@/services/api'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { PageTitle } from '@/components/ui/PageTitle'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ArrowLeft, FileStack } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, FileStack } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 const schema = z.object({
@@ -445,9 +446,7 @@ export function CounsellorStudentProfile() {
   if (!studentId) {
     return (
       <div className="space-y-4">
-        <Link to="/school/my-students">
-          <Button variant="ghost" icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
-        </Link>
+        <BackLink to="/school/my-students">{t('common:back')}</BackLink>
         <p className="text-[var(--color-text-muted)]">{t('common:invalidStudent', 'Invalid student.')}</p>
       </div>
     )
@@ -456,9 +455,7 @@ export function CounsellorStudentProfile() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <Link to="/school/my-students">
-          <Button variant="ghost" icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
-        </Link>
+        <BackLink to="/school/my-students">{t('common:back')}</BackLink>
         <p className="text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
       </div>
     )
@@ -467,9 +464,7 @@ export function CounsellorStudentProfile() {
   if (error && !profile) {
     return (
       <div className="space-y-4">
-        <Link to="/school/my-students">
-          <Button variant="ghost" icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
-        </Link>
+        <BackLink to="/school/my-students">{t('common:back')}</BackLink>
         <p className="text-red-500">{error}</p>
       </div>
     )
@@ -478,9 +473,7 @@ export function CounsellorStudentProfile() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex flex-wrap items-center gap-2">
-        <Link to="/school/my-students">
-          <Button variant="ghost" size="sm" icon={<ArrowLeft size={16} />}>{t('common:back')}</Button>
-        </Link>
+        <BackLink to="/school/my-students">{t('common:back')}</BackLink>
       </div>
 
       <PageTitle title={name} icon="User" />

@@ -1,0 +1,132 @@
+{
+  "type": {
+    "offer": "Taklif",
+    "scholarship": "Stipendiya",
+    "offerDocument": "Taklif hujjati",
+    "scholarshipDocument": "Stipendiya hujjati"
+  },
+  "status": {
+    "sent": "Yuborilgan",
+    "viewed": "Ko'rilgan",
+    "accepted": "Qabul qilingan",
+    "declined": "Rad etilgan",
+    "postponed": "Kechiktirilgan",
+    "expired": "Muddati tugagan",
+    "revoked": "Bekor qilingan"
+  },
+  "templateStatus": {
+    "draft": "Qoralama",
+    "active": "Faol",
+    "archived": "Arxivlangan"
+  },
+  "common": {
+    "document": "Hujjat",
+    "student": "Talaba",
+    "university": "Universitet",
+    "audit": "Audit",
+    "timeline": "Vaqt jadvali"
+  },
+  "sendModal": {
+    "title": "Hujjat yuborish",
+    "titleWithName": "{{name}} ga hujjat yuborish",
+    "previewFinalDocument": "Yakuniy hujjatni ko'rish",
+    "templates": "Shablonlar",
+    "noTemplatesFound": "Bu turdagi hujjat uchun shablonlar topilmadi.",
+    "acceptDeadline": "Qabul qilish muddati",
+    "program": "Dastur",
+    "degreeLevel": "Daraja bosqichi",
+    "intake": "Qabul mavsumi",
+    "startDate": "Boshlanish sanasi",
+    "tuitionFee": "O'qish narxi",
+    "currency": "Valyuta",
+    "scholarshipAmount": "Stipendiya summasi",
+    "scholarshipPercent": "Stipendiya foizi",
+    "scholarshipType": "Stipendiya turi",
+    "offerConditions": "Taklif shartlari",
+    "optionalUniversityMessage": "Universitet xabari",
+    "preview": "Ko'rish",
+    "previewDetails": "Ko'rish tafsilotlari"
+  },
+  "summary": {
+    "heading": "Hujjat xulosasi",
+    "fallbackDescription": "Hujjatni yuborish yoki qabul qilishdan oldin quyidagi asosiy shartlarni ko'rib chiqing.",
+    "finePrint": "Bu xulosa hujjatga biriktirilgan asosiy sanalar, to'lovlar, shartlar va stipendiya tafsilotlarini tushuntiradi.",
+    "universityMessage": "Universitet xabari",
+    "openEnded": "Cheklanmagan",
+    "labels": {
+      "issued": "Berilgan",
+      "acceptBy": "Qabul qilish muddati",
+      "program": "Dastur",
+      "degree": "Daraja",
+      "intake": "Qabul",
+      "startDate": "Boshlanish sanasi",
+      "tuition": "To'lov",
+      "scholarship": "Stipendiya",
+      "conditions": "Shartlar",
+      "referenceId": "Hujjat ID"
+    }
+  },
+  "celebration": {
+    "receivedOfferTitle": "Siz taklif oldingiz",
+    "receivedScholarshipTitle": "Siz stipendiya oldingiz",
+    "viewDocument": "Hujjatni ochish",
+    "congratulations": "Tabriklaymiz",
+    "offerDescription": "Shaxsiy taklifingiz tayyor. To'liq ma'lumotlarni ko'rish va qaror qabul qilish uchun uni oching.",
+    "scholarshipDescription": "Shaxsiy stipendiya hujjatingiz tayyor. To'liq ma'lumotlarni ko'rish va qaror qabul qilish uchun uni oching."
+  },
+  "templateCard": {
+    "default": "Asosiy",
+    "noPreview": "Hali preview matni yo'q.",
+    "edit": "Tahrirlash",
+    "duplicate": "Nusxa olish",
+    "archive": "Arxivlash",
+    "setDefault": "Asosiy qilish"
+  },
+  "decisionPanel": {
+    "title": "Qaror",
+    "description": "Bitta amalni tanlang. Kechiktirish faqat 3/7/14 kunlik bitta oynada ishlaydi.",
+    "accept": "Qabul qilish",
+    "decideLater": "Keyinroq qaror qilish",
+    "decline": "Rad etish",
+    "postponeDays": "{{count}} kunga kechiktirish"
+  },
+  "studentOffers": {
+    "pageTitle": "Takliflar va stipendiyalar",
+    "emptyTitle": "Hali hujjatlar yo'q",
+    "emptyDescription": "Universitet sizga taklif yoki stipendiya yuborganda, u shu yerda ko'rinadi.",
+    "type": "Turi",
+    "sent": "Yuborilgan",
+    "deadline": "Muddat",
+    "openDocument": "Hujjatni ochish"
+  },
+  "studentDocument": {
+    "deadline": "Muddat",
+    "closedForFurtherActions": "Bu hujjat bo'yicha boshqa harakatlar yopilgan.",
+    "backToOffers": "Takliflarga qaytish"
+  },
+  "universityDocuments": {
+    "pageTitle": "Hujjatlar",
+    "tabs": {
+      "templates": "Shablonlar",
+      "sent": "Yuborilgan hujjatlar",
+      "drafts": "Qoralamalar",
+      "settings": "Sozlamalar"
+    },
+    "createTemplate": "Shablon yaratish",
+    "noTemplatesYet": "Hali shablonlar yo'q.",
+    "noSentDocumentsYet": "Hali yuborilgan hujjatlar yo'q.",
+    "sentOn": "{{date}} da yuborilgan",
+    "loadingDocumentDetails": "Hujjat tafsilotlari yuklanmoqda...",
+    "revokeDocument": "Hujjatni bekor qilish",
+    "deleteFromList": "Ro'yxatdan o'chirish",
+    "deleteConfirm": "\"{{title}}\" ni Hujjatlar bo'limidan o'chirishni xohlaysizmi?",
+    "selectDocumentToInspect": "Snapshot va audit izini ko'rish uchun yuborilgan hujjatdan birini tanlang.",
+    "noDrafts": "Qoralamalar yo'q.",
+    "moduleDecisions": "Modul qarorlari",
+    "moduleDecisionsText": "Taklif va stipendiya uchun yagona hujjat engine'i, bitta editor, yagona postpone oqimi, snapshot saqlash, expired holati declined holatidan alohida.",
+    "defaultOfferTemplate": "Asosiy taklif shabloni",
+    "defaultScholarshipTemplate": "Asosiy stipendiya shabloni",
+    "notSet": "O'rnatilmagan",
+    "settingsFootnote": "Shablonni o'chirish allaqachon yuborilgan hujjatlarga ta'sir qilmaydi, chunki har bir talaba hujjati o'zining frozen snapshot va rendered payload ma'lumotlarini saqlaydi."
+  }
+}
