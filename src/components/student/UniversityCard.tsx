@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge'
 import { MatchScore } from './MatchScore'
 import { getImageUrl } from '@/services/upload'
 import { useDominantColor } from '@/hooks/useDominantColor'
+import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/utils/cn'
 import type { UniversityListItem } from '@/types/university'
 
@@ -34,10 +35,15 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
 
   const logoUrl = logo ? getImageUrl(logo) : null
   const dominantColor = useDominantColor(logoUrl)
+  const isDarkTheme = useUIStore((state) => state.theme === 'dark')
   const shadowColor = dominantColor ?? '#22c55e'
   const cardStyle = {
     ...(dominantColor
-      ? { background: `linear-gradient(to bottom, ${dominantColor}22 0%, ${dominantColor}14 20%, ${dominantColor}0a 45%, #f2f9f2 100%)` }
+      ? {
+          background: isDarkTheme
+            ? `linear-gradient(180deg, ${dominantColor}2d 0%, ${dominantColor}1d 28%, ${dominantColor}12 58%, rgba(7, 12, 14, 0.94) 100%)`
+            : `linear-gradient(180deg, ${dominantColor}22 0%, ${dominantColor}14 20%, ${dominantColor}0a 45%, #f2f9f2 100%)`,
+        }
       : {}),
     boxShadow: `0 10px 30px -8px ${shadowColor}40, 0 4px 12px -4px ${shadowColor}28`,
   }
@@ -55,7 +61,10 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-4 min-w-0">
           {logo ? (
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-card flex-shrink-0 flex items-center justify-center bg-[var(--color-card)]/80 border border-[var(--color-border)]/50 shadow-sm overflow-hidden p-1">
+            <div
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-card flex-shrink-0 flex items-center justify-center border border-[var(--color-border)]/50 shadow-sm overflow-hidden p-1"
+              style={{ backgroundColor: isDarkTheme ? 'rgba(9, 15, 20, 0.78)' : 'rgba(255, 255, 255, 0.8)' }}
+            >
               <img src={logoUrl!} alt="" loading="lazy" className="w-full h-full object-contain" />
             </div>
           ) : (

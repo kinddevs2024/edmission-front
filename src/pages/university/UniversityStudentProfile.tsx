@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
-import { Modal } from '@/components/ui/Modal'
+import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { getStudentProfile, type FullStudentProfile } from '@/services/university'
 import { getApiError } from '@/services/api'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
 import { ArrowLeft, MessageCircle, FileText, ExternalLink } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { getStudentDisplayName } from '@/utils/studentDisplay'
 
 export function UniversityStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
@@ -19,7 +20,7 @@ export function UniversityStudentProfile() {
   const [profile, setProfile] = useState<FullStudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filePreview, setFilePreview] = useState<{ url: string; name: string } | null>(null)
+  const [filePreview, setFilePreview] = useState<NonNullable<FullStudentProfile['documents']>[number] | null>(null)
 
   useEffect(() => {
     if (!studentId) return
@@ -65,10 +66,7 @@ export function UniversityStudentProfile() {
     )
   }
 
-  const name = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || t('university:studentLabel')
-
-  const isPdf = (url: string) => url.toLowerCase().includes('.pdf') || url.includes('application/pdf')
-  const isImage = (url: string) => /\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url) || url.includes('image/')
+  const name = getStudentDisplayName(profile, t('university:studentLabel'))
 
   return (
     <div className="space-y-6">
@@ -113,6 +111,7 @@ export function UniversityStudentProfile() {
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
               <dt className="text-[var(--color-text-muted)]">First name</dt><dd>{profile.firstName ?? '—'}</dd>
               <dt className="text-[var(--color-text-muted)]">Last name</dt><dd>{profile.lastName ?? '—'}</dd>
+              <dt className="text-[var(--color-text-muted)]">Email</dt><dd>{profile.email ?? '—'}</dd>
               <dt className="text-[var(--color-text-muted)]">Date of birth</dt><dd>{profile.birthDate ? formatDate(profile.birthDate) : '—'}</dd>
             </dl>
           </Card>
@@ -271,10 +270,10 @@ export function UniversityStudentProfile() {
                 {d.score && <span className="text-[var(--color-text-muted)]">Score: {d.score}</span>}
                 <button
                   type="button"
-                  onClick={() => setFilePreview({ url: d.fileUrl ?? '', name: (d.name ?? d.type) ?? 'Document' })}
+                  onClick={() => setFilePreview(d)}
                   className="text-primary-accent hover:underline"
                 >
-                  View file
+                  Preview
                 </button>
               </li>
             ))}
@@ -291,24 +290,18 @@ export function UniversityStudentProfile() {
         <Button variant="secondary" onClick={() => navigate(-1)}>{t('common:backToList')}</Button>
       </div>
 
-      <Modal open={!!filePreview} onClose={() => setFilePreview(null)} title={filePreview?.name ?? ''}>
-        {filePreview && (
-          <div className="min-h-[200px] max-h-[70vh] overflow-auto">
-            {isPdf(filePreview.url) ? (
-              <iframe src={filePreview.url} title={filePreview.name} className="w-full h-[60vh] rounded border border-[var(--color-border)]" />
-            ) : isImage(filePreview.url) ? (
-              <img src={filePreview.url} alt={filePreview.name} className="max-w-full h-auto rounded border border-[var(--color-border)]" />
-            ) : (
-              <div>
-                <p className="text-sm text-[var(--color-text-muted)] mb-2">Preview not available. Download the file to open it.</p>
-                <a href={filePreview.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-accent hover:underline">
-                  <ExternalLink size={16} /> Open / Download
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
+      <DocumentPreviewModal
+        open={!!filePreview}
+        onClose={() => setFilePreview(null)}
+        title={filePreview?.name ?? filePreview?.type ?? 'Document'}
+        document={filePreview ? {
+          fileUrl: filePreview.fileUrl,
+          canvasJson: filePreview.canvasJson,
+          pageFormat: filePreview.pageFormat,
+          width: filePreview.width,
+          height: filePreview.height,
+        } : null}
+      />
     </div>
   )
 }

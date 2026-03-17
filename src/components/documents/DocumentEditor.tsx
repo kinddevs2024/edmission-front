@@ -1,0 +1,475 @@
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
+import { uploadFile } from '@/services/upload'
+import { useDocumentEditorStore } from '@/store/documentEditorStore'
+import { DocumentCanvasStage } from './DocumentCanvasStage'
+import { MERGE_TAG_GROUPS, createSamplePayload, resolveScene, stringifyScene } from '@/utils/documentScene'
+import type { DocumentTemplate, EditableSceneDocument, EditorDocumentType } from '@/types/documentModule'
+import { toastApiError } from '@/utils/toastError'
+
+type TypeOption = {
+  value: EditorDocumentType
+  label: string
+}
+
+const DEFAULT_TYPE_OPTIONS: TypeOption[] = [
+  { value: 'offer', label: 'Offer' },
+  { value: 'scholarship', label: 'Scholarship' },
+]
+
+export function DocumentEditor({
+  mode = 'template',
+  saving,
+  saveLabel,
+  typeOptions = DEFAULT_TYPE_OPTIONS,
+  onSave,
+}: {
+  mode?: 'template' | 'profile'
+  saving?: boolean
+  saveLabel?: string
+  typeOptions?: TypeOption[]
+  onSave: (payload: EditableSceneDocument & { type: EditorDocumentType; name: string }) => Promise<void> | void
+}) {
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
+  const logoInputRef = useRef<HTMLInputElement | null>(null)
+  const signatureInputRef = useRef<HTMLInputElement | null>(null)
+  const backgroundInputRef = useRef<HTMLInputElement | null>(null)
+  const scene = useDocumentEditorStore((state) => state.scene)
+  const selectedElementId = useDocumentEditorStore((state) => state.selectedElementId)
+  const stageZoom = useDocumentEditorStore((state) => state.stageZoom)
+  const metadata = useDocumentEditorStore((state) => state.metadata)
+  const previewData = useDocumentEditorStore((state) => state.previewData)
+  const selectElement = useDocumentEditorStore((state) => state.selectElement)
+  const setMetadata = useDocumentEditorStore((state) => state.setMetadata)
+  const setPreviewData = useDocumentEditorStore((state) => state.setPreviewData)
+  const setStageZoom = useDocumentEditorStore((state) => state.setStageZoom)
+  const addElement = useDocumentEditorStore((state) => state.addElement)
+  const updateElement = useDocumentEditorStore((state) => state.updateElement)
+  const removeElement = useDocumentEditorStore((state) => state.removeElement)
+  const duplicateElement = useDocumentEditorStore((state) => state.duplicateElement)
+  const moveLayer = useDocumentEditorStore((state) => state.moveLayer)
+  const toggleLock = useDocumentEditorStore((state) => state.toggleLock)
+  const alignElement = useDocumentEditorStore((state) => state.alignElement)
+  const undo = useDocumentEditorStore((state) => state.undo)
+  const redo = useDocumentEditorStore((state) => state.redo)
+  const [showGuide, setShowGuide] = useState(false)
+  const isTemplateMode = mode === 'template'
+  const selectedElement = scene.elements.find((element) => element.id === selectedElementId) ?? null
+  const effectivePreviewData = isTemplateMode
+    ? mergePreviewData(createSamplePayload(isDocumentTemplateType(metadata.type) ? metadata.type : 'offer'), previewData)
+    : {}
+  const previewScene = isTemplateMode ? resolveScene(scene, effectivePreviewData) : scene
+  const onboardingStorageKey = mode === 'template' ? 'document-editor-guide-template-hidden' : 'document-editor-guide-profile-hidden'
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    setShowGuide(window.localStorage.getItem(onboardingStorageKey) !== '1')
+  }, [onboardingStorageKey])
+
+  const dismissGuide = () => {
+    setShowGuide(false)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(onboardingStorageKey, '1')
+    }
+  }
+
+  const handleAddText = () => {
+    addElement({
+      id: `text-${Date.now()}`,
+      type: 'text',
+      x: 56,
+      y: 56,
+      width: 360,
+      height: 120,
+      content: isTemplateMode ? 'Congratulations, {{student.fullName}}!' : 'Type your heading here',
+      fontSize: 28,
+      fontFamily: 'Georgia',
+      fill: '#0f172a',
+      textAlign: 'left',
+      lineHeight: 1.2,
+      layer: scene.elements.length,
+    })
+  }
+
+  const handleAddShape = () => {
+    addElement({
+      id: `shape-${Date.now()}`,
+      type: 'shape',
+      x: 72,
+      y: 160,
+      width: 220,
+      height: 80,
+      fill: '#0f766e',
+      stroke: '#115e59',
+      strokeWidth: 1,
+      radius: 16,
+      layer: scene.elements.length,
+    })
+  }
+
+  const handleAddLine = () => {
+    addElement({
+      id: `line-${Date.now()}`,
+      type: 'line',
+      x: 64,
+      y: 280,
+      width: 360,
+      height: 2,
+      stroke: '#94a3b8',
+      strokeWidth: 2,
+      points: [0, 0, 360, 0],
+      layer: scene.elements.length,
+    })
+  }
+
+  const handleUploadAsset = async (kind: 'image' | 'logo' | 'signature', file: File) => {
+    try {
+      const fileUrl = await uploadFile(file)
+      setMetadata({
+        assets: [
+          ...metadata.assets,
+          {
+            type: kind,
+            fileUrl,
+            fileName: file.name,
+            mimeType: file.type || 'application/octet-stream',
+          },
+        ],
+      })
+      addElement({
+        id: `${kind}-${Date.now()}`,
+        type: kind,
+        x: 64,
+        y: 360,
+        width: kind === 'logo' ? 120 : 180,
+        height: kind === 'signature' ? 72 : 120,
+        src: fileUrl,
+        layer: scene.elements.length,
+      })
+    } catch (error) {
+      toastApiError(error)
+    }
+  }
+
+  const handleUploadBackground = async (file: File) => {
+    try {
+      const fileUrl = await uploadFile(file)
+      const assetType = file.type === 'application/pdf' ? 'pdf_background' : 'background'
+      setMetadata({
+        assets: [
+          ...metadata.assets,
+          {
+            type: assetType,
+            fileUrl,
+            fileName: file.name,
+            mimeType: file.type || 'application/octet-stream',
+          },
+        ],
+      })
+      if (assetType === 'background') {
+        addElement({
+          id: `background-${Date.now()}`,
+          type: 'image',
+          x: 0,
+          y: 0,
+          width: scene.page.width,
+          height: scene.page.height,
+          src: fileUrl,
+          locked: true,
+          layer: -1,
+        })
+      }
+    } catch (error) {
+      toastApiError(error)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!metadata.name.trim()) return
+    await onSave({
+      id: metadata.id,
+      name: metadata.name.trim(),
+      type: metadata.type,
+      status: metadata.status,
+      pageFormat: metadata.pageFormat,
+      width: scene.page.width,
+      height: scene.page.height,
+      editorVersion: metadata.editorVersion,
+      canvasJson: stringifyScene(scene),
+      previewImageUrl: metadata.previewImageUrl,
+      assets: metadata.assets,
+    })
+  }
+
+  const guideSteps = isTemplateMode
+    ? [
+        '1. Start with Add text, Upload image, or Background on the left.',
+        '2. Click any block on the page to resize, move, lock, or style it.',
+        '3. Use merge tags only inside text blocks when you need student data.',
+      ]
+    : [
+        '1. Add a title or image first so the page is not empty.',
+        '2. Click any block to resize, move, duplicate, or delete it.',
+        '3. Save the document and it will appear in the student profile.',
+      ]
+
+  return (
+    <div className="space-y-4">
+      {showGuide ? (
+        <Card className="border border-primary-accent/30 bg-primary-accent/5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Quick start</p>
+              <h3 className="text-lg font-semibold">{isTemplateMode ? 'How this editor works' : 'Build a profile document in 3 steps'}</h3>
+              <div className="space-y-1 text-sm text-[var(--color-text-muted)]">
+                {guideSteps.map((step) => (
+                  <p key={step}>{step}</p>
+                ))}
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={dismissGuide}>Hide guide</Button>
+          </div>
+        </Card>
+      ) : null}
+
+      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
+        <Card className="space-y-4 border border-[var(--color-border)]">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Start here</p>
+            <h3 className="mt-1 text-lg font-semibold">{isTemplateMode ? 'Build your layout' : 'Build your document'}</h3>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              {isTemplateMode
+                ? 'Use text, images, shapes, and variables. Click blocks on the page to edit them.'
+                : 'Use text, images, shapes, and signatures. Click blocks on the page to edit them.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="secondary" size="sm" onClick={handleAddText}>Add text</Button>
+            <Button variant="secondary" size="sm" onClick={handleAddShape}>Add shape</Button>
+            <Button variant="secondary" size="sm" onClick={handleAddLine}>Add line</Button>
+            <Button variant="secondary" size="sm" onClick={() => imageInputRef.current?.click()}>Upload image</Button>
+            <Button variant="secondary" size="sm" onClick={() => logoInputRef.current?.click()}>Upload logo</Button>
+            <Button variant="secondary" size="sm" onClick={() => signatureInputRef.current?.click()}>Signature</Button>
+            <Button variant="secondary" size="sm" onClick={() => backgroundInputRef.current?.click()}>Background</Button>
+            <Button variant="secondary" size="sm" onClick={undo}>Undo</Button>
+            <Button variant="secondary" size="sm" onClick={redo}>Redo</Button>
+            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom + 0.1)}>Zoom +</Button>
+            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom - 0.1)}>Zoom -</Button>
+          </div>
+
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (!file) return
+              handleUploadAsset('image', file)
+              event.target.value = ''
+            }}
+          />
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (!file) return
+              handleUploadAsset('logo', file)
+              event.target.value = ''
+            }}
+          />
+          <input
+            ref={signatureInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (!file) return
+              handleUploadAsset('signature', file)
+              event.target.value = ''
+            }}
+          />
+          <input
+            ref={backgroundInputRef}
+            type="file"
+            accept="image/*,.pdf,application/pdf"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (!file) return
+              handleUploadBackground(file)
+              event.target.value = ''
+            }}
+          />
+
+          {isTemplateMode ? (
+            <div className="space-y-3">
+              <p className="text-sm font-medium">Insert variable</p>
+              {Object.entries(MERGE_TAG_GROUPS).map(([group, tags]) => (
+                <div key={group} className="space-y-2">
+                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-muted)]">{group}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        className="rounded-full border border-[var(--color-border)] px-2 py-1 text-xs text-[var(--color-text-muted)] hover:border-primary-accent hover:text-primary-accent"
+                        onClick={() => {
+                          if (selectedElement?.type !== 'text') return
+                          updateElement(selectedElement.id, { content: `${selectedElement.content ?? ''}${selectedElement.content ? ' ' : ''}${tag}` }, true)
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[22px] border border-dashed border-[var(--color-border)] p-4 text-sm text-[var(--color-text-muted)]">
+              Student mode is simpler: no merge tags, only the final layout that will be shown in the profile.
+            </div>
+          )}
+        </Card>
+
+        <div className="space-y-4">
+          <Card className="flex flex-wrap items-center justify-between gap-3 border border-[var(--color-border)]">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Canvas</p>
+              <h2 className="mt-1 text-xl font-semibold">{metadata.name || (isTemplateMode ? 'Untitled template' : 'Untitled document')}</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'left')} disabled={!selectedElement}>Align left</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'center')} disabled={!selectedElement}>Center</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'up')} disabled={!selectedElement}>Layer +</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'down')} disabled={!selectedElement}>Layer -</Button>
+              <Button size="sm" onClick={handleSave} loading={saving} disabled={saving || !metadata.name.trim()}>
+                {saveLabel ?? (isTemplateMode ? 'Save template' : 'Save document')}
+              </Button>
+            </div>
+          </Card>
+
+          <DocumentCanvasStage
+            scene={previewScene}
+            selectedElementId={selectedElementId}
+            editable
+            zoom={stageZoom}
+            onSelectElement={selectElement}
+            onChangeElement={updateElement}
+          />
+        </div>
+
+        <Card className="space-y-4 border border-[var(--color-border)]">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Inspector</p>
+            <h3 className="mt-1 text-lg font-semibold">{selectedElement ? 'Element properties' : isTemplateMode ? 'Template settings' : 'Document settings'}</h3>
+          </div>
+
+          <Input label={isTemplateMode ? 'Template name' : 'Document name'} value={metadata.name} onChange={(event) => setMetadata({ name: event.target.value })} />
+          <Select
+            label="Document type"
+            value={metadata.type}
+            onChange={(event) => setMetadata({ type: event.target.value as EditorDocumentType })}
+            options={typeOptions}
+          />
+
+          {isTemplateMode ? (
+            <>
+              <Select
+                label="Status"
+                value={metadata.status}
+                onChange={(event) => setMetadata({ status: event.target.value as DocumentTemplate['status'] })}
+                options={[
+                  { value: 'draft', label: 'Draft' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'archived', label: 'Archived' },
+                ]}
+              />
+              <Textarea
+                label="Preview student name"
+                value={String((previewData.student as { fullName?: string } | undefined)?.fullName ?? '')}
+                onChange={(event) =>
+                  setPreviewData({
+                    ...previewData,
+                    student: {
+                      ...((previewData.student as Record<string, unknown> | undefined) ?? {}),
+                      fullName: event.target.value,
+                    },
+                  })
+                }
+                rows={2}
+              />
+            </>
+          ) : null}
+
+          {selectedElement ? (
+            <div className="space-y-3 rounded-[22px] border border-[var(--color-border)] p-4">
+              {selectedElement.type === 'text' ? (
+                <Textarea
+                  label="Text content"
+                  value={selectedElement.content ?? ''}
+                  onChange={(event) => updateElement(selectedElement.id, { content: event.target.value }, true)}
+                  rows={4}
+                />
+              ) : null}
+              {(selectedElement.type === 'text' || selectedElement.type === 'shape') ? (
+                <Input
+                  label="Fill"
+                  value={selectedElement.fill ?? '#0f172a'}
+                  onChange={(event) => updateElement(selectedElement.id, { fill: event.target.value }, true)}
+                />
+              ) : null}
+              {selectedElement.type === 'text' ? (
+                <Input
+                  label="Font size"
+                  type="number"
+                  value={selectedElement.fontSize ?? 24}
+                  onChange={(event) => updateElement(selectedElement.id, { fontSize: Number(event.target.value) || 24 }, true)}
+                />
+              ) : null}
+              <div className="grid grid-cols-2 gap-2">
+                <Input label="Width" type="number" value={selectedElement.width} onChange={(event) => updateElement(selectedElement.id, { width: Number(event.target.value) || selectedElement.width }, true)} />
+                <Input label="Height" type="number" value={selectedElement.height} onChange={(event) => updateElement(selectedElement.id, { height: Number(event.target.value) || selectedElement.height }, true)} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="secondary" onClick={() => toggleLock(selectedElement.id)}>{selectedElement.locked ? 'Unlock' : 'Lock'}</Button>
+                <Button size="sm" variant="secondary" onClick={() => duplicateElement(selectedElement.id)}>Duplicate</Button>
+                <Button size="sm" variant="danger" onClick={() => removeElement(selectedElement.id)}>Delete</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[22px] border border-dashed border-[var(--color-border)] p-4 text-sm text-[var(--color-text-muted)]">
+              Click any block on the page to edit it. If nothing is selected, start with Add text or Upload image from the left panel.
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+function mergePreviewData(base: Record<string, unknown>, patch: Record<string, unknown>) {
+  const output: Record<string, unknown> = { ...base }
+  for (const [key, value] of Object.entries(patch)) {
+    if (value && typeof value === 'object' && !Array.isArray(value) && output[key] && typeof output[key] === 'object' && !Array.isArray(output[key])) {
+      output[key] = mergePreviewData(output[key] as Record<string, unknown>, value as Record<string, unknown>)
+    } else {
+      output[key] = value
+    }
+  }
+  return output
+}
+
+function isDocumentTemplateType(type: EditorDocumentType): type is 'offer' | 'scholarship' {
+  return type === 'offer' || type === 'scholarship'
+}

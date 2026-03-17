@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { getDashboard, type UniversityDashboardData } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 import { Bot, Users, BarChart3, MessageCircle, Send, ShieldCheck } from 'lucide-react'
+import { getStudentDisplayName } from '@/utils/studentDisplay'
 
 const STAGE_LABELS: Record<string, string> = {
   interested: 'Interested',
@@ -122,7 +123,7 @@ export function UniversityDashboard() {
             <ul className="mt-2 space-y-2">
               {topRecs.slice(0, 5).map((r) => {
                 const st = r.student
-                const name = st ? [st.firstName, st.lastName].filter(Boolean).join(' ') || 'Student' : 'Student'
+                const name = getStudentDisplayName(st, 'Student')
                 const studentId = st && '_id' in st ? String((st as { _id: unknown })._id) : r.id
                 return (
                   <li key={r.id} className="flex justify-between items-center text-sm">

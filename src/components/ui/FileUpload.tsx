@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type Ref } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
 import { uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
 import { getApiError } from '@/services/auth'
@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn'
 interface FileUploadProps {
   value?: string
   onChange: (url: string) => void
+  inputRef?: Ref<HTMLInputElement>
   accept?: string
   label?: string
   hint?: string
@@ -20,6 +21,7 @@ interface FileUploadProps {
 export function FileUpload({
   value,
   onChange,
+  inputRef,
   accept = 'image/jpeg,image/png,image/gif,image/webp',
   label,
   hint,
@@ -66,6 +68,7 @@ export function FileUpload({
         )}
       >
         <input
+          ref={inputRef}
           type="file"
           accept={accept}
           onChange={handleFile}

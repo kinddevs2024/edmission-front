@@ -13,6 +13,7 @@ import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { FileUpload } from '@/components/ui/FileUpload'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
@@ -449,7 +450,14 @@ export function UserManagement() {
               onChange={(e) => setUniCountry(e.target.value)}
             />
             <Input label={t('university:city', 'City')} value={uniCity} onChange={(e) => setUniCity(e.target.value)} />
-            <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} />
+            <FileUpload
+              label={t('university:logo', 'Logo')}
+              value={uniLogoUrl}
+              onChange={setUniLogoUrl}
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              hint={t('university:uploadLogoOrUrl', 'Upload from device or paste a direct logo URL below')}
+            />
+            <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} placeholder="https://... or /api/uploads/..." />
             <Input
               label={t('university:minRequirements', 'Minimum requirements')}
               value={uniMinRequirements}

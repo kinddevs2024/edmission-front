@@ -100,6 +100,22 @@ export function useSocket() {
     []
   )
 
+  const onMessageUpdated = useCallback((callback: (payload: { chatId: string; message: unknown }) => void) => {
+    if (!socketInstance) return () => {}
+    socketInstance.on('message_updated', callback)
+    return () => {
+      socketInstance?.off('message_updated', callback)
+    }
+  }, [])
+
+  const onMessageDeleted = useCallback((callback: (payload: { chatId: string; messageId: string; scope: 'me' | 'everyone' }) => void) => {
+    if (!socketInstance) return () => {}
+    socketInstance.on('message_deleted', callback)
+    return () => {
+      socketInstance?.off('message_deleted', callback)
+    }
+  }, [])
+
   const emitTyping = useCallback((chatId: string, isTyping: boolean) => {
     if (socketInstance?.connected) {
       socketInstance.emit('typing', { chatId, isTyping })
@@ -114,6 +130,8 @@ export function useSocket() {
     leaveChat,
     onNewMessage,
     onRead,
+    onMessageUpdated,
+    onMessageDeleted,
     onNotification,
     emitTyping,
     isConnected,

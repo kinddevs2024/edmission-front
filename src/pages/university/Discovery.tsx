@@ -15,6 +15,7 @@ import { getStudents, type DiscoverStudentItem } from '@/services/university'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { getProfileCriteria } from '@/services/options'
 import { toastApiError } from '@/utils/toastError'
+import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDisplay'
 
 const COUNTRY_OPTIONS = [
   { value: '', label: 'All countries' },
@@ -272,7 +273,8 @@ export function Discovery() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {list.map((item, index) => {
                 const st = item.student
-                const name = [st?.firstName, st?.lastName].filter(Boolean).join(' ') || t('university:studentLabel')
+                const name = getStudentDisplayName(st, t('university:studentLabel'))
+                const studentEmail = getStudentContactEmail(st)
                 return (
                   <div
                     key={item.id}
@@ -287,6 +289,9 @@ export function Discovery() {
                           </div>
                         <div className="min-w-0">
                           <CardTitle className="truncate">{name}</CardTitle>
+                          {studentEmail && studentEmail !== name && (
+                            <p className="text-xs text-[var(--color-text-muted)] truncate">{studentEmail}</p>
+                          )}
                           {(st?.country || st?.city) && (
                             <p className="text-xs text-[var(--color-text-muted)] truncate">
                               {[st.country, st.city].filter(Boolean).join(', ')}

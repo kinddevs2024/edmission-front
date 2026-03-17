@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Textarea'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { getPendingDocuments, reviewDocument, type PendingDocumentItem } from '@/services/admin'
 import { getApiError } from '@/services/auth'
 import { toastApiError } from '@/utils/toastError'
@@ -15,6 +16,7 @@ export function AdminDocuments() {
   const [list, setList] = useState<PendingDocumentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<{ item: PendingDocumentItem; decision: 'approved' | 'rejected' } | null>(null)
+  const [previewItem, setPreviewItem] = useState<PendingDocumentItem | null>(null)
   const [reason, setReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -67,14 +69,9 @@ export function AdminDocuments() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <a
-                    href={item.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary-accent hover:underline"
-                  >
-                    View file
-                  </a>
+                  <button type="button" className="text-sm text-primary-accent hover:underline" onClick={() => setPreviewItem(item)}>
+                    Preview
+                  </button>
                   <Button size="sm" onClick={() => setModal({ item, decision: 'approved' })}>
                     {t('admin:approve')}
                   </Button>
@@ -127,6 +124,19 @@ export function AdminDocuments() {
           </div>
         )}
       </Modal>
+
+      <DocumentPreviewModal
+        open={!!previewItem}
+        onClose={() => setPreviewItem(null)}
+        title={previewItem?.name ?? previewItem?.type ?? 'Document'}
+        document={previewItem ? {
+          fileUrl: previewItem.fileUrl,
+          canvasJson: previewItem.canvasJson,
+          pageFormat: previewItem.pageFormat,
+          width: previewItem.width,
+          height: previewItem.height,
+        } : null}
+      />
     </div>
   )
 }

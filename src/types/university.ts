@@ -21,6 +21,7 @@ export interface UniversityProfile {
   name: string
   slug?: string
   logo?: string
+  logoUrl?: string
   slogan?: string
   foundedYear?: number
   studentCount?: number

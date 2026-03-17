@@ -1,5 +1,6 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
+import type { DocumentPageFormat, StudentProfileDocumentType } from '@/types/documentModule'
 import type { UniversityProfile, Scholarship, Faculty } from '@/types/university'
 
 type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number; minLanguageLevel?: string; tuitionPrice?: number }
@@ -32,6 +33,8 @@ export async function getProfile(): Promise<UniversityProfile> {
   return {
     ...data,
     name: data.name ?? data.universityName ?? '',
+    logo: data.logo ?? data.logoUrl,
+    logoUrl: data.logoUrl ?? data.logo,
     slogan: data.slogan ?? data.tagline,
     foundedYear: data.foundedYear ?? data.establishedYear,
     facultyCodes: (data as unknown as { facultyCodes?: string[] }).facultyCodes ?? [],
@@ -64,6 +67,8 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
     ...raw,
     id: (raw as UniversityProfileResponse).id ?? ((raw as { _id?: unknown })._id != null ? String((raw as { _id: unknown })._id) : ''),
     name: (raw as UniversityProfileResponse).name ?? (raw as UniversityProfileResponse).universityName ?? '',
+    logo: (raw as UniversityProfileResponse).logo ?? (raw as UniversityProfileResponse).logoUrl,
+    logoUrl: (raw as UniversityProfileResponse).logoUrl ?? (raw as UniversityProfileResponse).logo,
     slogan: (raw as UniversityProfileResponse).slogan ?? (raw as UniversityProfileResponse).tagline,
     foundedYear: (raw as UniversityProfileResponse).foundedYear ?? (raw as UniversityProfileResponse).establishedYear,
   } as UniversityProfile
@@ -119,7 +124,7 @@ export interface UniversityDashboardData {
   acceptedCount?: number
   acceptanceRate?: number
   verified?: boolean
-  topRecommendations: { id: string; matchScore?: number; student?: { _id?: string; firstName?: string; lastName?: string; gpa?: number; country?: string } }[]
+  topRecommendations: { id: string; matchScore?: number; student?: { _id?: string; firstName?: string; lastName?: string; gpa?: number; country?: string; userEmail?: string } }[]
 }
 
 export async function getDashboard(): Promise<UniversityDashboardData> {
@@ -130,7 +135,7 @@ export async function getDashboard(): Promise<UniversityDashboardData> {
 export interface PipelineItem {
   id: string
   status: string
-  student?: { _id?: unknown; firstName?: string; lastName?: string; country?: string; gpa?: number }
+  student?: { _id?: unknown; firstName?: string; lastName?: string; country?: string; gpa?: number; userEmail?: string }
   updatedAt?: string
 }
 
@@ -162,6 +167,7 @@ export interface DiscoverStudentItem {
   student: {
     firstName?: string
     lastName?: string
+    userEmail?: string
     country?: string
     city?: string
     avatarUrl?: string
@@ -209,6 +215,7 @@ export interface FullStudentProfile {
   id: string
   firstName?: string
   lastName?: string
+  email?: string
   birthDate?: string
   country?: string
   city?: string
@@ -233,7 +240,21 @@ export interface FullStudentProfile {
   portfolioWorks?: { title?: string; description?: string; fileUrl?: string; linkUrl?: string }[]
   portfolioCompletionPercent?: number
   verifiedAt?: string
-  documents?: { id: string; type: string; name?: string; certificateType?: string; score?: string; fileUrl: string }[]
+  documents?: {
+    id: string
+    type: StudentProfileDocumentType | string
+    source?: 'upload' | 'editor'
+    name?: string
+    certificateType?: string
+    score?: string
+    fileUrl?: string
+    previewImageUrl?: string
+    canvasJson?: string
+    pageFormat?: DocumentPageFormat
+    width?: number
+    height?: number
+    editorVersion?: string
+  }[]
   readiness?: ReadinessInfo
   budgetAmount?: number
   budgetCurrency?: string

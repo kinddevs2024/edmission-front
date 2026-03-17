@@ -26,6 +26,7 @@ const UniversityDetail = lazy(() => import('@/pages/student/UniversityDetail').t
 const StudentApplications = lazy(() => import('@/pages/student/StudentApplications').then((m) => ({ default: m.StudentApplications })))
 const StudentDocuments = lazy(() => import('@/pages/student/StudentDocuments').then((m) => ({ default: m.StudentDocuments })))
 const StudentOffers = lazy(() => import('@/pages/student/StudentOffers').then((m) => ({ default: m.StudentOffers })))
+const StudentReceivedDocument = lazy(() => import('@/pages/student/StudentReceivedDocument').then((m) => ({ default: m.StudentReceivedDocument })))
 const Compare = lazy(() => import('@/pages/student/Compare').then((m) => ({ default: m.Compare })))
 const StudentChat = lazy(() => import('@/pages/student/StudentChat').then((m) => ({ default: m.StudentChat })))
 const StudentSchools = lazy(() => import('@/pages/student/StudentSchools').then((m) => ({ default: m.StudentSchools })))
@@ -43,6 +44,8 @@ const UniversityChat = lazy(() => import('@/pages/university/UniversityChat').th
 const UniversityPendingVerification = lazy(() => import('@/pages/university/UniversityPendingVerification').then((m) => ({ default: m.UniversityPendingVerification })))
 const UniversitySelect = lazy(() => import('@/pages/university/UniversitySelect').then((m) => ({ default: m.UniversitySelect })))
 const OfferTemplates = lazy(() => import('@/pages/university/OfferTemplates').then((m) => ({ default: m.OfferTemplates })))
+const UniversityDocuments = lazy(() => import('@/pages/university/UniversityDocuments').then((m) => ({ default: m.UniversityDocuments })))
+const DocumentTemplateEditorPage = lazy(() => import('@/pages/university/DocumentTemplateEditorPage').then((m) => ({ default: m.DocumentTemplateEditorPage })))
 
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
@@ -188,6 +191,7 @@ export function Router() {
           <Route path="schools" element={<StudentSchools />} />
           <Route path="school-invitations" element={<Navigate to="/student/schools" replace />} />
           <Route path="offers" element={<StudentOffers />} />
+          <Route path="received-documents/:id" element={<StudentReceivedDocument />} />
           <Route path="compare" element={<Compare />} />
           <Route path="chat" element={<StudentChat />} />
           <Route path="ai" element={<AIChatPage />} />
@@ -206,6 +210,9 @@ export function Router() {
           <Route path="faculties" element={<Faculties />} />
           <Route path="analytics" element={<UniversityAnalytics />} />
           <Route path="chat" element={<UniversityChat />} />
+          <Route path="documents" element={<UniversityDocuments />} />
+          <Route path="documents/templates/new" element={<DocumentTemplateEditorPage />} />
+          <Route path="documents/templates/:id/edit" element={<DocumentTemplateEditorPage />} />
           <Route path="offer-templates" element={<OfferTemplates />} />
           <Route path="ai" element={<AIChatPage />} />
         </Route>

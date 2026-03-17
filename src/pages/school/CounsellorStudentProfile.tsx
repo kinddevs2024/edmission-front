@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
+import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { useTranslation } from 'react-i18next'
 import { getStudentProfile, updateMyStudent, getStudentDocuments, addStudentDocument, deleteStudentDocument, type CounsellorStudentDocument } from '@/services/counsellor'
 import { getProfileCriteria } from '@/services/options'
@@ -292,6 +293,7 @@ export function CounsellorStudentProfile() {
   const [docCertificateType, setDocCertificateType] = useState('IELTS')
   const [docScore, setDocScore] = useState('')
   const [docFileUrl, setDocFileUrl] = useState('')
+  const [previewDocument, setPreviewDocument] = useState<CounsellorStudentDocument | null>(null)
 
   const DOC_TYPES = [
     { value: 'transcript', label: 'Transcript' },
@@ -806,7 +808,7 @@ export function CounsellorStudentProfile() {
                       )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-accent hover:underline">{t('common:view')}</a>
+                      <button type="button" className="text-sm text-primary-accent hover:underline" onClick={() => setPreviewDocument(d)}>{t('common:view')}</button>
                       <Button type="button" variant="ghost" size="sm" className="text-red-500" onClick={() => handleDeleteDocument(d.id)}><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </li>
@@ -820,6 +822,19 @@ export function CounsellorStudentProfile() {
           <Button type="submit" disabled={saving} loading={saving}>{t('common:save')}</Button>
         </div>
       </form>
+
+      <DocumentPreviewModal
+        open={!!previewDocument}
+        onClose={() => setPreviewDocument(null)}
+        title={previewDocument?.name ?? previewDocument?.type ?? 'Document'}
+        document={previewDocument ? {
+          fileUrl: previewDocument.fileUrl,
+          canvasJson: previewDocument.canvasJson,
+          pageFormat: previewDocument.pageFormat,
+          width: previewDocument.width,
+          height: previewDocument.height,
+        } : null}
+      />
     </div>
   )
 }

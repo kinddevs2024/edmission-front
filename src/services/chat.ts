@@ -7,8 +7,8 @@ type RawChat = {
   studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   university?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
-  lastMessage?: Array<{ message?: string; text?: string; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
-  messages?: Array<{ message?: string; text?: string; createdAt?: string }>
+  lastMessage?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
+  messages?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string }>
   acceptedAt?: string
   acceptancePositionType?: string
   acceptancePositionLabel?: string
@@ -52,6 +52,7 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
     },
     lastMessage: lastMsg
       ? {
+          id: String(lastMsg.id ?? lastMsg._id ?? ''),
           text: String(lastMsg.message ?? lastMsg.text ?? ''),
           createdAt: String(lastMsg.createdAt ?? ''),
           isFromMe: false,
@@ -91,6 +92,7 @@ export async function getMessages(chatId: string, params?: { page?: number; limi
     attachmentUrl: m.attachmentUrl,
     metadata: m.metadata,
     createdAt: m.createdAt,
+    editedAt: m.editedAt,
     read: m.isRead ?? m.read,
   })) as Message[]
 }
@@ -105,6 +107,18 @@ export type SendMessageParams = {
 export async function sendMessage(chatId: string, params: string | SendMessageParams): Promise<Message> {
   const body = typeof params === 'string' ? { text: params } : params
   const { data } = await api.post<Message>(`/chat/${chatId}/messages`, body)
+  return data
+}
+
+export async function updateMessage(chatId: string, messageId: string, text: string): Promise<Message> {
+  const { data } = await api.patch<Message>(`/chat/${chatId}/messages/${messageId}`, { text })
+  return data
+}
+
+export async function deleteMessage(chatId: string, messageId: string, scope: 'me' | 'everyone'): Promise<{ success: boolean; messageId: string; scope: 'me' | 'everyone' }> {
+  const { data } = await api.delete<{ success: boolean; messageId: string; scope: 'me' | 'everyone' }>(`/chat/${chatId}/messages/${messageId}`, {
+    data: { scope },
+  })
   return data
 }
 

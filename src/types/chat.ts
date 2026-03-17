@@ -7,6 +7,7 @@ export interface Chat {
     type: 'university' | 'student'
   }
   lastMessage?: {
+    id?: string
     text: string
     createdAt: string
     isFromMe: boolean
@@ -30,6 +31,7 @@ export interface Message {
   text: string
   message?: string
   createdAt: string
+  editedAt?: string
   read?: boolean
   isFromMe?: boolean
   attachmentUrl?: string
@@ -39,5 +41,12 @@ export interface Message {
     positionType?: string
     positionLabel?: string
     congratulatoryMessage?: string
+    documentId?: string
+    documentType?: 'offer' | 'scholarship'
+    title?: string
+    link?: string
+    postponeUntil?: string
+    replyToMessageId?: string
+    replyToPreview?: string
   }
 }

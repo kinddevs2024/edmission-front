@@ -7,6 +7,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { FileUpload } from '@/components/ui/FileUpload'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +15,11 @@ import { getProfile, updateProfile } from '@/services/university'
 import { getApiError } from '@/services/auth'
 import type { UniversityProfile } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+
+const uploadedLogoSchema = z.string().trim().refine(
+  (value) => value === '' || /^https?:\/\//.test(value) || value.startsWith('/'),
+  { message: 'Enter a valid URL or upload a file' }
+)
 
 const schema = z.object({
   name: z.string().min(1),
@@ -23,7 +29,7 @@ const schema = z.object({
   country: z.string().optional(),
   city: z.string().optional(),
   description: z.string().optional(),
-  logo: z.string().url().optional().or(z.literal('')),
+  logo: uploadedLogoSchema,
   facultyCodes: z.array(z.string()).optional(),
   facultyItems: z.record(z.string(), z.array(z.string())).optional(),
   targetStudentCountries: z.array(z.string()).optional(),
@@ -54,7 +60,11 @@ export function UniversityProfilePage() {
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      logo: '',
+    },
   })
+  const logoValue = watch('logo') ?? ''
 
   useEffect(() => {
     getProfile()
@@ -136,7 +146,19 @@ export function UniversityProfilePage() {
             <Input label={t('university:slogan')} {...register('slogan')} placeholder={t('university:sloganPlaceholder')} />
             <Input label={t('university:foundedYear')} type="number" {...register('foundedYear')} placeholder={t('university:foundedPlaceholder')} />
             <Input label={t('university:studentCount')} type="number" {...register('studentCount')} placeholder={t('university:studentCountPlaceholder')} />
-            <Input label={t('university:logoUrl')} {...register('logo')} placeholder="https://..." />
+            <FileUpload
+              label={t('university:logo', 'Logo')}
+              value={logoValue}
+              onChange={(url) => setValue('logo', url, { shouldDirty: true, shouldValidate: true })}
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              hint={t('university:uploadLogoOrUrl', 'Upload from device or paste a direct logo URL below')}
+            />
+            <Input
+              label={t('university:logoUrl')}
+              error={errors.logo?.message}
+              {...register('logo')}
+              placeholder="https://... or /api/uploads/..."
+            />
             <Textarea
               label={t('university:description')}
               rows={4}

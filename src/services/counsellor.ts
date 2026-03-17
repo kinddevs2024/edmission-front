@@ -1,4 +1,5 @@
 import { api } from './api'
+import type { DocumentPageFormat } from '@/types/documentModule'
 
 export interface CounsellorProfile {
   id: string
@@ -143,10 +144,17 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
 export interface CounsellorStudentDocument {
   id: string
   type: string
+  source?: 'upload' | 'editor'
   name?: string
   certificateType?: string
   score?: string
-  fileUrl: string
+  fileUrl?: string
+  previewImageUrl?: string
+  canvasJson?: string
+  pageFormat?: DocumentPageFormat
+  width?: number
+  height?: number
+  editorVersion?: string
   status: 'pending' | 'approved' | 'rejected'
   createdAt?: string
 }

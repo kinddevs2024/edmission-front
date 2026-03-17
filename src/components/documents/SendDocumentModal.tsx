@@ -1,0 +1,276 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
+import { Card } from '@/components/ui/Card'
+import { TemplateCard } from './TemplateCard'
+import { DocumentCanvasStage } from './DocumentCanvasStage'
+import { getDocumentTemplates, renderDocumentTemplatePreview, sendIssuedDocument } from '@/services/documents'
+import { parseScene } from '@/utils/documentScene'
+import { toastApiError } from '@/utils/toastError'
+import type { DocumentTemplate, DocumentType, UniversityDocumentSummary } from '@/types/documentModule'
+
+type SendDocumentFormState = {
+  acceptDeadline: string
+  universityMessage: string
+  offerProgramName: string
+  offerDegreeLevel: string
+  offerIntake: string
+  offerStartDate: string
+  offerTuitionFee: string
+  offerCurrency: string
+  offerConditions: string
+  scholarshipAmount: string
+  scholarshipPercent: string
+  scholarshipKind: string
+}
+
+const initialFormState: SendDocumentFormState = {
+  acceptDeadline: '',
+  universityMessage: '',
+  offerProgramName: '',
+  offerDegreeLevel: '',
+  offerIntake: '',
+  offerStartDate: '',
+  offerTuitionFee: '',
+  offerCurrency: 'USD',
+  offerConditions: '',
+  scholarshipAmount: '',
+  scholarshipPercent: '',
+  scholarshipKind: '',
+}
+
+export function SendDocumentModal({
+  open,
+  studentId,
+  chatId,
+  studentName,
+  onClose,
+  onSent,
+}: {
+  open: boolean
+  studentId: string
+  chatId?: string
+  studentName?: string
+  onClose: () => void
+  onSent?: (document: UniversityDocumentSummary) => void
+}) {
+  const [type, setType] = useState<DocumentType>('offer')
+  const [templates, setTemplates] = useState<DocumentTemplate[]>([])
+  const [loadingTemplates, setLoadingTemplates] = useState(false)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [form, setForm] = useState<SendDocumentFormState>(initialFormState)
+  const [previewJson, setPreviewJson] = useState<string | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    setLoadingTemplates(true)
+    getDocumentTemplates({ type })
+      .then((data) => {
+        setTemplates(data)
+        setSelectedTemplateId((current) => current && data.some((item) => item.id === current) ? current : (data[0]?.id ?? null))
+      })
+      .catch((error) => {
+        toastApiError(error)
+        setTemplates([])
+      })
+      .finally(() => setLoadingTemplates(false))
+  }, [open, type])
+
+  useEffect(() => {
+    if (!open) return
+    setPreviewJson(null)
+  }, [open, selectedTemplateId, form, type])
+
+  const selectedTemplate = useMemo(
+    () => templates.find((template) => template.id === selectedTemplateId) ?? null,
+    [templates, selectedTemplateId]
+  )
+
+  const previewScene = previewJson ? parseScene(previewJson, selectedTemplate?.pageFormat ?? 'A4_PORTRAIT', selectedTemplate?.width, selectedTemplate?.height) : null
+
+  const handlePreview = () => {
+    if (!selectedTemplateId) return
+    setPreviewLoading(true)
+    renderDocumentTemplatePreview(selectedTemplateId, {
+      studentId,
+      acceptDeadline: form.acceptDeadline || undefined,
+      documentData: buildDocumentData(form),
+    })
+      .then((data) => setPreviewJson(data.resolvedCanvasJson))
+      .catch(toastApiError)
+      .finally(() => setPreviewLoading(false))
+  }
+
+  const handleSend = () => {
+    if (!selectedTemplateId) return
+    setSending(true)
+    sendIssuedDocument({
+      studentId,
+      chatId,
+      templateId: selectedTemplateId,
+      type,
+      acceptDeadline: form.acceptDeadline || undefined,
+      universityMessage: form.universityMessage || undefined,
+      title: selectedTemplate?.name,
+      documentData: buildDocumentData(form),
+    })
+      .then((document) => {
+        onSent?.(document)
+        onClose()
+      })
+      .catch(toastApiError)
+      .finally(() => setSending(false))
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={studentName ? `Send document to ${studentName}` : 'Send document'}
+      footer={(
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={handlePreview} disabled={!selectedTemplateId || previewLoading} loading={previewLoading}>
+            Preview final document
+          </Button>
+          <Button onClick={handleSend} disabled={!selectedTemplateId || sending} loading={sending}>
+            Send
+          </Button>
+        </>
+      )}
+    >
+      <div className="space-y-5">
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant={type === 'offer' ? 'primary' : 'secondary'} onClick={() => setType('offer')}>Offer</Button>
+          <Button variant={type === 'scholarship' ? 'primary' : 'secondary'} onClick={() => setType('scholarship')}>Scholarship</Button>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Templates</h3>
+            {loadingTemplates ? <span className="text-xs text-[var(--color-text-muted)]">Loading...</span> : null}
+          </div>
+          <div className="space-y-3">
+            {templates.length === 0 ? (
+              <Card className="border border-dashed border-[var(--color-border)] text-sm text-[var(--color-text-muted)]">
+                No templates found for this document type.
+              </Card>
+            ) : (
+              templates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  compact
+                  selected={template.id === selectedTemplateId}
+                  onSelect={() => setSelectedTemplateId(template.id)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input
+            label="Accept deadline"
+            type="date"
+            value={form.acceptDeadline}
+            onChange={(event) => setForm((state) => ({ ...state, acceptDeadline: event.target.value }))}
+          />
+          <Input
+            label="Program"
+            value={form.offerProgramName}
+            onChange={(event) => setForm((state) => ({ ...state, offerProgramName: event.target.value }))}
+          />
+          <Input
+            label="Degree level"
+            value={form.offerDegreeLevel}
+            onChange={(event) => setForm((state) => ({ ...state, offerDegreeLevel: event.target.value }))}
+          />
+          <Input
+            label="Intake"
+            value={form.offerIntake}
+            onChange={(event) => setForm((state) => ({ ...state, offerIntake: event.target.value }))}
+          />
+          <Input
+            label="Start date"
+            type="date"
+            value={form.offerStartDate}
+            onChange={(event) => setForm((state) => ({ ...state, offerStartDate: event.target.value }))}
+          />
+          <Input
+            label="Tuition fee"
+            value={form.offerTuitionFee}
+            onChange={(event) => setForm((state) => ({ ...state, offerTuitionFee: event.target.value }))}
+          />
+          <Input
+            label="Currency"
+            value={form.offerCurrency}
+            onChange={(event) => setForm((state) => ({ ...state, offerCurrency: event.target.value }))}
+          />
+          {type === 'scholarship' ? (
+            <>
+              <Input
+                label="Scholarship amount"
+                value={form.scholarshipAmount}
+                onChange={(event) => setForm((state) => ({ ...state, scholarshipAmount: event.target.value }))}
+              />
+              <Input
+                label="Scholarship percent"
+                value={form.scholarshipPercent}
+                onChange={(event) => setForm((state) => ({ ...state, scholarshipPercent: event.target.value }))}
+              />
+              <Input
+                label="Scholarship type"
+                value={form.scholarshipKind}
+                onChange={(event) => setForm((state) => ({ ...state, scholarshipKind: event.target.value }))}
+              />
+            </>
+          ) : null}
+        </div>
+
+        <Textarea
+          label="Offer conditions"
+          rows={3}
+          value={form.offerConditions}
+          onChange={(event) => setForm((state) => ({ ...state, offerConditions: event.target.value }))}
+        />
+        <Textarea
+          label="Optional university message"
+          rows={3}
+          value={form.universityMessage}
+          onChange={(event) => setForm((state) => ({ ...state, universityMessage: event.target.value }))}
+        />
+
+        {previewScene ? (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold">Preview</h3>
+            <DocumentCanvasStage scene={previewScene} zoom={0.32} />
+          </div>
+        ) : null}
+      </div>
+    </Modal>
+  )
+}
+
+function buildDocumentData(form: SendDocumentFormState) {
+  return {
+    offer: {
+      programName: form.offerProgramName,
+      degreeLevel: form.offerDegreeLevel,
+      intake: form.offerIntake,
+      startDate: form.offerStartDate,
+      tuitionFee: form.offerTuitionFee,
+      currency: form.offerCurrency,
+      conditions: form.offerConditions,
+    },
+    scholarship: {
+      amount: form.scholarshipAmount,
+      percent: form.scholarshipPercent,
+      type: form.scholarshipKind,
+    },
+  }
+}

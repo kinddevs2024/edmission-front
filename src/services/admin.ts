@@ -1,5 +1,6 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
+import type { DocumentPageFormat } from '@/types/documentModule'
 
 /** Backend GET /admin/dashboard returns this shape */
 export interface AdminDashboardResponse {
@@ -117,7 +118,15 @@ export interface ScholarshipSummaryItem {
 export interface PendingDocumentItem {
   id: string
   type: string
-  fileUrl: string
+  source?: 'upload' | 'editor'
+  fileUrl?: string
+  previewImageUrl?: string
+  canvasJson?: string
+  pageFormat?: DocumentPageFormat
+  width?: number
+  height?: number
+  editorVersion?: string
+  name?: string
   status: string
   studentId: unknown
   studentName: string

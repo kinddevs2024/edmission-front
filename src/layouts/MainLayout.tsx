@@ -72,15 +72,17 @@ export function MainLayout() {
       return {
         navItems: [
         { to: '/university/dashboard', label: t('university:dashboard', 'Dashboard'), icon: 'LayoutDashboard' },
-        { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
         { to: '/university/profile', label: t('university:navProfile', 'Profile'), icon: 'User' },
         { to: '/university/students', label: t('university:navDiscovery', 'Discovery'), icon: 'Users' },
         { to: '/university/pipeline', label: t('university:navPipeline', 'Pipeline'), icon: 'GitBranch' },
+        { to: '/university/documents', label: 'Documents', icon: 'FileText' },
         { to: '/university/scholarships', label: t('university:navScholarships', 'Scholarships'), icon: 'Wallet' },
         { to: '/university/faculties', label: t('university:navFaculties', 'Faculties'), icon: 'Building2' },
+        { to: '/university/analytics', label: t('university:navAnalytics', 'Analytics'), icon: 'BarChart3' },
         { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
         { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
         { to: '/payment', label: t('university:navSubscription', 'Subscription'), icon: 'CreditCard' },
+        { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
         ],
         navBottomItems: [
         { to: '/support', label: 'Support', icon: 'HelpCircle' },
@@ -92,13 +94,19 @@ export function MainLayout() {
       return {
         navItems: [
           { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
-          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
           { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
           { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
           { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
+          { to: '/admin/investors', label: t('admin:investors', 'Investors'), icon: 'Building2' },
+          { to: '/admin/landing-certificates', label: t('admin:landingCertificates', 'Landing Certificates'), icon: 'Award' },
           { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
+          { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
+          { to: '/admin/chats', label: t('admin:chats', 'Chats'), icon: 'MessageCircle' },
+          { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
           { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
+          { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
+          { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' },
         ],
         navBottomItems: [
           { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
@@ -113,6 +121,7 @@ export function MainLayout() {
           { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
+          { to: '/school/student-interests', label: tSchool('studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' },
           { to: '/school/join-requests', label: tSchool('joinRequests'), icon: 'Users' },
           { to: '/notifications', label: tSchool('notifications'), icon: 'Bell' },
         ],
