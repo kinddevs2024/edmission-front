@@ -41,6 +41,10 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const removeMessage = useAIChatStore((s) => s.removeMessage)
   const selectionAsk = useAIChatStore((s) => s.selectionAsk)
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
+  const sessionId = useAIChatStore((s) => s.sessionId)
+  const requestLimit = useAIChatStore((s) => s.requestLimit)
+  const requestsUsed = useAIChatStore((s) => s.requestsUsed)
+  const incrementRequestsUsed = useAIChatStore((s) => s.incrementRequestsUsed)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,6 +69,10 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
     async (text: string, selectedText?: string) => {
       const trimmed = text.trim() || (selectedText ? 'Please explain or elaborate on the selected part.' : '')
       if (!trimmed || loading) return
+      if (requestsUsed >= requestLimit) {
+        setRateLimitMessage(t('aiQuestionLimitReached', { limit: requestLimit, defaultValue: 'Question limit reached ({{limit}}). Refresh the page to reset it.' }))
+        return
+      }
 
       setInput('')
       setPlaceholderIndex((i) => (i + 1 + Math.floor(Math.random() * Math.max(1, placeholders.length - 1))) % Math.max(1, placeholders.length))
@@ -75,6 +83,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
       const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', text: trimmed }
       addMessage(userMsg)
       setLoading(true)
+      incrementRequestsUsed()
 
       const assistantId = `a-${Date.now()}`
       const assistantMsg: ChatMessage = { id: assistantId, role: 'assistant', text: '', thinking: '' }
@@ -87,7 +96,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
 
       try {
         await sendAIChatStream(
-          { message: trimmed, history: historyForApi, selectedText },
+          { message: trimmed, history: historyForApi, selectedText, sessionId },
           {
             onChunk: (chunk) => {
               updateMessage(assistantId, (m) => {
@@ -156,7 +165,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         }
       }
     },
-    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id]
+    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id, requestLimit, requestsUsed, incrementRequestsUsed, sessionId]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -246,6 +255,9 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                 : aiStatus
                   ? t('aiAssistantUnavailable', 'Assistant temporarily unavailable')
                   : null}
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {t('aiQuestionUsage', { used: requestsUsed, limit: requestLimit, defaultValue: 'Questions this session: {{used}}/{{limit}}' })}
             </p>
           </div>
           <div className="flex items-center gap-1 shrink-0">

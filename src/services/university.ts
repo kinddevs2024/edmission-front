@@ -2,6 +2,7 @@ import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { DocumentPageFormat, StudentProfileDocumentType } from '@/types/documentModule'
 import type { UniversityProfile, Scholarship, Faculty } from '@/types/university'
+import type { SocialLinks } from '@/types/user'
 
 type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number; minLanguageLevel?: string; tuitionPrice?: number }
 
@@ -258,6 +259,8 @@ export interface FullStudentProfile {
   firstName?: string
   lastName?: string
   email?: string
+  phone?: string
+  socialLinks?: SocialLinks
   birthDate?: string
   country?: string
   city?: string

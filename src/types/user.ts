@@ -17,11 +17,21 @@ export interface NotificationPreferences {
   emailTrialReminder?: boolean
 }
 
+export interface SocialLinks {
+  telegram?: string
+  instagram?: string
+  linkedin?: string
+  facebook?: string
+  whatsapp?: string
+}
+
 export interface User {
   id: string
   email: string
   role: Role
   name?: string
+  phone?: string
+  socialLinks?: SocialLinks
   avatar?: string
   onboardingTutorialSeen?: { student?: boolean; university?: boolean }
   emailVerified?: boolean

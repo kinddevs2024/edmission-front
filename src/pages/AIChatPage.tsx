@@ -38,6 +38,10 @@ export function AIChatPage() {
   const removeMessage = useAIChatStore((s) => s.removeMessage)
   const selectionAsk = useAIChatStore((s) => s.selectionAsk)
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
+  const sessionId = useAIChatStore((s) => s.sessionId)
+  const requestLimit = useAIChatStore((s) => s.requestLimit)
+  const requestsUsed = useAIChatStore((s) => s.requestsUsed)
+  const incrementRequestsUsed = useAIChatStore((s) => s.incrementRequestsUsed)
   const initialQ = searchParams.get('q') ?? ''
   const [input, setInput] = useState(initialQ)
   const [loading, setLoading] = useState(false)
@@ -60,6 +64,10 @@ export function AIChatPage() {
     async (text: string, selectedText?: string) => {
       const trimmed = text.trim() || (selectedText ? 'Please explain or elaborate on the selected part.' : '')
       if (!trimmed || loading) return
+      if (requestsUsed >= requestLimit) {
+        setRateLimitMessage(t('aiQuestionLimitReached', { limit: requestLimit, defaultValue: 'Question limit reached ({{limit}}). Refresh the page to reset it.' }))
+        return
+      }
 
       setInput('')
       setPlaceholderIndex((i) => (i + 1 + Math.floor(Math.random() * Math.max(1, placeholders.length - 1))) % Math.max(1, placeholders.length))
@@ -70,6 +78,7 @@ export function AIChatPage() {
       const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', text: trimmed }
       addMessage(userMsg)
       setLoading(true)
+      incrementRequestsUsed()
 
       const assistantId = `a-${Date.now()}`
       addMessage({ id: assistantId, role: 'assistant', text: '', thinking: '' })
@@ -81,7 +90,7 @@ export function AIChatPage() {
 
       try {
         await sendAIChatStream(
-          { message: trimmed, history: historyForApi, selectedText },
+          { message: trimmed, history: historyForApi, selectedText, sessionId },
           {
             onChunk: (chunk) => {
               updateMessage(assistantId, (m) => {
@@ -149,7 +158,7 @@ export function AIChatPage() {
         }
       }
     },
-    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id]
+    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id, requestLimit, requestsUsed, incrementRequestsUsed, sessionId]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -227,6 +236,9 @@ export function AIChatPage() {
               </h2>
               <p className="text-sm text-[var(--color-text-muted)] mb-8">
                 {t('aiSuggestedIntro', 'Спросите об университетах, заявках или стипендиях.')}
+              </p>
+              <p className="text-xs text-[var(--color-text-muted)] mb-4">
+                {t('aiQuestionUsage', { used: requestsUsed, limit: requestLimit, defaultValue: 'Questions this session: {{used}}/{{limit}}' })}
               </p>
               <form
                 onSubmit={handleSubmit}

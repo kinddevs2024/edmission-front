@@ -7,6 +7,7 @@ import { ThemeProvider as MTThemeProvider } from '@material-tailwind/react'
 import i18n from '@/i18n'
 import { useTheme } from '@/hooks/useTheme'
 import { checkBackendHealthOnce } from '@/services/health'
+import { GlobalOfferCelebration } from '@/components/documents/GlobalOfferCelebration'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <BrowserRouter>
         <BackendHealthCheck />
         <ThemeSync />
+        <GlobalOfferCelebration />
         {children}
         <Toaster richColors position="top-center" />
       </BrowserRouter>

@@ -41,6 +41,23 @@ export function Profile() {
   const [twoFaCode, setTwoFaCode] = useState('')
   const [twoFaError, setTwoFaError] = useState('')
   const [twoFaLoading, setTwoFaLoading] = useState(false)
+  const [name, setName] = useState(user?.name ?? '')
+  const [phone, setPhone] = useState(user?.phone ?? '')
+  const [telegram, setTelegram] = useState(user?.socialLinks?.telegram ?? '')
+  const [instagram, setInstagram] = useState(user?.socialLinks?.instagram ?? '')
+  const [linkedin, setLinkedin] = useState(user?.socialLinks?.linkedin ?? '')
+  const [facebook, setFacebook] = useState(user?.socialLinks?.facebook ?? '')
+  const [whatsapp, setWhatsapp] = useState(user?.socialLinks?.whatsapp ?? '')
+
+  useEffect(() => {
+    setName(user?.name ?? '')
+    setPhone(user?.phone ?? '')
+    setTelegram(user?.socialLinks?.telegram ?? '')
+    setInstagram(user?.socialLinks?.instagram ?? '')
+    setLinkedin(user?.socialLinks?.linkedin ?? '')
+    setFacebook(user?.socialLinks?.facebook ?? '')
+    setWhatsapp(user?.socialLinks?.whatsapp ?? '')
+  }, [user?.name, user?.phone, user?.socialLinks?.telegram, user?.socialLinks?.instagram, user?.socialLinks?.linkedin, user?.socialLinks?.facebook, user?.socialLinks?.whatsapp])
 
   const handleSetup2FA = () => {
     setTwoFaError('')
@@ -84,6 +101,16 @@ export function Profile() {
       .catch(toastApiError)
   }
 
+  const handleAccountSave = () => {
+    updateProfile({
+      name,
+      phone,
+      socialLinks: { telegram, instagram, linkedin, facebook, whatsapp },
+    })
+      .then(() => getProfile())
+      .catch(toastApiError)
+  }
+
   return (
     <div className="w-full space-y-4">
       <PageTitle title={t('profile')} icon="Settings" />
@@ -108,6 +135,18 @@ export function Profile() {
           <dt className="text-[var(--color-text-muted)]">{t('role')}</dt>
           <dd>{user?.role}</dd>
         </dl>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <Input label={t('name')} value={name} onChange={(e) => setName(e.target.value)} />
+          <Input label={t('phone', 'Phone')} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998 90 123 45 67" />
+          <Input label="Telegram" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
+          <Input label="Instagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="instagram.com/username" />
+          <Input label="LinkedIn" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/username" />
+          <Input label="Facebook" value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/username" />
+          <Input label="WhatsApp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+998 90 123 45 67" />
+        </div>
+        <div className="mt-4">
+          <Button onClick={handleAccountSave}>{t('save', 'Save')}</Button>
+        </div>
       </Card>
 
       <Card>

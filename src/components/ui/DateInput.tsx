@@ -271,11 +271,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
       const nextPlacement: PickerPlacement = shouldOpenTop ? 'top' : 'bottom'
       const width = clamp(Math.max(rect.width, PICKER_WIDTH), 280, viewportWidth - VIEWPORT_PADDING * 2)
       const left = clamp(rect.left, VIEWPORT_PADDING, viewportWidth - width - VIEWPORT_PADDING)
-      const maxHeight = clamp(
-        nextPlacement === 'bottom' ? spaceBelow : spaceAbove,
-        280,
-        PICKER_MAX_HEIGHT
-      )
+      const maxHeight = clamp(nextPlacement === 'bottom' ? spaceBelow : spaceAbove, 220, PICKER_MAX_HEIGHT)
 
       setPlacement(nextPlacement)
       setPickerStyle({
@@ -369,11 +365,11 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
 
     const picker = open && typeof document !== 'undefined'
       ? createPortal(
-          <div
-            ref={pickerRef}
-            id={pickerId}
-            className={cn(
-              'z-[75] overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] shadow-[0_34px_80px_-34px_rgba(15,23,42,0.8)] animate-modal-enter backdrop-blur',
+            <div
+              ref={pickerRef}
+              id={pickerId}
+              className={cn(
+              'z-[75] flex flex-col overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] shadow-[0_34px_80px_-34px_rgba(15,23,42,0.8)] animate-modal-enter backdrop-blur',
               placement === 'top' ? 'origin-bottom' : 'origin-top'
             )}
             style={pickerStyle}
@@ -434,7 +430,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
               </div>
             </div>
 
-            <div className="space-y-3 p-4">
+            <div className="space-y-3 overflow-y-auto p-4 touch-pan-y">
               <div className="grid grid-cols-7 gap-1">
                 {weekdayLabels.map((weekday) => (
                   <div

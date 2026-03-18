@@ -22,6 +22,9 @@ interface AIChatState {
   messages: ChatMessage[]
   isDrawerOpen: boolean
   selectionAsk: SelectionAsk | null
+  sessionId: string
+  requestLimit: number
+  requestsUsed: number
   setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
   addMessage: (msg: ChatMessage) => void
   updateMessage: (id: string, updater: (m: ChatMessage) => ChatMessage) => void
@@ -29,13 +32,24 @@ interface AIChatState {
   setDrawerOpen: (open: boolean) => void
   toggleDrawer: () => void
   setSelectionAsk: (sel: SelectionAsk | null) => void
+  incrementRequestsUsed: () => void
   clearChat: () => void
+}
+
+function createSessionId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `ai-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
 export const useAIChatStore = create<AIChatState>((set) => ({
   messages: [],
   isDrawerOpen: false,
   selectionAsk: null,
+  sessionId: createSessionId(),
+  requestLimit: 10,
+  requestsUsed: 0,
   setMessages: (msgs) =>
     set((s) => ({
       messages: typeof msgs === 'function' ? msgs(s.messages) : msgs,
@@ -49,5 +63,6 @@ export const useAIChatStore = create<AIChatState>((set) => ({
   setDrawerOpen: (open) => set({ isDrawerOpen: open }),
   toggleDrawer: () => set((s) => ({ isDrawerOpen: !s.isDrawerOpen })),
   setSelectionAsk: (sel) => set({ selectionAsk: sel }),
+  incrementRequestsUsed: () => set((s) => ({ requestsUsed: s.requestsUsed + 1 })),
   clearChat: () => set({ messages: [], selectionAsk: null }),
 }))

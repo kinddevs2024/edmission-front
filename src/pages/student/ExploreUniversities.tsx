@@ -170,7 +170,7 @@ export function ExploreUniversities() {
     setSearchParams(params, { replace: true })
   }, [filters.search, filters.country, filters.sort, page, setSearchParams])
 
-  const filterCount = useMemo(() => countActiveFilters(filters), [filters])
+  const filterCount = useMemo(() => countActiveFilters(filters, profileCriteriaCount), [filters, profileCriteriaCount])
   const showClear = filterCount > 0 || !filters.useProfileFilters
   const canShowInterest = limitInfo.allowed
   const interestLabel = limitInfo.limit != null ? `${limitInfo.current}/${limitInfo.limit}` : `${limitInfo.current}`
@@ -270,7 +270,7 @@ export function ExploreUniversities() {
 
         {showClear ? (
           <div className="flex flex-wrap gap-2">
-            {buildActiveFilterLabels(filters, t).map((label) => (
+            {buildActiveFilterLabels(filters, t, profileCriteriaCount, profileCriteria).map((label) => (
               <span key={label} className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/85 px-3 py-1 text-xs text-[var(--color-text-muted)]">
                 {label}
               </span>
@@ -319,7 +319,7 @@ export function ExploreUniversities() {
         footer={(
           <>
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-              <span>{countActiveFilters(draftFilters)} {t('student:activeFilters', 'active')}</span>
+              <span>{countActiveFilters(draftFilters, draftFilters.useProfileFilters ? profileCriteriaCount : 0)} {t('student:activeFilters', 'active')}</span>
             </div>
             <div className="flex gap-2">
               <Button variant="ghost" onClick={handleClearFilters}>{t('common:clear', 'Clear')}</Button>
@@ -626,7 +626,7 @@ function buildUniversitySearchParams(page: number, limit: number, filters: Unive
   }
 }
 
-function countActiveFilters(filters: UniversityFilters) {
+function countActiveFilters(filters: UniversityFilters, profileCriteriaCount = 0) {
   return [
     filters.search.trim(),
     filters.country,
@@ -643,10 +643,16 @@ function countActiveFilters(filters: UniversityFilters) {
     filters.programQuery.trim(),
     filters.requirementsQuery.trim(),
     filters.hasScholarship,
+    filters.useProfileFilters ? profileCriteriaCount : 0,
   ].filter((value) => (typeof value === 'number' ? value > 0 : Boolean(value))).length
 }
 
-function buildActiveFilterLabels(filters: UniversityFilters, t: ReturnType<typeof useTranslation>['t']) {
+function buildActiveFilterLabels(
+  filters: UniversityFilters,
+  t: ReturnType<typeof useTranslation>['t'],
+  profileCriteriaCount = 0,
+  profileCriteria?: { faculties: number; countries: number }
+) {
   const labels: string[] = []
   if (filters.search.trim()) labels.push(`${t('common:search', 'Search')}: ${filters.search.trim()}`)
   if (filters.country) labels.push(`${t('student:country', 'Country')}: ${filters.country}`)
@@ -660,6 +666,12 @@ function buildActiveFilterLabels(filters: UniversityFilters, t: ReturnType<typeo
   if (filters.programQuery.trim()) labels.push(`${t('student:programQuery', 'Program query')}: ${filters.programQuery.trim()}`)
   if (filters.requirementsQuery.trim()) labels.push(`${t('student:requirementsQuery', 'Requirements query')}: ${filters.requirementsQuery.trim()}`)
   if (filters.hasScholarship) labels.push(t('student:scholarshipsOnly', 'Scholarships only'))
+  if (filters.useProfileFilters && profileCriteriaCount > 0) {
+    labels.push(
+      t('student:profileFiltersApplied', 'Using your profile') +
+      `: ${profileCriteria?.faculties ?? 0} ${t('student:faculties', 'faculties')}, ${profileCriteria?.countries ?? 0} ${t('student:countries', 'countries')}`
+    )
+  }
   if (!filters.useProfileFilters) labels.push(t('student:profileMatchingOff', 'Profile matching off'))
   return labels.slice(0, 10)
 }

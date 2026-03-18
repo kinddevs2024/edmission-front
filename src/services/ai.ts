@@ -1,4 +1,5 @@
 import { api } from './api'
+import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
 import { useAuthStore } from '@/store/authStore'
 
 const baseURL =
@@ -14,6 +15,7 @@ export interface SendAIChatParams {
   message: string
   history?: ChatHistoryItem[]
   selectedText?: string
+  sessionId?: string
 }
 
 export interface AIStatus {
@@ -22,6 +24,21 @@ export interface AIStatus {
 }
 
 export type StreamChunk = { type: 'content' | 'thinking'; text: string }
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = getStoredRefreshToken()
+  if (!refreshToken) return null
+  try {
+    const { data } = await api.post<{ user: import('@/types/user').User; accessToken: string }>('/auth/refresh', { refreshToken })
+    saveAuth(data.user, data.accessToken, refreshToken)
+    useAuthStore.getState().setAuth(data.user, data.accessToken)
+    return data.accessToken
+  } catch {
+    clearAuth()
+    useAuthStore.getState().logout()
+    return null
+  }
+}
 
 export async function getAIStatus(): Promise<AIStatus> {
   const { data } = await api.get<AIStatus>('/ai/status')
@@ -49,26 +66,39 @@ export async function sendAIChatStream(
     onError: (message: string) => void
   }
 ): Promise<void> {
-  const token = useAuthStore.getState().accessToken
+  let token = useAuthStore.getState().accessToken
   if (!token) {
     callbacks.onError('Not authenticated')
     return
   }
 
-  const res = await fetch(`${baseURL}/ai/chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: 'include',
-    body: JSON.stringify({
-      message: params.message,
-      history: params.history,
-      selectedText: params.selectedText,
-      stream: true,
-    }),
-  })
+  const createRequest = (authToken: string) =>
+    fetch(`${baseURL}/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        message: params.message,
+        history: params.history,
+        selectedText: params.selectedText,
+        sessionId: params.sessionId,
+        stream: true,
+      }),
+    })
+
+  let res = await createRequest(token)
+  if (res.status === 401) {
+    const refreshedToken = await refreshAccessToken()
+    if (!refreshedToken) {
+      callbacks.onError('Session expired. Please sign in again.')
+      return
+    }
+    token = refreshedToken
+    res = await createRequest(token)
+  }
 
   if (!res.ok) {
     const data = (await res.json().catch(() => ({}))) as { message?: string }
