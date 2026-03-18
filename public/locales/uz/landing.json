@@ -32,6 +32,39 @@
     "statScholarships": "$5M+",
     "statScholarshipsLabel": "Stipendiya"
   },
+  "howItWorksSection": {
+    "eyebrow": "Qanday ishlaydi",
+    "title": "Har bir ishtirokchi uchun aniq jarayon",
+    "description": "Talabalar, universitetlar va maktab konsultantlari ro'yxatdan o'tishdan takliflargacha aniq bosqichlar bo'yicha harakat qiladi.",
+    "labels": {
+      "first": "Birinchi qadam",
+      "second": "Ikkinchi qadam",
+      "third": "Uchinchi qadam",
+      "fourth": "To'rtinchi qadam"
+    },
+    "students": {
+      "title": "Talabalar",
+      "caption": "Profildan offergacha",
+      "step1": "Ro'yxatdan o'ting",
+      "step2": "Profil ma'lumotlarini to'ldiring",
+      "step3": "Hujjatlarni yuklang",
+      "step4": "Universitetlardan offer oling"
+    },
+    "universities": {
+      "title": "Universitet",
+      "caption": "Ro'yxatdan o'tishdan offergacha",
+      "step1": "Ro'yxatdan o'ting",
+      "step2": "Mos nomzodlarga kirish oling",
+      "step3": "Offer yuboring"
+    },
+    "counsellors": {
+      "title": "Maktab konsultanti",
+      "caption": "Talabalar arizalarini kuzatish",
+      "step1": "Maktab ma'lumotlarini ro'yxatdan o'tkazing",
+      "step2": "Talabalar profillari va portfoliolarini yarating",
+      "step3": "Talabalar offerlarini kuzating"
+    }
+  },
   "accreditation": {
     "eyebrow": "Tan olish",
     "title": "Akreditatsiya va standartlar",

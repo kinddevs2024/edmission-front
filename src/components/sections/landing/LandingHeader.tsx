@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
 import { Menu, X } from 'lucide-react'
@@ -9,9 +9,11 @@ import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 
 export function LandingHeader() {
   const { t } = useTranslation('landing')
+  const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const HEADER_OFFSET = 88
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -45,9 +47,32 @@ export function LandingHeader() {
     }, 280)
   }, [isClosing])
 
+  const handleLogoClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
+    if (location.pathname !== '/') return
+    event.preventDefault()
+    if (menuOpen) closeMenu()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [closeMenu, location.pathname, menuOpen])
+
   const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-    closeMenu()
+    const target = document.getElementById(id)
+    if (!target) {
+      closeMenu()
+      return
+    }
+
+    const performScroll = () => {
+      const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+    }
+
+    if (menuOpen) {
+      closeMenu()
+      window.setTimeout(performScroll, 320)
+      return
+    }
+
+    performScroll()
   }
 
   const menuItems = [
@@ -70,14 +95,18 @@ export function LandingHeader() {
   return (
     <header
       className={clsx(
-        'sticky top-0 w-full border-b transition-all duration-200 z-50',
+        'fixed inset-x-0 top-0 z-50 w-full border-b border-[var(--color-border)] bg-[var(--color-card)]/72 backdrop-blur-md transition-all duration-200',
         scrolled
-          ? 'border-[var(--color-border)] bg-[var(--color-card)]/95 shadow-[var(--shadow-card)] backdrop-blur-sm'
-          : 'border-transparent bg-transparent'
+          ? 'shadow-[0_18px_40px_-28px_rgba(15,23,42,0.45)]'
+          : 'shadow-none'
       )}
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)] shrink-0">
+        <Link
+          to="/"
+          onClick={handleLogoClick}
+          className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)] shrink-0"
+        >
           <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" aria-hidden />
           {t('footer.brand')}
         </Link>

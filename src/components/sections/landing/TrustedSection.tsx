@@ -1,38 +1,15 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { getPublicStats } from '@/services/public'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
-
-const PARTNER_LOGOS = [
-  { src: '/landing/geneva-logo.svg', alt: 'Geneva School of Diplomacy & International Relations' },
-  { src: '/landing/Group-78.png', alt: 'BME XPLORE / Budapest University of Technology and Economics' },
-  { src: '/landing/image copy 2.png', alt: 'IU International University of Applied Sciences' },
-  { src: '/landing/image copy 3.png', alt: 'Peking University HSBC Business School' },
-  { src: '/landing/image copy 4.png', alt: 'UBI Business School' },
-  { src: '/landing/image copy 5.png', alt: 'Kyoto University of Advanced Science' },
-  { src: '/landing/image copy 6.png', alt: 'ICN Creative Business School' },
-  { src: '/landing/image copy 7.png', alt: 'University of Wollongong in Dubai' },
-  { src: '/landing/image copy.png', alt: 'Partner University' },
-  { src: '/landing/image.png', alt: 'Partner University' },
-  { src: '/landing/logo_www_2.png', alt: 'Partner University' },
-  { src: '/landing/logo.png', alt: 'Partner University' },
-  { src: '/landing/logo.svg', alt: 'Partner University' },
-  { src: '/landing/neoma_logo.svg', alt: 'NEOMA Business School' },
-  { src: '/landing/ubi-business-school.webp', alt: 'UBI Business School' },
-]
-
-function formatStat(value: number, suffix?: string): string {
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M${suffix ?? ''}`
-  if (value >= 1000) return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K${suffix ?? ''}`
-  return `${value.toLocaleString()}${suffix ?? ''}`
-}
+import { getTrustedUniversityLogos, type TrustedUniversityLogo } from '@/services/public'
+import { getImageUrl } from '@/services/upload'
 
 export function TrustedSection() {
   const { t } = useTranslation('landing')
-  const [statsData, setStatsData] = useState<{ universities: number; students: number; scholarships: number } | null>(null)
   const logosContainerRef = useRef<HTMLDivElement>(null)
+  const [logos, setLogos] = useState<TrustedUniversityLogo[]>([])
 
   const updateLogoIntensity = useCallback(() => {
     const container = logosContainerRef.current
@@ -52,12 +29,6 @@ export function TrustedSection() {
   }, [])
 
   useEffect(() => {
-    getPublicStats()
-      .then(setStatsData)
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => {
     updateLogoIntensity()
     const onScroll = () => requestAnimationFrame(updateLogoIntensity)
     const onResize = () => requestAnimationFrame(updateLogoIntensity)
@@ -69,23 +40,40 @@ export function TrustedSection() {
     }
   }, [updateLogoIntensity])
 
+  useEffect(() => {
+    let isMounted = true
+
+    getTrustedUniversityLogos()
+      .then((data) => {
+        if (isMounted) setLogos(data)
+      })
+      .catch(() => {
+        if (isMounted) setLogos([])
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   const stats = [
     {
-      value: statsData != null ? formatStat(statsData.universities, '+') : t('trusted.statUniversities'),
+      value: t('trusted.statUniversities'),
       label: t('trusted.statUniversitiesLabel'),
     },
     {
-      value: statsData != null ? formatStat(statsData.students, '+') : t('trusted.statStudents'),
+      value: t('trusted.statStudents'),
       label: t('trusted.statStudentsLabel'),
     },
     {
-      value: statsData != null ? formatStat(statsData.scholarships, '+') : t('trusted.statScholarships'),
+      value: t('trusted.statScholarships'),
       label: t('trusted.statScholarshipsLabel'),
     },
   ]
+  const marqueeLogos = logos.length > 0 ? [...logos, ...logos] : []
 
   return (
-    <section id="trusted-by" className="mx-auto max-w-7xl px-4 pt-12 pb-20 sm:pt-16 sm:pb-24 md:px-6 md:pt-20 md:pb-32 lg:px-8">
+    <section id="trusted-by" className="mx-auto max-w-7xl scroll-mt-24 px-4 pt-12 pb-20 sm:pt-16 sm:pb-24 md:px-6 md:pt-20 md:pb-32 lg:scroll-mt-28 lg:px-8">
       <Reveal>
         <SectionHeading
           align="center"
@@ -100,9 +88,9 @@ export function TrustedSection() {
         ref={logosContainerRef}
       >
         <div className="flex w-max trusted-logos-marquee gap-10 px-2 pb-2">
-          {[...PARTNER_LOGOS, ...PARTNER_LOGOS].map((logo, i) => (
+          {marqueeLogos.map((logo, i) => (
             <div
-              key={i}
+              key={`${logo.id}-${i}`}
               className="trusted-logo-item flex h-12 w-32 flex-shrink-0 items-center justify-center grayscale opacity-80 transition-[filter,opacity] duration-300 sm:h-14 sm:w-40 max-md:grayscale-0 max-md:opacity-100"
               onMouseEnter={(e) => {
                 if (window.innerWidth >= 768) {
@@ -115,8 +103,8 @@ export function TrustedSection() {
               }}
             >
               <img
-                src={logo.src}
-                alt={logo.alt}
+                src={getImageUrl(logo.logoUrl)}
+                alt={logo.name}
                 className="max-h-full w-full object-contain object-center"
                 loading="lazy"
               />

@@ -19,7 +19,18 @@ export interface PublicStats {
   scholarships: number
 }
 
+export interface TrustedUniversityLogo {
+  id: string
+  name: string
+  logoUrl: string
+}
+
 export async function getPublicStats(): Promise<PublicStats> {
   const { data } = await api.get<PublicStats>('/public/stats')
   return data ?? { universities: 0, students: 0, scholarships: 0 }
+}
+
+export async function getTrustedUniversityLogos(): Promise<TrustedUniversityLogo[]> {
+  const { data } = await api.get<TrustedUniversityLogo[]>('/public/trusted-university-logos')
+  return Array.isArray(data) ? data : []
 }

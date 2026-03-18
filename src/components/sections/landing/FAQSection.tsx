@@ -29,7 +29,7 @@ export function FAQSection() {
   }, [items])
 
   return (
-    <section id="faq" className="border-y border-[var(--color-border)] bg-[var(--color-card)]/35">
+    <section id="faq" className="scroll-mt-24 border-y border-[var(--color-border)] bg-[var(--color-card)]/35 lg:scroll-mt-28">
       <script ref={schemaRef} type="application/ld+json" />
       <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:px-8">
         <Reveal>

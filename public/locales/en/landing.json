@@ -32,6 +32,39 @@
     "statScholarships": "$5M+",
     "statScholarshipsLabel": "Scholarships"
   },
+  "howItWorksSection": {
+    "eyebrow": "How It Works",
+    "title": "One clear flow for every participant",
+    "description": "Students, universities, and school counsellors each move through a structured path from onboarding to offers.",
+    "labels": {
+      "first": "First step",
+      "second": "Second step",
+      "third": "Third step",
+      "fourth": "Fourth step"
+    },
+    "students": {
+      "title": "Students",
+      "caption": "From profile to offer",
+      "step1": "Register",
+      "step2": "Fill in your profile details",
+      "step3": "Upload documents",
+      "step4": "Get offers from universities"
+    },
+    "universities": {
+      "title": "University",
+      "caption": "From onboarding to offers",
+      "step1": "Register",
+      "step2": "Get access to suitable candidates",
+      "step3": "Send offers"
+    },
+    "counsellors": {
+      "title": "School counsellor",
+      "caption": "Support student applications",
+      "step1": "Register school details",
+      "step2": "Register student profiles and portfolios",
+      "step3": "Monitor students' offers"
+    }
+  },
   "accreditation": {
     "eyebrow": "Recognition",
     "title": "Accreditation & Standards",
@@ -78,7 +111,7 @@
       { "q": "What is Edmission?", "a": "Edmission is a direct admission platform that connects students and universities without agencies. You create a profile, get AI-powered university matches, and can receive scholarship offers directly from universities." },
       { "q": "Is Edmission free for students?", "a": "Yes. Students can create an account, build a profile, explore universities, and receive recommendations and offers at no cost. There are no hidden fees." },
       { "q": "How does the matching work?", "a": "Our system uses your grades, field of study, language, budget, and preferences to recommend universities and programs that fit. Each match includes a transparent score breakdown." },
-      { "q": "Which countries and universities are on Edmission?", "a": "We are growing our network of partner universities across the region. You can explore available programs and countries once you sign up." },
+      { "q": "Which countries and universities are on Edmission?", "a": "We cooperate with over 50 Universities around the globe. You can explore available programs and countries once you sign up." },
       { "q": "How do I get scholarship offers?", "a": "Universities on the platform allocate scholarships and send offers to matched students. Completing your profile and applying to programs increases your visibility to universities." }
     ]
   },
