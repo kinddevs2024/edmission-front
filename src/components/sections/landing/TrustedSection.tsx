@@ -1,15 +1,41 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
-import { getTrustedUniversityLogos, type TrustedUniversityLogo } from '@/services/public'
-import { getImageUrl } from '@/services/upload'
+
+type TrustedUniversityLogo = {
+  id: string
+  name: string
+  logoUrl: string
+}
+
+const TRUSTED_UNIVERSITY_LOGOS: TrustedUniversityLogo[] = [
+  { id: 'geneva', name: 'Geneva Business School', logoUrl: '/landing/geneva-logo.svg' },
+  { id: 'neoma', name: 'NEOMA Business School', logoUrl: '/landing/neoma_logo.svg' },
+  { id: 'ubi', name: 'UBI Business School', logoUrl: '/landing/ubi-business-school.webp' },
+  { id: 'logo-main', name: 'Partner University 1', logoUrl: '/landing/logo.svg' },
+  { id: 'logo-png', name: 'Partner University 2', logoUrl: '/landing/logo.png' },
+  { id: 'school-logo', name: 'Partner University 3', logoUrl: '/landing/logo_schools_u4a5a5402_af3d6608.jpg' },
+  { id: 'www-2', name: 'Partner University 4', logoUrl: '/landing/logo_www_2.png' },
+  { id: 'group-78', name: 'Partner University 5', logoUrl: '/landing/Group-78.png' },
+  { id: 'images', name: 'Partner University 6', logoUrl: '/landing/images.png' },
+  { id: 'images-1', name: 'Partner University 7', logoUrl: '/landing/images%20(1).png' },
+  { id: 'images-2', name: 'Partner University 8', logoUrl: '/landing/images%20(2).png' },
+  { id: 'copy-3', name: 'Partner University 9', logoUrl: '/landing/image%20copy%203.png' },
+  { id: 'copy-4', name: 'Partner University 10', logoUrl: '/landing/image%20copy%204.png' },
+  { id: 'copy-5', name: 'Partner University 11', logoUrl: '/landing/image%20copy%205.png' },
+  { id: 'copy-6', name: 'Partner University 12', logoUrl: '/landing/image%20copy%206.png' },
+  { id: 'copy-7', name: 'Partner University 13', logoUrl: '/landing/image%20copy%207.png' },
+  { id: 'unnamed-jpg', name: 'Partner University 14', logoUrl: '/landing/unnamed.jpg' },
+  { id: 'unnamed-png', name: 'Partner University 15', logoUrl: '/landing/unnamed.png' },
+  { id: 'seneca', name: 'Seneca College', logoUrl: '/landing/%EC%84%B8%EB%84%A4%EC%B9%B4-%EC%BB%AC%EB%A6%AC%EC%A7%80-%EB%A1%9C%EA%B3%A0.jpg' },
+]
 
 export function TrustedSection() {
   const { t } = useTranslation('landing')
   const logosContainerRef = useRef<HTMLDivElement>(null)
-  const [logos, setLogos] = useState<TrustedUniversityLogo[]>([])
+  const logos = TRUSTED_UNIVERSITY_LOGOS
 
   const updateLogoIntensity = useCallback(() => {
     const container = logosContainerRef.current
@@ -40,22 +66,6 @@ export function TrustedSection() {
     }
   }, [updateLogoIntensity])
 
-  useEffect(() => {
-    let isMounted = true
-
-    getTrustedUniversityLogos()
-      .then((data) => {
-        if (isMounted) setLogos(data)
-      })
-      .catch(() => {
-        if (isMounted) setLogos([])
-      })
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
   const stats = [
     {
       value: t('trusted.statUniversities'),
@@ -70,7 +80,7 @@ export function TrustedSection() {
       label: t('trusted.statScholarshipsLabel'),
     },
   ]
-  const marqueeLogos = logos.length > 0 ? [...logos, ...logos] : []
+  const marqueeLogos = logos.length > 1 ? [...logos, ...logos] : logos
 
   return (
     <section id="trusted-by" className="mx-auto max-w-7xl scroll-mt-24 px-4 pt-12 pb-20 sm:pt-16 sm:pb-24 md:px-6 md:pt-20 md:pb-32 lg:scroll-mt-28 lg:px-8">
@@ -82,36 +92,38 @@ export function TrustedSection() {
       </Reveal>
 
       {/* Partner university logos carousel - desktop: grayscale at edges, color in center */}
-      <div
-        className="relative mt-8 overflow-hidden logos-viewport"
-        aria-label={t('trusted.title')}
-        ref={logosContainerRef}
-      >
-        <div className="flex w-max trusted-logos-marquee gap-10 px-2 pb-2">
-          {marqueeLogos.map((logo, i) => (
-            <div
-              key={`${logo.id}-${i}`}
-              className="trusted-logo-item flex h-12 w-32 flex-shrink-0 items-center justify-center grayscale opacity-80 transition-[filter,opacity] duration-300 sm:h-14 sm:w-40 max-md:grayscale-0 max-md:opacity-100"
-              onMouseEnter={(e) => {
-                if (window.innerWidth >= 768) {
-                  e.currentTarget.style.filter = 'grayscale(0%)'
-                  e.currentTarget.style.opacity = '1'
-                }
-              }}
-              onMouseLeave={() => {
-                if (window.innerWidth >= 768) updateLogoIntensity()
-              }}
-            >
-              <img
-                src={getImageUrl(logo.logoUrl)}
-                alt={logo.name}
-                className="max-h-full w-full object-contain object-center"
-                loading="lazy"
-              />
-            </div>
-          ))}
+      {logos.length > 0 && (
+        <div
+          className="relative mt-8 overflow-hidden logos-viewport"
+          aria-label={t('trusted.title')}
+          ref={logosContainerRef}
+        >
+          <div className="flex w-max trusted-logos-marquee gap-10 px-2 pb-2">
+            {marqueeLogos.map((logo, i) => (
+              <div
+                key={`${logo.id}-${i}`}
+                className="trusted-logo-item flex h-12 w-32 flex-shrink-0 items-center justify-center grayscale opacity-80 transition-[filter,opacity] duration-300 sm:h-14 sm:w-40 max-md:grayscale-0 max-md:opacity-100"
+                onMouseEnter={(e) => {
+                  if (window.innerWidth >= 768) {
+                    e.currentTarget.style.filter = 'grayscale(0%)'
+                    e.currentTarget.style.opacity = '1'
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (window.innerWidth >= 768) updateLogoIntensity()
+                }}
+              >
+                <img
+                  src={logo.logoUrl}
+                  alt={logo.name}
+                  className="max-h-full w-full object-contain object-center"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-14 sm:mt-16 grid gap-6 sm:grid-cols-3">
         {stats.map((stat, index) => (
