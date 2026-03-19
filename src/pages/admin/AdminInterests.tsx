@@ -11,17 +11,17 @@ import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'interested', label: 'Interested' },
-  { value: 'under_review', label: 'Under review' },
-  { value: 'chat_opened', label: 'Chat opened' },
-  { value: 'offer_sent', label: 'Offer sent' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'accepted', label: 'Accepted' },
+  { value: '', labelKey: 'admin:allStatuses' },
+  { value: 'interested', labelKey: 'admin:interestedStatus' },
+  { value: 'under_review', labelKey: 'admin:underReview' },
+  { value: 'chat_opened', labelKey: 'admin:chatOpened' },
+  { value: 'offer_sent', labelKey: 'admin:offerSent' },
+  { value: 'rejected', labelKey: 'admin:rejected' },
+  { value: 'accepted', labelKey: 'admin:accepted' },
 ]
 
 export function AdminInterests() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [items, setItems] = useState<AdminInterest[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -29,6 +29,7 @@ export function AdminInterests() {
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const limit = 20
+  const statusOptions = STATUS_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) }))
 
   useEffect(() => {
     setLoading(true)
@@ -60,13 +61,13 @@ export function AdminInterests() {
       <Card>
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
-            label="Status"
-            options={STATUS_OPTIONS}
+            label={t('common:status', 'Status')}
+            options={statusOptions}
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
           />
         </div>
-        <CardTitle>All interests</CardTitle>
+        <CardTitle>{t('admin:allInterests')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={8} cols={6} />
         ) : (
@@ -74,12 +75,12 @@ export function AdminInterests() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>Student</TableTh>
-                  <TableTh>University</TableTh>
-                  <TableTh>Source</TableTh>
-                  <TableTh>Status</TableTh>
-                  <TableTh>Created</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('admin:studentLabel', 'Student')}</TableTh>
+                  <TableTh>{t('admin:universityLabel', 'University')}</TableTh>
+                  <TableTh>{t('admin:sourceLabel', 'Source')}</TableTh>
+                  <TableTh>{t('common:status', 'Status')}</TableTh>
+                  <TableTh>{t('admin:createdLabel', 'Created')}</TableTh>
+                  <TableTh>{t('common:actions', 'Actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -93,13 +94,13 @@ export function AdminInterests() {
                     <TableTd>
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === x.id} onClick={() => setStatus(x.id, 'under_review')}>
-                          Under review
+                          {t('admin:underReview')}
                         </Button>
                         <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === x.id} onClick={() => setStatus(x.id, 'chat_opened')}>
-                          Chat opened
+                          {t('admin:chatOpened')}
                         </Button>
                         <Button size="sm" variant="danger" disabled={!!actionId} loading={actionId === x.id} onClick={() => setStatus(x.id, 'rejected')}>
-                          Reject
+                          {t('admin:reject')}
                         </Button>
                       </div>
                     </TableTd>

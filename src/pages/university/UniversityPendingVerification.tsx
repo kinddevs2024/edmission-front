@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/store/authStore'
 
 export function UniversityPendingVerification() {
-  useTranslation(['common', 'university'])
+  const { t } = useTranslation(['common', 'university'])
   const { user } = useAuth()
   const logout = useAuthStore((s) => s.logout)
 
@@ -21,17 +21,20 @@ export function UniversityPendingVerification() {
         <div className="w-14 h-14 rounded-full bg-primary-accent/20 flex items-center justify-center mx-auto mb-4">
           <ShieldCheck className="w-7 h-7 text-primary-accent" aria-hidden />
         </div>
-        <CardTitle className="mb-2">Account under review</CardTitle>
+        <CardTitle className="mb-2">{t('university:pendingVerificationTitle', 'Account under review')}</CardTitle>
         <p className="text-[var(--color-text-muted)] text-sm mb-6">
-          Thank you for registering. Your university account will be verified and approved by our team. You will be notified once your account is active. Until then, you cannot access the platform.
+          {t(
+            'university:pendingVerificationDescription',
+            'Thank you for registering. Your university account will be verified and approved by our team. You will be notified once your account is active. Until then, you cannot access the platform.'
+          )}
         </p>
         {user?.email && (
           <p className="text-xs text-[var(--color-text-muted)] mb-4">
-            Registered as: {user.email}
+            {t('university:pendingVerificationRegisteredAs', 'Registered as:')} {user.email}
           </p>
         )}
         <Button variant="secondary" onClick={handleLogout} icon={<LogOut className="w-4 h-4" />}>
-          Sign out
+          {t('common:logout', 'Sign out')}
         </Button>
       </Card>
     </div>

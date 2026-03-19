@@ -12,6 +12,7 @@ import {
   type SelectHTMLAttributes,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 interface SelectOption {
@@ -76,6 +77,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     forwardedRef
   ) {
+    const { t } = useTranslation('common')
     const generatedId = useId().replace(/:/g, '')
     const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-') ?? `select-${generatedId}`
     const menuId = `${inputId}-menu`
@@ -336,7 +338,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           </div>
         ) : (
           <div className="rounded-[16px] px-3 py-2 text-sm text-[var(--color-text-muted)]">
-            No options
+            {t('noOptions', 'No options')}
           </div>
         )}
         <div
@@ -407,7 +409,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             }}
           >
             <span className={cn('block truncate pr-2', selectedValue === '' && 'text-[var(--color-text-muted)]')}>
-              {selectedOption?.label ?? placeholder ?? 'Select'}
+              {selectedOption?.label ?? placeholder ?? t('select', 'Select')}
             </span>
             <span
               className={cn(

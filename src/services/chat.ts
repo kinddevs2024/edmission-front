@@ -1,5 +1,6 @@
 import { api } from './api'
 import type { Chat, Message } from '@/types/chat'
+import { getLocalizedChatMessageText } from '@/utils/chatText'
 
 type RawChat = {
   id: string
@@ -7,8 +8,8 @@ type RawChat = {
   studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   university?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
-  lastMessage?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
-  messages?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string }>
+  lastMessage?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; type?: Message['type']; metadata?: Message['metadata']; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
+  messages?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; type?: Message['type']; metadata?: Message['metadata']; createdAt?: string }>
   acceptedAt?: string
   acceptancePositionType?: string
   acceptancePositionLabel?: string
@@ -55,7 +56,11 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
     lastMessage: lastMsg
       ? {
           id: String(lastMsg.id ?? lastMsg._id ?? ''),
-          text: String(lastMsg.message ?? lastMsg.text ?? ''),
+          text: getLocalizedChatMessageText({
+            type: lastMsg.type,
+            text: String(lastMsg.message ?? lastMsg.text ?? ''),
+            metadata: lastMsg.metadata,
+          }),
           createdAt: String(lastMsg.createdAt ?? ''),
           isFromMe: false,
         }

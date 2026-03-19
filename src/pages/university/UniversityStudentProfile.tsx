@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -14,10 +14,12 @@ import { MessageCircle, FileText, ExternalLink } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
 
+const EMPTY = '—'
+
 export function UniversityStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
-  const { t } = useTranslation(['common', 'university'])
+  const { t } = useTranslation(['common', 'university', 'student', 'documents'])
   const [profile, setProfile] = useState<FullStudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -32,13 +34,22 @@ export function UniversityStudentProfile() {
       .catch((e) => {
         const err = getApiError(e)
         if ((err as { code?: string }).code === 'FORBIDDEN') {
-          setError('You have reached the maximum number of student profiles for your current plan. Please upgrade your subscription to view more students.')
+          setError(t('university:studentProfile.limitReachedError', 'You have reached the maximum number of student profiles for your current plan. Please upgrade your subscription to view more students.'))
         } else {
-          setError('Failed to load profile')
+          setError(t('university:studentProfile.failedToLoadProfile', 'Failed to load profile.'))
         }
       })
       .finally(() => setLoading(false))
-  }, [studentId])
+  }, [studentId, t])
+
+  const renderValue = (value?: string | number | null) => (value == null || value === '' ? EMPTY : value)
+  const renderBool = (value?: boolean | null) => (value == null ? EMPTY : value ? t('common:yes', 'Yes') : t('common:no', 'No'))
+  const degreeLabel = (value?: string | null) => {
+    if (value === 'master') return t('student:degreeMaster', 'Master')
+    if (value === 'phd') return t('student:degreePhd', 'PhD')
+    if (value === 'bachelor') return t('student:degreeBachelor', 'Bachelor')
+    return EMPTY
+  }
 
   if (!studentId) {
     return (
@@ -84,201 +95,199 @@ export function UniversityStudentProfile() {
         <div className="space-y-4">
           {profile.readiness && (
             <Card className="border-primary-accent/20">
-              <CardTitle>Readiness for university</CardTitle>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <CardTitle>{t('university:studentProfile.readinessTitle', 'Readiness for university')}</CardTitle>
+              <div className="mt-2 flex flex-wrap gap-2 text-sm">
                 <span className={profile.readiness.profile ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
-                  {profile.readiness.profile ? '✓' : '○'} Profile (country, city)
+                  {profile.readiness.profile ? '✓' : '○'} {t('university:studentProfile.readinessProfile', 'Profile (country, city)')}
                 </span>
                 <span className={profile.readiness.education ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
-                  {profile.readiness.education ? '✓' : '○'} Education (grades)
+                  {profile.readiness.education ? '✓' : '○'} {t('university:studentProfile.readinessEducation', 'Education (grades)')}
                 </span>
                 <span className={profile.readiness.certificates ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
-                  {profile.readiness.certificates ? '✓' : '○'} Certificates
+                  {profile.readiness.certificates ? '✓' : '○'} {t('university:studentProfile.readinessCertificates', 'Certificates')}
                 </span>
-                {profile.readiness.ready && (
-                  <span className="font-medium text-primary-accent">Ready</span>
-                )}
+                {profile.readiness.ready && <span className="font-medium text-primary-accent">{t('university:studentProfile.ready', 'Ready')}</span>}
               </div>
             </Card>
           )}
+
           <div className="flex justify-center md:justify-start">
-            <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" loading="lazy" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
+            <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" loading="lazy" className="h-24 w-24 rounded-full object-cover border border-[var(--color-border)]" />
           </div>
 
-              <Card>
-            <CardTitle>Personal</CardTitle>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-              <dt className="text-[var(--color-text-muted)]">First name</dt><dd>{profile.firstName ?? '—'}</dd>
-              <dt className="text-[var(--color-text-muted)]">Last name</dt><dd>{profile.lastName ?? '—'}</dd>
-              <dt className="text-[var(--color-text-muted)]">Email</dt><dd>{profile.email ?? '—'}</dd>
-              <dt className="text-[var(--color-text-muted)]">Date of birth</dt><dd>{profile.birthDate ? formatDate(profile.birthDate) : '—'}</dd>
+          <Card>
+            <CardTitle>{t('university:studentProfile.personal', 'Personal')}</CardTitle>
+            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+              <dt className="text-[var(--color-text-muted)]">{t('student:firstName', 'First name')}</dt><dd>{renderValue(profile.firstName)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:lastName', 'Last name')}</dt><dd>{renderValue(profile.lastName)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('common:email', 'Email')}</dt><dd>{renderValue(profile.email)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:birthDate', 'Date of birth')}</dt><dd>{profile.birthDate ? formatDate(profile.birthDate) : EMPTY}</dd>
             </dl>
           </Card>
 
           <Card>
-            <CardTitle>Location</CardTitle>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-              <dt className="text-[var(--color-text-muted)]">Country</dt><dd>{profile.country ?? '—'}</dd>
-              <dt className="text-[var(--color-text-muted)]">City</dt><dd>{profile.city ?? '—'}</dd>
+            <CardTitle>{t('university:studentProfile.location', 'Location')}</CardTitle>
+            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+              <dt className="text-[var(--color-text-muted)]">{t('student:country', 'Country')}</dt><dd>{renderValue(profile.country)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:city', 'City')}</dt><dd>{renderValue(profile.city)}</dd>
             </dl>
           </Card>
 
           {profile.budgetAmount != null && Number(profile.budgetAmount) >= 0 && (
             <Card>
               <CardTitle>{t('university:budgetLabel', 'Budget for studies')}</CardTitle>
-              <p className="mt-2 text-sm">
-                {Number(profile.budgetAmount).toLocaleString()} {profile.budgetCurrency ?? 'USD'}
-              </p>
+              <p className="mt-2 text-sm">{Number(profile.budgetAmount).toLocaleString()} {profile.budgetCurrency ?? 'USD'}</p>
             </Card>
           )}
         </div>
 
         <div className="space-y-4">
-      <Card>
-        <CardTitle>Education</CardTitle>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-          {(profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd') && (
-            <><dt className="text-[var(--color-text-muted)]">Applying for</dt><dd>{profile.targetDegreeLevel === 'master' ? 'Master' : 'PhD'}</dd></>
-          )}
-          <dt className="text-[var(--color-text-muted)]">Grade / level</dt><dd>{profile.gradeLevel ?? '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">GPA</dt><dd>{profile.gpa != null ? profile.gpa : '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University completed' : 'School completed'}</dt><dd>{profile.schoolCompleted != null ? (profile.schoolCompleted ? 'Yes' : 'No') : '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University / Institution name' : 'School name'}</dt><dd>{profile.schoolName ?? '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">Graduation year</dt><dd>{profile.graduationYear ?? '—'}</dd>
-          {profile.gradingScheme && <><dt className="text-[var(--color-text-muted)]">Grading scheme</dt><dd>{profile.gradingScheme}</dd></>}
-          {profile.gradeScale != null && <><dt className="text-[var(--color-text-muted)]">Grade scale (out of)</dt><dd>{profile.gradeScale}</dd></>}
-          {profile.highestEducationLevel && <><dt className="text-[var(--color-text-muted)]">Highest education level</dt><dd>{profile.highestEducationLevel}</dd></>}
-        </dl>
-        {profile.schoolsAttended?.length ? (
-          <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
-            <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Schools / Universities attended</p>
-            <ul className="space-y-2">
-              {profile.schoolsAttended.map((s, i) => (
-                <li key={i} className="text-sm">
-                  {s.institutionName ?? '—'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` · ${s.attendedFrom.slice(0, 4)}–${s.attendedTo.slice(0, 4)}`}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </Card>
+          <Card>
+            <CardTitle>{t('university:studentProfile.education', 'Education')}</CardTitle>
+            <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+              {(profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd') && (
+                <>
+                  <dt className="text-[var(--color-text-muted)]">{t('student:applyingForDegree', 'Applying for degree')}</dt>
+                  <dd>{degreeLabel(profile.targetDegreeLevel)}</dd>
+                </>
+              )}
+              <dt className="text-[var(--color-text-muted)]">{t('student:gradeLevel', 'Grade / education level')}</dt><dd>{renderValue(profile.gradeLevel)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:gpa', 'GPA')}</dt><dd>{renderValue(profile.gpa)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? t('student:institutionCompleted', 'University completed') : t('student:schoolCompleted', 'School completed')}</dt><dd>{renderBool(profile.schoolCompleted)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? t('student:institutionName', 'University / Institution name') : t('student:schoolName', 'School name')}</dt><dd>{renderValue(profile.schoolName)}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:graduationYear', 'Graduation year')}</dt><dd>{renderValue(profile.graduationYear)}</dd>
+              {profile.gradingScheme ? <><dt className="text-[var(--color-text-muted)]">{t('student:gradingScheme', 'Grading scheme')}</dt><dd>{profile.gradingScheme}</dd></> : null}
+              {profile.gradeScale != null ? <><dt className="text-[var(--color-text-muted)]">{t('student:gradeScaleOutOf', 'Grade scale (out of)')}</dt><dd>{profile.gradeScale}</dd></> : null}
+              {profile.highestEducationLevel ? <><dt className="text-[var(--color-text-muted)]">{t('student:highestLevelOfEducation', 'Highest level of education')}</dt><dd>{profile.highestEducationLevel}</dd></> : null}
+            </dl>
+            {profile.schoolsAttended?.length ? (
+              <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+                <p className="mb-2 text-sm font-medium text-[var(--color-text-muted)]">{t('student:schoolsUniversitiesAttended', 'Schools / Universities attended')}</p>
+                <ul className="space-y-2">
+                  {profile.schoolsAttended.map((school, index) => (
+                    <li key={index} className="text-sm">
+                      {school.institutionName ?? EMPTY}
+                      {school.country ? ` (${school.country})` : ''}
+                      {school.attendedFrom && school.attendedTo ? ` · ${school.attendedFrom.slice(0, 4)}-${school.attendedTo.slice(0, 4)}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </Card>
 
-      <Card>
-        <CardTitle>Languages</CardTitle>
-        <div className="mt-2 text-sm">
-          {profile.languageLevel && <p><span className="text-[var(--color-text-muted)]">Level: </span>{profile.languageLevel}</p>}
-          {profile.languages?.length ? (
-            <ul className="list-disc list-inside mt-1">
-              {profile.languages.map((l, i) => (
-                <li key={i}>{l.language} — {l.level}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-[var(--color-text-muted)]">—</p>
-          )}
-        </div>
-      </Card>
+          <Card>
+            <CardTitle>{t('university:studentProfile.languages', 'Languages')}</CardTitle>
+            <div className="mt-2 text-sm">
+              {profile.languageLevel ? <p><span className="text-[var(--color-text-muted)]">{t('university:studentProfile.level', 'Level')}: </span>{profile.languageLevel}</p> : null}
+              {profile.languages?.length ? (
+                <ul className="mt-1 list-inside list-disc">
+                  {profile.languages.map((language, index) => (
+                    <li key={index}>{language.language} - {language.level}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-[var(--color-text-muted)]">{EMPTY}</p>
+              )}
+            </div>
+          </Card>
 
-      {profile.bio && (
-        <Card>
-          <CardTitle>About</CardTitle>
-          <p className="mt-2 text-sm whitespace-pre-wrap">{profile.bio}</p>
-        </Card>
-      )}
+          {profile.bio ? (
+            <Card>
+              <CardTitle>{t('university:studentProfile.about', 'About')}</CardTitle>
+              <p className="mt-2 whitespace-pre-wrap text-sm">{profile.bio}</p>
+            </Card>
+          ) : null}
 
-      <Card>
-        <CardTitle>Skills</CardTitle>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {profile.skills?.length ? profile.skills.map((s, i) => (
-            <span key={i} className="px-2 py-1 rounded-full bg-[var(--color-bg-muted)] text-sm">{s}</span>
-          )) : <p className="text-sm text-[var(--color-text-muted)]">—</p>}
-        </div>
-      </Card>
+          <Card>
+            <CardTitle>{t('university:studentProfile.skills', 'Skills')}</CardTitle>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profile.skills?.length
+                ? profile.skills.map((skill, index) => <span key={index} className="rounded-full bg-[var(--color-bg-muted)] px-2 py-1 text-sm">{skill}</span>)
+                : <p className="text-sm text-[var(--color-text-muted)]">{EMPTY}</p>}
+            </div>
+          </Card>
 
-      <Card>
-        <CardTitle>Interests</CardTitle>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {profile.interests?.length ? profile.interests.map((s, i) => (
-            <span key={i} className="px-2 py-1 rounded-full bg-[var(--color-bg-muted)] text-sm">{s}</span>
-          )) : <p className="text-sm text-[var(--color-text-muted)]">—</p>}
-        </div>
-      </Card>
+          <Card>
+            <CardTitle>{t('university:studentProfile.interests', 'Interests')}</CardTitle>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profile.interests?.length
+                ? profile.interests.map((interest, index) => <span key={index} className="rounded-full bg-[var(--color-bg-muted)] px-2 py-1 text-sm">{interest}</span>)
+                : <p className="text-sm text-[var(--color-text-muted)]">{EMPTY}</p>}
+            </div>
+          </Card>
 
-      <Card>
-        <CardTitle>Hobbies</CardTitle>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {profile.hobbies?.length ? profile.hobbies.map((s, i) => (
-            <span key={i} className="px-2 py-1 rounded-full bg-[var(--color-bg-muted)] text-sm">{s}</span>
-          )) : <p className="text-sm text-[var(--color-text-muted)]">—</p>}
-        </div>
-      </Card>
+          <Card>
+            <CardTitle>{t('university:studentProfile.hobbies', 'Hobbies')}</CardTitle>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profile.hobbies?.length
+                ? profile.hobbies.map((hobby, index) => <span key={index} className="rounded-full bg-[var(--color-bg-muted)] px-2 py-1 text-sm">{hobby}</span>)
+                : <p className="text-sm text-[var(--color-text-muted)]">{EMPTY}</p>}
+            </div>
+          </Card>
 
-      {profile.experiences?.length ? (
-        <Card>
-          <CardTitle>Experience</CardTitle>
-          <ul className="mt-2 space-y-3">
-            {profile.experiences.map((e, i) => (
-              <li key={i} className="text-sm border-b border-[var(--color-border)] pb-2 last:border-0">
-                <p className="font-medium">{e.title ?? e.type}</p>
-                {e.organization && <p className="text-[var(--color-text-muted)]">{e.organization}</p>}
-                {(e.startDate || e.endDate) && (
-                  <p className="text-[var(--color-text-muted)]">
-                    {e.startDate ? formatDate(e.startDate) : '?'} — {e.endDate ? formatDate(e.endDate) : 'Present'}
-                  </p>
-                )}
-                {e.description && <p className="mt-1">{e.description}</p>}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
+          {profile.experiences?.length ? (
+            <Card>
+              <CardTitle>{t('university:studentProfile.experience', 'Experience')}</CardTitle>
+              <ul className="mt-2 space-y-3">
+                {profile.experiences.map((experience, index) => (
+                  <li key={index} className="border-b border-[var(--color-border)] pb-2 text-sm last:border-0">
+                    <p className="font-medium">{experience.title ?? experience.type}</p>
+                    {experience.organization ? <p className="text-[var(--color-text-muted)]">{experience.organization}</p> : null}
+                    {(experience.startDate || experience.endDate) ? (
+                      <p className="text-[var(--color-text-muted)]">
+                        {experience.startDate ? formatDate(experience.startDate) : '?'} - {experience.endDate ? formatDate(experience.endDate) : t('common:present', 'Present')}
+                      </p>
+                    ) : null}
+                    {experience.description ? <p className="mt-1">{experience.description}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
 
-      {profile.portfolioWorks?.length ? (
-        <Card>
-          <CardTitle>Portfolio / works</CardTitle>
-          <ul className="mt-2 space-y-3">
-            {profile.portfolioWorks.map((w, i) => (
-              <li key={i} className="text-sm">
-                <p className="font-medium">{w.title ?? 'Work'}</p>
-                {w.description && <p className="text-[var(--color-text-muted)]">{w.description}</p>}
-                {w.linkUrl && (
-                  <a href={w.linkUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-accent mt-1">
-                    <ExternalLink size={14} /> Link
-                  </a>
-                )}
-                {w.fileUrl && (
-                  <a href={w.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-accent mt-1 ml-2">
-                    <FileText size={14} /> File
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
+          {profile.portfolioWorks?.length ? (
+            <Card>
+              <CardTitle>{t('university:studentProfile.portfolioWorks', 'Portfolio / works')}</CardTitle>
+              <ul className="mt-2 space-y-3">
+                {profile.portfolioWorks.map((work, index) => (
+                  <li key={index} className="text-sm">
+                    <p className="font-medium">{work.title ?? t('student:portfolioWork', 'Work / project')}</p>
+                    {work.description ? <p className="text-[var(--color-text-muted)]">{work.description}</p> : null}
+                    {work.linkUrl ? (
+                      <a href={work.linkUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 text-primary-accent">
+                        <ExternalLink size={14} /> {t('common:open', 'Open')}
+                      </a>
+                    ) : null}
+                    {work.fileUrl ? (
+                      <a href={work.fileUrl} target="_blank" rel="noopener noreferrer" className="ml-2 mt-1 inline-flex items-center gap-1 text-primary-accent">
+                        <FileText size={14} /> {t('common:file', 'File')}
+                      </a>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
 
-      {profile.documents?.length ? (
-        <Card>
-          <CardTitle>Documents (approved)</CardTitle>
-          <ul className="mt-2 space-y-2">
-            {profile.documents.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center gap-2 text-sm">
-                <FileText className="w-4 h-4 text-[var(--color-text-muted)] shrink-0" />
-                <span className="font-medium">{d.name ?? d.type}</span>
-                {d.certificateType && <span className="text-[var(--color-text-muted)]">{d.certificateType}</span>}
-                {d.score && <span className="text-[var(--color-text-muted)]">Score: {d.score}</span>}
-                <button
-                  type="button"
-                  onClick={() => setFilePreview(d)}
-                  className="text-primary-accent hover:underline"
-                >
-                  Preview
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
+          {profile.documents?.length ? (
+            <Card>
+              <CardTitle>{t('university:studentProfile.approvedDocuments', 'Documents (approved)')}</CardTitle>
+              <ul className="mt-2 space-y-2">
+                {profile.documents.map((document) => (
+                  <li key={document.id} className="flex flex-wrap items-center gap-2 text-sm">
+                    <FileText className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" />
+                    <span className="font-medium">{document.name ?? document.type}</span>
+                    {document.certificateType ? <span className="text-[var(--color-text-muted)]">{document.certificateType}</span> : null}
+                    {document.score ? <span className="text-[var(--color-text-muted)]">{t('university:studentProfile.score', 'Score')}: {document.score}</span> : null}
+                    <button type="button" onClick={() => setFilePreview(document)} className="text-primary-accent hover:underline">
+                      {t('common:preview', 'Preview')}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
         </div>
       </div>
 
@@ -292,7 +301,7 @@ export function UniversityStudentProfile() {
       <DocumentPreviewModal
         open={!!filePreview}
         onClose={() => setFilePreview(null)}
-        title={filePreview?.name ?? filePreview?.type ?? 'Document'}
+        title={filePreview?.name ?? filePreview?.type ?? t('documents:common.document', 'Document')}
         document={filePreview ? {
           fileUrl: filePreview.fileUrl,
           canvasJson: filePreview.canvasJson,

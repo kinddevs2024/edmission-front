@@ -8,7 +8,7 @@ import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 
 export function LandingHeader() {
-  const { t } = useTranslation('landing')
+  const { t } = useTranslation(['landing', 'common'])
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -150,7 +150,7 @@ export function LandingHeader() {
                 type="button"
                 onClick={closeMenu}
                 className="flex items-center justify-center rounded-full h-11 w-11 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
-                aria-label="Close menu"
+                aria-label={t('common:closeMenu', 'Close menu')}
               >
                 <X className="h-5 w-5 shrink-0" aria-hidden />
               </button>
@@ -159,7 +159,7 @@ export function LandingHeader() {
                 type="button"
                 onClick={() => setMenuOpen(true)}
                 className="flex items-center justify-center gap-2 rounded-full h-11 w-11 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
-                aria-label="Open menu"
+                aria-label={t('common:openMenu', 'Open menu')}
               >
                 <Menu className="h-5 w-5 shrink-0" aria-hidden />
               </button>
@@ -182,7 +182,7 @@ export function LandingHeader() {
               style={{ animation: isClosing ? 'drawer-out-right 0.28s ease-in forwards' : 'drawer-in-right 0.3s ease-out both' }}
               role="dialog"
               aria-modal="true"
-              aria-label="Navigation menu"
+              aria-label={t('common:navigationMenu', 'Navigation menu')}
             >
               <div className="flex items-center justify-between h-16 px-4 border-b border-[var(--color-border)]">
                 <span className="font-semibold text-[var(--color-text)]">{t('header.menu', 'Menu')}</span>
@@ -190,7 +190,7 @@ export function LandingHeader() {
                   type="button"
                   onClick={closeMenu}
                   className="flex items-center justify-center rounded-full h-10 w-10 border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
-                  aria-label="Close menu"
+                  aria-label={t('common:closeMenu', 'Close menu')}
                 >
                   <X className="h-5 w-5 shrink-0" aria-hidden />
                 </button>

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Chip } from '@material-tailwind/react'
 import { cn } from '@/utils/cn'
 
@@ -19,6 +20,7 @@ export function ChipSelect({
   placeholder,
   className,
 }: ChipSelectProps) {
+  const { t } = useTranslation('common')
   const selectedSet = useMemo(() => new Set(value), [value])
 
   const toggle = (item: string) => {
@@ -54,7 +56,7 @@ export function ChipSelect({
       </div>
       {max > 0 && (
         <p className="text-xs text-[var(--color-text-muted)]">
-          {value.length} / {max} selected
+          {t('selectedCount', { count: value.length, max, defaultValue: '{{count}} / {{max}} selected' })}
         </p>
       )}
     </div>

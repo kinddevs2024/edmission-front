@@ -14,7 +14,7 @@ import { listMyStudents, addInterestForStudent, listStudentUniversities, type Co
 import { toastApiError } from '@/utils/toastError'
 
 export function CounsellorStudentInterests() {
-  const { t, i18n } = useTranslation(['school', 'student'])
+  const { t } = useTranslation(['school', 'student', 'common'])
   const queryClient = useQueryClient()
 
   const [selectedStudentId, setSelectedStudentId] = useState<string>('')
@@ -75,21 +75,12 @@ export function CounsellorStudentInterests() {
     setUseProfileFilters(true)
   }
 
-  const isRu = i18n.resolvedLanguage?.startsWith('ru')
-  const isUz = i18n.resolvedLanguage?.startsWith('uz')
-  const localized = {
-    filtersTitle: isRu ? 'Фильтры' : isUz ? 'Filtrlar' : 'Filters',
-    selectStudentPlaceholder: isRu ? 'Выберите студента' : isUz ? 'Talabani tanlang' : 'Select a student',
-    studentLabel: isRu ? 'Студент' : isUz ? 'Talaba' : 'Student',
-    interestedButton: isRu ? 'Интересуется' : isUz ? 'Qiziqish bildirish' : 'Mark interested',
-  }
-
   const countryOptions = [
     { value: '', label: t('student:allCountries') },
-    { value: 'USA', label: isRu ? 'США' : isUz ? 'AQSH' : 'USA' },
-    { value: 'UK', label: isRu ? 'Великобритания' : isUz ? 'Buyuk Britaniya' : 'UK' },
-    { value: 'Germany', label: isRu ? 'Германия' : isUz ? 'Germaniya' : 'Germany' },
-    { value: 'Netherlands', label: isRu ? 'Нидерланды' : isUz ? 'Niderlandiya' : 'Netherlands' },
+    { value: 'USA', label: t('common:countries.usa', 'USA') },
+    { value: 'UK', label: t('common:countries.uk', 'UK') },
+    { value: 'Germany', label: t('common:countries.germany', 'Germany') },
+    { value: 'Netherlands', label: t('common:countries.netherlands', 'Netherlands') },
   ]
 
   const handleClearFilters = () => {
@@ -119,7 +110,7 @@ export function CounsellorStudentInterests() {
           <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-end">
             <div>
               <Select
-                label={localized.studentLabel}
+                label={t('school:studentLabel', 'Student')}
                 value={selectedStudentId}
                 onChange={(e) => {
                   setSelectedStudentId(e.target.value)
@@ -129,7 +120,7 @@ export function CounsellorStudentInterests() {
                   setUseProfileFilters(true)
                 }}
                 options={[
-                  { value: '', label: localized.selectStudentPlaceholder },
+                  { value: '', label: t('school:selectStudentPlaceholder', 'Select a student') },
                   ...students.map((s: CounsellorStudent) => ({
                     value: s.userId,
                     label: s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || s.email,
@@ -202,17 +193,17 @@ export function CounsellorStudentInterests() {
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
                   >
-                    Previous
+                    {t('common:prev', 'Previous')}
                   </Button>
                   <span className="py-2 px-4 text-sm text-[var(--color-text-muted)]">
-                    Page {page} of {totalPages}
+                    {t('school:pageOf', 'Page {{page}} of {{totalPages}}', { page, totalPages })}
                   </span>
                   <Button
                     variant="secondary"
                     onClick={() => setPage((p) => p + 1)}
                     disabled={page >= totalPages}
                   >
-                    Next
+                    {t('common:next', 'Next')}
                   </Button>
                 </div>
               )}

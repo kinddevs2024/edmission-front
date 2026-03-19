@@ -137,12 +137,12 @@ export function Profile() {
         </dl>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <Input label={t('name')} value={name} onChange={(e) => setName(e.target.value)} />
-          <Input label={t('phone', 'Phone')} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998 90 123 45 67" />
-          <Input label="Telegram" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
-          <Input label="Instagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="instagram.com/username" />
-          <Input label="LinkedIn" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/username" />
-          <Input label="Facebook" value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/username" />
-          <Input label="WhatsApp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+998 90 123 45 67" />
+          <Input label={t('phone', 'Phone')} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('phoneExample', '+998 90 123 45 67')} />
+          <Input label={t('telegram', 'Telegram')} value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
+          <Input label={t('instagram', 'Instagram')} value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="instagram.com/username" />
+          <Input label={t('linkedin', 'LinkedIn')} value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/username" />
+          <Input label={t('facebook', 'Facebook')} value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/username" />
+          <Input label={t('whatsapp', 'WhatsApp')} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder={t('phoneExample', '+998 90 123 45 67')} />
         </div>
         <div className="mt-4">
           <Button onClick={handleAccountSave}>{t('save', 'Save')}</Button>
@@ -239,7 +239,7 @@ export function Profile() {
             <p className="text-sm">{t('twoFaScanHint')}</p>
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(twoFaSecret.qrUrl)}`}
-              alt="QR code for 2FA"
+              alt={t('twoFaQrAlt', 'QR code for 2FA')}
               width={200}
               height={200}
               className="border border-[var(--color-border)] rounded"

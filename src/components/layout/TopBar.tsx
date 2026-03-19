@@ -94,7 +94,7 @@ export function TopBar() {
                 'hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)]',
                 'min-[0px]:gap-1.5'
               )}
-              aria-label="Language and theme"
+              aria-label={t('languageAndTheme', 'Language and theme')}
             >
               <LanguageMenu />
               <ThemeSwitch />

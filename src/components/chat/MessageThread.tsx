@@ -242,9 +242,9 @@ export function MessageThread({
           replyToMessageId: replyTo.id,
           replyToPreview:
             replyTo.type === 'voice'
-              ? 'Voice message'
+              ? t('chat:voiceMessageLabel', 'Voice message')
               : replyTo.type === 'emotion'
-                ? String(replyTo.metadata?.emotion ?? replyTo.text ?? 'Reaction')
+                ? String(replyTo.metadata?.emotion ?? replyTo.text ?? t('chat:reaction', 'Reaction'))
                 : replyTo.text,
         }
       : undefined
@@ -252,8 +252,8 @@ export function MessageThread({
 
   const getMessagePreviewText = (message: Message | null) => {
     if (!message) return ''
-    if (message.type === 'voice') return 'Voice message'
-    if (message.type === 'emotion') return String(message.metadata?.emotion ?? message.text ?? 'Reaction')
+    if (message.type === 'voice') return t('chat:voiceMessageLabel', 'Voice message')
+    if (message.type === 'emotion') return String(message.metadata?.emotion ?? message.text ?? t('chat:reaction', 'Reaction'))
     return message.text ?? ''
   }
 
@@ -308,7 +308,7 @@ export function MessageThread({
     if (!chat || chat.isReadOnly || !navigator.mediaDevices?.getUserMedia) return
     const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
     if (typeof MediaRecorder === 'undefined' || !AudioContextCtor) {
-      toastApiError(new Error('Voice recording is not supported in this browser'))
+      toastApiError(new Error(t('chat:voiceUnsupported', 'Voice recording is not supported in this browser')))
       return
     }
 
@@ -368,7 +368,7 @@ export function MessageThread({
 
         if (chunksRef.current.length === 0) {
           resetVoiceDraft()
-          toastApiError(new Error('Recording too short. Try again.'))
+          toastApiError(new Error(t('chat:recordingTooShort', 'Recording too short. Try again.')))
           return
         }
 
@@ -562,7 +562,7 @@ export function MessageThread({
               onClick={() => setSendDocumentOpen(true)}
               icon={<FileText className="w-4 h-4" />}
             >
-              Send document
+              {t('documents:sendModal.title', 'Send document')}
             </Button>
           ) : null}
         </div>
@@ -678,14 +678,14 @@ export function MessageThread({
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[var(--color-border)]" />
             <div className="mb-4 rounded-[20px] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                Selected message
+                {t('chat:selectedMessage', 'Selected message')}
               </p>
               <div className="max-h-[30vh] overflow-y-auto text-sm text-[var(--color-text)] whitespace-pre-wrap break-words">
                 {menuMessage?.type === 'voice'
-                  ? 'Voice message'
+                  ? t('chat:voiceMessageLabel', 'Voice message')
                   : menuMessage?.type === 'emotion'
                     ? menuPreviewText
-                    : menuPreviewText || 'Empty message'}
+                    : menuPreviewText || t('chat:emptyMessage', 'Empty message')}
               </div>
             </div>
 

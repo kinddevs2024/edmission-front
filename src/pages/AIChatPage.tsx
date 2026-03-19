@@ -62,7 +62,7 @@ export function AIChatPage() {
 
   const handleSend = useCallback(
     async (text: string, selectedText?: string) => {
-      const trimmed = text.trim() || (selectedText ? 'Please explain or elaborate on the selected part.' : '')
+      const trimmed = text.trim() || (selectedText ? t('aiExplainSelection', 'Please explain or elaborate on the selected part.') : '')
       if (!trimmed || loading) return
       if (requestsUsed >= requestLimit) {
         setRateLimitMessage(t('aiQuestionLimitReached', { limit: requestLimit, defaultValue: 'Question limit reached ({{limit}}). Refresh the page to reset it.' }))
@@ -152,7 +152,7 @@ export function AIChatPage() {
           msg?.toLowerCase().includes('limit') ||
           (err as { response?: { status?: number } }).response?.status === 429
         ) {
-          setRateLimitMessage(msg ?? 'Free tier limit reached. Try again later.')
+          setRateLimitMessage(msg ?? t('aiFreeTierLimitReached', 'Free tier limit reached. Try again later.'))
         } else {
           setError(err instanceof Error ? err.message : t('aiErrorDefault'))
         }

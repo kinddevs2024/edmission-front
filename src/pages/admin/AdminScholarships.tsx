@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd } from '@/components/ui/Table'
@@ -7,6 +8,7 @@ import { formatDate } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
 export function AdminScholarships() {
+  const { t } = useTranslation(['admin', 'common'])
   const [list, setList] = useState<Awaited<ReturnType<typeof getScholarshipsSummary>>>([])
   const [loading, setLoading] = useState(true)
 
@@ -19,21 +21,21 @@ export function AdminScholarships() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Scholarship Monitoring" icon="Wallet" />
+      <PageTitle title={t('admin:scholarshipMonitoring')} icon="Wallet" />
 
       <Card>
-        <CardTitle>Summary by university</CardTitle>
+        <CardTitle>{t('admin:summaryByUniversity')}</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] py-6">Loading...</p>
+          <p className="text-[var(--color-text-muted)] py-6">{t('common:loading', 'Loading...')}</p>
         ) : list.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] py-8 text-center">No data.</p>
+          <p className="text-[var(--color-text-muted)] py-8 text-center">{t('admin:noData')}</p>
         ) : (
           <Table>
             <TableHead>
               <TableRow>
-                <TableTh>University</TableTh>
-                <TableTh>Used / Total slots</TableTh>
-                <TableTh>Deadline</TableTh>
+                <TableTh>{t('admin:universityLabel', 'University')}</TableTh>
+                <TableTh>{t('admin:usedTotalSlots')}</TableTh>
+                <TableTh>{t('admin:deadline', 'Deadline')}</TableTh>
               </TableRow>
             </TableHead>
             <TableBody>

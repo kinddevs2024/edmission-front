@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { formatDateTime } from '@/utils/format'
+import { getLocalizedChatMessageText } from '@/utils/chatText'
 import type { Message } from '@/types/chat'
 
 interface MessageBubbleProps {
@@ -10,9 +12,10 @@ interface MessageBubbleProps {
 const EMOJI_SIZE = 'text-4xl'
 
 export function MessageBubble({ message }: MessageBubbleProps) {
+  const { t } = useTranslation(['chat', 'documents'])
   const isFromMe = message.isFromMe ?? false
   const type = message.type ?? 'text'
-  const displayText = message.text ?? message.message ?? ''
+  const displayText = getLocalizedChatMessageText(message)
   const replyPreview = message.metadata?.replyToPreview?.trim()
 
   const replyBlock = replyPreview ? (
@@ -24,7 +27,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-muted)]'
       )}
     >
-      <p className="font-medium mb-1">Reply</p>
+      <p className="font-medium mb-1">{t('chat:reply', 'Reply')}</p>
       <p className="line-clamp-2 whitespace-pre-wrap break-words">{replyPreview}</p>
     </div>
   ) : null
@@ -65,7 +68,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 to={documentLink}
                 className="inline-flex rounded-full border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-primary-accent hover:bg-primary-accent/10"
               >
-                Open document
+                {t('documents:studentOffers.openDocument', 'Open document')}
               </Link>
             </div>
           ) : null}
@@ -88,7 +91,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           )}
         >
           {replyBlock}
-          <span className={EMOJI_SIZE} role="img" aria-label="Reaction">{emoji}</span>
+          <span className={EMOJI_SIZE} role="img" aria-label={t('chat:reaction', 'Reaction')}>{emoji}</span>
           <p className={cn('text-xs text-[var(--color-text-muted)]', replyBlock ? '' : 'ml-2')}>
             {formatDateTime(message.createdAt)}
           </p>
@@ -110,8 +113,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           <audio controls src={message.attachmentUrl} className="max-w-full h-9" preload="metadata" />
           <p className={cn('text-xs', isFromMe ? 'text-primary-dark/70' : 'text-[var(--color-text-muted)]')}>
             {formatDateTime(message.createdAt)}
-            {message.editedAt && ' · Edited'}
-            {message.read && isFromMe && ' · Read'}
+            {message.editedAt && ` · ${t('chat:edited', 'Edited')}`}
+            {message.read && isFromMe && ` · ${t('chat:read', 'Read')}`}
           </p>
         </div>
       </div>
@@ -130,8 +133,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <p className="whitespace-pre-wrap break-words">{displayText}</p>
         <p className={cn('text-xs mt-1', isFromMe ? 'text-primary-dark/70' : 'text-[var(--color-text-muted)]')}>
           {formatDateTime(message.createdAt)}
-          {message.editedAt && ' · Edited'}
-          {message.read && isFromMe && ' · Read'}
+          {message.editedAt && ` · ${t('chat:edited', 'Edited')}`}
+          {message.read && isFromMe && ` · ${t('chat:read', 'Read')}`}
         </p>
       </div>
     </div>

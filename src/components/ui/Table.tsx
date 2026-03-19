@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 interface TableProps {
@@ -50,11 +51,12 @@ interface PaginationProps {
 }
 
 export function Pagination({ page, total, limit, onPageChange }: PaginationProps) {
+  const { t } = useTranslation('common')
   const totalPages = Math.max(1, Math.ceil(total / limit))
   return (
     <div className="flex items-center justify-between gap-4 mt-4">
       <p className="text-sm text-[var(--color-text-muted)]">
-        Page {page} of {totalPages} ({total} total)
+        {t('pageOfTotal', { page, totalPages, total, defaultValue: 'Page {{page}} of {{totalPages}} ({{total}} total)' })}
       </p>
       <div className="flex gap-2">
         <button
@@ -63,7 +65,7 @@ export function Pagination({ page, total, limit, onPageChange }: PaginationProps
           disabled={page <= 1}
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
-          Previous
+          {t('prev', 'Previous')}
         </button>
         <button
           type="button"
@@ -71,7 +73,7 @@ export function Pagination({ page, total, limit, onPageChange }: PaginationProps
           disabled={page >= totalPages}
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
-          Next
+          {t('next', 'Next')}
         </button>
       </div>
     </div>

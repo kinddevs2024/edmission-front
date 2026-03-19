@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -11,7 +12,6 @@ import type { UniversityListItem } from '@/types/university'
 interface UniversityCardProps {
   university: UniversityListItem
   showMatch?: boolean
-  /** When false, min language level and tuition are hidden (e.g. dashboard recommendations). */
   showRequirements?: boolean
   onInterest?: (id: string) => void
   interested?: boolean
@@ -19,6 +19,7 @@ interface UniversityCardProps {
 }
 
 export function UniversityCard({ university, showMatch = true, showRequirements = true, onInterest, interested, interestDisabled }: UniversityCardProps) {
+  const { t } = useTranslation(['student', 'common'])
   const {
     id,
     name,
@@ -69,7 +70,7 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
             </div>
           ) : (
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-card bg-[var(--color-border)]/50 flex-shrink-0 flex items-center justify-center">
-              <span className="text-2xl text-[var(--color-text-muted)]" aria-hidden>🏛</span>
+              <span className="text-2xl text-[var(--color-text-muted)]" aria-hidden>{'\u{1F3DB}'}</span>
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -88,11 +89,14 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
       )}
       {showRequirements && (minLanguageLevel || tuitionPrice != null) && (
         <p className="text-xs text-[var(--color-text-muted)] mb-3">
-          {[minLanguageLevel, tuitionPrice != null ? (tuitionPrice === 0 ? 'Free' : `$${tuitionPrice.toLocaleString()}/yr`) : null].filter(Boolean).join(' · ')}
+          {[
+            minLanguageLevel,
+            tuitionPrice != null ? (tuitionPrice === 0 ? t('common:free', 'Free') : `$${tuitionPrice.toLocaleString()}/yr`) : null,
+          ].filter(Boolean).join(' · ')}
         </p>
       )}
       <div className="flex flex-wrap gap-2 mt-auto pt-1">
-        {hasScholarship && <Badge variant="success">Scholarship</Badge>}
+        {hasScholarship && <Badge variant="success">{t('student:compareScholarship', 'Scholarship')}</Badge>}
         <div className="flex gap-2 ml-auto">
           {onInterest && (
             <Button
@@ -101,11 +105,11 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
               onClick={() => onInterest(id)}
               disabled={interested || interestDisabled}
             >
-              {interested ? 'Interested' : 'Interest'}
+              {interested ? t('student:interestedButton', 'Interested') : t('student:showInterest', 'Show interest')}
             </Button>
           )}
           <Button to={`/student/universities/${id}`} variant="ghost" size="sm">
-            Details
+            {t('common:details', 'Details')}
           </Button>
         </div>
       </div>

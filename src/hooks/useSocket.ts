@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { io, type Socket } from 'socket.io-client'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/authStore'
 
 const getSocketUrl = () => {
@@ -20,9 +21,11 @@ const getSocketUrl = () => {
 let socketInstance: Socket | null = null
 
 export function useSocket() {
+  const { i18n } = useTranslation()
   const token = useAuthStore((s) => s.accessToken)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const connectedRef = useRef(false)
+  const language = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0].toLowerCase()
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
@@ -38,8 +41,8 @@ export function useSocket() {
 
     const url = getSocketUrl()
     socketInstance = io(url, {
-      auth: { token },
-      query: { token },
+      auth: { token, language },
+      query: { token, language },
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,
@@ -61,7 +64,7 @@ export function useSocket() {
         connectedRef.current = false
       }
     }
-  }, [isAuthenticated, token])
+  }, [isAuthenticated, token, language])
 
   const joinChat = useCallback((chatId: string) => {
     if (socketInstance?.connected) {

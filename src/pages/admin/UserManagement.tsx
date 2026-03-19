@@ -20,27 +20,23 @@ import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
+import { getLocalizedCountryName } from '@/utils/localeDisplay'
 
-const COUNTRY_CODE_OPTIONS = [
-  { code: 'UZ', label: 'Uzbekistan' },
-  { code: 'KZ', label: 'Kazakhstan' },
-  { code: 'TJ', label: 'Tajikistan' },
-  { code: 'KG', label: 'Kyrgyzstan' },
-  { code: 'TM', label: 'Turkmenistan' },
-  { code: 'TR', label: 'Turkey' },
-  { code: 'AE', label: 'UAE' },
-  { code: 'CN', label: 'China' },
-] as const
-
-const COUNTRY_OPTIONS = [
-  { value: '', label: 'Select country' },
-  ...COUNTRY_CODE_OPTIONS.map((c) => ({ value: c.label, label: c.label })),
-]
+const COUNTRY_CODE_OPTIONS = ['UZ', 'KZ', 'TJ', 'KG', 'TM', 'TR', 'AE', 'CN'] as const
 
 export function UserManagement() {
-  const { t } = useTranslation(['common', 'admin'])
+  const { t, i18n } = useTranslation(['common', 'admin'])
   const { role } = useAuth()
   const isCounsellor = role === 'school_counsellor'
+  const countryOptions = COUNTRY_CODE_OPTIONS.map((code) => ({
+    code,
+    value: getLocalizedCountryName(code, 'en'),
+    label: getLocalizedCountryName(code, i18n.resolvedLanguage),
+  }))
+  const countrySelectOptions = [
+    { value: '', label: t('common:selectCountry', 'Select country') },
+    ...countryOptions.map((c) => ({ value: c.value, label: c.label })),
+  ]
   const ROLE_OPTIONS = [
     { value: '', label: t('admin:allRoles') },
     { value: 'student', label: t('auth:student') },
@@ -280,12 +276,12 @@ export function UserManagement() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>Email</TableTh>
-                  <TableTh>Name</TableTh>
-                  <TableTh>Role</TableTh>
-                  <TableTh>Registered</TableTh>
-                  <TableTh>Status</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('common:email', 'Email')}</TableTh>
+                  <TableTh>{t('common:name', 'Name')}</TableTh>
+                  <TableTh>{t('common:role', 'Role')}</TableTh>
+                  <TableTh>{t('admin:registered', 'Registered')}</TableTh>
+                  <TableTh>{t('common:status', 'Status')}</TableTh>
+                  <TableTh>{t('common:actions', 'Actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -445,7 +441,7 @@ export function UserManagement() {
             <Input label={t('university:studentCount', 'Student count')} type="number" value={uniStudentCount} onChange={(e) => setUniStudentCount(e.target.value)} />
             <Select
               label={t('university:country', 'Country')}
-              options={COUNTRY_OPTIONS}
+              options={countrySelectOptions}
               value={uniCountry}
               onChange={(e) => setUniCountry(e.target.value)}
             />
@@ -457,19 +453,19 @@ export function UserManagement() {
               accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
               hint={t('university:uploadLogoOrUrl', 'Upload from device or paste a direct logo URL below')}
             />
-            <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} placeholder="https://... or /api/uploads/..." />
+            <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} placeholder={t('university:logoUrlPlaceholder', 'https://... or /api/uploads/...')} />
             <Input
               label={t('university:minRequirements', 'Minimum requirements')}
               value={uniMinRequirements}
               onChange={(e) => setUniMinRequirements(e.target.value)}
-              placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0"
+              placeholder={t('university:minRequirementsExample', 'e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0')}
             />
             <Input
               label={t('university:tuitionPrice', 'Tuition price')}
               type="number"
               value={uniTuitionPrice}
               onChange={(e) => setUniTuitionPrice(e.target.value)}
-              placeholder="Annual cost in main currency"
+              placeholder={t('university:tuitionPricePlaceholderText', 'Annual cost in main currency')}
             />
             <Textarea
               label={t('university:description', 'Description')}
@@ -551,11 +547,11 @@ export function UserManagement() {
                 {t('university:targetStudentCountries', 'Preferred student countries')}
               </p>
               <ChipSelect
-                options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
-                value={uniTargetCountries.map((code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code)}
+                options={countryOptions.map((c) => c.label)}
+                value={uniTargetCountries.map((code) => countryOptions.find((c) => c.code === code)?.label ?? code)}
                 onChange={(labels) => {
                   const codes = labels
-                    .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
+                    .map((label) => countryOptions.find((c) => c.label === label)?.code)
                     .filter((v): v is NonNullable<typeof v> => Boolean(v))
                     .map((v) => String(v))
                   setUniTargetCountries(codes)

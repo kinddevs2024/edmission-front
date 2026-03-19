@@ -204,7 +204,7 @@ export function CounsellorStudents() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--color-border)]">
-                  <th className="text-left py-2 font-medium">Email</th>
+                  <th className="text-left py-2 font-medium">{t('common:email', 'Email')}</th>
                   <th className="text-left py-2 font-medium">{t('common:name')}</th>
                   <th className="text-left py-2 font-medium">{t('admin:statusLabel')}</th>
                   <th className="text-right py-2 font-medium">{t('common:actions')}</th>
@@ -251,7 +251,7 @@ export function CounsellorStudents() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--color-border)]">
-                    <th className="text-left py-2 font-medium">Email</th>
+                    <th className="text-left py-2 font-medium">{t('common:email', 'Email')}</th>
                     <th className="text-left py-2 font-medium">{t('common:name')}</th>
                     <th className="text-right py-2 font-medium">{t('common:actions')}</th>
                   </tr>

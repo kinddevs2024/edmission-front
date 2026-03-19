@@ -68,11 +68,11 @@ export function Compare() {
   ]
 
   const formatCellValue = (u: UniversityListItem, key: string): string => {
-    if (key === 'hasScholarship') return u.hasScholarship ? 'Yes' : 'No'
+    if (key === 'hasScholarship') return u.hasScholarship ? t('common:yes', 'Yes') : t('common:no', 'No')
     if (key === 'tuitionPrice') {
       const v = u.tuitionPrice
       if (v == null) return '—'
-      return v === 0 ? 'Free' : `${v.toLocaleString()}/yr`
+      return v === 0 ? t('student:freeTuition', 'Free') : `${v.toLocaleString()}/yr`
     }
     return String((u as unknown as Record<string, unknown>)[key] ?? '—')
   }
@@ -104,7 +104,7 @@ export function Compare() {
               return (
                 <span key={id} className="inline-flex items-center gap-1 rounded-input bg-[var(--color-border)] px-2 py-1 text-sm">
                   {opt?.label ?? id}
-                  <button type="button" onClick={() => removeId(id)} className="hover:opacity-70" aria-label="Remove">×</button>
+                  <button type="button" onClick={() => removeId(id)} className="hover:opacity-70" aria-label={t('common:remove', 'Remove')}>×</button>
                 </span>
               )
             })}

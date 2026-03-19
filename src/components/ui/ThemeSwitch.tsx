@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/store/uiStore'
 import { Moon, Sun } from 'lucide-react'
 import { cn } from '@/utils/cn'
@@ -8,6 +9,7 @@ const TRACK_RADIUS_PX = 12
 const THUMB_RADIUS_PX = TRACK_RADIUS_PX - TRACK_PADDING
 
 export function ThemeSwitch() {
+  const { t } = useTranslation('common')
   const theme = useUIStore((s) => s.theme)
   const setTheme = useUIStore((s) => s.setTheme)
   const isDark = theme === 'dark'
@@ -17,7 +19,7 @@ export function ThemeSwitch() {
       className="flex border border-[var(--color-border)] bg-[var(--color-bg)]"
       style={{ borderRadius: TRACK_RADIUS_PX, padding: TRACK_PADDING }}
       role="group"
-      aria-label="Theme"
+      aria-label={t('theme', 'Theme')}
     >
       <button
         type="button"
@@ -32,7 +34,7 @@ export function ThemeSwitch() {
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
         }}
-        aria-label="Light theme"
+        aria-label={t('lightTheme', 'Light theme')}
         aria-pressed={!isDark}
       >
         <Sun className="w-4 h-4" />
@@ -50,7 +52,7 @@ export function ThemeSwitch() {
           borderTopRightRadius: THUMB_RADIUS_PX,
           borderBottomRightRadius: THUMB_RADIUS_PX,
         }}
-        aria-label="Dark theme"
+        aria-label={t('darkTheme', 'Dark theme')}
         aria-pressed={isDark}
       >
         <Moon className="w-4 h-4" />

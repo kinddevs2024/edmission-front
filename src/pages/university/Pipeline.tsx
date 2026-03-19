@@ -142,9 +142,9 @@ export function Pipeline() {
       <Card className="space-y-4 border border-[var(--color-border)]">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Stage-based workflow</h2>
+            <h2 className="text-lg font-semibold">{t('university:pipelinePage.workflowTitle', 'Stage-based workflow')}</h2>
             <p className="text-sm text-[var(--color-text-muted)]">
-              Move students through the pipeline step by step. Pick a stage to focus the list below.
+              {t('university:pipelinePage.workflowDescription', 'Move students through the pipeline step by step. Pick a stage to focus the list below.')}
             </p>
           </div>
           <Button variant={activeStage === 'all' ? 'primary' : 'secondary'} size="sm" onClick={() => setActiveStage('all')}>
@@ -174,7 +174,12 @@ export function Pipeline() {
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-semibold">{getStageLabel(stage)}</span>
-                      <span className="block text-xs text-[var(--color-text-muted)]">{counts[stage] ?? 0} students</span>
+                      <span className="block text-xs text-[var(--color-text-muted)]">
+                        {t('university:pipelinePage.studentsCount', {
+                          count: counts[stage] ?? 0,
+                          defaultValue: '{{count}} students',
+                        })}
+                      </span>
                     </span>
                   </button>
                   {index < PIPELINE_STAGES.length - 1 ? (
@@ -192,7 +197,10 @@ export function Pipeline() {
           <div>
             <h3 className="text-lg font-semibold">{selectedStageLabel}</h3>
             <p className="text-sm text-[var(--color-text-muted)]">
-              {visibleStudents.length} {visibleStudents.length === 1 ? 'student' : 'students'} in this view
+              {t('university:pipelinePage.studentsInView', {
+                count: visibleStudents.length,
+                defaultValue: '{{count}} students in this view',
+              })}
             </p>
           </div>
         </div>
@@ -218,7 +226,7 @@ export function Pipeline() {
                         <p className="text-xs text-[var(--color-text-muted)]">{student.email}</p>
                       ) : null}
                       <p className="text-xs text-[var(--color-text-muted)]">
-                        Updated {new Date(student.updatedAt).toLocaleString()}
+                        {t('university:pipelinePage.updated', 'Updated')} {new Date(student.updatedAt).toLocaleString()}
                       </p>
                     </div>
                     <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${STAGE_BADGE_CLASS[student.stage]}`}>
@@ -268,7 +276,7 @@ export function Pipeline() {
 
                     {canSendDocument ? (
                       <Button variant="ghost" size="sm" onClick={() => setSendDocumentStudent(student)} icon={<Send size={16} />}>
-                        Send document
+                        {t('university:pipelinePage.sendDocument', 'Send document')}
                       </Button>
                     ) : null}
 
