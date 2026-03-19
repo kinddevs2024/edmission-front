@@ -126,7 +126,7 @@ export function MainLayout() {
           { to: '/notifications', label: tSchool('notifications'), icon: 'Bell' },
         ],
         navBottomItems: [
-          { to: '/support', label: 'Support', icon: 'HelpCircle' },
+          { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
           { to: '/profile', label: tSchool('account', 'Account'), icon: 'Settings' },
         ],
       }

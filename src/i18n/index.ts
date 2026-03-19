@@ -13,7 +13,6 @@ const FALLBACK_EN: Record<string, object> = { student: studentEn, common: common
 const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student', 'school', 'documents']
 const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
 let localizedFallbacksInstalled = false
-type TranslationFn = typeof i18n.t
 
 function applyLocalPatches(lng: string) {
   for (const source of [localPatches, supplementalPatches] as const) {
@@ -82,58 +81,58 @@ function extractTranslationMeta(args: unknown[]): { defaultValue?: string; value
   return { values: {} }
 }
 
+function extractTranslationOptions(args: unknown[]): Record<string, unknown> {
+  const first = args[0]
+  const second = args[1]
+
+  if (first && typeof first === 'object' && !Array.isArray(first)) {
+    return first as Record<string, unknown>
+  }
+
+  if (second && typeof second === 'object' && !Array.isArray(second)) {
+    return second as Record<string, unknown>
+  }
+
+  return {}
+}
+
 function installLocalizedFallbacks() {
   if (localizedFallbacksInstalled) return
   localizedFallbacksInstalled = true
 
-  const originalGetFixedT = i18n.getFixedT.bind(i18n)
   const originalT = i18n.t.bind(i18n)
-
-  const wrapT = (
-    baseT: TranslationFn,
-    englishT: TranslationFn,
-    context: { lng?: string | readonly string[] | false; ns?: string | readonly string[]; keyPrefix?: string }
-  ): TranslationFn => {
-    return ((key: unknown, ...rest: unknown[]) => {
-      const result = baseT(key as never, ...(rest as never[]))
-      if (typeof result !== 'string') return result
-
-      const currentLng = normalizeLanguage(context.lng || i18n.resolvedLanguage || i18n.language)
-      if (currentLng === 'en' || typeof key !== 'string') return result
-
-      const { defaultValue, values } = extractTranslationMeta(rest)
-      const existsInCurrentLanguage = i18n.exists(key, {
-        lng: currentLng,
-        ns: context.ns,
-        keyPrefix: context.keyPrefix,
-      })
-      if (existsInCurrentLanguage) return result
-
-      const englishSource =
-        defaultValue ||
-        englishT(key as never, ...(rest as never[]))
-
-      if (typeof englishSource !== 'string' || !englishSource.trim()) return result
-
-      return translateFallbackPhrase(i18n, englishSource, currentLng, values) ?? result
-    }) as TranslationFn
-  }
-
-  i18n.getFixedT = ((lng: any, ns: any, keyPrefix: any) => {
-    const fixedT = originalGetFixedT(lng, ns, keyPrefix)
-    const englishT = originalGetFixedT('en', ns, keyPrefix)
-    return wrapT(fixedT, englishT, { lng, ns, keyPrefix })
-  }) as typeof i18n.getFixedT
-
-  const englishBaseT = originalGetFixedT('en')
   i18n.t = ((key: unknown, ...rest: unknown[]) => {
-    const baseT = originalT as TranslationFn
-    return wrapT(baseT, englishBaseT, {
-      lng: i18n.resolvedLanguage || i18n.language,
-      ns: typeof rest[0] === 'object' && rest[0] !== null && !Array.isArray(rest[0]) && typeof (rest[0] as Record<string, unknown>).ns === 'string'
-        ? (rest[0] as Record<string, unknown>).ns as string
-        : undefined,
-    })(key, ...rest)
+    const result = originalT(key as never, ...(rest as never[]))
+    if (typeof result !== 'string' || typeof key !== 'string') return result
+
+    const options = extractTranslationOptions(rest)
+    const currentLng = normalizeLanguage(
+      (options.lng as string | readonly string[] | undefined | false | null) || i18n.resolvedLanguage || i18n.language
+    )
+    if (currentLng === 'en') return result
+
+    const { defaultValue, values } = extractTranslationMeta(rest)
+    const existsInCurrentLanguage = i18n.exists(key, {
+      ...options,
+      lng: currentLng,
+      fallbackLng: false,
+    })
+    if (existsInCurrentLanguage) return result
+
+    const englishResult = originalT(key as never, {
+      ...options,
+      lng: 'en',
+      fallbackLng: false,
+      defaultValue,
+    } as never)
+    const englishSource =
+      typeof englishResult === 'string' && englishResult.trim() && englishResult !== key
+        ? englishResult
+        : defaultValue
+
+    if (typeof englishSource !== 'string' || !englishSource.trim()) return result
+
+    return translateFallbackPhrase(i18n, englishSource, currentLng, values) ?? result
   }) as typeof i18n.t
 }
 

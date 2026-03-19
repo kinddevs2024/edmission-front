@@ -15,6 +15,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Select } from '@/components/ui/Select'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
 import { getUniversities, showInterest, getInterestedUniversityIds, getInterestLimit, getStudentProfile, type UniversitiesParams } from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
 import { Building2, Search, SlidersHorizontal } from 'lucide-react'
@@ -52,6 +53,25 @@ const TARGET_COUNTRY_OPTIONS = [
 ] as const
 const DEGREE_LEVEL_OPTIONS = ['Bachelor', 'Master', 'PhD', 'Foundation', 'Associate']
 const PROGRAM_LANGUAGE_OPTIONS = ['English', 'Russian', 'Uzbek', 'German', 'French', 'Turkish', 'Chinese', 'Arabic']
+type TranslateLabel = (key: string, defaultValue?: string) => string
+
+function getDegreeLevelLabel(value: string, t: TranslateLabel): string {
+  const normalized = value.toLowerCase()
+  if (normalized === 'bachelor') return t('student:degreeBachelor', 'Bachelor')
+  if (normalized === 'master') return t('student:degreeMaster', 'Master')
+  if (normalized === 'phd') return t('student:degreePhd', 'PhD')
+  if (normalized === 'foundation') return t('student:degreeFoundation', 'Foundation')
+  if (normalized === 'associate') return t('student:degreeAssociate', 'Associate')
+  return value
+}
+
+function getSortLabel(value: UniversitiesParams['sort'], t: TranslateLabel): string {
+  if (value === 'name') return t('student:compareName', 'Name')
+  if (value === 'tuition_asc') return t('student:sortTuitionLow', 'Tuition: low to high')
+  if (value === 'tuition_desc') return t('student:sortTuitionHigh', 'Tuition: high to low')
+  if (value === 'newest') return t('student:sortNewest', 'Newest first')
+  return t('student:matchScore', 'Match score')
+}
 
 function createInitialFilters(useProfileFilters = true): UniversityFilters {
   return {
@@ -81,7 +101,7 @@ function parseSort(value: string | null): UniversitiesParams['sort'] {
 }
 
 export function ExploreUniversities() {
-  const { t } = useTranslation(['student', 'common', 'university'])
+  const { t, i18n } = useTranslation(['student', 'common', 'university'])
   const [searchParams, setSearchParams] = useSearchParams()
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1)
   const [filters, setFilters] = useState<UniversityFilters>(() => ({
@@ -101,9 +121,21 @@ export function ExploreUniversities() {
   const countryOptions = useMemo(
     () => [
       { value: '', label: t('student:allCountries', 'All countries') },
-      ...COUNTRY_VALUES.map((country) => ({ value: country, label: country })),
+      ...COUNTRY_VALUES.map((country) => ({ value: country, label: getLocalizedCountryName(country, i18n.language) })),
     ],
+    [i18n.language, t]
+  )
+  const degreeLevelOptions = useMemo(
+    () => DEGREE_LEVEL_OPTIONS.map((value) => ({ value, label: getDegreeLevelLabel(value, t) })),
     [t]
+  )
+  const programLanguageOptions = useMemo(
+    () => PROGRAM_LANGUAGE_OPTIONS.map((value) => ({ value, label: getLocalizedLanguageName(value, i18n.language) })),
+    [i18n.language]
+  )
+  const targetCountryOptions = useMemo(
+    () => TARGET_COUNTRY_OPTIONS.map((item) => ({ ...item, label: getLocalizedCountryName(item.code, i18n.language) })),
+    [i18n.language]
   )
   const sortOptions = useMemo(
     () => [
@@ -206,8 +238,12 @@ export function ExploreUniversities() {
   }
 
   const draftFacultyLabels = draftFilters.facultyCodes.map((code) => facultyOptions.find((item) => item.code === code)?.label ?? code)
+  const draftDegreeLabels = draftFilters.degreeLevels.map((value) => degreeLevelOptions.find((option) => option.value === value)?.label ?? value)
+  const draftProgramLanguageLabels = draftFilters.programLanguages.map(
+    (value) => programLanguageOptions.find((option) => option.value === value)?.label ?? value
+  )
   const draftTargetCountryLabels = draftFilters.targetStudentCountries.map(
-    (code) => TARGET_COUNTRY_OPTIONS.find((item) => item.code === code)?.label ?? code
+    (code) => targetCountryOptions.find((item) => item.code === code)?.label ?? code
   )
 
   return (
@@ -270,7 +306,7 @@ export function ExploreUniversities() {
 
         {showClear ? (
           <div className="flex flex-wrap gap-2">
-            {buildActiveFilterLabels(filters, t, profileCriteriaCount, profileCriteria).map((label) => (
+            {buildActiveFilterLabels(filters, t, i18n.language, profileCriteriaCount, profileCriteria).map((label) => (
               <span key={label} className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/85 px-3 py-1 text-xs text-[var(--color-text-muted)]">
                 {label}
               </span>
@@ -406,9 +442,16 @@ export function ExploreUniversities() {
                     {t('student:degreeLevels', 'Degree levels')}
                   </label>
                   <ChipSelect
-                    options={DEGREE_LEVEL_OPTIONS}
-                    value={draftFilters.degreeLevels}
-                    onChange={(value) => setDraftFilters((current) => ({ ...current, degreeLevels: value }))}
+                    options={degreeLevelOptions.map((option) => option.label)}
+                    value={draftDegreeLabels}
+                    onChange={(labels) =>
+                      setDraftFilters((current) => ({
+                        ...current,
+                        degreeLevels: labels
+                          .map((label) => degreeLevelOptions.find((option) => option.label === label)?.value)
+                          .filter((value): value is string => Boolean(value)),
+                      }))
+                    }
                     max={10}
                     placeholder={t('student:degreeLevelsPlaceholder', 'Choose degree levels')}
                   />
@@ -419,9 +462,16 @@ export function ExploreUniversities() {
                     {t('student:programLanguages', 'Program languages')}
                   </label>
                   <ChipSelect
-                    options={PROGRAM_LANGUAGE_OPTIONS}
-                    value={draftFilters.programLanguages}
-                    onChange={(value) => setDraftFilters((current) => ({ ...current, programLanguages: value }))}
+                    options={programLanguageOptions.map((option) => option.label)}
+                    value={draftProgramLanguageLabels}
+                    onChange={(labels) =>
+                      setDraftFilters((current) => ({
+                        ...current,
+                        programLanguages: labels
+                          .map((label) => programLanguageOptions.find((option) => option.label === label)?.value)
+                          .filter((value): value is string => Boolean(value)),
+                      }))
+                    }
                     max={10}
                     placeholder={t('student:programLanguagesPlaceholder', 'Choose program languages')}
                   />
@@ -432,13 +482,13 @@ export function ExploreUniversities() {
                     {t('university:targetStudentCountries', 'Target student countries')}
                   </label>
                   <ChipSelect
-                    options={TARGET_COUNTRY_OPTIONS.map((item) => item.label)}
+                    options={targetCountryOptions.map((item) => item.label)}
                     value={draftTargetCountryLabels}
                     onChange={(labels) =>
                       setDraftFilters((current) => ({
                         ...current,
                         targetStudentCountries: labels
-                          .map((label) => TARGET_COUNTRY_OPTIONS.find((item) => item.label === label)?.code)
+                          .map((label) => targetCountryOptions.find((item) => item.label === label)?.code)
                           .filter(Boolean)
                           .map(String),
                       }))
@@ -649,17 +699,18 @@ function countActiveFilters(filters: UniversityFilters, profileCriteriaCount = 0
 
 function buildActiveFilterLabels(
   filters: UniversityFilters,
-  t: ReturnType<typeof useTranslation>['t'],
+  t: TranslateLabel,
+  locale: string,
   profileCriteriaCount = 0,
   profileCriteria?: { faculties: number; countries: number }
 ) {
   const labels: string[] = []
   if (filters.search.trim()) labels.push(`${t('common:search', 'Search')}: ${filters.search.trim()}`)
-  if (filters.country) labels.push(`${t('student:country', 'Country')}: ${filters.country}`)
-  if (filters.sort && filters.sort !== 'match') labels.push(`${t('student:sort', 'Sort')}: ${filters.sort}`)
+  if (filters.country) labels.push(`${t('student:country', 'Country')}: ${getLocalizedCountryName(filters.country, locale)}`)
+  if (filters.sort && filters.sort !== 'match') labels.push(`${t('student:sort', 'Sort')}: ${getSortLabel(filters.sort, t)}`)
   if (filters.facultyCodes.length) labels.push(`${t('student:facultiesLabel', 'Faculties')}: ${filters.facultyCodes.length}`)
-  if (filters.degreeLevels.length) labels.push(`${t('student:degreeLevels', 'Degree levels')}: ${filters.degreeLevels.join(', ')}`)
-  if (filters.programLanguages.length) labels.push(`${t('student:programLanguages', 'Program languages')}: ${filters.programLanguages.join(', ')}`)
+  if (filters.degreeLevels.length) labels.push(`${t('student:degreeLevels', 'Degree levels')}: ${filters.degreeLevels.map((value) => getDegreeLevelLabel(value, t)).join(', ')}`)
+  if (filters.programLanguages.length) labels.push(`${t('student:programLanguages', 'Program languages')}: ${filters.programLanguages.map((value) => getLocalizedLanguageName(value, locale)).join(', ')}`)
   if (filters.minTuition.trim() || filters.maxTuition.trim()) {
     labels.push(`${t('student:tuitionLabel', 'Tuition')}: ${filters.minTuition.trim() || '0'}-${filters.maxTuition.trim() || 'max'}`)
   }

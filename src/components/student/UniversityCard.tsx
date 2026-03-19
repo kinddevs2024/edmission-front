@@ -7,6 +7,7 @@ import { getImageUrl } from '@/services/upload'
 import { useDominantColor } from '@/hooks/useDominantColor'
 import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/utils/cn'
+import { getLocalizedCountryName } from '@/utils/localeDisplay'
 import type { UniversityListItem } from '@/types/university'
 
 interface UniversityCardProps {
@@ -18,8 +19,15 @@ interface UniversityCardProps {
   interestDisabled?: boolean
 }
 
-export function UniversityCard({ university, showMatch = true, showRequirements = true, onInterest, interested, interestDisabled }: UniversityCardProps) {
-  const { t } = useTranslation(['student', 'common'])
+export function UniversityCard({
+  university,
+  showMatch = true,
+  showRequirements = true,
+  onInterest,
+  interested,
+  interestDisabled,
+}: UniversityCardProps) {
+  const { t, i18n } = useTranslation(['student', 'common'])
   const {
     id,
     name,
@@ -38,6 +46,7 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
   const dominantColor = useDominantColor(logoUrl)
   const isDarkTheme = useUIStore((state) => state.theme === 'dark')
   const shadowColor = dominantColor ?? '#22c55e'
+  const localizedCountry = country ? getLocalizedCountryName(country, i18n.language) : ''
   const cardStyle = {
     ...(dominantColor
       ? {
@@ -52,53 +61,56 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
   return (
     <Card
       className={cn(
-        'flex flex-col h-full relative overflow-hidden transition-all duration-300',
+        'relative flex h-full flex-col overflow-hidden transition-all duration-300',
         !dominantColor && 'university-card-bg'
       )}
       style={cardStyle}
       interactive
       tilt
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-4 min-w-0">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-4">
           {logo ? (
             <div
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-card flex-shrink-0 flex items-center justify-center border border-[var(--color-border)]/50 shadow-sm overflow-hidden p-1"
+              className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-card border border-[var(--color-border)]/50 p-1 shadow-sm sm:h-16 sm:w-16"
               style={{ backgroundColor: isDarkTheme ? 'rgba(9, 15, 20, 0.78)' : 'rgba(255, 255, 255, 0.8)' }}
             >
-              <img src={logoUrl!} alt="" loading="lazy" className="w-full h-full object-contain" />
+              <img src={logoUrl!} alt="" loading="lazy" className="h-full w-full object-contain" />
             </div>
           ) : (
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-card bg-[var(--color-border)]/50 flex-shrink-0 flex items-center justify-center">
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-card bg-[var(--color-border)]/50 sm:h-16 sm:w-16">
               <span className="text-2xl text-[var(--color-text-muted)]" aria-hidden>{'\u{1F3DB}'}</span>
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base sm:text-lg truncate leading-tight">{name}</CardTitle>
-            <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
-              {[country, city].filter(Boolean).join(' · ') || '—'}
+            <CardTitle className="truncate text-base leading-tight sm:text-lg">{name}</CardTitle>
+            <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">
+              {[localizedCountry, city].filter(Boolean).join(' · ') || '—'}
             </p>
           </div>
         </div>
-        {showMatch && matchScore != null && (
+        {showMatch && matchScore != null ? (
           <MatchScore score={matchScore} breakdown={matchBreakdown} variant="badge" size="sm" />
-        )}
+        ) : null}
       </div>
-      {description && (
-        <p className="text-sm text-[var(--color-text-muted)] line-clamp-2 mb-4 flex-1 leading-relaxed">{description}</p>
-      )}
-      {showRequirements && (minLanguageLevel || tuitionPrice != null) && (
-        <p className="text-xs text-[var(--color-text-muted)] mb-3">
+
+      {description ? (
+        <p className="mb-4 flex-1 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>
+      ) : null}
+
+      {showRequirements && (minLanguageLevel || tuitionPrice != null) ? (
+        <p className="mb-3 text-xs text-[var(--color-text-muted)]">
           {[
             minLanguageLevel,
             tuitionPrice != null ? (tuitionPrice === 0 ? t('common:free', 'Free') : `$${tuitionPrice.toLocaleString()}/yr`) : null,
           ].filter(Boolean).join(' · ')}
         </p>
-      )}
-      <div className="flex flex-wrap gap-2 mt-auto pt-1">
-        {hasScholarship && <Badge variant="success">{t('student:compareScholarship', 'Scholarship')}</Badge>}
-        <div className="flex gap-2 ml-auto">
-          {onInterest && (
+      ) : null}
+
+      <div className="mt-auto flex flex-wrap gap-2 pt-1">
+        {hasScholarship ? <Badge variant="success">{t('student:compareScholarship', 'Scholarship')}</Badge> : null}
+        <div className="ml-auto flex gap-2">
+          {onInterest ? (
             <Button
               variant={interested ? 'secondary' : 'primary'}
               size="sm"
@@ -107,7 +119,7 @@ export function UniversityCard({ university, showMatch = true, showRequirements 
             >
               {interested ? t('student:interestedButton', 'Interested') : t('student:showInterest', 'Show interest')}
             </Button>
-          )}
+          ) : null}
           <Button to={`/student/universities/${id}`} variant="ghost" size="sm">
             {t('common:details', 'Details')}
           </Button>

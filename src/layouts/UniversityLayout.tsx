@@ -61,7 +61,7 @@ export function UniversityLayout() {
         ? [
             { to: '/university/select', label: t('selectUniversity', 'Select'), icon: 'Building2' },
             { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
-            { to: '/support', label: 'Support', icon: 'HelpCircle' },
+            { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
           ]
         : [
             { to: '/university/dashboard', label: t('navHome', 'Home'), icon: 'LayoutDashboard' },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -23,23 +23,19 @@ import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
+import { getLocalizedCountryName } from '@/utils/localeDisplay'
 import { Plus, Trash2, Download, Upload } from 'lucide-react'
 
-const COUNTRY_OPTIONS = [
-  { code: 'UZ', label: 'Uzbekistan' },
-  { code: 'KZ', label: 'Kazakhstan' },
-  { code: 'TJ', label: 'Tajikistan' },
-  { code: 'KG', label: 'Kyrgyzstan' },
-  { code: 'TM', label: 'Turkmenistan' },
-  { code: 'TR', label: 'Turkey' },
-  { code: 'AE', label: 'UAE' },
-  { code: 'CN', label: 'China' },
-] as const
+const TARGET_COUNTRY_CODES = ['UZ', 'KZ', 'TJ', 'KG', 'TM', 'TR', 'AE', 'CN'] as const
 
 export function AdminUniversities() {
-  const { t } = useTranslation(['common', 'admin', 'university'])
+  const { t, i18n } = useTranslation(['common', 'admin', 'university'])
   const { role } = useAuth()
   const isCounsellor = role === 'school_counsellor'
+  const targetCountryOptions = useMemo(
+    () => TARGET_COUNTRY_CODES.map((code) => ({ code, label: getLocalizedCountryName(code, i18n.language) })),
+    [i18n.language]
+  )
   const [list, setList] = useState<AdminCatalogUniversity[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -306,7 +302,7 @@ export function AdminUniversities() {
                   {list.map((u) => (
                     <tr key={u.id} className="border-b border-[var(--color-border)] last:border-0">
                       <td className="py-3 font-medium">{u.name || u.universityName}</td>
-                      <td className="py-3">{u.country ?? '—'}</td>
+                      <td className="py-3">{u.country ? getLocalizedCountryName(u.country, i18n.language) : '—'}</td>
                       <td className="py-3">{u.city ?? '—'}</td>
                       <td className="py-3 text-right">
                         {!isCounsellor && (
@@ -487,11 +483,11 @@ export function AdminUniversities() {
               {t('university:targetStudentCountries', 'Target student countries')}
             </label>
             <ChipSelect
-              options={COUNTRY_OPTIONS.map((c) => c.label)}
-              value={formTargetCountries.map((code) => COUNTRY_OPTIONS.find((c) => c.code === code)?.label ?? code)}
+              options={targetCountryOptions.map((country) => country.label)}
+              value={formTargetCountries.map((code) => targetCountryOptions.find((country) => country.code === code)?.label ?? code)}
               onChange={(labels) => {
                 const codes: string[] = labels
-                  .map((label) => COUNTRY_OPTIONS.find((c) => c.label === label)?.code)
+                  .map((label) => targetCountryOptions.find((country) => country.label === label)?.code)
                   .filter((v): v is NonNullable<typeof v> => v != null)
                 setFormTargetCountries(codes)
               }}

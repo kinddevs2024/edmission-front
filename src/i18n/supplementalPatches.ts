@@ -187,3 +187,89 @@ export const supplementalPatches: Record<SupportedLng, NamespacePatch> = {
     },
   },
 }
+
+function mergeNamespacePatch(lng: SupportedLng, ns: string, patch: Record<string, unknown>) {
+  const current = (supplementalPatches[lng][ns] as Record<string, unknown> | undefined) ?? {}
+  supplementalPatches[lng][ns] = { ...current, ...patch }
+}
+
+mergeNamespacePatch('en', 'common', {
+  messageButton: 'Message',
+  addToCompare: 'Add to compare',
+})
+
+mergeNamespacePatch('ru', 'common', {
+  messageButton: 'Написать',
+  addToCompare: 'Добавить к сравнению',
+})
+
+mergeNamespacePatch('uz', 'common', {
+  messageButton: 'Yozish',
+  addToCompare: "Taqqoslashga qo'shish",
+})
+
+mergeNamespacePatch('en', 'student', {
+  interestedButton: 'Interested',
+  showInterest: 'Show interest',
+  degreeFoundation: 'Foundation',
+  degreeAssociate: 'Associate',
+})
+
+mergeNamespacePatch('ru', 'student', {
+  interestedButton: 'Интересует',
+  showInterest: 'Показать интерес',
+  degreeFoundation: 'Foundation',
+  degreeAssociate: 'Associate',
+})
+
+mergeNamespacePatch('uz', 'student', {
+  interestedButton: 'Qiziqdi',
+  showInterest: 'Qiziqish bildirish',
+  degreeFoundation: 'Foundation',
+  degreeAssociate: 'Associate',
+})
+
+mergeNamespacePatch('en', 'university', {
+  layoutClassic: 'Classic',
+  layoutModern: 'Modern',
+  layoutMinimal: 'Minimal',
+  offerTemplateDefaultTitle: 'Offer for {{studentName}}',
+  offerTemplateDefaultBody: 'Dear {{studentName}},\n\nWe are pleased to offer you admission to {{programName}}.',
+})
+
+mergeNamespacePatch('ru', 'university', {
+  layoutClassic: 'Классический',
+  layoutModern: 'Современный',
+  layoutMinimal: 'Минималистичный',
+  offerTemplateDefaultTitle: 'Оффер для {{studentName}}',
+  offerTemplateDefaultBody: 'Здравствуйте, {{studentName}}!\n\nМы рады предложить вам зачисление на программу {{programName}}.',
+})
+
+mergeNamespacePatch('uz', 'university', {
+  layoutClassic: 'Klassik',
+  layoutModern: 'Zamonaviy',
+  layoutMinimal: 'Minimal',
+  offerTemplateDefaultTitle: '{{studentName}} uchun taklif',
+  offerTemplateDefaultBody: 'Hurmatli {{studentName}},\n\nSizga {{programName}} dasturiga qabul taklif qilinayotganidan mamnunmiz.',
+})
+
+mergeNamespacePatch('en', 'documents', {
+  type: {
+    offer: 'Offer',
+    scholarship: 'Scholarship',
+  },
+})
+
+mergeNamespacePatch('ru', 'documents', {
+  type: {
+    offer: 'Оффер',
+    scholarship: 'Стипендия',
+  },
+})
+
+mergeNamespacePatch('uz', 'documents', {
+  type: {
+    offer: 'Taklif',
+    scholarship: 'Stipendiya',
+  },
+})

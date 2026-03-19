@@ -27,6 +27,11 @@ interface OfferTemplate {
 
 export function OfferTemplates() {
   const { t } = useTranslation(['common', 'university'])
+  const defaultBodyTemplate = t(
+    'university:offerTemplateDefaultBody',
+    'Dear {{studentName}},\n\nWe are pleased to offer you admission to {{programName}}.'
+  )
+  const defaultTitleTemplate = t('university:offerTemplateDefaultTitle', 'Offer for {{studentName}}')
   const [list, setList] = useState<OfferTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -35,8 +40,8 @@ export function OfferTemplates() {
   const [layoutKey, setLayoutKey] = useState<LayoutKey>('classic')
   const [primaryColor, setPrimaryColor] = useState('#0F766E')
   const [accentColor, setAccentColor] = useState('#EC4899')
-  const [bodyTemplate, setBodyTemplate] = useState('Dear {{studentName}},\n\nWe are pleased to offer you admission to {{programName}}.')
-  const [titleTemplate, setTitleTemplate] = useState('Offer for {{studentName}}')
+  const [bodyTemplate, setBodyTemplate] = useState(defaultBodyTemplate)
+  const [titleTemplate, setTitleTemplate] = useState(defaultTitleTemplate)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -52,8 +57,8 @@ export function OfferTemplates() {
     setLayoutKey('classic')
     setPrimaryColor('#0F766E')
     setAccentColor('#EC4899')
-    setBodyTemplate('Dear {{studentName}},\n\nWe are pleased to offer you admission to {{programName}}.')
-    setTitleTemplate('Offer for {{studentName}}')
+    setBodyTemplate(defaultBodyTemplate)
+    setTitleTemplate(defaultTitleTemplate)
   }
 
   const openCreate = () => {
@@ -122,9 +127,9 @@ export function OfferTemplates() {
   }
 
   const layoutOptions = [
-    { value: 'classic', label: 'Classic' },
-    { value: 'modern', label: 'Modern' },
-    { value: 'minimal', label: 'Minimal' },
+    { value: 'classic', label: t('university:layoutClassic', 'Classic') },
+    { value: 'modern', label: t('university:layoutModern', 'Modern') },
+    { value: 'minimal', label: t('university:layoutMinimal', 'Minimal') },
   ]
 
   return (
@@ -151,7 +156,9 @@ export function OfferTemplates() {
                 <div className="flex justify-between items-start gap-2 mb-2">
                   <div>
                     <p className="font-medium text-[var(--color-text)]">{tmpl.name}</p>
-                    <p className="text-xs text-[var(--color-text-muted)] capitalize">{tmpl.layoutKey}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      {layoutOptions.find((option) => option.value === tmpl.layoutKey)?.label ?? tmpl.layoutKey}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {tmpl.isDefault && (
@@ -238,4 +245,3 @@ export function OfferTemplates() {
     </div>
   )
 }
-

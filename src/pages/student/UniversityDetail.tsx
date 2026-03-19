@@ -10,24 +10,14 @@ import { api } from '@/services/api'
 import { showInterest, getApplications, getInterestLimit } from '@/services/student'
 import { getImageUrl } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
+import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
 import { MessageCircle } from 'lucide-react'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import type { UniversityProfile, Program, Scholarship, Faculty } from '@/types/university'
 
-const COUNTRY_OPTIONS: { code: string; label: string }[] = [
-  { code: 'UZ', label: 'Uzbekistan' },
-  { code: 'KZ', label: 'Kazakhstan' },
-  { code: 'TJ', label: 'Tajikistan' },
-  { code: 'KG', label: 'Kyrgyzstan' },
-  { code: 'TM', label: 'Turkmenistan' },
-  { code: 'TR', label: 'Turkey' },
-  { code: 'AE', label: 'UAE' },
-  { code: 'CN', label: 'China' },
-]
-
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
-  const { t } = useTranslation(['common', 'student', 'university'])
+  const { t, i18n } = useTranslation(['common', 'student', 'university'])
   const [uni, setUni] = useState<UniversityProfile | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [scholarships, setScholarships] = useState<Scholarship[]>([])
@@ -37,6 +27,17 @@ export function UniversityDetail() {
   const [interested, setInterested] = useState(false)
   const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; limit: number | null }>({ allowed: true, limit: 3 })
   const [loading, setLoading] = useState(true)
+
+  const formatDegree = (value?: string | null) => {
+    if (!value) return ''
+    const normalized = value.toLowerCase()
+    if (normalized === 'bachelor') return t('student:degreeBachelor', 'Bachelor')
+    if (normalized === 'master') return t('student:degreeMaster', 'Master')
+    if (normalized === 'phd') return t('student:degreePhd', 'PhD')
+    if (normalized === 'foundation') return t('student:degreeFoundation', 'Foundation')
+    if (normalized === 'associate') return t('student:degreeAssociate', 'Associate')
+    return value
+  }
 
   useEffect(() => {
     getApplications({ limit: 500 }).then((res) => {
@@ -112,7 +113,7 @@ export function UniversityDetail() {
           <div>
             <h1 className="text-h1">{uni.name}</h1>
             <p className="text-[var(--color-text-muted)]">
-              {[uni.country, uni.city].filter(Boolean).join(' · ')}
+              {[uni.country ? getLocalizedCountryName(uni.country, i18n.language) : '', uni.city].filter(Boolean).join(' · ')}
               {uni.rating != null && ` · ${t('student:compareRating', 'Rating')} ${uni.rating}`}
             </p>
             {(uni.slogan ?? (uni as { tagline?: string }).tagline) && (
@@ -152,7 +153,7 @@ export function UniversityDetail() {
           <CardTitle>{t('university:targetStudentCountries', 'Target student countries')}</CardTitle>
           <div className="flex flex-wrap gap-2">
             {(uni.targetStudentCountries ?? []).map((code: string) => (
-              <Badge key={code} variant="info">{COUNTRY_OPTIONS.find((country) => country.code === code)?.label ?? code}</Badge>
+              <Badge key={code} variant="info">{getLocalizedCountryName(code, i18n.language)}</Badge>
             ))}
           </div>
         </Card>
@@ -186,9 +187,9 @@ export function UniversityDetail() {
           <ul className="space-y-2">
             {programs.map((program) => (
               <li key={program.id} className="flex items-center justify-between">
-                <span>{program.degree} - {program.field}</span>
+                <span>{formatDegree(program.degree)} - {program.field}</span>
                 {program.tuition != null ? <span>{program.tuition}</span> : null}
-                {program.language ? <Badge variant="info">{program.language}</Badge> : null}
+                {program.language ? <Badge variant="info">{getLocalizedLanguageName(program.language, i18n.language)}</Badge> : null}
               </li>
             ))}
           </ul>
