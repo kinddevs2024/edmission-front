@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
@@ -12,44 +11,15 @@ interface MatchScoreProps {
 
 export function MatchScore({ score, breakdown, variant = 'badge', size = 'md', className }: MatchScoreProps) {
   const { t } = useTranslation('student')
-  const [showTooltip, setShowTooltip] = useState(false)
   const clamped = Math.min(100, Math.max(0, Math.round(score)))
-  const breakdownEntries = breakdown
-    ? Object.entries(breakdown).flatMap(([key, rawValue]) => {
-        if (typeof rawValue === 'number' && Number.isFinite(rawValue)) {
-          return [[key, rawValue] as const]
-        }
-        if (rawValue && typeof rawValue === 'object') {
-          return Object.entries(rawValue as Record<string, unknown>)
-            .filter(([, nested]) => typeof nested === 'number' && Number.isFinite(nested as number))
-            .map(([nestedKey, nestedValue]) => [`${key}.${nestedKey}`, Number(nestedValue)] as const)
-        }
-        return []
-      })
-    : []
-
-  const tooltipContent = breakdownEntries.length > 0 && (
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-input bg-primary-dark text-white text-xs shadow-lg z-50 whitespace-nowrap">
-      <div className="font-medium mb-1">{t('matchBreakdown', 'Match breakdown')}</div>
-      {breakdownEntries.map(([key, value]) => (
-        <div key={key} className="flex justify-between gap-4">
-          <span className="text-dark-muted">{key}</span>
-          <span>{value}%</span>
-        </div>
-      ))}
-    </div>
-  )
+  void breakdown
 
   if (variant === 'circle') {
     const r = size === 'sm' ? 20 : 28
     const circ = 2 * Math.PI * r
     const stroke = (clamped / 100) * circ
     return (
-      <div
-        className={cn('relative inline-flex', className)}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
+      <div className={cn('relative inline-flex', className)}>
         <svg width={r * 2 + 8} height={r * 2 + 8} className="transform -rotate-90">
           <circle cx={r + 4} cy={r + 4} r={r} fill="none" stroke="var(--color-border)" strokeWidth="4" />
           <circle
@@ -68,18 +38,13 @@ export function MatchScore({ score, breakdown, variant = 'badge', size = 'md', c
         <span className={cn('absolute inset-0 flex items-center justify-center font-semibold text-primary-accent', size === 'sm' ? 'text-xs' : 'text-sm')}>
           {clamped}%
         </span>
-        {showTooltip && tooltipContent}
       </div>
     )
   }
 
   if (variant === 'bar') {
     return (
-      <div
-        className={cn('relative', className)}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
+      <div className={cn('relative', className)}>
         <div className="flex items-center gap-2">
           <div className="w-16 h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
             <div
@@ -89,7 +54,6 @@ export function MatchScore({ score, breakdown, variant = 'badge', size = 'md', c
           </div>
           <span className="text-sm font-medium text-primary-accent">{clamped}%</span>
         </div>
-        {showTooltip && tooltipContent}
       </div>
     )
   }
@@ -101,11 +65,8 @@ export function MatchScore({ score, breakdown, variant = 'badge', size = 'md', c
         size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm',
         className
       )}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
     >
-      {clamped}% match
-      {showTooltip && tooltipContent}
+      {t('matchLabel', { score: clamped, defaultValue: '{{score}}% match' })}
     </div>
   )
 }

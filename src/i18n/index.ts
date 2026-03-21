@@ -38,6 +38,7 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
       alsoApplyProfileDefaults: 'Также применять настройки профиля',
       profileDefaultsHint:
         'Когда включено, каталог также учитывает ваши предпочтительные страны и выбранные факультеты, если вы не переопределили их выше.',
+      matchLabel: '{{score}}% совпадение',
     },
   },
   uz: {
@@ -72,6 +73,7 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
       alsoApplyProfileDefaults: 'Profilimdagi standartlarni ham qo‘llash',
       profileDefaultsHint:
         "Yoqilganida, katalog yuqorida alohida o'zgartirmasangiz, afzal mamlakatlaringiz va qiziqqan fakultetlaringizni ham hisobga oladi.",
+      matchLabel: '{{score}}% moslik',
     },
   },
 }
