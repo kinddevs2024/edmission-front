@@ -227,7 +227,7 @@ export async function updateUser(userId: string, payload: UpdateUserPayload): Pr
     email: String(raw.email ?? ''),
     role: String(raw.role ?? ''),
     name: (raw.name as string | undefined) ?? undefined,
-    createdAt: String(raw.createdAt ?? ''),
+    createdAt: raw.createdAt != null ? String(raw.createdAt) : new Date().toISOString(),
     status: (raw.suspended ? 'suspended' : 'active') as 'active' | 'suspended',
   }
 }

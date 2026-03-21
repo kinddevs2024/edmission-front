@@ -1,16 +1,25 @@
+function toValidDate(date: string | Date): Date | null {
+  const parsed = new Date(date)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
 export function formatDate(
   date: string | Date,
   locale: string = 'en',
   options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }
 ): string {
-  return new Intl.DateTimeFormat(locale, options).format(new Date(date))
+  const parsed = toValidDate(date)
+  if (!parsed) return '—'
+  return new Intl.DateTimeFormat(locale, options).format(parsed)
 }
 
 export function formatDateTime(date: string | Date, locale: string = 'en'): string {
+  const parsed = toValidDate(date)
+  if (!parsed) return '—'
   return new Intl.DateTimeFormat(locale, {
     dateStyle: 'short',
     timeStyle: 'short',
-  }).format(new Date(date))
+  }).format(parsed)
 }
 
 export function formatNumber(value: number, locale: string = 'en'): string {
@@ -26,7 +35,8 @@ export function formatPercent(value: number, locale: string = 'en'): string {
 }
 
 export function daysUntil(date: string): number {
-  const d = new Date(date)
+  const d = toValidDate(date)
+  if (!d) return 0
   const now = new Date()
   now.setHours(0, 0, 0, 0)
   d.setHours(0, 0, 0, 0)
