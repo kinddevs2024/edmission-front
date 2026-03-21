@@ -13,6 +13,7 @@ const MAX_VISIBLE = 10
 export function NotificationsDropdown() {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { role } = useAuth()
   const { items, unreadCount, setNotifications, markAsRead, markAllAsRead } = useNotificationStore()
@@ -24,9 +25,20 @@ export function NotificationsDropdown() {
   }, [setNotifications, role])
 
   useEffect(() => {
+    if (open) {
+      setMounted(true)
+      return
+    }
+    const timeout = window.setTimeout(() => setMounted(false), 160)
+    return () => window.clearTimeout(timeout)
+  }, [open])
+
+  const closeDropdown = () => setOpen(false)
+
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
+        closeDropdown()
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -62,12 +74,13 @@ export function NotificationsDropdown() {
         )}
       </button>
 
-      {open && (
+      {mounted && (
         <div
           className={cn(
             'z-50 flex flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]',
             'fixed left-1/2 top-[calc(env(safe-area-inset-top)+4.25rem)] w-[min(calc(100vw-1rem),22rem)] -translate-x-1/2 max-h-[min(28rem,calc(100vh-5.5rem))] shadow-2xl',
-            'origin-top animate-modal-enter md:absolute md:right-0 md:left-auto md:top-full md:mt-1 md:w-80 md:max-h-[min(24rem,70vh)] md:translate-x-0 md:origin-top-right md:shadow-lg'
+            'origin-top transition-all duration-150 md:absolute md:right-0 md:left-auto md:top-full md:mt-1 md:w-80 md:max-h-[min(24rem,70vh)] md:translate-x-0 md:origin-top-right md:shadow-lg',
+            open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0'
           )}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--color-border)]">
@@ -100,7 +113,7 @@ export function NotificationsDropdown() {
                       )}
                       onClick={() => {
                         handleMarkRead(n.id)
-                        setOpen(false)
+                        closeDropdown()
                       }}
                     >
                       <p className="text-sm font-medium">{n.title}</p>
@@ -127,7 +140,7 @@ export function NotificationsDropdown() {
                 <Link
                   to="/notifications"
                   className="block px-4 py-2.5 text-center text-sm text-primary-accent hover:bg-[var(--color-border)]/20"
-                  onClick={() => setOpen(false)}
+                  onClick={() => closeDropdown()}
                 >
                   {t('viewAllNotifications', 'View all notifications')}
                 </Link>

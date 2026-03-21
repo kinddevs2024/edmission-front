@@ -4,6 +4,8 @@ const KEY_USER = 'auth_user'
 const KEY_ACCESS = 'auth_accessToken'
 const KEY_REFRESH = 'auth_refreshToken'
 const KEY_ACTIVITY = 'auth_lastActivityAt'
+const KEY_TUTORIAL_STUDENT = 'edmission_tutorial_student_seen'
+const KEY_TUTORIAL_UNIVERSITY = 'edmission_tutorial_university_seen'
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
 
@@ -60,6 +62,8 @@ export function clearAuth(): void {
     localStorage.removeItem(KEY_ACCESS)
     localStorage.removeItem(KEY_REFRESH)
     localStorage.removeItem(KEY_ACTIVITY)
+    localStorage.removeItem(KEY_TUTORIAL_STUDENT)
+    localStorage.removeItem(KEY_TUTORIAL_UNIVERSITY)
   } catch {
     /* ignore */
   }

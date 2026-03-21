@@ -1,6 +1,5 @@
 import axios, { type AxiosError } from 'axios'
 import { useAuthStore } from '@/store/authStore'
-import i18n from '@/i18n'
 import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
 
 // Локально (dev): запросы сразу на бэкенд (порт 4000), без прокси. На проде — тот же домен /api (проксирует nginx).
@@ -19,9 +18,9 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-  const language = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0].toLowerCase()
-  config.headers['Accept-Language'] = language
-  config.headers['X-User-Language'] = language
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
+    delete config.headers['Content-Type']
+  }
   return config
 })
 
@@ -62,14 +61,9 @@ export function getApiError(error: unknown): { message: string; errors?: Record<
   if (axios.isAxiosError(error) && error.response?.data) {
     const data = error.response.data as { message?: string; errors?: Record<string, string[]> }
     return {
-      message: data.message ?? i18n.t('common:error', 'Something went wrong'),
+      message: data.message ?? 'An error occurred',
       errors: data.errors,
     }
   }
-  return {
-    message:
-      error instanceof Error && error.message.trim()
-        ? error.message
-        : i18n.t('common:error', 'Something went wrong'),
-  }
+  return { message: error instanceof Error ? error.message : 'Unknown error' }
 }

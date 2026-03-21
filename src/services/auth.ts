@@ -2,6 +2,7 @@ import { api, getApiError } from './api'
 import type { User, LoginResponse } from '@/types/user'
 import { useAuthStore } from '@/store/authStore'
 import { saveAuth, clearAuth, getStoredRefreshToken } from './authPersistence'
+import { queryClient } from '@/app/queryClient'
 
 export interface LoginPayload {
   email: string
@@ -68,6 +69,7 @@ export async function logout(): Promise<void> {
     await api.post('/auth/logout', { refreshToken: refreshToken ?? undefined })
   } finally {
     clearAuth()
+    queryClient.clear()
     useAuthStore.getState().logout()
   }
 }

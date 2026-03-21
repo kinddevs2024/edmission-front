@@ -16,12 +16,16 @@ import { ChatList } from './ChatList'
 import { MessageThread } from './MessageThread'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
-import { getLocalizedChatMessageText } from '@/utils/chatText'
 import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
 
 function getMessagePreview(message: Message): Chat['lastMessage'] {
-  const text = getLocalizedChatMessageText(message)
+  const text =
+    message.type === 'voice'
+      ? 'Voice message'
+      : message.type === 'emotion'
+        ? String(message.metadata?.emotion ?? 'Reaction')
+        : message.text ?? ''
 
   return {
     id: message.id,

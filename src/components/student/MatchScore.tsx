@@ -91,7 +91,7 @@ export function MatchScore({ score, breakdown, variant = 'badge', size = 'md', c
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      {t('matchPercent', { score: clamped, defaultValue: '{{score}}% match' })}
+      {clamped}% match
       {showTooltip && tooltipContent}
     </div>
   )

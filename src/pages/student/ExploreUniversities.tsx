@@ -19,6 +19,7 @@ import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/local
 import { getUniversities, showInterest, getInterestedUniversityIds, getInterestLimit, getStudentProfile, type UniversitiesParams } from '@/services/student'
 import { toastApiError } from '@/utils/toastError'
 import { Building2, Search, SlidersHorizontal } from 'lucide-react'
+import { notifyInfo, notifySuccess } from '@/utils/notify'
 
 type UniversityFilters = {
   search: string
@@ -189,9 +190,14 @@ export function ExploreUniversities() {
         previous ? [...previous, universityId] : [universityId]
       )
       queryClient.invalidateQueries({ queryKey: ['student', 'interestLimit'] })
+      notifySuccess(t('student:interestedButton', 'Interested'))
     },
     onError: toastApiError,
   })
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
 
   useEffect(() => {
     const params: Record<string, string> = {}
@@ -219,8 +225,13 @@ export function ExploreUniversities() {
   }
 
   const handleApplyFullFilters = () => {
+    const normalized = normalizeFilters(draftFilters)
     setPage(1)
-    setFilters({ ...draftFilters })
+    setDraftFilters(normalized)
+    setFilters(normalized)
+    if (hasRangeAdjustment(draftFilters, normalized)) {
+      notifyInfo(t('student:filtersAdjusted', 'Some range values were adjusted automatically.'))
+    }
     setFilterModalOpen(false)
   }
 
@@ -674,6 +685,40 @@ function buildUniversitySearchParams(page: number, limit: number, filters: Unive
     hasScholarship: filters.hasScholarship || undefined,
     useProfileFilters: filters.useProfileFilters,
   }
+}
+
+function normalizeFilters(filters: UniversityFilters): UniversityFilters {
+  const next = { ...filters }
+  ;[
+    ['minTuition', 'maxTuition'],
+    ['minEstablishedYear', 'maxEstablishedYear'],
+    ['minStudentCount', 'maxStudentCount'],
+  ].forEach(([minKey, maxKey]) => {
+    const minRaw = next[minKey as keyof UniversityFilters]
+    const maxRaw = next[maxKey as keyof UniversityFilters]
+    const min = String(minRaw ?? '').trim()
+    const max = String(maxRaw ?? '').trim()
+    if (!min || !max) return
+    const minNumber = Number(min)
+    const maxNumber = Number(max)
+    if (!Number.isFinite(minNumber) || !Number.isFinite(maxNumber)) return
+    if (minNumber > maxNumber) {
+      next[minKey as keyof UniversityFilters] = String(maxNumber) as never
+      next[maxKey as keyof UniversityFilters] = String(minNumber) as never
+    }
+  })
+  return next
+}
+
+function hasRangeAdjustment(before: UniversityFilters, after: UniversityFilters): boolean {
+  return (
+    before.minTuition !== after.minTuition ||
+    before.maxTuition !== after.maxTuition ||
+    before.minEstablishedYear !== after.minEstablishedYear ||
+    before.maxEstablishedYear !== after.maxEstablishedYear ||
+    before.minStudentCount !== after.minStudentCount ||
+    before.maxStudentCount !== after.maxStudentCount
+  )
 }
 
 function countActiveFilters(filters: UniversityFilters, profileCriteriaCount = 0) {

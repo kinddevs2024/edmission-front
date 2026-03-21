@@ -67,7 +67,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
 
   const handleSend = useCallback(
     async (text: string, selectedText?: string) => {
-      const trimmed = text.trim() || (selectedText ? t('aiExplainSelection', 'Please explain or elaborate on the selected part.') : '')
+      const trimmed = text.trim() || (selectedText ? 'Please explain or elaborate on the selected part.' : '')
       if (!trimmed || loading) return
       if (requestsUsed >= requestLimit) {
         setRateLimitMessage(t('aiQuestionLimitReached', { limit: requestLimit, defaultValue: 'Question limit reached ({{limit}}). Refresh the page to reset it.' }))
@@ -159,7 +159,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
           msg?.toLowerCase().includes('limit') ||
           (err as { response?: { status?: number } }).response?.status === 429
         ) {
-          setRateLimitMessage(msg ?? t('aiFreeTierLimitReached', 'Free tier limit reached. Try again later.'))
+          setRateLimitMessage(msg ?? 'Free tier limit reached. Try again later.')
         } else {
           setError(err instanceof Error ? err.message : t('aiErrorDefault'))
         }
@@ -378,7 +378,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                 >
                   {m.role === 'assistant' && m.thinking != null && m.thinking.length > 0 && (
                     <div className="mb-3 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)]/60 px-3 py-2 text-xs text-[var(--color-text-muted)]">
-                      <p className="font-medium text-[var(--color-text-muted)] mb-1 opacity-80">{t('thinking', 'Thinking')}</p>
+                      <p className="font-medium text-[var(--color-text-muted)] mb-1 opacity-80">Thinking</p>
                       <p className="whitespace-pre-wrap break-words">{m.thinking}</p>
                     </div>
                   )}

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -50,36 +50,36 @@ export function Scholarships() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('university:navScholarships', 'Scholarships')} icon="Wallet" />
+      <PageTitle title="Scholarships" icon="Wallet" />
 
       <Card className="animate-card-enter">
-        <div className="mb-4 flex items-center justify-between">
-          <CardTitle>{t('university:scholarshipList', 'Scholarship list')}</CardTitle>
-          <Button onClick={() => setModalOpen(true)} icon={<Plus size={16} />}>{t('university:createScholarship')}</Button>
+        <div className="flex justify-between items-center mb-4">
+          <CardTitle>Scholarship list</CardTitle>
+          <Button onClick={() => setModalOpen(true)} icon={<Plus size={16} />}>Create scholarship</Button>
         </div>
         {loading ? (
-          <p className="text-[var(--color-text-muted)]">{t('common:loading')}</p>
+          <p className="text-[var(--color-text-muted)]">Loading...</p>
         ) : list.length === 0 ? (
-          <p className="py-8 text-[var(--color-text-muted)]">{t('university:noScholarshipsYet', 'No scholarships yet. Create one to start.')}</p>
+          <p className="text-[var(--color-text-muted)] py-8">No scholarships yet. Create one to start.</p>
         ) : (
           <Table>
             <TableHead>
               <TableRow>
-                <TableTh>{t('common:name', 'Name')}</TableTh>
-                <TableTh>{t('university:coveragePercent', 'Coverage %')}</TableTh>
-                <TableTh>{t('university:maxSlots', 'Max slots')}</TableTh>
-                <TableTh>{t('university:deadline', 'Deadline')}</TableTh>
-                <TableTh>{t('university:eligibility', 'Eligibility')}</TableTh>
+                <TableTh>Name</TableTh>
+                <TableTh>Coverage</TableTh>
+                <TableTh>Slots</TableTh>
+                <TableTh>Deadline</TableTh>
+                <TableTh>Eligibility</TableTh>
               </TableRow>
             </TableHead>
             <TableBody>
-              {list.map((scholarship) => (
-                <TableRow key={scholarship.id}>
-                  <TableTd>{scholarship.name}</TableTd>
-                  <TableTd>{scholarship.coveragePercent}%</TableTd>
-                  <TableTd>{scholarship.usedSlots} / {scholarship.maxSlots}</TableTd>
-                  <TableTd>{scholarship.deadline ? formatDate(scholarship.deadline) : '—'}</TableTd>
-                  <TableTd className="max-w-xs truncate">{scholarship.eligibility ?? '—'}</TableTd>
+              {list.map((s) => (
+                <TableRow key={s.id}>
+                  <TableTd>{s.name}</TableTd>
+                  <TableTd>{s.coveragePercent}%</TableTd>
+                  <TableTd>{s.usedSlots} / {s.maxSlots}</TableTd>
+                  <TableTd>{s.deadline ? formatDate(s.deadline) : '—'}</TableTd>
+                  <TableTd className="max-w-xs truncate">{s.eligibility ?? '—'}</TableTd>
                 </TableRow>
               ))}
             </TableBody>
@@ -103,7 +103,12 @@ export function Scholarships() {
           <Input label={t('university:coveragePercent')} type="number" value={coveragePercent} onChange={(e) => setCoveragePercent(Number(e.target.value))} />
           <Input label={t('university:maxSlots')} type="number" value={maxSlots} onChange={(e) => setMaxSlots(Number(e.target.value))} />
           <Input label={t('university:deadline')} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
-          <Textarea label={t('university:eligibility')} rows={3} value={eligibility} onChange={(e) => setEligibility(e.target.value)} />
+          <Textarea
+            label={t('university:eligibility')}
+            rows={3}
+            value={eligibility}
+            onChange={(e) => setEligibility(e.target.value)}
+          />
         </div>
       </Modal>
     </div>

@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/Modal'
 import { DocumentCanvasStage } from './DocumentCanvasStage'
 import { parseScene } from '@/utils/documentScene'
@@ -19,7 +18,6 @@ interface DocumentPreviewModalProps {
 }
 
 export function DocumentPreviewModal({ open, onClose, title, document }: DocumentPreviewModalProps) {
-  const { t } = useTranslation(['common', 'documents'])
   const fileUrl = document?.fileUrl ? getImageUrl(document.fileUrl) : ''
   const isPdf = fileUrl ? fileUrl.toLowerCase().includes('.pdf') || fileUrl.includes('application/pdf') : false
   const isImage = fileUrl ? /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(fileUrl) || fileUrl.startsWith('data:image/') : false
@@ -37,7 +35,7 @@ export function DocumentPreviewModal({ open, onClose, title, document }: Documen
             <img src={fileUrl} alt={title} className="max-w-full h-auto rounded border border-[var(--color-border)]" />
           ) : (
             <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-accent hover:underline">
-              {t('common:openOrDownload', 'Open / Download')}
+              Open / Download
             </a>
           )}
         </div>
@@ -46,7 +44,7 @@ export function DocumentPreviewModal({ open, onClose, title, document }: Documen
           <DocumentCanvasStage scene={scene} zoom={0.36} />
         </div>
       ) : (
-        <p className="text-sm text-[var(--color-text-muted)]">{t('common:previewUnavailable', 'Preview is not available.')}</p>
+        <p className="text-sm text-[var(--color-text-muted)]">Preview is not available.</p>
       )}
     </Modal>
   )

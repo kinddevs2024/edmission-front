@@ -10,7 +10,7 @@ import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
 
 export function AdminLayout() {
-  const { t } = useTranslation(['admin', 'common'])
+  const { t } = useTranslation('admin')
   const location = useLocation()
   const isFixedHeightPage = location.pathname === '/admin/ai'
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
@@ -31,7 +31,7 @@ export function AdminLayout() {
       { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
       { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
       { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
-      { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
+      { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' as const },
     ],
     [t]
   )

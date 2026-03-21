@@ -63,15 +63,6 @@ export function DocumentEditor({
   const [showGuide, setShowGuide] = useState(false)
   const [saveAttempted, setSaveAttempted] = useState(false)
   const isTemplateMode = mode === 'template'
-  const resolvedTypeOptions = typeOptions.map((option) => ({
-    ...option,
-    label:
-      option.value === 'offer'
-        ? t('documents:type.offer', 'Offer')
-        : option.value === 'scholarship'
-          ? t('documents:type.scholarship', 'Scholarship')
-          : option.label,
-  }))
   const selectedElement = scene.elements.find((element) => element.id === selectedElementId) ?? null
   const trimmedName = metadata.name.trim()
   const nameError = saveAttempted && !trimmedName
@@ -103,9 +94,7 @@ export function DocumentEditor({
       y: 56,
       width: 360,
       height: 120,
-      content: isTemplateMode
-        ? t('documents:editor.defaultTemplateHeading', 'Congratulations, {{student.fullName}}!')
-        : t('documents:editor.defaultProfileHeading', 'Type your heading here'),
+      content: isTemplateMode ? 'Congratulations, {{student.fullName}}!' : 'Type your heading here',
       fontSize: 28,
       fontFamily: 'Georgia',
       fill: '#0f172a',
@@ -234,14 +223,14 @@ export function DocumentEditor({
 
   const guideSteps = isTemplateMode
     ? [
-        t('documents:editor.guideStepTemplate1', '1. Start with Add text, Upload image, or Background on the left.'),
-        t('documents:editor.guideStepTemplate2', '2. Click any block on the page to resize, move, lock, or style it.'),
-        t('documents:editor.guideStepTemplate3', '3. Use merge tags only inside text blocks when you need student data.'),
+        '1. Start with Add text, Upload image, or Background on the left.',
+        '2. Click any block on the page to resize, move, lock, or style it.',
+        '3. Use merge tags only inside text blocks when you need student data.',
       ]
     : [
-        t('documents:editor.guideStepProfile1', '1. Add a title or image first so the page is not empty.'),
-        t('documents:editor.guideStepProfile2', '2. Click any block to resize, move, duplicate, or delete it.'),
-        t('documents:editor.guideStepProfile3', '3. Save the document and it will appear in the student profile.'),
+        '1. Add a title or image first so the page is not empty.',
+        '2. Click any block to resize, move, duplicate, or delete it.',
+        '3. Save the document and it will appear in the student profile.',
       ]
 
   return (
@@ -250,19 +239,15 @@ export function DocumentEditor({
         <Card className="border border-primary-accent/30 bg-primary-accent/5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">{t('documents:editor.quickStart', 'Quick start')}</p>
-              <h3 className="text-lg font-semibold">
-                {isTemplateMode
-                  ? t('documents:editor.howItWorks', 'How this editor works')
-                  : t('documents:editor.buildProfileDocument', 'Build a profile document in 3 steps')}
-              </h3>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Quick start</p>
+              <h3 className="text-lg font-semibold">{isTemplateMode ? 'How this editor works' : 'Build a profile document in 3 steps'}</h3>
               <div className="space-y-1 text-sm text-[var(--color-text-muted)]">
                 {guideSteps.map((step) => (
                   <p key={step}>{step}</p>
                 ))}
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={dismissGuide}>{t('documents:editor.hideGuide', 'Hide guide')}</Button>
+            <Button variant="ghost" size="sm" onClick={dismissGuide}>Hide guide</Button>
           </div>
         </Card>
       ) : null}
@@ -270,31 +255,27 @@ export function DocumentEditor({
       <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
         <Card className="space-y-4 border border-[var(--color-border)]">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">{t('documents:editor.startHere', 'Start here')}</p>
-            <h3 className="mt-1 text-lg font-semibold">
-              {isTemplateMode
-                ? t('documents:editor.buildYourLayout', 'Build your layout')
-                : t('documents:editor.buildYourDocument', 'Build your document')}
-            </h3>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Start here</p>
+            <h3 className="mt-1 text-lg font-semibold">{isTemplateMode ? 'Build your layout' : 'Build your document'}</h3>
             <p className="mt-1 text-sm text-[var(--color-text-muted)]">
               {isTemplateMode
-                ? t('documents:editor.buildLayoutDescription', 'Use text, images, shapes, and variables. Click blocks on the page to edit them.')
-                : t('documents:editor.buildDocumentDescription', 'Use text, images, shapes, and signatures. Click blocks on the page to edit them.')}
+                ? 'Use text, images, shapes, and variables. Click blocks on the page to edit them.'
+                : 'Use text, images, shapes, and signatures. Click blocks on the page to edit them.'}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" size="sm" onClick={handleAddText}>{t('documents:editor.addText', 'Add text')}</Button>
-            <Button variant="secondary" size="sm" onClick={handleAddShape}>{t('documents:editor.addShape', 'Add shape')}</Button>
-            <Button variant="secondary" size="sm" onClick={handleAddLine}>{t('documents:editor.addLine', 'Add line')}</Button>
-            <Button variant="secondary" size="sm" onClick={() => imageInputRef.current?.click()}>{t('documents:editor.uploadImage', 'Upload image')}</Button>
-            <Button variant="secondary" size="sm" onClick={() => logoInputRef.current?.click()}>{t('documents:editor.uploadLogo', 'Upload logo')}</Button>
-            <Button variant="secondary" size="sm" onClick={() => signatureInputRef.current?.click()}>{t('documents:editor.signature', 'Signature')}</Button>
-            <Button variant="secondary" size="sm" onClick={() => backgroundInputRef.current?.click()}>{t('documents:editor.background', 'Background')}</Button>
-            <Button variant="secondary" size="sm" onClick={undo}>{t('documents:editor.undo', 'Undo')}</Button>
-            <Button variant="secondary" size="sm" onClick={redo}>{t('documents:editor.redo', 'Redo')}</Button>
-            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom + 0.1)}>{t('documents:editor.zoomIn', 'Zoom +')}</Button>
-            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom - 0.1)}>{t('documents:editor.zoomOut', 'Zoom -')}</Button>
+            <Button variant="secondary" size="sm" onClick={handleAddText}>Add text</Button>
+            <Button variant="secondary" size="sm" onClick={handleAddShape}>Add shape</Button>
+            <Button variant="secondary" size="sm" onClick={handleAddLine}>Add line</Button>
+            <Button variant="secondary" size="sm" onClick={() => imageInputRef.current?.click()}>Upload image</Button>
+            <Button variant="secondary" size="sm" onClick={() => logoInputRef.current?.click()}>Upload logo</Button>
+            <Button variant="secondary" size="sm" onClick={() => signatureInputRef.current?.click()}>Signature</Button>
+            <Button variant="secondary" size="sm" onClick={() => backgroundInputRef.current?.click()}>Background</Button>
+            <Button variant="secondary" size="sm" onClick={undo}>Undo</Button>
+            <Button variant="secondary" size="sm" onClick={redo}>Redo</Button>
+            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom + 0.1)}>Zoom +</Button>
+            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom - 0.1)}>Zoom -</Button>
           </div>
 
           <input
@@ -348,12 +329,10 @@ export function DocumentEditor({
 
           {isTemplateMode ? (
             <div className="space-y-3">
-              <p className="text-sm font-medium">{t('documents:editor.insertVariable', 'Insert variable')}</p>
+              <p className="text-sm font-medium">Insert variable</p>
               {Object.entries(MERGE_TAG_GROUPS).map(([group, tags]) => (
                 <div key={group} className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                    {t(`documents:editor.mergeGroups.${group.toLowerCase()}`, group)}
-                  </p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-muted)]">{group}</p>
                   <div className="flex flex-wrap gap-2">
                     {tags.map((tag) => (
                       <button
@@ -374,7 +353,7 @@ export function DocumentEditor({
             </div>
           ) : (
             <div className="rounded-[22px] border border-dashed border-[var(--color-border)] p-4 text-sm text-[var(--color-text-muted)]">
-              {t('documents:editor.studentModeHint', 'Student mode is simpler: no merge tags, only the final layout that will be shown in the profile.')}
+              Student mode is simpler: no merge tags, only the final layout that will be shown in the profile.
             </div>
           )}
         </Card>
@@ -382,22 +361,16 @@ export function DocumentEditor({
         <div className="space-y-4">
           <Card className="flex flex-wrap items-center justify-between gap-3 border border-[var(--color-border)]">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">{t('documents:editor.canvas', 'Canvas')}</p>
-              <h2 className="mt-1 text-xl font-semibold">
-                {metadata.name || (isTemplateMode
-                  ? t('documents:editor.untitledTemplate', 'Untitled template')
-                  : t('documents:editor.untitledDocument', 'Untitled document'))}
-              </h2>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Canvas</p>
+              <h2 className="mt-1 text-xl font-semibold">{metadata.name || (isTemplateMode ? 'Untitled template' : 'Untitled document')}</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'left')} disabled={!selectedElement}>{t('documents:editor.alignLeft', 'Align left')}</Button>
-              <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'center')} disabled={!selectedElement}>{t('documents:editor.center', 'Center')}</Button>
-              <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'up')} disabled={!selectedElement}>{t('documents:editor.layerUp', 'Layer +')}</Button>
-              <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'down')} disabled={!selectedElement}>{t('documents:editor.layerDown', 'Layer -')}</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'left')} disabled={!selectedElement}>Align left</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && alignElement(selectedElement.id, 'center')} disabled={!selectedElement}>Center</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'up')} disabled={!selectedElement}>Layer +</Button>
+              <Button variant="secondary" size="sm" onClick={() => selectedElement && moveLayer(selectedElement.id, 'down')} disabled={!selectedElement}>Layer -</Button>
               <Button size="sm" onClick={handleSave} loading={saving} disabled={saving}>
-                {saveLabel ?? (isTemplateMode
-                  ? t('documents:editor.saveTemplate', 'Save template')
-                  : t('documents:editor.saveDocument', 'Save document'))}
+                {saveLabel ?? (isTemplateMode ? 'Save template' : 'Save document')}
               </Button>
             </div>
             {nameError ? (
@@ -419,21 +392,13 @@ export function DocumentEditor({
 
         <Card className="space-y-4 border border-[var(--color-border)]">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">{t('documents:editor.inspector', 'Inspector')}</p>
-            <h3 className="mt-1 text-lg font-semibold">
-              {selectedElement
-                ? t('documents:editor.elementProperties', 'Element properties')
-                : isTemplateMode
-                  ? t('documents:editor.templateSettings', 'Template settings')
-                  : t('documents:editor.documentSettings', 'Document settings')}
-            </h3>
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Inspector</p>
+            <h3 className="mt-1 text-lg font-semibold">{selectedElement ? 'Element properties' : isTemplateMode ? 'Template settings' : 'Document settings'}</h3>
           </div>
 
           <Input
             ref={nameInputRef}
-            label={isTemplateMode
-              ? t('documents:editor.templateName', 'Template name')
-              : t('documents:editor.documentName', 'Document name')}
+            label={isTemplateMode ? 'Template name' : 'Document name'}
             value={metadata.name}
             error={nameError}
             right={(
@@ -454,26 +419,26 @@ export function DocumentEditor({
             }}
           />
           <Select
-            label={t('documents:editor.documentType', 'Document type')}
+            label="Document type"
             value={metadata.type}
             onChange={(event) => setMetadata({ type: event.target.value as EditorDocumentType })}
-            options={resolvedTypeOptions}
+            options={typeOptions}
           />
 
           {isTemplateMode ? (
             <>
               <Select
-                label={t('common:status', 'Status')}
+                label="Status"
                 value={metadata.status}
                 onChange={(event) => setMetadata({ status: event.target.value as DocumentTemplate['status'] })}
                 options={[
-                  { value: 'draft', label: t('documents:templateStatus.draft', 'Draft') },
-                  { value: 'active', label: t('documents:templateStatus.active', 'Active') },
-                  { value: 'archived', label: t('documents:templateStatus.archived', 'Archived') },
+                  { value: 'draft', label: 'Draft' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'archived', label: 'Archived' },
                 ]}
               />
               <Textarea
-                label={t('documents:editor.previewStudentName', 'Preview student name')}
+                label="Preview student name"
                 value={String((previewData.student as { fullName?: string } | undefined)?.fullName ?? '')}
                 onChange={(event) =>
                   setPreviewData({
@@ -493,7 +458,7 @@ export function DocumentEditor({
             <div className="space-y-3 rounded-[22px] border border-[var(--color-border)] p-4">
               {selectedElement.type === 'text' ? (
                 <Textarea
-                  label={t('documents:editor.textContent', 'Text content')}
+                  label="Text content"
                   value={selectedElement.content ?? ''}
                   onChange={(event) => updateElement(selectedElement.id, { content: event.target.value }, true)}
                   rows={4}
@@ -501,36 +466,32 @@ export function DocumentEditor({
               ) : null}
               {(selectedElement.type === 'text' || selectedElement.type === 'shape') ? (
                 <Input
-                  label={t('documents:editor.fill', 'Fill')}
+                  label="Fill"
                   value={selectedElement.fill ?? '#0f172a'}
                   onChange={(event) => updateElement(selectedElement.id, { fill: event.target.value }, true)}
                 />
               ) : null}
               {selectedElement.type === 'text' ? (
                 <Input
-                  label={t('documents:editor.fontSize', 'Font size')}
+                  label="Font size"
                   type="number"
                   value={selectedElement.fontSize ?? 24}
                   onChange={(event) => updateElement(selectedElement.id, { fontSize: Number(event.target.value) || 24 }, true)}
                 />
               ) : null}
               <div className="grid grid-cols-2 gap-2">
-                <Input label={t('documents:editor.width', 'Width')} type="number" value={selectedElement.width} onChange={(event) => updateElement(selectedElement.id, { width: Number(event.target.value) || selectedElement.width }, true)} />
-                <Input label={t('documents:editor.height', 'Height')} type="number" value={selectedElement.height} onChange={(event) => updateElement(selectedElement.id, { height: Number(event.target.value) || selectedElement.height }, true)} />
+                <Input label="Width" type="number" value={selectedElement.width} onChange={(event) => updateElement(selectedElement.id, { width: Number(event.target.value) || selectedElement.width }, true)} />
+                <Input label="Height" type="number" value={selectedElement.height} onChange={(event) => updateElement(selectedElement.id, { height: Number(event.target.value) || selectedElement.height }, true)} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" onClick={() => toggleLock(selectedElement.id)}>
-                  {selectedElement.locked
-                    ? t('documents:editor.unlock', 'Unlock')
-                    : t('documents:editor.lock', 'Lock')}
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => duplicateElement(selectedElement.id)}>{t('common:duplicate', 'Duplicate')}</Button>
-                <Button size="sm" variant="danger" onClick={() => removeElement(selectedElement.id)}>{t('common:delete', 'Delete')}</Button>
+                <Button size="sm" variant="secondary" onClick={() => toggleLock(selectedElement.id)}>{selectedElement.locked ? 'Unlock' : 'Lock'}</Button>
+                <Button size="sm" variant="secondary" onClick={() => duplicateElement(selectedElement.id)}>Duplicate</Button>
+                <Button size="sm" variant="danger" onClick={() => removeElement(selectedElement.id)}>Delete</Button>
               </div>
             </div>
           ) : (
             <div className="rounded-[22px] border border-dashed border-[var(--color-border)] p-4 text-sm text-[var(--color-text-muted)]">
-              {t('documents:editor.clickBlockHint', 'Click any block on the page to edit it. If nothing is selected, start with Add text or Upload image from the left panel.')}
+              Click any block on the page to edit it. If nothing is selected, start with Add text or Upload image from the left panel.
             </div>
           )}
         </Card>

@@ -21,7 +21,6 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, FileStack } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
-import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
 const schema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
@@ -100,7 +99,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const LEGACY_LANGUAGE_OPTIONS = [
+const LANGUAGE_OPTIONS = [
   { value: 'English', label: 'English' },
   { value: 'Russian', label: 'Русский' },
   { value: 'Uzbek', label: 'Oʻzbek' },
@@ -113,7 +112,6 @@ const LEGACY_LANGUAGE_OPTIONS = [
   { value: 'Arabic', label: 'العربية' },
   { value: 'Other', label: 'Другое' },
 ]
-const LANGUAGE_OPTIONS: string[] = LEGACY_LANGUAGE_OPTIONS.map((option) => option.value)
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Native']
 const TARGET_DEGREE_OPTIONS = [
   { value: 'bachelor', labelKey: 'degreeBachelor' as const },
@@ -141,7 +139,7 @@ const EDUCATION_STATUS_OPTIONS = [
   { value: 'finished_university' as const, labelKey: 'statusFinishedUniversity' as const },
 ]
 
-const LEGACY_COUNTRY_CODE_OPTIONS = [
+const COUNTRY_CODE_OPTIONS = [
   { code: 'UZ', label: 'Uzbekistan' },
   { code: 'KZ', label: 'Kazakhstan' },
   { code: 'TJ', label: 'Tajikistan' },
@@ -150,8 +148,7 @@ const LEGACY_COUNTRY_CODE_OPTIONS = [
   { code: 'TR', label: 'Turkey' },
   { code: 'AE', label: 'UAE' },
   { code: 'CN', label: 'China' },
-]
-const COUNTRY_CODE_OPTIONS: string[] = LEGACY_COUNTRY_CODE_OPTIONS.map((option) => option.code)
+] as const
 
 function mapProfileToForm(profile: Record<string, unknown>): Partial<FormData> {
   const schools = (profile.schoolsAttended ?? []) as Array<Record<string, unknown>>
@@ -279,13 +276,13 @@ function buildPayload(data: FormData): Record<string, unknown> {
 
 export function CounsellorStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
-  const { t, i18n } = useTranslation(['student', 'common', 'documents'])
+  const { t } = useTranslation(['student', 'common'])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [profile, setProfile] = useState<Record<string, unknown> | null>(null)
   const [criteria, setCriteria] = useState<{ skills: string[]; interests: string[]; hobbies: string[] } | null>(null)
-  const [newLanguage, setNewLanguage] = useState<string>(LANGUAGE_OPTIONS[0])
+  const [newLanguage, setNewLanguage] = useState(LANGUAGE_OPTIONS[0].value)
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
@@ -300,20 +297,20 @@ export function CounsellorStudentProfile() {
   const [previewDocument, setPreviewDocument] = useState<CounsellorStudentDocument | null>(null)
 
   const DOC_TYPES = [
-    { value: 'transcript', label: t('documents:types.transcript', 'Transcript') },
-    { value: 'diploma', label: t('documents:types.diploma', 'Diploma') },
-    { value: 'language_certificate', label: t('documents:types.languageCertificate', 'Language certificate') },
-    { value: 'course_certificate', label: t('documents:types.courseCertificate', 'Course certificate') },
-    { value: 'passport', label: t('documents:types.passport', 'Passport') },
-    { value: 'id_card', label: t('documents:types.idCard', 'ID card') },
-    { value: 'other', label: t('common:other', 'Other') },
+    { value: 'transcript', label: 'Transcript' },
+    { value: 'diploma', label: 'Diploma' },
+    { value: 'language_certificate', label: 'Language certificate' },
+    { value: 'course_certificate', label: 'Course certificate' },
+    { value: 'passport', label: 'Passport' },
+    { value: 'id_card', label: 'ID card' },
+    { value: 'other', label: 'Other' },
   ]
   const LANGUAGE_CERT_TYPES = [
     { value: 'IELTS', label: 'IELTS' },
     { value: 'TOEFL', label: 'TOEFL' },
     { value: 'Cambridge', label: 'Cambridge' },
     { value: 'Duolingo', label: 'Duolingo' },
-    { value: 'other', label: t('common:other', 'Other') },
+    { value: 'other', label: 'Other' },
   ]
 
   const { register, reset, control, watch, setValue, handleSubmit, formState: { errors } } = useForm<FormData>({
@@ -362,15 +359,8 @@ export function CounsellorStudentProfile() {
     { value: 'internship', label: t('internship') },
     { value: 'work', label: t('work') },
   ]
-  const languageOptions = LANGUAGE_OPTIONS.map((value) => ({
-    value,
-    label: value === 'Other' ? t('common:other', 'Other') : getLocalizedLanguageName(value, i18n.resolvedLanguage),
-  }))
-  const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt === 'Native' ? t('native', 'Native') : opt }))
-  const countryOptions = COUNTRY_CODE_OPTIONS.map((code) => ({
-    code,
-    label: getLocalizedCountryName(code, i18n.resolvedLanguage),
-  }))
+  const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+  const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
 
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
@@ -517,14 +507,14 @@ export function CounsellorStudentProfile() {
           <div className="mt-4">
             <p className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:preferredCountries', 'Preferred countries')}</p>
             <ChipSelect
-              options={countryOptions.map((c) => c.label)}
+              options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
               value={(watch('preferredCountries') ?? []).map(
-                (code) => countryOptions.find((c) => c.code === code)?.label ?? code
+                (code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code
               )}
               onChange={(labels) => {
                 const codes = labels
-                  .map((label) => countryOptions.find((c) => c.label === label)?.code)
-                  .filter((c): c is (typeof COUNTRY_CODE_OPTIONS)[number] => c != null)
+                  .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
+                  .filter((c): c is (typeof COUNTRY_CODE_OPTIONS)[number]['code'] => c != null)
                 setValue('preferredCountries', codes as string[], { shouldDirty: true })
               }}
               max={8}
@@ -569,7 +559,7 @@ export function CounsellorStudentProfile() {
                   <Select value={newLanguage} onChange={(e) => { setNewLanguage(e.target.value); if (e.target.value !== 'Other') setCustomLanguageName('') }} options={languageOptions} />
                 </div>
                 {newLanguage === 'Other' && (
-                  <Input type="text" value={customLanguageName} onChange={(e) => setCustomLanguageName(e.target.value)} placeholder={t('languagePlaceholderInline', 'Language')} className="min-w-[120px]" />
+                  <Input type="text" value={customLanguageName} onChange={(e) => setCustomLanguageName(e.target.value)} placeholder="Language name" className="min-w-[120px]" />
                 )}
                 <Select value={newLevel} onChange={(e) => setNewLevel(e.target.value)} options={levelOptions} className="min-w-[96px]" />
                 <Button type="button" size="sm" onClick={() => { const langToAdd = newLanguage === 'Other' ? customLanguageName.trim() : newLanguage; if (!langToAdd) return; appendLanguage({ language: langToAdd, level: newLevel }); if (newLanguage === 'Other') setCustomLanguageName('') }} icon={<Plus className="w-4 h-4" />} disabled={newLanguage === 'Other' && !customLanguageName.trim()}>
@@ -738,7 +728,7 @@ export function CounsellorStudentProfile() {
                 <Input label={t('workTitle')} {...register(`portfolioWorks.${i}.title`)} />
                 <Textarea label={t('workDescription')} placeholder={t('workDescription')} rows={2} {...register(`portfolioWorks.${i}.description`)} />
                 <FileUpload label={t('workFileOrLink')} value={watch(`portfolioWorks.${i}.fileUrl`)} onChange={(url) => setValue(`portfolioWorks.${i}.fileUrl`, url)} accept="image/*,application/pdf" />
-                <Input {...register(`portfolioWorks.${i}.linkUrl`)} placeholder={t('portfolioLinkPlaceholder', 'https://… (optional link)')} className="mt-2" />
+                <Input {...register(`portfolioWorks.${i}.linkUrl`)} placeholder="https://… (optional)" className="mt-2" />
               </Card>
             ))}
             <Button type="button" variant="secondary" onClick={() => appendWork({ title: '', description: '', fileUrl: '', linkUrl: '' })} icon={<Plus className="w-4 h-4" />}>
@@ -771,7 +761,7 @@ export function CounsellorStudentProfile() {
                 </select>
               </div>
               <div>
-                <Input label={t('student:documentName', 'Name')} value={docName} onChange={(e) => setDocName(e.target.value)} placeholder={docType === 'language_certificate' ? t('documents:studentUploads.certificateTypePlaceholder', 'e.g. IELTS') : t('documents:studentUploads.documentNamePlaceholder', 'e.g. High school diploma')} />
+                <Input label={t('student:documentName', 'Name')} value={docName} onChange={(e) => setDocName(e.target.value)} placeholder={docType === 'language_certificate' ? 'e.g. IELTS' : 'e.g. High school diploma'} />
               </div>
             </div>
             {docType === 'language_certificate' && (
@@ -788,7 +778,7 @@ export function CounsellorStudentProfile() {
                     ))}
                   </select>
                 </div>
-                <Input label={t('student:score', 'Score / level')} value={docScore} onChange={(e) => setDocScore(e.target.value)} placeholder={t('documents:studentUploads.scorePlaceholder', 'e.g. 7.0, B2')} />
+                <Input label={t('student:score', 'Score / level')} value={docScore} onChange={(e) => setDocScore(e.target.value)} placeholder="e.g. 7.0, B2" />
               </div>
             )}
             <FileUpload label={t('student:file', 'File')} value={docFileUrl} onChange={setDocFileUrl} accept="image/*,application/pdf" />
@@ -829,7 +819,7 @@ export function CounsellorStudentProfile() {
       <DocumentPreviewModal
         open={!!previewDocument}
         onClose={() => setPreviewDocument(null)}
-        title={previewDocument?.name ?? previewDocument?.type ?? t('documents:common.document', 'Document')}
+        title={previewDocument?.name ?? previewDocument?.type ?? 'Document'}
         document={previewDocument ? {
           fileUrl: previewDocument.fileUrl,
           canvasJson: previewDocument.canvasJson,

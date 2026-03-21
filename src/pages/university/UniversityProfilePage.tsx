@@ -11,16 +11,14 @@ import { FileUpload } from '@/components/ui/FileUpload'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { useTranslation } from 'react-i18next'
-import appI18n from '@/i18n'
 import { getProfile, updateProfile } from '@/services/university'
 import { getApiError } from '@/services/auth'
 import type { UniversityProfile } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
-import { getLocalizedCountryName } from '@/utils/localeDisplay'
 
 const uploadedLogoSchema = z.string().trim().refine(
   (value) => value === '' || /^https?:\/\//.test(value) || value.startsWith('/'),
-  { message: appI18n.t('university:logoValidation', 'Enter a valid URL or upload a file') }
+  { message: 'Enter a valid URL or upload a file' }
 )
 
 const schema = z.object({
@@ -41,10 +39,19 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const COUNTRY_CODE_OPTIONS = ['UZ', 'KZ', 'TJ', 'KG', 'TM', 'TR', 'AE', 'CN'] as const
+const COUNTRY_CODE_OPTIONS = [
+  { code: 'UZ', label: 'Uzbekistan' },
+  { code: 'KZ', label: 'Kazakhstan' },
+  { code: 'TJ', label: 'Tajikistan' },
+  { code: 'KG', label: 'Kyrgyzstan' },
+  { code: 'TM', label: 'Turkmenistan' },
+  { code: 'TR', label: 'Turkey' },
+  { code: 'AE', label: 'UAE' },
+  { code: 'CN', label: 'China' },
+] as const
 
 export function UniversityProfilePage() {
-  const { t, i18n } = useTranslation(['university', 'common'])
+  const { t } = useTranslation(['university', 'common'])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -58,10 +65,6 @@ export function UniversityProfilePage() {
     },
   })
   const logoValue = watch('logo') ?? ''
-  const countryOptions = COUNTRY_CODE_OPTIONS.map((code) => ({
-    code,
-    label: getLocalizedCountryName(code, i18n.resolvedLanguage),
-  }))
 
   useEffect(() => {
     getProfile()
@@ -154,7 +157,7 @@ export function UniversityProfilePage() {
               label={t('university:logoUrl')}
               error={errors.logo?.message}
               {...register('logo')}
-              placeholder={t('university:logoUrlPlaceholder', 'https://... or /api/uploads/...')}
+              placeholder="https://... or /api/uploads/..."
             />
             <Textarea
               label={t('university:description')}
@@ -176,8 +179,8 @@ export function UniversityProfilePage() {
         <Card>
           <CardTitle>{t('university:sectionRequirements', 'Requirements & Tuition')}</CardTitle>
           <div className="mt-4 space-y-4">
-            <Input label={t('university:minRequirements', 'Minimum requirements')} {...register('minLanguageLevel')} placeholder={t('university:minRequirementsExample', 'e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0')} />
-            <Input label={t('university:tuitionPrice', 'Tuition price')} type="number" {...register('tuitionPrice')} placeholder={t('university:tuitionPricePlaceholderText', 'Annual cost in main currency')} />
+            <Input label={t('university:minRequirements', 'Minimum requirements')} {...register('minLanguageLevel')} placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0" />
+            <Input label={t('university:tuitionPrice', 'Tuition price')} type="number" {...register('tuitionPrice')} placeholder="Annual cost in main currency" />
           </div>
         </Card>
 
@@ -260,13 +263,13 @@ export function UniversityProfilePage() {
           <CardTitle>{t('university:targetStudentCountries', 'Preferred student countries')}</CardTitle>
           <div className="mt-4 space-y-4">
             <ChipSelect
-              options={countryOptions.map((c) => c.label)}
+              options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
               value={(watch('targetStudentCountries') ?? []).map(
-                (code) => countryOptions.find((c) => c.code === code)?.label ?? code
+                (code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code
               )}
               onChange={(labels) => {
                 const codes = labels
-                  .map((label) => countryOptions.find((c) => c.label === label)?.code)
+                  .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
                   .filter((v) => !!v)
                   .map((v) => String(v))
                 setValue('targetStudentCountries', codes, { shouldDirty: true })

@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 import { formatDate } from '@/utils/format'
 import { getImageUrl } from '@/services/upload'
@@ -12,8 +11,6 @@ interface ChatListProps {
 }
 
 export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps) {
-  const { t } = useTranslation(['chat', 'common'])
-
   if (loading) {
     return (
       <div className="p-3 space-y-2">
@@ -27,7 +24,7 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
   if (chats.length === 0) {
     return (
       <div className="p-4 text-center text-[var(--color-text-muted)] text-sm">
-        {t('chat:noConversationsYet', 'No conversations yet.')}
+        No conversations yet.
       </div>
     )
   }
@@ -61,13 +58,13 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
                 {chat.participant.name}
                 {chat.acceptedAt && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-accent/20 text-primary-accent font-medium shrink-0">
-                    {t('chat:accepted')}
+                    Accepted
                   </span>
                 )}
               </p>
               {chat.lastMessage && (
                 <p className="text-xs text-[var(--color-text-muted)] truncate">
-                  {chat.lastMessage.isFromMe ? `${t('common:youPrefix', 'You')}: ` : ''}{chat.lastMessage.text}
+                  {chat.lastMessage.isFromMe ? 'You: ' : ''}{chat.lastMessage.text}
                 </p>
               )}
             </div>

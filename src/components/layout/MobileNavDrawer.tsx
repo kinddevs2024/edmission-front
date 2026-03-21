@@ -37,7 +37,7 @@ export function MobileNavDrawer() {
         type="button"
         onClick={() => setOpen(true)}
         className="lg:hidden flex items-center justify-center w-10 h-10 rounded-input hover:bg-[var(--color-border)]/30 transition-colors"
-        aria-label={t('openMenu', 'Open menu')}
+        aria-label="Open menu"
       >
         <Menu className="w-5 h-5 text-[var(--color-text)]" aria-hidden />
       </button>
@@ -58,7 +58,7 @@ export function MobileNavDrawer() {
             )}
             role="dialog"
             aria-modal="true"
-            aria-label={t('navigationMenu', 'Navigation menu')}
+            aria-label="Navigation menu"
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
               <Link
@@ -73,7 +73,7 @@ export function MobileNavDrawer() {
                 type="button"
                 onClick={() => setOpen(false)}
                 className="p-2 rounded-input hover:bg-[var(--color-border)]/30 transition-colors"
-                aria-label={t('closeMenu', 'Close menu')}
+                aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -102,7 +102,7 @@ export function MobileNavDrawer() {
             </nav>
             <div className="p-4 border-t border-[var(--color-border)]">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-[var(--color-text-muted)]">{t('theme', 'Theme')}</span>
+                <span className="text-sm text-[var(--color-text-muted)]">Theme</span>
                 <ThemeSwitch />
               </div>
             </div>

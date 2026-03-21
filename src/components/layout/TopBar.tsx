@@ -17,6 +17,7 @@ import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { getDashboardPath } from '@/utils/dashboardPath'
+import { notifyInfo } from '@/utils/notify'
 
 export function TopBar() {
   const { t } = useTranslation('common')
@@ -46,6 +47,13 @@ export function TopBar() {
         metadata: payload.metadata,
         createdAt: payload.createdAt ?? new Date().toISOString(),
       })
+
+      if (!document.hidden && (payload.title || payload.body)) {
+        notifyInfo(payload.title || t('notifications'), {
+          description: payload.body ?? '',
+          duration: 4500,
+        })
+      }
 
       // Browser notification when tab is in background
       if (typeof window !== 'undefined' && 'Notification' in window && document.hidden) {
@@ -87,6 +95,7 @@ export function TopBar() {
             onClose={() => setMobileSearchOpen(false)}
           />
         </div>
+        <NotificationsDropdown />
         {!mobileSearchOpen && (
           <>
             <div
@@ -94,12 +103,11 @@ export function TopBar() {
                 'hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)]',
                 'min-[0px]:gap-1.5'
               )}
-              aria-label={t('languageAndTheme', 'Language and theme')}
+              aria-label="Language and theme"
             >
               <LanguageMenu />
               <ThemeSwitch />
             </div>
-            <NotificationsDropdown />
             <Link
               to="/profile"
               className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)] bg-[var(--color-bg)] hover:border-primary-accent/50 transition-colors"

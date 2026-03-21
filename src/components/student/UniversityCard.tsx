@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -7,12 +6,14 @@ import { getImageUrl } from '@/services/upload'
 import { useDominantColor } from '@/hooks/useDominantColor'
 import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/utils/cn'
+import { useTranslation } from 'react-i18next'
 import { getLocalizedCountryName } from '@/utils/localeDisplay'
 import type { UniversityListItem } from '@/types/university'
 
 interface UniversityCardProps {
   university: UniversityListItem
   showMatch?: boolean
+  /** When false, min language level and tuition are hidden (e.g. dashboard recommendations). */
   showRequirements?: boolean
   onInterest?: (id: string) => void
   interested?: boolean
@@ -93,7 +94,6 @@ export function UniversityCard({
           <MatchScore score={matchScore} breakdown={matchBreakdown} variant="badge" size="sm" />
         ) : null}
       </div>
-
       {description ? (
         <p className="mb-4 flex-1 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>
       ) : null}
@@ -117,7 +117,7 @@ export function UniversityCard({
               onClick={() => onInterest(id)}
               disabled={interested || interestDisabled}
             >
-              {interested ? t('student:interestedButton', 'Interested') : t('student:showInterest', 'Show interest')}
+              {interested ? t('student:interestedButton', 'Interested') : t('student:showInterest', 'Interest')}
             </Button>
           ) : null}
           <Button to={`/student/universities/${id}`} variant="ghost" size="sm">

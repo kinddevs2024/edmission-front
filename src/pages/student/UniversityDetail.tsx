@@ -1,4 +1,4 @@
-﻿import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -14,7 +14,7 @@ import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/local
 import { MessageCircle } from 'lucide-react'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import type { UniversityProfile, Program, Scholarship, Faculty } from '@/types/university'
-
+import { notifySuccess } from '@/utils/notify'
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
   const { t, i18n } = useTranslation(['common', 'student', 'university'])
@@ -54,21 +54,18 @@ export function UniversityDetail() {
     api.get<UniversityProfile & { programs?: Program[]; scholarships?: Scholarship[]; faculties?: Faculty[]; matchScore?: number; breakdown?: Record<string, number> }>(`/student/universities/${id}`)
       .then((res) => {
         if (cancelled) return
-        const university = res.data
-        setUni(university)
-        setPrograms(university.programs ?? [])
-        setScholarships(university.scholarships ?? [])
-        setFaculties(university.faculties ?? [])
-        if (university.matchScore != null) {
-          setMatchScore(university.matchScore)
-          setMatchBreakdown(university.breakdown ?? null)
+        const u = res.data
+        setUni(u)
+        setPrograms(u.programs ?? [])
+        setScholarships(u.scholarships ?? [])
+        setFaculties(u.faculties ?? [])
+        if (u.matchScore != null) {
+          setMatchScore(u.matchScore)
+          setMatchBreakdown(u.breakdown ?? null)
         }
       })
       .catch((e) => {
-        if (!cancelled) {
-          toastApiError(e)
-          setUni(null)
-        }
+        if (!cancelled) { toastApiError(e); setUni(null) }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -78,7 +75,12 @@ export function UniversityDetail() {
 
   const handleInterest = () => {
     if (!id || interested || !interestLimit.allowed) return
-    showInterest(id).then(() => setInterested(true)).catch(toastApiError)
+    showInterest(id)
+      .then(() => {
+        setInterested(true)
+        notifySuccess(t('student:interestedButton', 'Interested'))
+      })
+      .catch(toastApiError)
   }
 
   if (loading && !uni) {
@@ -94,7 +96,7 @@ export function UniversityDetail() {
     return (
       <div className="space-y-4">
         <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
-        <Card><p className="text-[var(--color-text-muted)]">{t('university:detailPage.notFound', 'University not found.')}</p></Card>
+        <Card><p className="text-[var(--color-text-muted)]">University not found.</p></Card>
       </div>
     )
   }
@@ -117,21 +119,23 @@ export function UniversityDetail() {
               {uni.rating != null && ` · ${t('student:compareRating', 'Rating')} ${uni.rating}`}
             </p>
             {(uni.slogan ?? (uni as { tagline?: string }).tagline) && (
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              <p className="text-sm mt-1 text-[var(--color-text-muted)]">
                 {uni.slogan ?? (uni as { tagline?: string }).tagline}
               </p>
             )}
           </div>
         </div>
-        {matchScore != null && <MatchScore score={matchScore} breakdown={matchBreakdown ?? undefined} variant="circle" size="md" />}
+        {matchScore != null && (
+          <MatchScore score={matchScore} breakdown={matchBreakdown ?? undefined} variant="circle" size="md" />
+        )}
       </div>
 
       <Card>
         <CardTitle>{t('common:overview', 'Overview')}</CardTitle>
-        <p className="whitespace-pre-wrap text-[var(--color-text-muted)]">{uni.description ?? t('university:detailPage.noDescription', 'No description.')}</p>
-        <div className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        <p className="text-[var(--color-text-muted)] whitespace-pre-wrap">{uni.description ?? 'No description.'}</p>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           {(uni.foundedYear ?? (uni as { establishedYear?: number }).establishedYear) != null && (
-            <div><span className="text-[var(--color-text-muted)]">{t('university:foundedYear', 'Founded')}:</span> {uni.foundedYear ?? (uni as { establishedYear?: number }).establishedYear}</div>
+            <div><span className="text-[var(--color-text-muted)]">{t('university:establishedYear', 'Founded')}:</span> {uni.foundedYear ?? (uni as { establishedYear?: number }).establishedYear}</div>
           )}
           {uni.studentCount != null && (
             <div><span className="text-[var(--color-text-muted)]">{t('university:studentCount', 'Students')}:</span> {uni.studentCount.toLocaleString()}</div>
@@ -140,10 +144,10 @@ export function UniversityDetail() {
             <div><span className="text-[var(--color-text-muted)]">{t('university:accreditation', 'Accreditation')}:</span> {uni.accreditation}</div>
           )}
           {uni.minLanguageLevel && (
-            <div><span className="text-[var(--color-text-muted)]">{t('student:compareMinRequirements', 'Minimum requirements')}:</span> {uni.minLanguageLevel}</div>
+            <div><span className="text-[var(--color-text-muted)]">{t('university:minRequirements', 'Min. requirements')}:</span> {uni.minLanguageLevel}</div>
           )}
           {uni.tuitionPrice != null && (
-            <div><span className="text-[var(--color-text-muted)]">{t('student:compareTuition', 'Tuition')}:</span> {uni.tuitionPrice === 0 ? t('common:free', 'Free') : `${uni.tuitionPrice.toLocaleString()} /yr`}</div>
+            <div><span className="text-[var(--color-text-muted)]">{t('university:tuitionPrice', 'Tuition')}:</span> {uni.tuitionPrice === 0 ? 'Free' : `${uni.tuitionPrice.toLocaleString()} /yr`}</div>
           )}
         </div>
       </Card>
@@ -164,16 +168,18 @@ export function UniversityDetail() {
           <CardTitle>{t('university:facultiesListTitle', 'Fields of study')}</CardTitle>
           <div className="space-y-3">
             {(uni.facultyCodes ?? []).map((code: string) => {
-              const catalog = FIELD_OF_STUDY.find((item) => item.id === code)
-              const items = (uni.facultyItems ?? {})[code] ?? catalog?.items ?? []
+              const cat = FIELD_OF_STUDY.find((c) => c.id === code)
+              const items = (uni.facultyItems ?? {})[code] ?? cat?.items ?? []
               return (
-                <div key={code} className="border-b border-[var(--color-border)] pb-3 last:border-0 last:pb-0">
-                  <p className="font-medium text-[var(--color-text)]">{catalog ? t(catalog.titleKey) : code}</p>
-                  {Array.isArray(items) && items.length > 0 ? (
+                <div key={code} className="border-b border-[var(--color-border)] last:border-0 pb-3 last:pb-0">
+                  <p className="font-medium text-[var(--color-text)]">{cat ? t(cat.titleKey) : code}</p>
+                  {Array.isArray(items) && items.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {items.map((item) => <Badge key={item} variant="default" className="text-xs">{item}</Badge>)}
+                      {items.map((item) => (
+                        <Badge key={item} variant="default" className="text-xs">{item}</Badge>
+                      ))}
                     </div>
-                  ) : null}
+                  )}
                 </div>
               )
             })}
@@ -183,7 +189,7 @@ export function UniversityDetail() {
 
       {programs.length > 0 && (
         <Card>
-          <CardTitle>{t('university:detailPage.programs', 'Programs')}</CardTitle>
+          <CardTitle>Programs</CardTitle>
           <ul className="space-y-2">
             {programs.map((program) => (
               <li key={program.id} className="flex items-center justify-between">
@@ -198,12 +204,12 @@ export function UniversityDetail() {
 
       {scholarships.length > 0 && (
         <Card>
-          <CardTitle>{t('university:detailPage.scholarships', 'Scholarships')}</CardTitle>
+          <CardTitle>Scholarships</CardTitle>
           <ul className="space-y-2">
-            {scholarships.map((scholarship) => (
-              <li key={scholarship.id} className="flex items-center justify-between">
-                <span>{scholarship.name}</span>
-                <Badge variant="success">{scholarship.coveragePercent}% · {t('university:detailPage.left', { count: scholarship.remainingSlots ?? (scholarship.maxSlots - (scholarship.usedSlots ?? 0)), defaultValue: '{{count}} left' })}</Badge>
+            {scholarships.map((s) => (
+              <li key={s.id} className="flex justify-between items-center">
+                <span>{s.name}</span>
+                <Badge variant="success">{s.coveragePercent}% · {s.remainingSlots ?? (s.maxSlots - (s.usedSlots ?? 0))} left</Badge>
               </li>
             ))}
           </ul>
@@ -212,12 +218,12 @@ export function UniversityDetail() {
 
       {faculties.length > 0 && (
         <Card>
-          <CardTitle>{t('university:detailPage.faculties', 'Faculties')}</CardTitle>
+          <CardTitle>Faculties</CardTitle>
           <ul className="space-y-4">
-            {faculties.map((faculty) => (
-              <li key={faculty.id} className="border-b border-[var(--color-border)] pb-4 pt-4 first:pt-0 last:border-0 last:pb-0">
-                <h3 className="font-medium text-[var(--color-text)]">{faculty.name}</h3>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--color-text-muted)]">{faculty.description}</p>
+            {faculties.map((f) => (
+              <li key={f.id} className="border-b border-[var(--color-border)] last:border-0 pb-4 last:pb-0 first:pt-0 pt-4 first:pt-0">
+                <h3 className="font-medium text-[var(--color-text)]">{f.name}</h3>
+                <p className="text-sm text-[var(--color-text-muted)] mt-1 whitespace-pre-wrap">{f.description}</p>
               </li>
             ))}
           </ul>
@@ -228,9 +234,7 @@ export function UniversityDetail() {
         <Button onClick={handleInterest} disabled={interested || !interestLimit.allowed}>
           {interested ? t('student:interestedButton') : !interestLimit.allowed ? t('student:interestLimitReached') : t('student:showInterest')}
         </Button>
-        <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>
-          {t('common:messageButton')}
-        </Button>
+        <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>{t('common:messageButton')}</Button>
         <Button to="/student/compare" variant="ghost">{t('common:addToCompare')}</Button>
       </div>
     </div>

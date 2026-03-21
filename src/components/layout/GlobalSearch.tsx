@@ -145,7 +145,7 @@ export function GlobalSearch({ variant = 'default', onClose }: GlobalSearchProps
           onFocus={() => setOpen(true)}
           placeholder={t('common:searchPlaceholder', 'Search...')}
           className="flex-1 min-w-0 bg-transparent text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] outline-none"
-          aria-label={t('common:globalSearch', 'Global search')}
+          aria-label="Global search"
         />
       </div>
 
@@ -172,7 +172,7 @@ export function GlobalSearch({ variant = 'default', onClose }: GlobalSearchProps
               )}
               {result!.universities.length > 0 && (
                 <div className="px-2 py-1">
-                  <p className="text-xs font-medium text-[var(--color-text-muted)] px-2 py-1">{t('common:universities', 'Universities')}</p>
+                  <p className="text-xs font-medium text-[var(--color-text-muted)] px-2 py-1">Universities</p>
                   {result!.universities.map((u) => (
                     <button
                       key={u.id}
@@ -190,7 +190,7 @@ export function GlobalSearch({ variant = 'default', onClose }: GlobalSearchProps
               )}
               {result!.students.length > 0 && (
                 <div className="px-2 py-1">
-                  <p className="text-xs font-medium text-[var(--color-text-muted)] px-2 py-1">{t('common:student', 'Student')}</p>
+                  <p className="text-xs font-medium text-[var(--color-text-muted)] px-2 py-1">Students</p>
                   {result!.students.map((s) => (
                     <button
                       key={s.id}

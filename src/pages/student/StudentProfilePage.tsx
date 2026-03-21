@@ -21,7 +21,8 @@ import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcas
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
-import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
+import { PageTitle } from '@/components/ui/PageTitle'
+import { notifySuccess } from '@/utils/notify'
 
 const schema = z.object({
   firstName: z.string().optional(),
@@ -160,7 +161,7 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
   }
 }
 
-const LEGACY_LANGUAGE_OPTIONS = [
+const LANGUAGE_OPTIONS = [
   { value: 'English', label: 'English' },
   { value: 'Russian', label: 'Русский' },
   { value: 'Uzbek', label: 'Oʻzbek' },
@@ -173,7 +174,6 @@ const LEGACY_LANGUAGE_OPTIONS = [
   { value: 'Arabic', label: 'العربية' },
   { value: 'Other', label: 'Другое' },
 ]
-const LANGUAGE_OPTIONS: string[] = LEGACY_LANGUAGE_OPTIONS.map((option) => option.value)
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Native']
 const TARGET_DEGREE_OPTIONS = [
   { value: 'bachelor', labelKey: 'degreeBachelor' as const },
@@ -201,7 +201,7 @@ const EDUCATION_STATUS_OPTIONS = [
   { value: 'finished_university' as const, labelKey: 'statusFinishedUniversity' as const },
 ]
 
-const LEGACY_COUNTRY_CODE_OPTIONS = [
+const COUNTRY_CODE_OPTIONS = [
   { code: 'UZ', label: 'Uzbekistan' },
   { code: 'KZ', label: 'Kazakhstan' },
   { code: 'TJ', label: 'Tajikistan' },
@@ -210,11 +210,10 @@ const LEGACY_COUNTRY_CODE_OPTIONS = [
   { code: 'TR', label: 'Turkey' },
   { code: 'AE', label: 'UAE' },
   { code: 'CN', label: 'China' },
-]
-const COUNTRY_CODE_OPTIONS: string[] = LEGACY_COUNTRY_CODE_OPTIONS.map((option) => option.code)
+] as const
 
 export function StudentProfilePage() {
-  const { t, i18n } = useTranslation('student', { useSuspense: false })
+  const { t } = useTranslation('student', { useSuspense: false })
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -222,7 +221,7 @@ export function StudentProfilePage() {
   const [profile, setProfile] = useState<StudentProfileData | null>(null)
   const [openSection, setOpenSection] = useState<SectionId | null>(null)
   const [criteria, setCriteria] = useState<{ skills: string[]; interests: string[]; hobbies: string[] } | null>(null)
-  const [newLanguage, setNewLanguage] = useState<string>(LANGUAGE_OPTIONS[0])
+  const [newLanguage, setNewLanguage] = useState(LANGUAGE_OPTIONS[0].value)
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
@@ -275,15 +274,8 @@ export function StudentProfilePage() {
     { value: 'internship', label: t('internship') },
     { value: 'work', label: t('work') },
   ]
-  const languageOptions = LANGUAGE_OPTIONS.map((value) => ({
-    value,
-    label: value === 'Other' ? t('common:other', 'Other') : getLocalizedLanguageName(value, i18n.resolvedLanguage),
-  }))
-  const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt === 'Native' ? t('native', 'Native') : opt }))
-  const countryOptions = COUNTRY_CODE_OPTIONS.map((code) => ({
-    code,
-    label: getLocalizedCountryName(code, i18n.resolvedLanguage),
-  }))
+  const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
+  const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
 
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
@@ -432,6 +424,7 @@ export function StudentProfilePage() {
       const updated = await updateStudentProfile(buildPayload(data))
       setProfile(updated)
       setOpenSection(null)
+      notifySuccess(t('common:saved', 'Saved'))
     } catch (e) {
       setError(getApiError(e).message)
     } finally {
@@ -451,6 +444,7 @@ export function StudentProfilePage() {
 
   return (
     <div className="w-full space-y-5 min-h-0">
+      <PageTitle title={t('portfolioTitle')} icon="User" />
       <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
         <img
           src={getStudentAvatarUrl(profile?.avatarUrl)}
@@ -475,7 +469,7 @@ export function StudentProfilePage() {
         {t('portfolioIntro')}
       </p>
 
-      <Card className="p-4 sm:p-5">
+      <Card className="p-4 sm:p-5 animate-card-enter shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-base text-[var(--color-text-muted)]">{t('portfolioCompletion')}</p>
@@ -504,7 +498,7 @@ export function StudentProfilePage() {
               type="button"
               onClick={() => setOpenSection(sec.id)}
               className={cn(
-                'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border-2 border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
+                'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
               )}
             >
                 <div className={cn(
@@ -603,13 +597,13 @@ export function StudentProfilePage() {
                     {t('student:preferredCountriesHint', 'Where would you like to study?')}
                   </p>
                   <ChipSelect
-                    options={countryOptions.map((c) => c.label)}
+                    options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
                     value={(watch('preferredCountries') ?? []).map(
-                      (code) => countryOptions.find((c) => c.code === code)?.label ?? code
+                      (code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code
                     )}
                     onChange={(labels) => {
                       const codes = labels
-                        .map((label) => countryOptions.find((c) => c.label === label)?.code)
+                        .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
                         .filter((v) => !!v)
                         .map((v) => String(v))
                       setValue('preferredCountries', codes, { shouldDirty: true })
@@ -647,21 +641,21 @@ export function StudentProfilePage() {
 
               {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
                 <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
-                  <Input label={t('schoolName')} {...register('schoolName')} placeholder={t('schoolNameExample', 'Lyceum No. 1')} />
+                  <Input label={t('schoolName')} {...register('schoolName')} placeholder="Лицей №1" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
-                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder={t('graduationYearExample', '2024')} />
+                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
                   </div>
-                  <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder={t('gpaScaleExample', '0–4')} />
+                  <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0–4" />
                 </div>
               )}
 
               {(educationStatus === 'in_university' || educationStatus === 'finished_university') && (
                 <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
-                  <Input label={t('institutionName')} {...register('schoolName')} placeholder={t('institutionNameExample', 'National University')} />
+                  <Input label={t('institutionName')} {...register('schoolName')} placeholder="ТашГУ" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder={t('universityYearExample', '1st year, 2nd year…')} />
-                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder={t('graduationYearLaterExample', '2025')} />
+                    <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder="1 курс, 2 курс…" />
+                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2025" />
                   </div>
                 </div>
               )}
@@ -691,7 +685,7 @@ export function StudentProfilePage() {
                           size="sm"
                           onClick={() => removeLanguage(i)}
                           className="ml-auto text-[var(--color-text-muted)] hover:text-red-500"
-                          aria-label={t('common:remove', 'Remove')}
+                          aria-label="Remove"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -709,7 +703,7 @@ export function StudentProfilePage() {
                           if (e.target.value !== 'Other') setCustomLanguageName('')
                         }}
                         options={languageOptions}
-                        aria-label={t('language', 'Language')}
+                        aria-label="Language"
                         className="rounded-xl bg-[var(--color-card)]"
                       />
                     </div>
@@ -719,7 +713,7 @@ export function StudentProfilePage() {
                           type="text"
                           value={customLanguageName}
                           onChange={(e) => setCustomLanguageName(e.target.value)}
-                          placeholder={t('languagePlaceholderInline', 'Language')}
+                          placeholder="Язык"
                           className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent"
                         />
                       </div>
@@ -729,7 +723,7 @@ export function StudentProfilePage() {
                         value={newLevel}
                         onChange={(e) => setNewLevel(e.target.value)}
                         options={levelOptions}
-                        aria-label={t('level', 'Level')}
+                        aria-label="Level"
                         className="rounded-xl bg-[var(--color-card)]"
                       />
                     </div>
@@ -777,18 +771,18 @@ export function StudentProfilePage() {
                   <Card key={field.id} className="p-4 space-y-2 border border-[var(--color-border)]">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">{t('entryNumber', { n: i + 1 })}</span>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label={t('common:remove', 'Remove')}><Trash2 className="w-4 h-4" /></Button>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label="Remove"><Trash2 className="w-4 h-4" /></Button>
                     </div>
                     <Select label={t('institutionTypeLabel')} options={institutionTypeOptions} placeholder="—" {...register(`schoolsAttended.${i}.institutionType`)} />
-                    <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} placeholder={t('countryExample', 'e.g. Uzbekistan')} />
+                    <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
                     <Input label={t('schoolName')} {...register(`schoolsAttended.${i}.institutionName`)} placeholder={t('schoolName')} />
                     <Input label={t('gradeLevel')} {...register(`schoolsAttended.${i}.educationLevel`)} placeholder={t('gradePlaceholder')} />
-                    <Input label={t('primaryLanguageOfInstruction', 'Primary language of instruction')} {...register(`schoolsAttended.${i}.primaryLanguage`)} placeholder={t('primaryLanguageExample', 'e.g. Uzbek')} />
+                    <Input label={t('primaryLanguageOfInstruction', 'Primary language of instruction')} {...register(`schoolsAttended.${i}.primaryLanguage`)} placeholder="e.g. Uzbek" />
                     <div className="grid grid-cols-2 gap-2">
                       <Input label={t('startDate')} type="date" {...register(`schoolsAttended.${i}.attendedFrom`)} />
                       <Input label={t('endDate')} type="date" {...register(`schoolsAttended.${i}.attendedTo`)} />
                     </div>
-                    <Input label={`${t('degreeNameOptional', 'Degree name')} (${t('common:optional', 'optional')})`} {...register(`schoolsAttended.${i}.degreeName`)} placeholder={t('degreeNamePlaceholder', 'For university')} />
+                    <Input label={`${t('degreeNameOptional', 'Degree name')} (${t('common:optional', 'optional')})`} {...register(`schoolsAttended.${i}.degreeName`)} placeholder="For university" />
                   </Card>
                 ))}
                 <Button type="button" variant="secondary" size="sm" onClick={() => appendSchool({ country: '', institutionName: '', institutionType: (educationStatus === 'in_university' || educationStatus === 'finished_university') ? 'university' : 'school', educationLevel: '', primaryLanguage: '', attendedFrom: '', attendedTo: '', degreeName: '' })} icon={<Plus className="w-4 h-4" />}>
@@ -836,7 +830,7 @@ export function StudentProfilePage() {
           {openSection === 'skills' && (
             <>
               {!criteria ? (
-                <p className="text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
+                <p className="text-[var(--color-text-muted)]">Loading options…</p>
               ) : (
                 <div className="space-y-2">
                   {(['skills', 'interests', 'hobbies'] as const).map((block) => {
@@ -1009,7 +1003,7 @@ export function StudentProfilePage() {
                       onChange={(url) => setValue(`portfolioWorks.${i}.fileUrl`, url)}
                       accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
                     />
-                    <Input label="" {...register(`portfolioWorks.${i}.linkUrl`)} placeholder={t('portfolioLinkPlaceholder', 'https://… (optional link)')} />
+                    <Input label="" {...register(`portfolioWorks.${i}.linkUrl`)} placeholder="https://… (optional link)" />
                   </Card>
                 ))}
                 <Button type="button" variant="secondary" onClick={() => appendWork({ title: '', description: '', fileUrl: '', linkUrl: '' })} icon={<Plus className="w-4 h-4" />}>

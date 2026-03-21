@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { useState, useEffect, useRef } from 'react'
 import { Globe } from 'lucide-react'
 import i18n, { loadLanguage } from '@/i18n'
@@ -12,7 +11,6 @@ const LANGUAGE_LABELS: Record<SupportedLng, string> = {
 }
 
 export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 'top' }) {
-  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const currentLng = (i18n.language?.split('-')[0] || 'en') as SupportedLng
@@ -46,7 +44,7 @@ export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-3 py-2 rounded-input border border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)]/20 transition-colors text-sm text-[var(--color-text)]"
-        aria-label={t('selectLanguage', 'Select language')}
+        aria-label="Select language"
         aria-expanded={open}
         aria-haspopup="true"
       >

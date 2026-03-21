@@ -6,7 +6,6 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
-import i18n from '@/i18n'
 import axios from 'axios'
 import { getCatalog, createVerificationRequest, type CatalogUniversity } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
@@ -14,7 +13,7 @@ import { toastApiError } from '@/utils/toastError'
 function getApiError(err: unknown): { message: string; code?: string } | null {
   if (!axios.isAxiosError(err) || !err.response?.data) return null
   const data = err.response.data as { message?: string; code?: string }
-  return { message: data.message ?? i18n.t('common:error', 'Something went wrong'), code: data.code }
+  return { message: data.message ?? 'Request failed', code: data.code }
 }
 
 function isProfileExistsConflict(err: unknown): boolean {
@@ -234,7 +233,7 @@ export function UniversitySelect() {
             type="number"
             value={otherYear}
             onChange={(e) => setOtherYear(e.target.value)}
-            placeholder={t('university:foundedYearExample', 'e.g. 1990')}
+            placeholder="e.g. 1990"
           />
           <p className="text-xs text-[var(--color-text-muted)]">
             {t('university:otherUniversityHint', 'A verification request will be sent. An administrator will review and add your university.')}

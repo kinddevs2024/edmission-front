@@ -1,12 +1,9 @@
-import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { getNavIcon } from '@/components/icons/NavIcons'
 import type { NavItem } from '@/components/layout/Sidebar'
 
 export function BottomNav({ items }: { items: NavItem[] }) {
-  const { t } = useTranslation('common')
-
   return (
     <>
       <div
@@ -25,7 +22,7 @@ export function BottomNav({ items }: { items: NavItem[] }) {
       <nav
         className="fixed bottom-3 left-3 right-3 z-40 flex items-center justify-around rounded-2xl bg-[var(--color-card)]/92 border border-[var(--color-border)] shadow-lg py-2 backdrop-blur-xl md:hidden"
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
-        aria-label={t('mainNavigation', 'Main navigation')}
+        aria-label="Main navigation"
       >
         {items.map(({ to, label, icon }) => {
           const onboardingId = to.startsWith('/student/')

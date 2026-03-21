@@ -58,14 +58,14 @@ export function Verification() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('admin:universityVerification', 'University verification')} icon="ShieldCheck" />
+      <PageTitle title="University Verification" icon="ShieldCheck" />
 
       <Card>
-        <CardTitle>{t('admin:queue')}</CardTitle>
+        <CardTitle>Queue</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] py-6">{t('common:loading', 'Loading...')}</p>
+          <p className="text-[var(--color-text-muted)] py-6">Loading...</p>
         ) : list.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] py-8 text-center">{t('admin:noUniversitiesPendingVerification')}</p>
+          <p className="text-[var(--color-text-muted)] py-8 text-center">No universities pending verification.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             {list.map((item, index) => (
@@ -80,7 +80,7 @@ export function Verification() {
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-[var(--color-text-muted)]">{item.email}</p>
                     {item.country && <p className="text-sm text-[var(--color-text-muted)]">{item.country}</p>}
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">{t('admin:submitted', 'Submitted')}: {formatDate(item.submittedAt)}</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">Submitted: {formatDate(item.submittedAt)}</p>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <Button size="sm" onClick={() => setActionModal({ type: 'approve', item })}>{t('admin:approve')}</Button>
@@ -89,7 +89,7 @@ export function Verification() {
                 </div>
                 {item.documents && item.documents.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-[var(--color-border)]">
-                    <p className="text-xs text-[var(--color-text-muted)]">{t('admin:documentsLabel')}:</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Documents:</p>
                     <ul className="text-sm">
                       {item.documents.map((d, i) => (
                         <li key={i}>
@@ -127,7 +127,7 @@ export function Verification() {
           <div className="space-y-3">
             <p className="text-sm text-[var(--color-text-muted)]">{actionModal.item.name}</p>
             <Textarea
-              label={t('admin:commentOptional')}
+              label="Comment (optional)"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}

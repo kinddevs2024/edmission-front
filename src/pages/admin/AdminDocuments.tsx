@@ -49,14 +49,14 @@ export function AdminDocuments() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('admin:studentDocuments', 'Student documents')} icon="FileText" />
+      <PageTitle title="Student documents" icon="FileText" />
 
       <Card>
-        <CardTitle>{t('admin:pendingReview')}</CardTitle>
+        <CardTitle>Pending review</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] py-6">{t('common:loading', 'Loading...')}</p>
+          <p className="text-[var(--color-text-muted)] py-6">Loading…</p>
         ) : list.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] py-8 text-center">{t('admin:noPendingDocuments')}</p>
+          <p className="text-[var(--color-text-muted)] py-8 text-center">No documents pending review.</p>
         ) : (
           <ul className="mt-2 divide-y divide-[var(--color-border)]">
             {list.map((item) => (
@@ -64,13 +64,13 @@ export function AdminDocuments() {
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-[var(--color-text-muted)]" aria-hidden />
                   <div>
-                    <p className="font-medium">{item.studentName || t('admin:studentLabel', 'Student')}</p>
+                    <p className="font-medium">{item.studentName || 'Student'}</p>
                     <p className="text-sm text-[var(--color-text-muted)] capitalize">{item.type?.replace(/_/g, ' ')}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button type="button" className="text-sm text-primary-accent hover:underline" onClick={() => setPreviewItem(item)}>
-                    {t('common:preview', 'Preview')}
+                    Preview
                   </button>
                   <Button size="sm" onClick={() => setModal({ item, decision: 'approved' })}>
                     {t('admin:approve')}
@@ -128,7 +128,7 @@ export function AdminDocuments() {
       <DocumentPreviewModal
         open={!!previewItem}
         onClose={() => setPreviewItem(null)}
-        title={previewItem?.name ?? previewItem?.type ?? t('admin:documentLabel', 'Document')}
+        title={previewItem?.name ?? previewItem?.type ?? 'Document'}
         document={previewItem ? {
           fileUrl: previewItem.fileUrl,
           canvasJson: previewItem.canvasJson,

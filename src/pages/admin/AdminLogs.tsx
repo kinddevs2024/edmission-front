@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -11,14 +10,13 @@ import type { AuditLogEntry } from '@/services/admin'
 import { toastApiError } from '@/utils/toastError'
 
 const TYPE_OPTIONS = [
-  { value: '', labelKey: 'admin:allTypes' },
-  { value: 'login', labelKey: 'admin:logTypeLogin' },
-  { value: 'register', labelKey: 'admin:logTypeRegister' },
-  { value: 'verification', labelKey: 'admin:logTypeVerification' },
+  { value: '', label: 'All types' },
+  { value: 'login', label: 'Login' },
+  { value: 'register', label: 'Register' },
+  { value: 'verification', label: 'Verification' },
 ]
 
 export function AdminLogs() {
-  const { t } = useTranslation(['admin', 'common'])
   const [entries, setEntries] = useState<AuditLogEntry[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -26,7 +24,6 @@ export function AdminLogs() {
   const [userIdFilter, setUserIdFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const limit = 20
-  const typeOptions = TYPE_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) }))
 
   useEffect(() => {
     setLoading(true)
@@ -50,38 +47,38 @@ export function AdminLogs() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('admin:auditLogsTitle', 'Audit logs')} icon="Logs" />
+      <PageTitle title="Audit Logs" icon="Logs" />
 
       <Card>
         <div className="flex flex-wrap gap-4 mb-4">
           <Select
-            label={t('admin:typeLabel', 'Type')}
-            options={typeOptions}
+            label="Type"
+            options={TYPE_OPTIONS}
             value={typeFilter}
             onChange={(e) => { setTypeFilter(e.target.value); setPage(1) }}
           />
           <Input
-            label={t('admin:userId', 'User ID')}
-            placeholder={t('admin:filterByUser', 'Filter by user...')}
+            label="User ID"
+            placeholder="Filter by user..."
             value={userIdFilter}
             onChange={(e) => { setUserIdFilter(e.target.value); setPage(1) }}
             className="max-w-xs"
           />
         </div>
-        <CardTitle className="mb-2">{t('admin:logs', 'Logs')}</CardTitle>
+        <CardTitle className="mb-2">Logs</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] py-6">{t('common:loading', 'Loading...')}</p>
+          <p className="text-[var(--color-text-muted)] py-6">Loading...</p>
         ) : entries.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] py-8 text-center">{t('admin:noLogsFound')}</p>
+          <p className="text-[var(--color-text-muted)] py-8 text-center">No logs found.</p>
         ) : (
           <>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>{t('admin:timeLabel', 'Time')}</TableTh>
-                  <TableTh>{t('admin:typeLabel', 'Type')}</TableTh>
-                  <TableTh>{t('admin:userLabel', 'User')}</TableTh>
-                  <TableTh>{t('common:details', 'Details')}</TableTh>
+                  <TableTh>Time</TableTh>
+                  <TableTh>Type</TableTh>
+                  <TableTh>User</TableTh>
+                  <TableTh>Details</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>

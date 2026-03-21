@@ -9,7 +9,7 @@ import type { AdminStats as AdminStatsType, UniversityInterestAnalyticsItem } fr
 import { toastApiError } from '@/utils/toastError'
 
 export function AdminDashboard() {
-  const { t } = useTranslation(['admin', 'common'])
+  const { t } = useTranslation('admin')
   const [stats, setStats] = useState<AdminStatsType | null>(null)
   const [verificationCount, setVerificationCount] = useState(0)
   const [universityInterests, setUniversityInterests] = useState<UniversityInterestAnalyticsItem[]>([])
@@ -95,7 +95,7 @@ export function AdminDashboard() {
                       <td className="py-2">
                         <span className="font-medium">{row.universityName}</span>
                         {row.source === 'catalog' && (
-                          <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">({t('admin:catalogUniversity', 'Catalog').toLowerCase()})</span>
+                          <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">(catalog)</span>
                         )}
                       </td>
                       <td className="py-2 text-right font-medium">{row.interestCount}</td>
@@ -109,10 +109,10 @@ export function AdminDashboard() {
 
       {(stats?.mrr != null || (stats?.subscriptionsByPlan && Object.keys(stats.subscriptionsByPlan).length > 0)) && (
         <Card>
-          <CardTitle>{t('admin:subscriptionsMrr', 'Subscriptions & MRR')}</CardTitle>
+          <CardTitle>Subscriptions & MRR</CardTitle>
           <div className="flex flex-wrap gap-4 mt-2">
             {stats?.mrr != null && (
-              <p className="text-xl font-semibold text-primary-accent">{t('admin:mrrLabel', 'MRR')}: ${stats.mrr.toFixed(2)}</p>
+              <p className="text-xl font-semibold text-primary-accent">MRR: ${stats.mrr.toFixed(2)}</p>
             )}
             {stats?.subscriptionsByPlan && Object.entries(stats.subscriptionsByPlan).map(([plan, count]) => (
               <span key={plan} className="text-sm text-[var(--color-text-muted)]">
@@ -139,8 +139,8 @@ export function AdminDashboard() {
           <CardTitle>{t('quickLinks')}</CardTitle>
           <div className="flex flex-wrap gap-2 mt-2">
             <Button to="/admin/users" variant="secondary" size="sm">{t('users')}</Button>
-            <Button to="/admin/verification" variant="secondary" size="sm">{t('admin:universitiesVerify', 'Universities (verify)')}</Button>
-            <Button to="/admin/support" variant="secondary" size="sm">{t('common:contactSupport', 'Support')}</Button>
+            <Button to="/admin/verification" variant="secondary" size="sm">Universities (verify)</Button>
+            <Button to="/admin/support" variant="secondary" size="sm">Support</Button>
             <Button to="/admin/logs" variant="secondary" size="sm">{t('auditLogs')}</Button>
             <Button to="/admin/health" variant="secondary" size="sm">{t('systemHealth')}</Button>
             <Button to="/admin/scholarships" variant="secondary" size="sm">{t('scholarships')}</Button>

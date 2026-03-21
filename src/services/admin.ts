@@ -477,9 +477,7 @@ export interface UniversitiesImportResult {
 export async function uploadUniversitiesExcel(file: File): Promise<UniversitiesImportResult> {
   const formData = new FormData()
   formData.append('file', file)
-  const { data } = await api.post<UniversitiesImportResult>('/admin/universities/import', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const { data } = await api.post<UniversitiesImportResult>('/admin/universities/import', formData)
   return data!
 }
 

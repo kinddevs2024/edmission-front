@@ -1,6 +1,5 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -14,7 +13,6 @@ import { toastApiError } from '@/utils/toastError'
 import type { DocumentPageFormat, DocumentType } from '@/types/documentModule'
 
 export function DocumentTemplateEditorPage() {
-  const { t } = useTranslation(['documents'])
   const navigate = useNavigate()
   const { id } = useParams()
   const [searchParams] = useSearchParams()
@@ -47,7 +45,7 @@ export function DocumentTemplateEditorPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <PageTitle title={t('templateEditor.title', 'Template editor')} icon="FileText" />
+        <PageTitle title="Template editor" icon="FileText" />
         <Card><div className="h-40 animate-pulse rounded-card bg-[var(--color-border)]" /></Card>
       </div>
     )
@@ -55,22 +53,25 @@ export function DocumentTemplateEditorPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={id ? t('templateEditor.editTitle', 'Edit template') : t('templateEditor.createTitle', 'Create template')} icon="FileText" />
+      <PageTitle title={id ? 'Edit template' : 'Create template'} icon="FileText" />
 
       {!id ? (
-        <Card className="grid gap-3 border border-[var(--color-border)] md:grid-cols-3">
-          <Input label={t('editor.templateName', 'Template name')} value={metadata.name} onChange={(event) => setMetadata({ name: event.target.value })} />
+        <Card className="grid gap-3 md:grid-cols-3 border border-[var(--color-border)]">
+          <Input label="Template name" value={metadata.name} onChange={(event) => setMetadata({ name: event.target.value })} />
           <Select
-            label={t('editor.documentType', 'Document type')}
+            label="Document type"
             value={metadata.type}
-            onChange={(event) => setMetadata({ type: event.target.value as DocumentType })}
+            onChange={(event) => {
+              const type = event.target.value as DocumentType
+              setMetadata({ type })
+            }}
             options={[
-              { value: 'offer', label: t('type.offer', 'Offer') },
-              { value: 'scholarship', label: t('type.scholarship', 'Scholarship') },
+              { value: 'offer', label: 'Offer' },
+              { value: 'scholarship', label: 'Scholarship' },
             ]}
           />
           <Select
-            label={t('templateEditor.pageFormat', 'Page format')}
+            label="Page format"
             value={metadata.pageFormat}
             onChange={(event) => {
               reset({
@@ -83,9 +84,7 @@ export function DocumentTemplateEditorPage() {
         </Card>
       ) : (
         <div className="flex justify-end">
-          <Button variant="secondary" onClick={() => navigate('/university/documents')}>
-            {t('templateEditor.backToDocuments', 'Back to Documents')}
-          </Button>
+          <Button variant="secondary" onClick={() => navigate('/university/documents')}>Back to Documents</Button>
         </div>
       )}
 

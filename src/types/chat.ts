@@ -40,7 +40,6 @@ export interface Message {
   metadata?: {
     subtype?: string
     emotion?: string
-    universityName?: string
     positionType?: string
     positionLabel?: string
     congratulatoryMessage?: string

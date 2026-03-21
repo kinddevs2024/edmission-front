@@ -37,7 +37,9 @@ export function parseAIActions(text: string): ParsedAIActions {
         profileUpdate = JSON.parse(raw) as Record<string, unknown>
         toRemove.push('[PROFILE_UPDATE]' + raw)
       } catch (_) {
-        /* invalid JSON */
+        // Even if JSON is malformed, remove service marker from chat output.
+        const malformedPayload = rest.slice(start, end > start ? end : undefined)
+        toRemove.push('[PROFILE_UPDATE]' + malformedPayload)
       }
     }
   }
@@ -51,6 +53,8 @@ export function parseAIActions(text: string): ParsedAIActions {
   for (const r of toRemove) {
     displayText = displayText.replace(r, '').trim()
   }
+  displayText = displayText.replace(/\[PROFILE_UPDATE\][\s\S]*$/g, '').trim()
+  displayText = displayText.replace(/\[OPEN_PAGE:[^\]]+\]/g, '').trim()
   displayText = displayText.replace(/\n{3,}/g, '\n\n').trim()
 
   return { displayText, profileUpdate, openPath }

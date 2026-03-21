@@ -369,12 +369,12 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
               ref={pickerRef}
               id={pickerId}
               className={cn(
-              'z-[75] flex flex-col overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] shadow-[0_34px_80px_-34px_rgba(15,23,42,0.8)] animate-modal-enter backdrop-blur',
+              'z-[75] flex flex-col overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] dark:bg-[linear-gradient(180deg,rgba(17,24,39,0.98),rgba(15,23,42,0.94))] shadow-[0_34px_80px_-34px_rgba(15,23,42,0.8)] animate-modal-enter backdrop-blur',
               placement === 'top' ? 'origin-bottom' : 'origin-top'
             )}
             style={pickerStyle}
           >
-            <div className="border-b border-[var(--color-border)] bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-4">
+            <div className="border-b border-[var(--color-border)] bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.12),transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] dark:bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.2),transparent_55%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(15,23,42,0.92))] p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
@@ -528,7 +528,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
             type="button"
             className={cn(
               'group relative flex min-h-[44px] w-full items-center overflow-hidden rounded-input border px-3 py-2.5 text-left transition-all duration-200',
-              'bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] text-[var(--color-text)] shadow-[0_16px_34px_-28px_rgba(15,23,42,0.7)]',
+              'bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] dark:bg-[linear-gradient(180deg,rgba(17,24,39,0.96),rgba(15,23,42,0.92))] text-[var(--color-text)] shadow-[0_16px_34px_-28px_rgba(15,23,42,0.7)]',
               'hover:border-primary-accent/45 hover:shadow-[0_22px_42px_-30px_rgba(14,165,233,0.45)]',
               'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0',
               !error && !success && !open && 'border-[var(--color-border)]',
