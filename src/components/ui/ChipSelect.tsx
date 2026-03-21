@@ -7,7 +7,7 @@ interface ChipSelectProps {
   value: string[]
   onChange: (value: string[]) => void
   max?: number
-  placeholder?: string
+  placeholder?: unknown
   className?: string
 }
 
@@ -20,6 +20,8 @@ export function ChipSelect({
   className,
 }: ChipSelectProps) {
   const selectedSet = useMemo(() => new Set(value), [value])
+  const safePlaceholder =
+    typeof placeholder === 'string' || typeof placeholder === 'number' ? String(placeholder) : ''
 
   const toggle = (item: string) => {
     if (selectedSet.has(item)) {
@@ -31,7 +33,7 @@ export function ChipSelect({
 
   return (
     <div className={cn('space-y-2', className)}>
-      {placeholder && <p className="text-sm text-[var(--color-text-muted)]">{placeholder}</p>}
+      {safePlaceholder ? <p className="text-sm text-[var(--color-text-muted)]">{safePlaceholder}</p> : null}
       <div className="flex flex-wrap gap-2 max-h-[280px] overflow-y-auto p-1">
         {options.map((opt, i) => (
           <button

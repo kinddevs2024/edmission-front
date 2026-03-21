@@ -122,7 +122,9 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
       const hasCountry = profile.country != null && String(profile.country).trim() !== ''
       const hasCity = profile.city != null && String(profile.city).trim() !== ''
       const hasPreferred = Array.isArray(profile.preferredCountries) && profile.preferredCountries.length > 0
-      return Math.round(([hasCountry, hasCity, hasPreferred].filter(Boolean).length / 3) * 100)
+      const core = [hasCountry, hasCity].filter(Boolean).length
+      const bonus = hasPreferred ? 0.1 : 0
+      return Math.min(100, Math.round(((core / 2) + bonus) * 100))
     }
     case 'education': {
       const checks = [
@@ -229,7 +231,7 @@ export function StudentProfilePage() {
   const [displayPercent, setDisplayPercent] = useState(0)
   const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
 
-  const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
+  const { register, reset, control, watch, setValue, getValues, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       skills: [],
@@ -295,68 +297,82 @@ export function StudentProfilePage() {
     getStudentProfile()
       .then((data) => {
         setProfile(data)
-        reset({
-          firstName: data.firstName ?? '',
-          lastName: data.lastName ?? '',
-          birthDate: data.birthDate ? (typeof data.birthDate === 'string' ? data.birthDate.slice(0, 10) : new Date(data.birthDate).toISOString().slice(0, 10)) : '',
-          country: data.country ?? '',
-          city: data.city ?? '',
-          gradeLevel: data.gradeLevel ?? '',
-          gpa: data.gpa ?? undefined,
-          languageLevel: data.languageLevel ?? '',
-          languages: (data.languages && data.languages.length > 0) ? data.languages : (data.languageLevel ? [{ language: 'English', level: data.languageLevel }] : []),
-          educationStatus: data.educationStatus ?? undefined,
-          schoolCompleted: data.schoolCompleted ?? false,
-          schoolName: data.schoolName ?? '',
-          graduationYear: data.graduationYear ?? undefined,
-          gradingScheme: data.gradingScheme ?? '',
-          gradeScale: data.gradeScale ?? undefined,
-          highestEducationLevel: data.highestEducationLevel ?? '',
-          targetDegreeLevel: data.targetDegreeLevel ?? undefined,
-          schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
-            country: s.country ?? '',
-            institutionName: s.institutionName ?? '',
-            institutionType: s.institutionType ?? undefined,
-            educationLevel: s.educationLevel ?? '',
-            gradingScheme: s.gradingScheme ?? '',
-            gradeScale: s.gradeScale,
-            gradeAverage: s.gradeAverage,
-            primaryLanguage: s.primaryLanguage ?? '',
-            attendedFrom: s.attendedFrom ? (typeof s.attendedFrom === 'string' ? s.attendedFrom.slice(0, 10) : new Date(s.attendedFrom).toISOString().slice(0, 10)) : '',
-            attendedTo: s.attendedTo ? (typeof s.attendedTo === 'string' ? s.attendedTo.slice(0, 10) : new Date(s.attendedTo).toISOString().slice(0, 10)) : '',
-            degreeName: s.degreeName ?? '',
-          })),
-          bio: data.bio ?? '',
-          avatarUrl: data.avatarUrl ?? '',
-          skills: data.skills ?? [],
-          interests: data.interests ?? [],
-          hobbies: data.hobbies ?? [],
-          experiences: (data.experiences ?? []).map((e: StudentExperience) => {
-            const type = (e.type === 'internship' || e.type === 'work' ? e.type : 'volunteer') as 'volunteer' | 'internship' | 'work'
-            return {
-              type,
-              title: e.title ?? '',
-              organization: e.organization ?? '',
-              startDate: e.startDate ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate).toISOString().slice(0, 10)) : '',
-              endDate: e.endDate ? (typeof e.endDate === 'string' ? e.endDate.slice(0, 10) : new Date(e.endDate).toISOString().slice(0, 10)) : '',
-              description: e.description ?? '',
-            }
-          }),
-          portfolioWorks: (data.portfolioWorks ?? []).map((w: StudentPortfolioWork) => ({
-            title: w.title ?? '',
-            description: w.description ?? '',
-            fileUrl: w.fileUrl ?? '',
-            linkUrl: w.linkUrl ?? '',
-          })),
-          interestedFaculties: data.interestedFaculties ?? [],
-          preferredCountries: data.preferredCountries ?? [],
-          budgetAmount: data.budgetAmount,
-          budgetCurrency: data.budgetCurrency ?? 'USD',
-        })
+        reset(mapProfileToFormData(data))
       })
       .catch((e) => setError(getApiError(e).message))
       .finally(() => setLoading(false))
   }, [reset, t])
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!isDirty) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [isDirty])
+
+  function mapProfileToFormData(data: StudentProfileData): FormData {
+    return {
+      firstName: data.firstName ?? '',
+      lastName: data.lastName ?? '',
+      birthDate: data.birthDate ? (typeof data.birthDate === 'string' ? data.birthDate.slice(0, 10) : new Date(data.birthDate).toISOString().slice(0, 10)) : '',
+      country: data.country ?? '',
+      city: data.city ?? '',
+      gradeLevel: data.gradeLevel ?? '',
+      gpa: data.gpa ?? undefined,
+      languageLevel: data.languageLevel ?? '',
+      languages: (data.languages && data.languages.length > 0) ? data.languages : (data.languageLevel ? [{ language: 'English', level: data.languageLevel }] : []),
+      educationStatus: data.educationStatus ?? undefined,
+      schoolCompleted: data.schoolCompleted ?? false,
+      schoolName: data.schoolName ?? '',
+      graduationYear: data.graduationYear ?? undefined,
+      gradingScheme: data.gradingScheme ?? '',
+      gradeScale: data.gradeScale ?? undefined,
+      highestEducationLevel: data.highestEducationLevel ?? '',
+      targetDegreeLevel: data.targetDegreeLevel ?? undefined,
+      schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
+        country: s.country ?? '',
+        institutionName: s.institutionName ?? '',
+        institutionType: s.institutionType ?? undefined,
+        educationLevel: s.educationLevel ?? '',
+        gradingScheme: s.gradingScheme ?? '',
+        gradeScale: s.gradeScale,
+        gradeAverage: s.gradeAverage,
+        primaryLanguage: s.primaryLanguage ?? '',
+        attendedFrom: s.attendedFrom ? (typeof s.attendedFrom === 'string' ? s.attendedFrom.slice(0, 10) : new Date(s.attendedFrom).toISOString().slice(0, 10)) : '',
+        attendedTo: s.attendedTo ? (typeof s.attendedTo === 'string' ? s.attendedTo.slice(0, 10) : new Date(s.attendedTo).toISOString().slice(0, 10)) : '',
+        degreeName: s.degreeName ?? '',
+      })),
+      bio: data.bio ?? '',
+      avatarUrl: data.avatarUrl ?? '',
+      skills: data.skills ?? [],
+      interests: data.interests ?? [],
+      hobbies: data.hobbies ?? [],
+      experiences: (data.experiences ?? []).map((e: StudentExperience) => {
+        const type = (e.type === 'internship' || e.type === 'work' ? e.type : 'volunteer') as 'volunteer' | 'internship' | 'work'
+        return {
+          type,
+          title: e.title ?? '',
+          organization: e.organization ?? '',
+          startDate: e.startDate ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate).toISOString().slice(0, 10)) : '',
+          endDate: e.endDate ? (typeof e.endDate === 'string' ? e.endDate.slice(0, 10) : new Date(e.endDate).toISOString().slice(0, 10)) : '',
+          description: e.description ?? '',
+        }
+      }),
+      portfolioWorks: (data.portfolioWorks ?? []).map((w: StudentPortfolioWork) => ({
+        title: w.title ?? '',
+        description: w.description ?? '',
+        fileUrl: w.fileUrl ?? '',
+        linkUrl: w.linkUrl ?? '',
+      })),
+      interestedFaculties: data.interestedFaculties ?? [],
+      preferredCountries: data.preferredCountries ?? [],
+      budgetAmount: data.budgetAmount,
+      budgetCurrency: data.budgetCurrency ?? 'USD',
+    }
+  }
 
   function buildPayload(data: FormData) {
     return {
@@ -423,6 +439,7 @@ export function StudentProfilePage() {
       const data = getValues()
       const updated = await updateStudentProfile(buildPayload(data))
       setProfile(updated)
+      reset(mapProfileToFormData(updated))
       setOpenSection(null)
       notifySuccess(t('common:saved', 'Saved'))
     } catch (e) {
@@ -433,6 +450,12 @@ export function StudentProfilePage() {
   }
 
   const verified = user?.studentProfile?.verifiedAt
+  const closeSection = () => {
+    if (isDirty && !saving && !window.confirm(t('common:unsavedChanges', 'You have unsaved changes. Close without saving?'))) {
+      return
+    }
+    setOpenSection(null)
+  }
 
   if (loading) {
     return (
@@ -560,11 +583,11 @@ export function StudentProfilePage() {
 
       <Modal
         open={!!openSection}
-        onClose={() => setOpenSection(null)}
+        onClose={closeSection}
         title={openSection ? t(SECTIONS.find((s) => s.id === openSection)!.titleKey) : ''}
         footer={openSection ? (
           <>
-            <Button type="button" variant="secondary" onClick={() => setOpenSection(null)}>
+            <Button type="button" variant="secondary" onClick={closeSection}>
               {t('common:cancel', 'Cancel')}
             </Button>
             <Button type="button" onClick={handleModalSave} disabled={saving} loading={saving}>
@@ -914,7 +937,11 @@ export function StudentProfilePage() {
                               : current.filter((x) => x !== cat.id)
                             setValue('interestedFaculties', next, { shouldDirty: true })
                           }}
-                          label={<span className="text-sm font-medium text-[var(--color-text)] truncate">{t(cat.titleKey)}</span>}
+                          label={
+                            <span className="faculty-marquee-wrap text-sm font-medium text-[var(--color-text)]">
+                              <span className="faculty-marquee-text">{t(cat.titleKey)}</span>
+                            </span>
+                          }
                           className="flex-1 min-w-0"
                         />
                         <button

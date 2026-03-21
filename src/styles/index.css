@@ -316,3 +316,32 @@
 .trusted-logos-marquee {
   animation: trusted-logos-scroll 40s linear infinite;
 }
+
+@keyframes faculty-label-marquee {
+  0%, 12% {
+    transform: translateX(0);
+  }
+  88%, 100% {
+    transform: translateX(calc(-1 * var(--faculty-marquee-shift, 0px)));
+  }
+}
+
+.faculty-marquee-wrap {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  --faculty-marquee-shift: 0px;
+}
+
+.faculty-marquee-text {
+  display: inline-block;
+  min-width: 100%;
+  max-width: max-content;
+  padding-right: 0.75rem;
+}
+
+.faculty-marquee-wrap:hover .faculty-marquee-text {
+  --faculty-marquee-shift: 48%;
+  animation: faculty-label-marquee 6s linear infinite alternate;
+}

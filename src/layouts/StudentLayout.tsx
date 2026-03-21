@@ -42,7 +42,7 @@ export function StudentLayout() {
   const navBottomItems = useMemo(
     () => [
       { to: '/support', label: t('navSupport'), icon: 'HelpCircle' },
-      { to: '/profile', label: t('account', 'Account'), icon: 'Settings' },
+      { to: '/profile', label: t('navProfile', 'Profile'), icon: 'Settings' },
     ],
     [t]
   )

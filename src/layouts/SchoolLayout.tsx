@@ -29,7 +29,7 @@ export function SchoolLayout() {
   const navBottomItems = useMemo(
     () => [
       { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' as const },
-      { to: '/profile', label: t('school:account', 'Account'), icon: 'Settings' as const },
+      { to: '/profile', label: t('school:profile', 'Profile'), icon: 'Settings' as const },
     ],
     [t]
   )

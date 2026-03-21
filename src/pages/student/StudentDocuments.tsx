@@ -16,6 +16,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { FileUpload } from '@/components/ui/FileUpload'
+import { Select } from '@/components/ui/Select'
 import { DocumentEditor } from '@/components/documents/DocumentEditor'
 import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { toastApiError } from '@/utils/toastError'
@@ -273,20 +274,15 @@ export function StudentDocuments() {
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium">Document type</label>
-                <select
+                <Select
+                  label="Document type"
                   value={type}
                   onChange={(event) => {
                     setType(event.target.value as DocumentType)
                     if (event.target.value !== 'language_certificate') setScore('')
                   }}
-                  className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2"
-                  aria-label="Document type"
-                >
-                  {DOC_TYPES.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                  options={DOC_TYPES.map((option) => ({ value: option.value, label: option.label }))}
+                />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">Name <span className="text-red-500">*</span></label>
@@ -304,20 +300,15 @@ export function StudentDocuments() {
             {isLanguageCert ? (
               <div className="grid gap-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-muted)] p-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Certificate type</label>
-                  <select
+                  <Select
+                    label="Certificate type"
                     value={certificateType}
                     onChange={(event) => {
                       setCertificateType(event.target.value)
                       setScore('')
                     }}
-                    className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2"
-                    aria-label="Language certificate type"
-                  >
-                    {LANGUAGE_CERT_TYPES.map((item) => (
-                      <option key={item.value} value={item.value}>{item.label}</option>
-                    ))}
-                  </select>
+                    options={LANGUAGE_CERT_TYPES.map((item) => ({ value: item.value, label: item.label }))}
+                  />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">Score / level</label>

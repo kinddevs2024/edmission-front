@@ -51,7 +51,7 @@ export function UniversityLayout() {
         ? [{ to: '/support', label: 'Support', icon: 'HelpCircle' }]
         : [
             { to: '/support', label: 'Support', icon: 'HelpCircle' },
-            { to: '/profile', label: t('account', 'Account'), icon: 'Settings' },
+            { to: '/profile', label: t('navProfile', 'Profile'), icon: 'Settings' },
           ],
     [t, isSelect, isPending]
   )

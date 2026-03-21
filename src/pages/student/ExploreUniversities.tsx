@@ -653,7 +653,7 @@ function FilterSection({
   children: ReactNode
 }) {
   return (
-    <section className="rounded-[24px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,252,0.92))] p-4 shadow-[0_20px_50px_-34px_rgba(15,23,42,0.5)]">
+    <section className="rounded-[24px] border border-[var(--color-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,252,0.92))] dark:bg-[linear-gradient(180deg,rgba(17,24,39,0.96),rgba(15,23,42,0.94))] p-4 shadow-[0_20px_50px_-34px_rgba(15,23,42,0.5)]">
       <div className="mb-4 space-y-1">
         <h3 className="text-base font-semibold">{title}</h3>
         <p className="text-sm text-[var(--color-text-muted)]">{description}</p>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getNavIcon } from '@/components/icons/NavIcons'
 import { cn } from '@/utils/cn'
+import { formatDate } from '@/utils/format'
 const STUDENT_PLANS = [
   { id: 'student_free_trial', name: 'Free Trial', apps: '3 applications', period: '14 days', chat: 'DeepSeek', highlight: false },
   { id: 'student_standard', name: 'Standard', apps: '15 applications', period: '—', chat: 'DeepSeek v16', highlight: true },
@@ -85,7 +86,7 @@ export function PaymentPage() {
             <span className="font-medium capitalize">{sub.plan.replace(/_/g, ' ')}</span>
             {sub.trialEndsAt && (
               <span className="text-sm text-[var(--color-text-muted)]">
-                Trial ends: {new Date(sub.trialEndsAt).toLocaleDateString()}
+                {t('trialEnds', 'Trial ends')}: {formatDate(sub.trialEndsAt)}
               </span>
             )}
             {isStudent && sub.applicationLimit != null && (
@@ -164,10 +165,10 @@ export function PaymentPage() {
 
       <Card>
         <p className="text-sm text-[var(--color-text-muted)]">
-          Need help? Contact support for plan changes or billing questions.
+          {t('subscriptionSupportHint', 'Need help? Contact support for plan changes or billing questions.')}
         </p>
         <Button variant="secondary" size="sm" className="mt-3" to="/support">
-          Contact support
+          {t('contactSupport', 'Contact support')}
         </Button>
       </Card>
     </div>

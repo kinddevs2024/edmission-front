@@ -64,7 +64,7 @@ export function MainLayout() {
         ],
         navBottomItems: [
         { to: '/support', label: t('student:navSupport', 'Support'), icon: 'HelpCircle' },
-          { to: '/profile', label: t('student:account', 'Account'), icon: 'Settings' },
+          { to: '/profile', label: t('student:navProfile', 'Profile'), icon: 'Settings' },
         ],
       }
     }
@@ -86,7 +86,7 @@ export function MainLayout() {
         ],
         navBottomItems: [
         { to: '/support', label: 'Support', icon: 'HelpCircle' },
-          { to: '/profile', label: t('university:account', 'Account'), icon: 'Settings' },
+          { to: '/profile', label: t('university:navProfile', 'Profile'), icon: 'Settings' },
         ],
       }
     }
@@ -127,7 +127,7 @@ export function MainLayout() {
         ],
         navBottomItems: [
           { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
-          { to: '/profile', label: tSchool('account', 'Account'), icon: 'Settings' },
+          { to: '/profile', label: tSchool('profile', 'Profile'), icon: 'Settings' },
         ],
       }
     }

@@ -1,6 +1,7 @@
 import { cn } from '@/utils/cn'
 import { formatDate } from '@/utils/format'
 import { getImageUrl } from '@/services/upload'
+import { useTranslation } from 'react-i18next'
 import type { Chat } from '@/types/chat'
 
 interface ChatListProps {
@@ -11,6 +12,8 @@ interface ChatListProps {
 }
 
 export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps) {
+  const { t } = useTranslation('common')
+
   if (loading) {
     return (
       <div className="p-3 space-y-2">
@@ -24,7 +27,7 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
   if (chats.length === 0) {
     return (
       <div className="p-4 text-center text-[var(--color-text-muted)] text-sm">
-        No conversations yet.
+        {t('noConversationsYet', 'No conversations yet.')}
       </div>
     )
   }

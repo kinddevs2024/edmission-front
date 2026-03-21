@@ -5,6 +5,40 @@ import { studentEn, commonEn, schoolEn } from './fallbackEn'
 
 /** Inline fallback when fetch returns empty (always works). */
 const FALLBACK_EN: Record<string, object> = { student: studentEn, common: commonEn, school: schoolEn }
+const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
+  ru: {
+    common: {
+      noConversationsYet: 'Пока нет диалогов.',
+      trialEnds: 'Пробный период до',
+      subscriptionSupportHint: 'Нужна помощь? Обратитесь в поддержку по вопросам тарифа и оплаты.',
+      contactSupport: 'Связаться с поддержкой',
+    },
+    student: {
+      preferredCountries: 'Предпочтительные страны',
+      preferredCountriesHint: 'Где вы хотите учиться?',
+      preferredCountriesPlaceholder: 'Выберите страны',
+      profileMatchingOn: 'Сопоставление профиля включено',
+      profileMatchingOff: 'Сопоставление профиля выключено',
+      fullFilter: 'Полный фильтр',
+    },
+  },
+  uz: {
+    common: {
+      noConversationsYet: "Hozircha suhbatlar yo'q.",
+      trialEnds: 'Sinov muddati',
+      subscriptionSupportHint: "Yordam kerakmi? Tarif va to'lov bo'yicha qo'llab-quvvatlashga murojaat qiling.",
+      contactSupport: "Qo'llab-quvvatlash bilan bog'lanish",
+    },
+    student: {
+      preferredCountries: 'Afzal mamlakatlar',
+      preferredCountriesHint: "Qayerda o'qishni xohlaysiz?",
+      preferredCountriesPlaceholder: 'Mamlakatlarni tanlang',
+      profileMatchingOn: 'Profil mosligi yoqilgan',
+      profileMatchingOff: "Profil mosligi o'chirilgan",
+      fullFilter: "To'liq filtr",
+    },
+  },
+}
 
 /** Namespaces needed for first paint (common nav + school sidebar + documents UI). Load rest in background. */
 const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student', 'school', 'documents']
@@ -37,6 +71,16 @@ async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<R
   return out
 }
 
+function applyLocalePatches(lng: string, resources: Record<string, object>): Record<string, object> {
+  const patchByNs = LOCALE_PATCHES[lng]
+  if (!patchByNs) return resources
+  const next = { ...resources }
+  for (const [ns, patch] of Object.entries(patchByNs)) {
+    next[ns] = { ...(next[ns] as Record<string, unknown> | undefined), ...patch }
+  }
+  return next
+}
+
 /** Load all namespaces for one language. */
 async function loadLanguageResources(lng: string): Promise<Record<string, object>> {
   return loadNamespaces(lng, namespaces)
@@ -47,7 +91,7 @@ const loadedLanguages = new Set<string>()
 /** Load a language's namespaces if not yet loaded (for language switch). */
 export async function loadLanguage(lng: string): Promise<void> {
   if (loadedLanguages.has(lng)) return
-  const resources = await loadLanguageResources(lng)
+  const resources = applyLocalePatches(lng, await loadLanguageResources(lng))
   namespaces.forEach((ns) => {
     i18n.addResourceBundle(lng, ns, resources[ns], true)
   })
@@ -57,7 +101,7 @@ export async function loadLanguage(lng: string): Promise<void> {
 export async function initI18n() {
   const initialLng = getInitialLanguage()
   // Load only critical namespaces (common + landing) for first paint, then load rest in background.
-  const criticalRes = await loadNamespaces(initialLng, CRITICAL_NS)
+  const criticalRes = applyLocalePatches(initialLng, await loadNamespaces(initialLng, CRITICAL_NS))
   const resourcesMap: Record<string, Record<string, object>> = { [initialLng]: { ...criticalRes } }
   // Add empty placeholders for other NS so t() doesn't break; they'll be filled async.
   for (const ns of OTHER_NS) {
@@ -66,7 +110,7 @@ export async function initI18n() {
 
   // Preload English so fallbackLng has resources (e.g. student profile in EN when current is ru/uz)
   if (initialLng !== fallbackLng) {
-    const enCritical = await loadNamespaces(fallbackLng, CRITICAL_NS)
+    const enCritical = applyLocalePatches(fallbackLng, await loadNamespaces(fallbackLng, CRITICAL_NS))
     resourcesMap[fallbackLng] = { ...enCritical }
     for (const ns of OTHER_NS) {
       resourcesMap[fallbackLng][ns] = {}
@@ -91,11 +135,13 @@ export async function initI18n() {
   }
   // Load remaining namespaces in background (non-blocking).
   loadNamespaces(initialLng, OTHER_NS).then((otherRes) => {
-    OTHER_NS.forEach((ns) => i18n.addResourceBundle(initialLng, ns, otherRes[ns], true))
+    const patchedRes = applyLocalePatches(initialLng, otherRes)
+    OTHER_NS.forEach((ns) => i18n.addResourceBundle(initialLng, ns, patchedRes[ns], true))
   })
   if (initialLng !== fallbackLng) {
     loadNamespaces(fallbackLng, OTHER_NS).then((otherRes) => {
-      OTHER_NS.forEach((ns) => i18n.addResourceBundle(fallbackLng, ns, otherRes[ns], true))
+      const patchedRes = applyLocalePatches(fallbackLng, otherRes)
+      OTHER_NS.forEach((ns) => i18n.addResourceBundle(fallbackLng, ns, patchedRes[ns], true))
     })
   }
   return i18n
