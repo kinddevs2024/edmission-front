@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -182,6 +182,41 @@ const TARGET_DEGREE_OPTIONS = [
   { value: 'master', labelKey: 'degreeMaster' as const },
   { value: 'phd', labelKey: 'degreePhd' as const },
 ]
+
+function FacultyMarqueeLabel({ text }: { text: string }) {
+  const containerRef = useRef<HTMLSpanElement | null>(null)
+  const [shiftPx, setShiftPx] = useState(0)
+
+  useEffect(() => {
+    const node = containerRef.current
+    if (!node) return
+
+    const update = () => {
+      const overflow = Math.max(0, node.scrollWidth - node.clientWidth)
+      setShiftPx(overflow > 0 ? overflow + 20 : 0)
+    }
+
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(node)
+    window.addEventListener('resize', update)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [text])
+
+  return (
+    <span
+      ref={containerRef}
+      className={cn('faculty-marquee-wrap text-sm font-medium text-[var(--color-text)]', shiftPx > 0 && 'is-overflow')}
+      style={{ ['--faculty-marquee-shift' as string]: `${shiftPx}px` }}
+    >
+      <span className="faculty-marquee-text">{text}</span>
+    </span>
+  )
+}
 const GRADING_SCHEME_OPTIONS = [
   { value: 'Other', labelKey: 'gradingOther' as const },
   { value: 'GCE Advanced Level Education', labelKey: 'gradingGCE' as const },
@@ -313,11 +348,28 @@ export function StudentProfilePage() {
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [isDirty])
 
+  function toDateInputValue(value: unknown): string {
+    if (!value) return ''
+    if (typeof value === 'string') {
+      const trimmed = value.trim()
+      if (!trimmed) return ''
+      const directMatch = trimmed.match(/^\d{4}-\d{2}-\d{2}/)
+      if (directMatch) return directMatch[0]
+      const parsed = new Date(trimmed)
+      return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10)
+    }
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? '' : value.toISOString().slice(0, 10)
+    }
+    const parsed = new Date(String(value))
+    return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10)
+  }
+
   function mapProfileToFormData(data: StudentProfileData): FormData {
     return {
       firstName: data.firstName ?? '',
       lastName: data.lastName ?? '',
-      birthDate: data.birthDate ? (typeof data.birthDate === 'string' ? data.birthDate.slice(0, 10) : new Date(data.birthDate).toISOString().slice(0, 10)) : '',
+      birthDate: toDateInputValue(data.birthDate),
       country: data.country ?? '',
       city: data.city ?? '',
       gradeLevel: data.gradeLevel ?? '',
@@ -341,8 +393,8 @@ export function StudentProfilePage() {
         gradeScale: s.gradeScale,
         gradeAverage: s.gradeAverage,
         primaryLanguage: s.primaryLanguage ?? '',
-        attendedFrom: s.attendedFrom ? (typeof s.attendedFrom === 'string' ? s.attendedFrom.slice(0, 10) : new Date(s.attendedFrom).toISOString().slice(0, 10)) : '',
-        attendedTo: s.attendedTo ? (typeof s.attendedTo === 'string' ? s.attendedTo.slice(0, 10) : new Date(s.attendedTo).toISOString().slice(0, 10)) : '',
+        attendedFrom: toDateInputValue(s.attendedFrom),
+        attendedTo: toDateInputValue(s.attendedTo),
         degreeName: s.degreeName ?? '',
       })),
       bio: data.bio ?? '',
@@ -356,8 +408,8 @@ export function StudentProfilePage() {
           type,
           title: e.title ?? '',
           organization: e.organization ?? '',
-          startDate: e.startDate ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate).toISOString().slice(0, 10)) : '',
-          endDate: e.endDate ? (typeof e.endDate === 'string' ? e.endDate.slice(0, 10) : new Date(e.endDate).toISOString().slice(0, 10)) : '',
+          startDate: toDateInputValue(e.startDate),
+          endDate: toDateInputValue(e.endDate),
           description: e.description ?? '',
         }
       }),
@@ -938,9 +990,7 @@ export function StudentProfilePage() {
                             setValue('interestedFaculties', next, { shouldDirty: true })
                           }}
                           label={
-                            <span className="faculty-marquee-wrap text-sm font-medium text-[var(--color-text)]">
-                              <span className="faculty-marquee-text">{t(cat.titleKey)}</span>
-                            </span>
+                            <FacultyMarqueeLabel text={t(cat.titleKey)} />
                           }
                           className="flex-1 min-w-0"
                         />

@@ -37,7 +37,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             <path strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </span>
-        {label != null && <span className="text-sm text-[var(--color-text)] select-none">{label}</span>}
+        {label != null && <span className="min-w-0 flex-1 text-sm text-[var(--color-text)] select-none">{label}</span>}
       </label>
     )
   }

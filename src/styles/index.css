@@ -318,30 +318,29 @@
 }
 
 @keyframes faculty-label-marquee {
-  0%, 12% {
+  0%, 10% {
     transform: translateX(0);
   }
-  88%, 100% {
+  90%, 100% {
     transform: translateX(calc(-1 * var(--faculty-marquee-shift, 0px)));
   }
 }
 
 .faculty-marquee-wrap {
-  display: block;
+  display: inline-block;
   overflow: hidden;
   white-space: nowrap;
-  width: 100%;
+  max-width: 100%;
   --faculty-marquee-shift: 0px;
 }
 
 .faculty-marquee-text {
   display: inline-block;
-  min-width: 100%;
   max-width: max-content;
-  padding-right: 0.75rem;
+  will-change: transform;
 }
 
-.faculty-marquee-wrap:hover .faculty-marquee-text {
-  --faculty-marquee-shift: 48%;
-  animation: faculty-label-marquee 6s linear infinite alternate;
+.faculty-marquee-wrap.is-overflow .faculty-marquee-text {
+  padding-right: 1rem;
+  animation: faculty-label-marquee 7s linear infinite alternate;
 }

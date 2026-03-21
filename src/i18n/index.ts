@@ -12,6 +12,7 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
       trialEnds: 'Пробный период до',
       subscriptionSupportHint: 'Нужна помощь? Обратитесь в поддержку по вопросам тарифа и оплаты.',
       contactSupport: 'Связаться с поддержкой',
+      unsavedChanges: 'У вас есть несохраненные изменения. Закрыть без сохранения?',
     },
     student: {
       preferredCountries: 'Предпочтительные страны',
@@ -20,6 +21,23 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
       profileMatchingOn: 'Сопоставление профиля включено',
       profileMatchingOff: 'Сопоставление профиля выключено',
       fullFilter: 'Полный фильтр',
+      fullUniversityFilterHint:
+        'Найдите университет по названию, стране, факультету, уровню образования, языку программы, стоимости, требованиям, году основания, количеству студентов, стипендиям и целевым странам.',
+      filterBudgetScale: 'Стоимость и масштаб',
+      filterBudgetScaleHint:
+        'Сузьте поиск по стоимости обучения, году основания и размеру университета.',
+      minTuition: 'Мин. стоимость',
+      maxTuition: 'Макс. стоимость',
+      foundedYearFrom: 'Год основания от',
+      foundedYearTo: 'Год основания до',
+      studentCountFrom: 'Студентов от',
+      studentCountTo: 'Студентов до',
+      matchingScope: 'Параметры совпадения',
+      matchingScopeHint:
+        'Выберите, применять ли значения из вашего профиля как дополнительный слой фильтрации.',
+      alsoApplyProfileDefaults: 'Также применять настройки профиля',
+      profileDefaultsHint:
+        'Когда включено, каталог также учитывает ваши предпочтительные страны и выбранные факультеты, если вы не переопределили их выше.',
     },
   },
   uz: {
@@ -28,6 +46,7 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
       trialEnds: 'Sinov muddati',
       subscriptionSupportHint: "Yordam kerakmi? Tarif va to'lov bo'yicha qo'llab-quvvatlashga murojaat qiling.",
       contactSupport: "Qo'llab-quvvatlash bilan bog'lanish",
+      unsavedChanges: "Saqlanmagan o'zgarishlar bor. Saqlamasdan yopilsinmi?",
     },
     student: {
       preferredCountries: 'Afzal mamlakatlar',
@@ -36,6 +55,23 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
       profileMatchingOn: 'Profil mosligi yoqilgan',
       profileMatchingOff: "Profil mosligi o'chirilgan",
       fullFilter: "To'liq filtr",
+      fullUniversityFilterHint:
+        "Universitetni nomi, mamlakati, fakulteti, daraja turi, dastur tili, kontrakt narxi, talablar, tashkil topgan yili, talabalar soni, stipendiyalar va maqsadli mamlakatlar bo'yicha toping.",
+      filterBudgetScale: "Narx va ko'lam",
+      filterBudgetScaleHint:
+        "Kontrakt oralig'i, tashkil topgan yil va universitet hajmi bo'yicha natijalarni toraytiring.",
+      minTuition: 'Eng kam kontrakt',
+      maxTuition: "Eng ko'p kontrakt",
+      foundedYearFrom: "Tashkil topgan yil (dan)",
+      foundedYearTo: "Tashkil topgan yil (gacha)",
+      studentCountFrom: 'Talabalar soni (dan)',
+      studentCountTo: 'Talabalar soni (gacha)',
+      matchingScope: 'Moslik qamrovi',
+      matchingScopeHint:
+        "Profilingizdagi standart qiymatlarni qo'shimcha filtr sifatida qo'llashni tanlang.",
+      alsoApplyProfileDefaults: 'Profilimdagi standartlarni ham qo‘llash',
+      profileDefaultsHint:
+        "Yoqilganida, katalog yuqorida alohida o'zgartirmasangiz, afzal mamlakatlaringiz va qiziqqan fakultetlaringizni ham hisobga oladi.",
     },
   },
 }

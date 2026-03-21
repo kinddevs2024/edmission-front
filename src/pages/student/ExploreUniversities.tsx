@@ -353,7 +353,7 @@ export function ExploreUniversities() {
       <Modal
         open={filterModalOpen}
         onClose={() => setFilterModalOpen(false)}
-        panelClassName="max-w-6xl"
+        panelClassName="max-w-[min(1200px,96vw)]"
         footerClassName="justify-between"
         title={(
           <div className="space-y-1">
