@@ -968,14 +968,14 @@ export function StudentProfilePage() {
               <p className="text-xs text-[var(--color-text-muted)] mb-3">
                 {t('student:interestedFacultiesHint', 'Choose faculties you are interested in. You can open each faculty to see what it includes.')}
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid items-start gap-3 sm:grid-cols-2">
                 {FIELD_OF_STUDY.map((cat) => {
                   const selected = (watch('interestedFaculties') ?? []).includes(cat.id)
                   const open = openFacultyId === cat.id
                   return (
                     <div
                       key={cat.id}
-                      className={`rounded-card border-2 bg-[var(--color-card)] shadow-[var(--shadow-card)] transition-all ${
+                      className={`self-start rounded-card border-2 bg-[var(--color-card)] shadow-[var(--shadow-card)] transition-all ${
                         selected ? 'border-primary-accent ring-1 ring-primary-accent/20' : 'border-[var(--color-border)]'
                       }`}
                     >
