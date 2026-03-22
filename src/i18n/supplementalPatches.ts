@@ -273,3 +273,51 @@ mergeNamespacePatch('uz', 'documents', {
     scholarship: 'Stipendiya',
   },
 })
+
+mergeNamespacePatch('en', 'admin', {
+  analytics: 'Analytics',
+  analyticsRangeTitle: 'Analytics period',
+  analyticsToday: 'Today',
+  analyticsLast7Days: 'Last 7 days',
+  analyticsLast30Days: 'Last 30 days',
+  analyticsCustomRange: 'Custom',
+  analyticsFrom: 'From',
+  analyticsTo: 'To',
+  analyticsTotalVisitors: 'Site visitors',
+  analyticsUniversityVisitors: 'Universities visited',
+  analyticsStudentVisitors: 'Students visited',
+  analyticsRegistrations: 'Registrations',
+  analyticsTrackingHint: 'Visit analytics starts collecting data after this tracking is deployed.',
+})
+
+mergeNamespacePatch('ru', 'admin', {
+  analytics: 'Аналитика',
+  analyticsRangeTitle: 'Период аналитики',
+  analyticsToday: 'Сегодня',
+  analyticsLast7Days: 'Последние 7 дней',
+  analyticsLast30Days: 'Последние 30 дней',
+  analyticsCustomRange: 'Свои даты',
+  analyticsFrom: 'С',
+  analyticsTo: 'По',
+  analyticsTotalVisitors: 'Посетители сайта',
+  analyticsUniversityVisitors: 'Университеты, открывшие сайт',
+  analyticsStudentVisitors: 'Студенты, открывшие сайт',
+  analyticsRegistrations: 'Регистрации',
+  analyticsTrackingHint: 'Аналитика посещений начнет собираться после выкладки этого трекинга.',
+})
+
+mergeNamespacePatch('uz', 'admin', {
+  analytics: 'Analitika',
+  analyticsRangeTitle: 'Analitika davri',
+  analyticsToday: 'Bugun',
+  analyticsLast7Days: "So'nggi 7 kun",
+  analyticsLast30Days: "So'nggi 30 kun",
+  analyticsCustomRange: 'Ixtiyoriy sana',
+  analyticsFrom: 'Dan',
+  analyticsTo: 'Gacha',
+  analyticsTotalVisitors: 'Saytga kirganlar',
+  analyticsUniversityVisitors: 'Saytni ochgan universitetlar',
+  analyticsStudentVisitors: 'Saytni ochgan talabalar',
+  analyticsRegistrations: "Ro'yxatdan o'tishlar",
+  analyticsTrackingHint: 'Tashrif analitikasi ushbu treking joylangandan keyin yigʻila boshlaydi.',
+})

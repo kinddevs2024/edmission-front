@@ -19,6 +19,7 @@ export function AdminLayout() {
   const navItems = useMemo(
     () => [
       { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
       { to: '/admin/users', label: t('users'), icon: 'Users' as const },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
       { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
@@ -48,9 +49,9 @@ export function AdminLayout() {
   const bottomNavItems = useMemo(
     () => [
       { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+      { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
       { to: '/admin/users', label: t('users'), icon: 'Users' as const },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
-      { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
       { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
     ],
     [t]

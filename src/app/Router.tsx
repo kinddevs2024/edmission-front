@@ -10,6 +10,7 @@ import { StudentLayout } from '@/layouts/StudentLayout'
 import { UniversityLayout } from '@/layouts/UniversityLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { SchoolLayout } from '@/layouts/SchoolLayout'
+import { SiteVisitTracker } from '@/components/analytics/SiteVisitTracker'
 
 const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
 const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ default: m.Register })))
@@ -48,6 +49,7 @@ const UniversityDocuments = lazy(() => import('@/pages/university/UniversityDocu
 const DocumentTemplateEditorPage = lazy(() => import('@/pages/university/DocumentTemplateEditorPage').then((m) => ({ default: m.DocumentTemplateEditorPage })))
 
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
+const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics').then((m) => ({ default: m.AdminAnalytics })))
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
 const Verification = lazy(() => import('@/pages/admin/Verification').then((m) => ({ default: m.Verification })))
 const AdminDocuments = lazy(() => import('@/pages/admin/AdminDocuments').then((m) => ({ default: m.AdminDocuments })))
@@ -157,6 +159,7 @@ export function Router() {
     <Suspense fallback={<PageFallback />}>
     <DocumentTitle />
     <ScrollToTop />
+    <SiteVisitTracker />
     <Routes>
       <Route path="/maintenance" element={<Maintenance />} />
       <Route element={<AuthLayout />}>
@@ -221,6 +224,7 @@ export function Router() {
         <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="verification" element={<Verification />} />
           <Route path="universities" element={<AdminUniversities />} />

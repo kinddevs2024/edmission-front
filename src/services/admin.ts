@@ -174,11 +174,32 @@ export interface UniversityInterestAnalyticsItem {
   source: 'profile' | 'catalog'
 }
 
+export interface AdminAnalyticsOverview {
+  from: string
+  to: string
+  totalVisitors: number
+  universityVisitors: number
+  studentVisitors: number
+  registrations: number
+}
+
 export async function getUniversityInterestAnalytics(limit?: number): Promise<UniversityInterestAnalyticsItem[]> {
   const { data } = await api.get<UniversityInterestAnalyticsItem[]>('/admin/analytics/university-interests', {
     params: limit != null ? { limit } : undefined,
   })
   return Array.isArray(data) ? data : []
+}
+
+export async function getAdminAnalyticsOverview(params?: { from?: string; to?: string }): Promise<AdminAnalyticsOverview> {
+  const { data } = await api.get<AdminAnalyticsOverview>('/admin/analytics/overview', { params })
+  return data ?? {
+    from: params?.from ?? '',
+    to: params?.to ?? '',
+    totalVisitors: 0,
+    universityVisitors: 0,
+    studentVisitors: 0,
+    registrations: 0,
+  }
 }
 
 export async function getAdminStats(): Promise<AdminStats> {

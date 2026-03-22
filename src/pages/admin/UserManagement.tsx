@@ -280,12 +280,12 @@ export function UserManagement() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>Email</TableTh>
-                  <TableTh>Name</TableTh>
-                  <TableTh>Role</TableTh>
-                  <TableTh>Registered</TableTh>
-                  <TableTh>Status</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('common:email')}</TableTh>
+                  <TableTh>{t('common:name')}</TableTh>
+                  <TableTh>{t('common:role')}</TableTh>
+                  <TableTh>{t('admin:registered')}</TableTh>
+                  <TableTh>{t('admin:statusLabel')}</TableTh>
+                  <TableTh>{t('common:actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
