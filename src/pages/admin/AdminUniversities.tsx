@@ -11,14 +11,19 @@ import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import {
   getAdminCatalogUniversities,
+  getAdminGlobalFaculties,
   createCatalogUniversity,
   getCatalogUniversity,
   updateCatalogUniversity,
   deleteCatalogUniversity,
+  downloadAllUniversitiesExcel,
   downloadUniversitiesTemplate,
+  previewUniversitiesExcel,
   uploadUniversitiesExcel,
   type AdminCatalogUniversity,
+  type UniversitiesImportPreviewResult,
 } from '@/services/admin'
+import type { GlobalFaculty } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
@@ -28,6 +33,17 @@ import { Plus, Trash2, Download, Upload } from 'lucide-react'
 
 const TARGET_COUNTRY_CODES = ['UZ', 'KZ', 'TJ', 'KG', 'TM', 'TR', 'AE', 'CN'] as const
 
+function formatPreviewValue(value: unknown): string {
+  if (value == null || value === '') return '—'
+  if (Array.isArray(value)) {
+    return value.length ? value.map((item) => formatPreviewValue(item)).join(', ') : '—'
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+  return String(value)
+}
+
 export function AdminUniversities() {
   const { t, i18n } = useTranslation(['common', 'admin', 'university'])
   const { role } = useAuth()
@@ -35,6 +51,22 @@ export function AdminUniversities() {
   const targetCountryOptions = useMemo(
     () => TARGET_COUNTRY_CODES.map((code) => ({ code, label: getLocalizedCountryName(code, i18n.language) })),
     [i18n.language]
+  )
+  const [globalFaculties, setGlobalFaculties] = useState<GlobalFaculty[]>([])
+  const facultyCatalog = useMemo(
+    () => [
+      ...FIELD_OF_STUDY.map((item) => ({
+        id: item.id,
+        label: t(item.titleKey),
+        items: item.items,
+      })),
+      ...globalFaculties.map((item) => ({
+        id: item.code,
+        label: item.name,
+        items: item.items ?? [],
+      })),
+    ],
+    [globalFaculties, t]
   )
   const [list, setList] = useState<AdminCatalogUniversity[]>([])
   const [total, setTotal] = useState(0)
@@ -65,6 +97,9 @@ export function AdminUniversities() {
   const [showPrograms, setShowPrograms] = useState(false)
   const [showScholarships, setShowScholarships] = useState(false)
   const [importingExcel, setImportingExcel] = useState(false)
+  const [confirmingImport, setConfirmingImport] = useState(false)
+  const [importPreview, setImportPreview] = useState<UniversitiesImportPreviewResult | null>(null)
+  const [importPreviewFile, setImportPreviewFile] = useState<File | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -88,6 +123,12 @@ export function AdminUniversities() {
     load()
   }, [page, search])
 
+  useEffect(() => {
+    getAdminGlobalFaculties()
+      .then(setGlobalFaculties)
+      .catch(() => setGlobalFaculties([]))
+  }, [])
+
   const openAdd = () => {
     setFormName('')
     setFormCountry('')
@@ -104,6 +145,7 @@ export function AdminUniversities() {
     setFormTargetCountries([])
     setFormPrograms([])
     setFormScholarships([])
+    setOpenFacultyId(null)
     setModal('add')
     setEditingId(null)
   }
@@ -145,6 +187,7 @@ export function AdminUniversities() {
       })))
       setShowPrograms(progs.length > 0)
       setShowScholarships(schs.length > 0)
+      setOpenFacultyId(null)
     })
     .catch(toastApiError)
   }
@@ -218,11 +261,58 @@ export function AdminUniversities() {
       .finally(() => setDeletingId(null))
   }
 
+  const closeImportPreview = () => {
+    setImportPreview(null)
+    setImportPreviewFile(null)
+  }
+
+  const handleExcelSelected = (file: File) => {
+    setImportingExcel(true)
+    previewUniversitiesExcel(file)
+      .then((res) => {
+        setImportPreviewFile(file)
+        setImportPreview(res)
+      })
+      .catch(toastApiError)
+      .finally(() => setImportingExcel(false))
+  }
+
+  const handleConfirmExcelImport = () => {
+    if (!importPreviewFile) return
+    setConfirmingImport(true)
+    uploadUniversitiesExcel(importPreviewFile)
+      .then((res) => {
+        if (res.created > 0 || res.updated > 0) {
+          load()
+          toast.success(
+            t('admin:importSuccessDetailed', '{{created}} created, {{updated}} updated.', {
+              created: res.created,
+              updated: res.updated,
+            })
+          )
+        }
+        if (res.errors.length > 0) {
+          toast.error(
+            t('admin:importErrors', '{{count}} row(s) failed.', { count: res.errors.length }) +
+              ' ' +
+              res.errors.slice(0, 3).map((x) => `${x.name}: ${x.message}`).join('; ')
+          )
+        } else {
+          closeImportPreview()
+        }
+      })
+      .catch(toastApiError)
+      .finally(() => setConfirmingImport(false))
+  }
+
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:universityCatalog', 'University catalog')} icon="Building2">
         {!isCounsellor && (
           <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => downloadAllUniversitiesExcel().catch(toastApiError)} icon={<Download size={16} />}>
+              {t('admin:downloadAllUniversitiesData', 'Download all data')}
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => downloadUniversitiesTemplate().catch(toastApiError)} icon={<Download size={16} />}>
               {t('admin:downloadTemplate', 'Download template')}
             </Button>
@@ -235,23 +325,7 @@ export function AdminUniversities() {
                 const file = e.target.files?.[0]
                 if (!file) return
                 e.target.value = ''
-                setImportingExcel(true)
-                uploadUniversitiesExcel(file)
-                  .then((res) => {
-                    if (res.created > 0) {
-                      load()
-                      toast.success(t('admin:importSuccess', '{{count}} universities imported.', { count: res.created }))
-                    }
-                    if (res.errors.length > 0) {
-                      toast.error(
-                        t('admin:importErrors', '{{count}} row(s) failed.', { count: res.errors.length }) +
-                          ' ' +
-                          res.errors.slice(0, 3).map((x) => `${x.name}: ${x.message}`).join('; ')
-                      )
-                    }
-                  })
-                  .catch(toastApiError)
-                  .finally(() => setImportingExcel(false))
+                handleExcelSelected(file)
               }}
             />
             <Button
@@ -415,7 +489,7 @@ export function AdminUniversities() {
             <p className="text-sm font-medium text-[var(--color-text)] mb-2">{t('university:facultiesListTitle', 'Faculties')}</p>
             <p className="text-xs text-[var(--color-text-muted)] mb-2">{t('university:facultiesHint', 'Select faculties. Expand to customize items.')}</p>
             <div className="grid gap-2 sm:grid-cols-2 max-h-48 overflow-y-auto">
-              {FIELD_OF_STUDY.map((cat) => {
+              {facultyCatalog.map((cat) => {
                 const selected = formFacultyCodes.includes(cat.id)
                 const open = openFacultyId === cat.id
                 const items = formFacultyItems[cat.id] ?? cat.items
@@ -437,7 +511,7 @@ export function AdminUniversities() {
                             setFormFacultyItems(rest)
                           }
                         }}
-                        label={<span className="text-sm truncate">{t(cat.titleKey)}</span>}
+                        label={<span className="text-sm truncate">{cat.label}</span>}
                         className="flex-1 min-w-0"
                       />
                       {selected && (
@@ -563,6 +637,241 @@ export function AdminUniversities() {
             )}
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={importPreview !== null}
+        onClose={closeImportPreview}
+        title={t('admin:importPreviewTitle', 'Confirm Excel import')}
+        panelClassName="max-w-6xl"
+        contentClassName="space-y-4"
+        footer={
+          <>
+            <Button variant="secondary" onClick={closeImportPreview} disabled={confirmingImport}>
+              {t('common:cancel')}
+            </Button>
+            <Button
+              onClick={handleConfirmExcelImport}
+              disabled={confirmingImport || !importPreview || importPreview.summary.total === 0 || importPreview.errors.length > 0}
+              loading={confirmingImport}
+            >
+              {t('admin:confirmImport', 'Confirm import')}
+            </Button>
+          </>
+        }
+      >
+        {importPreview && (
+          <>
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:rowsToImport', 'Rows to import')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.total}</p>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:newUniversities', 'New')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.creates}</p>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:updatedUniversities', 'Updates')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.updates}</p>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:errors', 'Errors')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.errors}</p>
+              </div>
+            </div>
+
+            {importPreview.errors.length > 0 && (
+              <Card className="border border-red-200 bg-red-50/60 dark:border-red-900 dark:bg-red-950/20">
+                <p className="font-medium text-red-700 dark:text-red-300">
+                  {t('admin:fixImportErrorsBeforeConfirm', 'Fix import errors before confirming.')}
+                </p>
+                <div className="mt-2 space-y-1 text-sm text-red-700 dark:text-red-300">
+                  {importPreview.errors.map((error, index) => (
+                    <p key={`${error.row}-${index}`}>
+                      #{error.row} {error.name ? `${error.name}: ` : ''}{error.message}
+                    </p>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            <div className="space-y-3">
+              {importPreview.items.map((item, index) => (
+                <details
+                  key={`${item.sourceId ?? item.universityName}-${index}`}
+                  open={index === 0}
+                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card)]"
+                >
+                  <summary className="cursor-pointer list-none px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-base font-semibold">{item.universityName}</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">
+                          {t('admin:excelRowLabel', 'Excel row')} #{item.row}
+                          {item.sourceId ? ` • ID: ${item.sourceId}` : ''}
+                          {item.linkedProfileId ? ` • Profile: ${item.linkedProfileId}` : ''}
+                        </p>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${item.action === 'create' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'}`}>
+                        {item.action === 'create'
+                          ? t('admin:newUniversities', 'New')
+                          : t('admin:updatedUniversities', 'Updates')}
+                      </span>
+                    </div>
+                  </summary>
+
+                  <div className="border-t border-[var(--color-border)] px-4 py-3 space-y-4">
+                    {item.changes.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text)] mb-2">
+                          {t('admin:changedFields', 'Changed fields')}
+                        </p>
+                        <div className="space-y-2">
+                          {item.changes.map((change) => (
+                            <div key={`${item.row}-${change.field}`} className="rounded-lg border border-[var(--color-border)] p-2 text-sm">
+                              <p className="font-medium">{change.field}</p>
+                              <p className="text-[var(--color-text-muted)]">
+                                {formatPreviewValue(change.before)} {' -> '} {formatPreviewValue(change.after)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 text-sm">
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('university:universityName', 'University name')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.universityName)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('university:country', 'Country')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.country)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('university:city', 'City')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.city)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('university:slogan', 'Slogan')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.tagline)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('university:minRequirements', 'Minimum requirements')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.minLanguageLevel)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('university:minTuition', 'Minimum tuition (annual)')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.tuitionPrice)}</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-[var(--color-border)] p-3">
+                      <p className="text-sm font-medium">{t('university:facultiesListTitle', 'Faculties')}</p>
+                      <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                        {formatPreviewValue(item.incoming.facultyCodes)}
+                      </p>
+                      <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                        {t('admin:facultyItemsPreview', 'Faculty items')}: {formatPreviewValue(item.incoming.facultyItems)}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 xl:grid-cols-2">
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium">{t('university:programs', 'Programs')}</p>
+                          {item.sections.programsChanged && item.action === 'update' && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400">{t('admin:changed', 'Changed')}</span>
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-2 text-sm">
+                          {(item.incoming.programs ?? []).length === 0 ? (
+                            <p className="text-[var(--color-text-muted)]">{t('admin:noProgramsInImport', 'No programs in import.')}</p>
+                          ) : (
+                            item.incoming.programs?.map((program, idx) => (
+                              <div key={`${item.row}-program-${idx}`} className="rounded border border-[var(--color-border)] p-2">
+                                <p className="font-medium">{program.name}</p>
+                                <p className="text-[var(--color-text-muted)]">
+                                  {[program.degreeLevel, program.field, program.language].filter(Boolean).join(' • ') || '—'}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium">{t('university:scholarships', 'Scholarships')}</p>
+                          {item.sections.scholarshipsChanged && item.action === 'update' && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400">{t('admin:changed', 'Changed')}</span>
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-2 text-sm">
+                          {(item.incoming.scholarships ?? []).length === 0 ? (
+                            <p className="text-[var(--color-text-muted)]">{t('admin:noScholarshipsInImport', 'No scholarships in import.')}</p>
+                          ) : (
+                            item.incoming.scholarships?.map((scholarship, idx) => (
+                              <div key={`${item.row}-scholarship-${idx}`} className="rounded border border-[var(--color-border)] p-2">
+                                <p className="font-medium">{scholarship.name}</p>
+                                <p className="text-[var(--color-text-muted)]">
+                                  {scholarship.coveragePercent}% • {scholarship.maxSlots} {t('university:maxSlots', 'Max slots')}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium">{t('admin:customFacultiesSheet', 'Custom faculties')}</p>
+                          {item.sections.customFacultiesChanged && item.action === 'update' && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400">{t('admin:changed', 'Changed')}</span>
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-2 text-sm">
+                          {(item.incoming.customFaculties ?? []).length === 0 ? (
+                            <p className="text-[var(--color-text-muted)]">{t('admin:noCustomFacultiesInImport', 'No custom faculties in import.')}</p>
+                          ) : (
+                            item.incoming.customFaculties?.map((faculty, idx) => (
+                              <div key={`${item.row}-faculty-${idx}`} className="rounded border border-[var(--color-border)] p-2">
+                                <p className="font-medium">{faculty.name}</p>
+                                <p className="text-[var(--color-text-muted)]">{formatPreviewValue(faculty.items)}</p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium">{t('admin:universityDocumentsSheet', 'University documents')}</p>
+                          {item.sections.documentsChanged && item.action === 'update' && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400">{t('admin:changed', 'Changed')}</span>
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-2 text-sm">
+                          {(item.incoming.documents ?? []).length === 0 ? (
+                            <p className="text-[var(--color-text-muted)]">{t('admin:noDocumentsInImport', 'No documents in import.')}</p>
+                          ) : (
+                            item.incoming.documents?.map((document, idx) => (
+                              <div key={`${item.row}-document-${idx}`} className="rounded border border-[var(--color-border)] p-2">
+                                <p className="font-medium">{document.documentType}</p>
+                                <p className="text-[var(--color-text-muted)]">{document.fileUrl}</p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </>
+        )}
       </Modal>
 
       <Modal

@@ -423,6 +423,8 @@ export interface AdminCatalogUniversity {
   facultyCodes?: string[]
   facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
+  minLanguageLevel?: string
+  tuitionPrice?: number
 }
 
 export interface AdminCatalogListResponse {
@@ -489,12 +491,112 @@ export async function downloadUniversitiesTemplate(): Promise<void> {
   URL.revokeObjectURL(url)
 }
 
+export async function downloadAllUniversitiesExcel(): Promise<void> {
+  const { data } = await api.get<Blob>('/admin/universities/export', { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'universities_export.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export interface UniversitiesExcelProgram {
+  name: string
+  degreeLevel?: string
+  field?: string
+  durationYears?: number
+  tuitionFee?: number
+  language?: string
+  entryRequirements?: string
+}
+
+export interface UniversitiesExcelScholarship {
+  name: string
+  coveragePercent: number
+  maxSlots: number
+  deadline?: string
+  eligibility?: string
+}
+
+export interface UniversitiesExcelCustomFaculty {
+  name: string
+  description?: string
+  items?: string[]
+  order?: number
+}
+
+export interface UniversitiesExcelDocument {
+  documentType: string
+  fileUrl: string
+  status?: string
+  reviewedBy?: string
+  reviewedAt?: string
+}
+
+export interface UniversitiesExcelUniversityPayload {
+  universityName: string
+  tagline?: string
+  establishedYear?: number
+  studentCount?: number
+  country?: string
+  city?: string
+  description?: string
+  logoUrl?: string
+  facultyCodes?: string[]
+  facultyItems?: Record<string, string[]>
+  targetStudentCountries?: string[]
+  minLanguageLevel?: string
+  tuitionPrice?: number
+  programs?: UniversitiesExcelProgram[]
+  scholarships?: UniversitiesExcelScholarship[]
+  customFaculties?: UniversitiesExcelCustomFaculty[]
+  documents?: UniversitiesExcelDocument[]
+}
+
+export interface UniversitiesImportPreviewItem {
+  row: number
+  sourceId?: string
+  existingId?: string
+  universityName: string
+  linkedProfileId?: string
+  action: 'create' | 'update'
+  incoming: UniversitiesExcelUniversityPayload
+  current?: UniversitiesExcelUniversityPayload
+  changes: Array<{ field: string; before: string; after: string }>
+  sections: {
+    programsChanged: boolean
+    scholarshipsChanged: boolean
+    customFacultiesChanged: boolean
+    documentsChanged: boolean
+  }
+}
+
+export interface UniversitiesImportPreviewResult {
+  items: UniversitiesImportPreviewItem[]
+  errors: Array<{ row: number; name: string; message: string }>
+  summary: {
+    total: number
+    creates: number
+    updates: number
+    errors: number
+  }
+}
+
 export interface UniversitiesImportResult {
   created: number
+  updated: number
   errors: Array<{ row: number; name: string; message: string }>
 }
 
-/** Upload Excel file to import universities. */
+export async function previewUniversitiesExcel(file: File): Promise<UniversitiesImportPreviewResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<UniversitiesImportPreviewResult>('/admin/universities/import/preview', formData)
+  return data!
+}
+
+/** Upload Excel file to import universities after preview confirmation. */
 export async function uploadUniversitiesExcel(file: File): Promise<UniversitiesImportResult> {
   const formData = new FormData()
   formData.append('file', file)
