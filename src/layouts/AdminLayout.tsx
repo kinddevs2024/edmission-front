@@ -22,6 +22,7 @@ export function AdminLayout() {
       { to: '/admin/users', label: t('users'), icon: 'Users' as const },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
       { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
+      { to: '/admin/faculties', label: t('faculties', 'Faculties'), icon: 'GraduationCap' as const },
       { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' as const },
       { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
       { to: '/admin/landing-certificates', label: t('landingCertificates', 'Landing Certificates'), icon: 'Award' as const },

@@ -1,7 +1,7 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { DocumentPageFormat, StudentProfileDocumentType } from '@/types/documentModule'
-import type { UniversityProfile, Scholarship, Faculty } from '@/types/university'
+import type { UniversityProfile, Scholarship, Faculty, GlobalFaculty } from '@/types/university'
 import type { SocialLinks } from '@/types/user'
 
 type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number; minLanguageLevel?: string; tuitionPrice?: number }
@@ -91,12 +91,17 @@ export async function getFaculties(): Promise<Faculty[]> {
   return data ?? []
 }
 
-export async function createFaculty(payload: { name: string; description: string; order?: number }): Promise<Faculty> {
+export async function getGlobalFaculties(): Promise<GlobalFaculty[]> {
+  const { data } = await api.get<GlobalFaculty[]>('/university/global-faculties')
+  return data ?? []
+}
+
+export async function createFaculty(payload: { name: string; description?: string; items?: string[]; order?: number }): Promise<Faculty> {
   const { data } = await api.post<Faculty>('/university/faculties', payload)
   return data
 }
 
-export async function updateFaculty(id: string, payload: { name?: string; description?: string; order?: number }): Promise<Faculty> {
+export async function updateFaculty(id: string, payload: { name?: string; description?: string; items?: string[]; order?: number }): Promise<Faculty> {
   const { data } = await api.patch<Faculty>(`/university/faculties/${id}`, payload)
   return data
 }

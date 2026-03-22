@@ -60,6 +60,17 @@ export interface Faculty {
   universityId: string
   name: string
   description: string
+  items?: string[]
+  order?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface GlobalFaculty {
+  id: string
+  code: string
+  name: string
+  items: string[]
   order?: number
   createdAt?: string
   updatedAt?: string

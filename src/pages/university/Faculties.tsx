@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -7,17 +7,25 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { getFaculties, getProfile, createFaculty, updateFaculty, deleteFaculty, updateProfile } from '@/services/university'
-import type { Faculty } from '@/types/university'
+import { getFaculties, getGlobalFaculties, getProfile, createFaculty, updateFaculty, deleteFaculty, updateProfile } from '@/services/university'
+import type { Faculty, GlobalFaculty } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
 import { Pencil, Trash2, Plus, ChevronDown } from 'lucide-react'
+
+type FacultyCatalogCategory = {
+  id: string
+  items: string[]
+  titleKey?: string
+  name?: string
+}
 
 export function Faculties() {
   const { t } = useTranslation(['common', 'university'])
   const [profileFacultyCodes, setProfileFacultyCodes] = useState<string[]>([])
   const [profileFacultyItems, setProfileFacultyItems] = useState<Record<string, string[]>>({})
   const [list, setList] = useState<Faculty[]>([])
+  const [globalCatalog, setGlobalCatalog] = useState<GlobalFaculty[]>([])
   const [loading, setLoading] = useState(true)
   const [savingProfile, setSavingProfile] = useState(false)
   const [modal, setModal] = useState<{ mode: 'create' | 'edit'; faculty?: Faculty } | null>(null)
@@ -26,21 +34,36 @@ export function Faculties() {
   const [addItemInput, setAddItemInput] = useState<Record<string, string>>({})
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [customItems, setCustomItems] = useState<string[]>([''])
   const [submitting, setSubmitting] = useState(false)
+
+  const facultyCatalog = useMemo<FacultyCatalogCategory[]>(
+    () => [
+      ...FIELD_OF_STUDY.map((cat) => ({ id: cat.id, items: cat.items, titleKey: cat.titleKey })),
+      ...globalCatalog
+        .filter((cat) => !FIELD_OF_STUDY.some((base) => base.id === cat.code))
+        .map((cat) => ({ id: cat.code, items: cat.items ?? [], name: cat.name })),
+    ],
+    [globalCatalog]
+  )
+
+  const getCategoryLabel = (cat: FacultyCatalogCategory) => cat.titleKey ? t(cat.titleKey) : (cat.name ?? cat.id)
 
   const load = () => {
     setLoading(true)
-    Promise.all([getProfile(), getFaculties()])
-      .then(([profile, faculties]) => {
+    Promise.all([getProfile(), getFaculties(), getGlobalFaculties()])
+      .then(([profile, faculties, globals]) => {
         setProfileFacultyCodes(profile.facultyCodes ?? [])
         setProfileFacultyItems(profile.facultyItems ?? {})
         setList((faculties ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)))
+        setGlobalCatalog(globals ?? [])
       })
       .catch((e) => {
         toastApiError(e)
         setProfileFacultyCodes([])
         setProfileFacultyItems({})
         setList([])
+        setGlobalCatalog([])
       })
       .finally(() => setLoading(false))
   }
@@ -68,7 +91,7 @@ export function Faculties() {
   }
 
   const handleToggleItem = (catId: string, item: string, included: boolean) => {
-    const cat = FIELD_OF_STUDY.find((c) => c.id === catId)
+    const cat = facultyCatalog.find((c) => c.id === catId)
     if (!cat) return
     const current = profileFacultyItems[catId] ?? cat.items
     const next = included ? current.filter((x) => x !== item) : [...current, item]
@@ -79,7 +102,7 @@ export function Faculties() {
   const handleAddCustomItem = (catId: string) => {
     const val = addItemInput[catId]?.trim()
     if (!val) return
-    const cat = FIELD_OF_STUDY.find((c) => c.id === catId)
+    const cat = facultyCatalog.find((c) => c.id === catId)
     if (!cat) return
     const current = profileFacultyItems[catId] ?? cat.items
     if (current.includes(val)) return
@@ -90,7 +113,7 @@ export function Faculties() {
   }
 
   const handleRemoveItem = (catId: string, item: string) => {
-    const cat = FIELD_OF_STUDY.find((c) => c.id === catId)
+    const cat = facultyCatalog.find((c) => c.id === catId)
     if (!cat) return
     const current = profileFacultyItems[catId] ?? cat.items
     const next = current.filter((x) => x !== item)
@@ -108,22 +131,40 @@ export function Faculties() {
   const openCreate = () => {
     setName('')
     setDescription('')
+    setCustomItems([''])
     setModal({ mode: 'create' })
   }
 
   const openEdit = (f: Faculty) => {
     setName(f.name ?? '')
     setDescription(f.description ?? '')
+    setCustomItems((f.items ?? []).length > 0 ? (f.items ?? []) : [''])
     setModal({ mode: 'edit', faculty: f })
+  }
+
+  const handleCustomItemChange = (index: number, value: string) => {
+    setCustomItems((prev) => prev.map((item, currentIndex) => (currentIndex === index ? value : item)))
+  }
+
+  const handleAddCustomProgram = () => {
+    setCustomItems((prev) => [...prev, ''])
+  }
+
+  const handleRemoveCustomProgram = (index: number) => {
+    setCustomItems((prev) => {
+      if (prev.length === 1) return ['']
+      return prev.filter((_, currentIndex) => currentIndex !== index)
+    })
   }
 
   const handleSubmit = () => {
     if (!modal) return
     setSubmitting(true)
+    const items = customItems.map((item) => item.trim()).filter(Boolean)
     const req =
       modal.mode === 'create'
-        ? createFaculty({ name: name.trim(), description: description.trim() })
-        : updateFaculty(modal.faculty!.id, { name: name.trim(), description: description.trim() })
+        ? createFaculty({ name: name.trim(), description: description.trim(), items })
+        : updateFaculty(modal.faculty!.id, { name: name.trim(), description: description.trim(), items })
     req
       .then(() => {
         setModal(null)
@@ -140,7 +181,7 @@ export function Faculties() {
       .catch(toastApiError)
   }
 
-  const availableToAdd = FIELD_OF_STUDY.filter((c) => !profileFacultyCodes.includes(c.id))
+  const availableToAdd = facultyCatalog.filter((c) => !profileFacultyCodes.includes(c.id))
 
   return (
     <div className="space-y-4">
@@ -179,7 +220,7 @@ export function Faculties() {
         ) : (
           <ul className="mt-3 divide-y divide-[var(--color-border)]">
             {profileFacultyCodes.map((catId) => {
-              const cat = FIELD_OF_STUDY.find((c) => c.id === catId)
+              const cat = facultyCatalog.find((c) => c.id === catId)
               if (!cat) return null
               const open = openCategoryId === catId
               const items = profileFacultyItems[catId] ?? cat.items
@@ -195,7 +236,7 @@ export function Faculties() {
                         size={18}
                         className={`shrink-0 text-[var(--color-text-muted)] transition-transform ${open ? 'rotate-180' : ''}`}
                       />
-                      <span className="font-medium truncate">{t(cat.titleKey)}</span>
+                      <span className="font-medium truncate">{getCategoryLabel(cat)}</span>
                       <span className="text-xs text-[var(--color-text-muted)] shrink-0">
                         ({items.length} {t('university:items', 'items')})
                       </span>
@@ -296,6 +337,18 @@ export function Faculties() {
                       {f.description}
                     </p>
                   )}
+                  {(f.items ?? []).length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(f.items ?? []).map((item) => (
+                        <span
+                          key={`${f.id}-${item}`}
+                          className="rounded-full bg-[var(--color-bg)] px-2.5 py-1 text-xs text-[var(--color-text-muted)]"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <Button
@@ -353,7 +406,7 @@ export function Faculties() {
                   onClick={() => handleAddCategory(cat.id)}
                   disabled={savingProfile}
                 >
-                  {t(cat.titleKey)}
+                  {getCategoryLabel(cat)}
                 </Button>
               </li>
             ))}
@@ -395,6 +448,42 @@ export function Faculties() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-medium text-[var(--color-text)]">
+                  {t('university:facultyProgramsLabel', 'Programs / directions')}
+                </p>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {t('university:facultyProgramsHint', 'Add each program separately so you can edit or remove it later.')}
+                </p>
+              </div>
+              <Button size="sm" variant="secondary" onClick={handleAddCustomProgram} icon={<Plus size={14} />}>
+                {t('university:addProgram', 'Add program')}
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {customItems.map((item, index) => (
+                <div key={`${modal?.faculty?.id ?? 'new'}-${index}`} className="flex items-start gap-2">
+                  <Input
+                    value={item}
+                    onChange={(e) => handleCustomItemChange(index, e.target.value)}
+                    placeholder={t('university:facultyProgramsPlaceholder', 'Program name')}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleRemoveCustomProgram(index)}
+                    icon={<Trash2 size={14} />}
+                  >
+                    {t('common:delete')}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </Modal>
     </div>

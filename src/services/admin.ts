@@ -1,6 +1,7 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { DocumentPageFormat } from '@/types/documentModule'
+import type { GlobalFaculty } from '@/types/university'
 
 /** Backend GET /admin/dashboard returns this shape */
 export interface AdminDashboardResponse {
@@ -455,6 +456,26 @@ export async function updateCatalogUniversity(id: string, body: Record<string, u
 export async function deleteCatalogUniversity(id: string): Promise<{ deleted: boolean }> {
   const { data } = await api.delete<{ deleted: boolean }>(`/admin/universities/${id}`)
   return data!
+}
+
+export async function getAdminGlobalFaculties(): Promise<GlobalFaculty[]> {
+  const { data } = await api.get<GlobalFaculty[]>('/admin/global-faculties')
+  return data ?? []
+}
+
+export async function createAdminGlobalFaculty(payload: { name: string; items?: string[]; order?: number }): Promise<GlobalFaculty> {
+  const { data } = await api.post<GlobalFaculty>('/admin/global-faculties', payload)
+  return data!
+}
+
+export async function updateAdminGlobalFaculty(id: string, payload: { name?: string; items?: string[]; order?: number }): Promise<GlobalFaculty> {
+  const { data } = await api.patch<GlobalFaculty>(`/admin/global-faculties/${id}`, payload)
+  return data!
+}
+
+export async function deleteAdminGlobalFaculty(id: string): Promise<{ deleted: boolean }> {
+  const { data } = await api.delete<{ deleted: boolean }>(`/admin/global-faculties/${id}`)
+  return data ?? { deleted: true }
 }
 
 /** Download universities Excel template (triggers file save in browser). */
