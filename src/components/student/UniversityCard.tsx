@@ -51,10 +51,10 @@ export function UniversityCard({
   const cardStyle = {
     ...(dominantColor
       ? {
-          background: isDarkTheme
-            ? `linear-gradient(180deg, ${dominantColor}2d 0%, ${dominantColor}1d 28%, ${dominantColor}12 58%, rgba(7, 12, 14, 0.94) 100%)`
-            : `linear-gradient(180deg, ${dominantColor}22 0%, ${dominantColor}14 20%, ${dominantColor}0a 45%, #f2f9f2 100%)`,
-        }
+        background: isDarkTheme
+          ? `linear-gradient(180deg, ${dominantColor}2d 0%, ${dominantColor}1d 28%, ${dominantColor}12 58%, rgba(7, 12, 14, 0.94) 100%)`
+          : `linear-gradient(180deg, ${dominantColor}22 0%, ${dominantColor}14 20%, ${dominantColor}0a 45%, #f2f9f2 100%)`,
+      }
       : {}),
     boxShadow: `0 10px 30px -8px ${shadowColor}40, 0 4px 12px -4px ${shadowColor}28`,
   }

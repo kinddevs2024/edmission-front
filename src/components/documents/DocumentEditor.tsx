@@ -223,15 +223,15 @@ export function DocumentEditor({
 
   const guideSteps = isTemplateMode
     ? [
-        '1. Start with Add text, Upload image, or Background on the left.',
-        '2. Click any block on the page to resize, move, lock, or style it.',
-        '3. Use merge tags only inside text blocks when you need student data.',
-      ]
+      '1. Start with Add text, Upload image, or Background on the left.',
+      '2. Click any block on the page to resize, move, lock, or style it.',
+      '3. Use merge tags only inside text blocks when you need student data.',
+    ]
     : [
-        '1. Add a title or image first so the page is not empty.',
-        '2. Click any block to resize, move, duplicate, or delete it.',
-        '3. Save the document and it will appear in the student profile.',
-      ]
+      '1. Add a title or image first so the page is not empty.',
+      '2. Click any block to resize, move, duplicate, or delete it.',
+      '3. Save the document and it will appear in the student profile.',
+    ]
 
   return (
     <div className="space-y-4">

@@ -75,37 +75,37 @@ export function AdminDashboard() {
       </div>
 
       <Card>
-          <CardTitle>{t('universitiesByStudentInterest', 'Universities by student interest')}</CardTitle>
-          {universityInterests.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)] mt-2">{t('noDataYet', 'No data yet.')}</p>
-          ) : (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--color-border)]">
-                    <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">#</th>
-                    <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">{t('universityProfile', 'University')}</th>
-                    <th className="text-right py-2 font-medium text-[var(--color-text-muted)]">{t('interests')}</th>
+        <CardTitle>{t('universitiesByStudentInterest', 'Universities by student interest')}</CardTitle>
+        {universityInterests.length === 0 ? (
+          <p className="text-sm text-[var(--color-text-muted)] mt-2">{t('noDataYet', 'No data yet.')}</p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--color-border)]">
+                  <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">#</th>
+                  <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">{t('universityProfile', 'University')}</th>
+                  <th className="text-right py-2 font-medium text-[var(--color-text-muted)]">{t('interests')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {universityInterests.map((row, i) => (
+                  <tr key={`${row.source}-${row.universityId}`} className="border-b border-[var(--color-border)]/50">
+                    <td className="py-2 text-[var(--color-text-muted)]">{i + 1}</td>
+                    <td className="py-2">
+                      <span className="font-medium">{row.universityName}</span>
+                      {row.source === 'catalog' && (
+                        <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">(catalog)</span>
+                      )}
+                    </td>
+                    <td className="py-2 text-right font-medium">{row.interestCount}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {universityInterests.map((row, i) => (
-                    <tr key={`${row.source}-${row.universityId}`} className="border-b border-[var(--color-border)]/50">
-                      <td className="py-2 text-[var(--color-text-muted)]">{i + 1}</td>
-                      <td className="py-2">
-                        <span className="font-medium">{row.universityName}</span>
-                        {row.source === 'catalog' && (
-                          <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">(catalog)</span>
-                        )}
-                      </td>
-                      <td className="py-2 text-right font-medium">{row.interestCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
 
       {(stats?.mrr != null || (stats?.subscriptionsByPlan && Object.keys(stats.subscriptionsByPlan).length > 0)) && (
         <Card>

@@ -1,6 +1,7 @@
 import { api } from './api'
 import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
 import { useAuthStore } from '@/store/authStore'
+import { useAIChatStore } from '@/store/aiChatStore'
 
 const baseURL =
   import.meta.env.VITE_API_URL ??
@@ -36,6 +37,7 @@ async function refreshAccessToken(): Promise<string | null> {
   } catch {
     clearAuth()
     useAuthStore.getState().logout()
+    useAIChatStore.getState().resetSession()
     return null
   }
 }

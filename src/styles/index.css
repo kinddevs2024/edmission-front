@@ -99,6 +99,7 @@
 .university-card-bg {
   background: linear-gradient(to bottom, #ffffff 0%, #f7fbf7 35%, #f2f9f2 70%, #e8f5e9 100%);
 }
+
 .dark .university-card-bg {
   background: linear-gradient(to bottom, var(--color-card) 0%, rgba(15, 26, 15, 0.98) 50%, #0f1a0f 100%);
 }
@@ -204,9 +205,11 @@
     transform: translate3d(0, -20px, 0) rotateZ(0deg);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   100% {
     transform: translate3d(0, 220px, 0) rotateZ(360deg);
     opacity: 0;
@@ -318,10 +321,14 @@
 }
 
 @keyframes faculty-label-marquee {
-  0%, 10% {
+
+  0%,
+  10% {
     transform: translateX(0);
   }
-  90%, 100% {
+
+  90%,
+  100% {
     transform: translateX(calc(-1 * var(--faculty-marquee-shift, 0px)));
   }
 }

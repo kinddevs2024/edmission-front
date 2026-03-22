@@ -137,73 +137,73 @@ export function SchoolDashboard() {
               <UserPlus size={18} />
               {t('recentRequests')}
             </CardTitle>
-          {loading ? (
-            <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('common:loading', 'Loading...')}</p>
-          ) : recentRequests.length === 0 ? (
-            <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('noPendingRequests')}</p>
-          ) : (
-            <ul className="mt-2 space-y-2">
-              {recentRequests.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)]"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium text-[var(--color-text)] truncate">{r.studentName}</p>
-                    {r.studentEmail && (
-                      <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 truncate">
-                        <Mail size={12} /> {r.studentEmail}
-                      </p>
-                    )}
-                  </div>
-                  <button type="button" className="text-sm text-primary-accent hover:underline shrink-0">{t('viewAll')}</button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <span className="inline-block mt-4 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
-            {t('viewAll')} {t('joinRequests')}
-          </span>
+            {loading ? (
+              <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('common:loading', 'Loading...')}</p>
+            ) : recentRequests.length === 0 ? (
+              <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('noPendingRequests')}</p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {recentRequests.map((r) => (
+                  <li
+                    key={r.id}
+                    className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)]"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-[var(--color-text)] truncate">{r.studentName}</p>
+                      {r.studentEmail && (
+                        <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 truncate">
+                          <Mail size={12} /> {r.studentEmail}
+                        </p>
+                      )}
+                    </div>
+                    <button type="button" className="text-sm text-primary-accent hover:underline shrink-0">{t('viewAll')}</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <span className="inline-block mt-4 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
+              {t('viewAll')} {t('joinRequests')}
+            </span>
           </Card>
         </Link>
 
         <Link to="/school/my-students">
           <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
-          <CardTitle className="flex items-center gap-2">
-            <Users size={18} />
-            {t('recentStudents')}
-          </CardTitle>
-          {loading ? (
-            <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('common:loading', 'Loading...')}</p>
-          ) : recentStudents.length === 0 ? (
-            <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('noStudentsYet')}</p>
-          ) : (
-            <ul className="mt-2 space-y-2">
-              {recentStudents.map((s) => (
-                <li
-                  key={s.userId}
-                  className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)]"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium text-[var(--color-text)] truncate">{s.name}</p>
-                    {s.email && (
-                      <p className="text-xs text-[var(--color-text-muted)] truncate">{s.email}</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/school/students/${s.userId}/profile`) }}
-                    className="text-sm text-primary-accent hover:underline shrink-0"
+            <CardTitle className="flex items-center gap-2">
+              <Users size={18} />
+              {t('recentStudents')}
+            </CardTitle>
+            {loading ? (
+              <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('common:loading', 'Loading...')}</p>
+            ) : recentStudents.length === 0 ? (
+              <p className="text-[var(--color-text-muted)] py-4 text-sm">{t('noStudentsYet')}</p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {recentStudents.map((s) => (
+                  <li
+                    key={s.userId}
+                    className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)]"
                   >
-                    {t('profile')}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <span className="inline-block mt-4 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
-            {t('viewAll')} {t('myStudents')}
-          </span>
+                    <div className="min-w-0">
+                      <p className="font-medium text-[var(--color-text)] truncate">{s.name}</p>
+                      {s.email && (
+                        <p className="text-xs text-[var(--color-text-muted)] truncate">{s.email}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/school/students/${s.userId}/profile`) }}
+                      className="text-sm text-primary-accent hover:underline shrink-0"
+                    >
+                      {t('profile')}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <span className="inline-block mt-4 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
+              {t('viewAll')} {t('myStudents')}
+            </span>
           </Card>
         </Link>
       </div>

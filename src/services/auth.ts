@@ -1,6 +1,7 @@
 import { api, getApiError } from './api'
 import type { User, LoginResponse } from '@/types/user'
 import { useAuthStore } from '@/store/authStore'
+import { useAIChatStore } from '@/store/aiChatStore'
 import { saveAuth, clearAuth, getStoredRefreshToken } from './authPersistence'
 import { queryClient } from '@/app/queryClient'
 
@@ -26,6 +27,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   // Всегда начинаем логин "с нуля": очищаем возможные старые токены/пользователя
   clearAuth()
   useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/login', payload)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
@@ -46,6 +48,7 @@ export async function register(payload: RegisterPayload): Promise<RegisterResult
     return { needsVerification: true, email: data.email }
   }
   const loginData = data as LoginResponse
+  useAIChatStore.getState().resetSession()
   useAuthStore.getState().setAuth(loginData.user, loginData.accessToken)
   saveAuth(loginData.user, loginData.accessToken, loginData.refreshToken ?? null)
   return loginData
@@ -53,6 +56,7 @@ export async function register(payload: RegisterPayload): Promise<RegisterResult
 
 export async function verifyEmailByCode(email: string, code: string): Promise<LoginResponse> {
   const { data } = await api.post<LoginResponse>('/auth/verify-email', { email, code })
+  useAIChatStore.getState().resetSession()
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
@@ -71,6 +75,7 @@ export async function logout(): Promise<void> {
     clearAuth()
     queryClient.clear()
     useAuthStore.getState().logout()
+    useAIChatStore.getState().resetSession()
   }
 }
 

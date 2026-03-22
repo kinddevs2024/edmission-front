@@ -196,56 +196,56 @@ function CanvasElement({
     onTap: () => editable && onSelect(),
     onDragMove: editable
       ? (event: Konva.KonvaEventObject<DragEvent>) => {
-          const next = clampElementToPage(
-            {
-              ...element,
-              x: snapValue(event.target.x()),
-              y: snapValue(event.target.y()),
-            },
-            scene
-          )
-          onChange({ x: next.x, y: next.y }, false)
-        }
+        const next = clampElementToPage(
+          {
+            ...element,
+            x: snapValue(event.target.x()),
+            y: snapValue(event.target.y()),
+          },
+          scene
+        )
+        onChange({ x: next.x, y: next.y }, false)
+      }
       : undefined,
     onDragEnd: editable
       ? (event: Konva.KonvaEventObject<DragEvent>) => {
-          const next = clampElementToPage(
-            {
-              ...element,
-              x: snapValue(event.target.x()),
-              y: snapValue(event.target.y()),
-            },
-            scene
-          )
-          onChange({ x: next.x, y: next.y }, true)
-        }
+        const next = clampElementToPage(
+          {
+            ...element,
+            x: snapValue(event.target.x()),
+            y: snapValue(event.target.y()),
+          },
+          scene
+        )
+        onChange({ x: next.x, y: next.y }, true)
+      }
       : undefined,
     onTransformEnd: editable
       ? (event: Konva.KonvaEventObject<Event>) => {
-          const node = event.target
-          const scaleX = node.scaleX()
-          const scaleY = node.scaleY()
-          node.scaleX(1)
-          node.scaleY(1)
-          const next = clampElementToPage(
-            {
-              ...element,
-              x: snapValue(node.x()),
-              y: snapValue(node.y()),
-              width: Math.max(24, snapValue(Math.max(24, node.width() * scaleX))),
-              height: Math.max(12, snapValue(Math.max(12, node.height() * scaleY))),
-              rotation: node.rotation(),
-            },
-            scene
-          )
-          onChange({
-            x: next.x,
-            y: next.y,
-            width: next.width,
-            height: next.height,
-            rotation: next.rotation,
-          }, true)
-        }
+        const node = event.target
+        const scaleX = node.scaleX()
+        const scaleY = node.scaleY()
+        node.scaleX(1)
+        node.scaleY(1)
+        const next = clampElementToPage(
+          {
+            ...element,
+            x: snapValue(node.x()),
+            y: snapValue(node.y()),
+            width: Math.max(24, snapValue(Math.max(24, node.width() * scaleX))),
+            height: Math.max(12, snapValue(Math.max(12, node.height() * scaleY))),
+            rotation: node.rotation(),
+          },
+          scene
+        )
+        onChange({
+          x: next.x,
+          y: next.y,
+          width: next.width,
+          height: next.height,
+          rotation: next.rotation,
+        }, true)
+      }
       : undefined,
   }
 

@@ -34,6 +34,7 @@ interface AIChatState {
   setSelectionAsk: (sel: SelectionAsk | null) => void
   incrementRequestsUsed: () => void
   clearChat: () => void
+  resetSession: () => void
 }
 
 function createSessionId() {
@@ -65,4 +66,12 @@ export const useAIChatStore = create<AIChatState>((set) => ({
   setSelectionAsk: (sel) => set({ selectionAsk: sel }),
   incrementRequestsUsed: () => set((s) => ({ requestsUsed: s.requestsUsed + 1 })),
   clearChat: () => set({ messages: [], selectionAsk: null }),
+  resetSession: () =>
+    set({
+      messages: [],
+      isDrawerOpen: false,
+      selectionAsk: null,
+      sessionId: createSessionId(),
+      requestsUsed: 0,
+    }),
 }))

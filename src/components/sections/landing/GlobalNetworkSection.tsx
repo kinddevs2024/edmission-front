@@ -98,86 +98,86 @@ export function GlobalNetworkSection() {
             <div className="relative overflow-visible p-2 md:p-4">
               <div className="relative" style={{ transformStyle: 'preserve-3d' }}>
                 <svg
-                ref={svgRef}
-                viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
-                className="block h-[260px] w-full md:h-[320px]"
-                onMouseMove={onMouseMove}
-                onMouseLeave={onMouseLeave}
-              >
-                <defs>
-                  <filter id="network-node-glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
+                  ref={svgRef}
+                  viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
+                  className="block h-[260px] w-full md:h-[320px]"
+                  onMouseMove={onMouseMove}
+                  onMouseLeave={onMouseLeave}
+                >
+                  <defs>
+                    <filter id="network-node-glow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
 
-                {/* Mesh edges */}
-                <g stroke="#3C4048" strokeWidth="0.22" strokeOpacity="0.85">
-                  {EDGES.map(([i, j], idx) => {
-                    const a = NODES[i]
-                    const b = NODES[j]
+                  {/* Mesh edges */}
+                  <g stroke="#3C4048" strokeWidth="0.22" strokeOpacity="0.85">
+                    {EDGES.map(([i, j], idx) => {
+                      const a = NODES[i]
+                      const b = NODES[j]
+                      return (
+                        <line
+                          key={`${i}-${j}`}
+                          x1={a.x}
+                          y1={a.y}
+                          x2={b.x}
+                          y2={b.y}
+                          className="network-edge"
+                          style={{ animationDelay: `${idx * 0.8}s` }}
+                        />
+                      )
+                    })}
+                  </g>
+
+                  {/* Nodes with floating motion */}
+                  {NODES.map((node, index) => {
+                    const [dx, dy] = FLOAT_OFFSETS[index]
+                    const dist = point
+                      ? Math.hypot(point.x - node.x, point.y - node.y)
+                      : Infinity
+                    const influence = Math.max(0, 1 - dist / CURSOR_INFLUENCE)
+                    const r = NODE_BASE_R + influence * 0.8
+                    const glow = influence > 0.3
+                    const opacity = 0.75 + influence * 0.25
+
                     return (
-                      <line
-                        key={`${i}-${j}`}
-                        x1={a.x}
-                        y1={a.y}
-                        x2={b.x}
-                        y2={b.y}
-                        className="network-edge"
-                        style={{ animationDelay: `${idx * 0.8}s` }}
-                      />
+                      <motion.g
+                        key={index}
+                        filter={glow ? 'url(#network-node-glow)' : undefined}
+                        initial={false}
+                        animate={{
+                          x: [0, dx, 0, -dx * 0.6, 0],
+                          y: [0, dy * 0.6, dy, 0, 0],
+                        }}
+                        transition={{
+                          duration: 4 + index * 0.4,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                          delay: index * 0.2,
+                        }}
+                      >
+                        <motion.circle
+                          cx={node.x}
+                          cy={node.y}
+                          r={r}
+                          fill="#9EF01A"
+                          style={{ opacity }}
+                          animate={{
+                            opacity: point ? opacity : [0.5, 1, 0.5],
+                          }}
+                          transition={
+                            point
+                              ? { duration: 0.15 }
+                              : { duration: 2.6, repeat: Infinity, delay: index * 0.15 }
+                          }
+                        />
+                      </motion.g>
                     )
                   })}
-                </g>
-
-                {/* Nodes with floating motion */}
-                {NODES.map((node, index) => {
-                  const [dx, dy] = FLOAT_OFFSETS[index]
-                  const dist = point
-                    ? Math.hypot(point.x - node.x, point.y - node.y)
-                    : Infinity
-                  const influence = Math.max(0, 1 - dist / CURSOR_INFLUENCE)
-                  const r = NODE_BASE_R + influence * 0.8
-                  const glow = influence > 0.3
-                  const opacity = 0.75 + influence * 0.25
-
-                  return (
-                    <motion.g
-                      key={index}
-                      filter={glow ? 'url(#network-node-glow)' : undefined}
-                      initial={false}
-                      animate={{
-                        x: [0, dx, 0, -dx * 0.6, 0],
-                        y: [0, dy * 0.6, dy, 0, 0],
-                      }}
-                      transition={{
-                        duration: 4 + index * 0.4,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                        delay: index * 0.2,
-                      }}
-                    >
-                      <motion.circle
-                        cx={node.x}
-                        cy={node.y}
-                        r={r}
-                        fill="#9EF01A"
-                        style={{ opacity }}
-                        animate={{
-                          opacity: point ? opacity : [0.5, 1, 0.5],
-                        }}
-                        transition={
-                          point
-                            ? { duration: 0.15 }
-                            : { duration: 2.6, repeat: Infinity, delay: index * 0.15 }
-                        }
-                      />
-                    </motion.g>
-                  )
-                })}
                 </svg>
 
                 {/* Hover tooltip */}
