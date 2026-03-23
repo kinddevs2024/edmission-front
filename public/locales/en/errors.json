@@ -17,5 +17,6 @@
   "networkError": "Connection problem. Check your internet.",
   "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
   "validationFailed": "Please check your input and try again.",
-  "rateLimit": "Too many attempts. Please try again later."
+  "rateLimit": "Too many attempts. Please try again later.",
+  "oauthSignUpRequired": "No account linked to this sign-in. Please register first."
 }

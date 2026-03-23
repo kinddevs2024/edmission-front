@@ -25,7 +25,8 @@ export type RegisterResult =
 
 export async function loginWithGoogle(payload: {
   idToken: string
-  role: 'student' | 'university'
+  /** Omit on login page — role is taken from the account. Required when registering via Google. */
+  role?: 'student' | 'university'
   /** Set true when creating a new account (registration). */
   acceptTerms: boolean
 }): Promise<LoginResponse> {
@@ -34,7 +35,7 @@ export async function loginWithGoogle(payload: {
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/google', {
     idToken: payload.idToken,
-    role: payload.role,
+    ...(payload.role != null ? { role: payload.role } : {}),
     acceptTerms: payload.acceptTerms,
   })
   useAuthStore.getState().setAuth(data.user, data.accessToken)
@@ -45,7 +46,7 @@ export async function loginWithGoogle(payload: {
 export async function loginWithYandex(payload: {
   code: string
   redirectUri: string
-  role: 'student' | 'university'
+  role?: 'student' | 'university'
   acceptTerms: boolean
 }): Promise<LoginResponse> {
   clearAuth()
@@ -54,7 +55,7 @@ export async function loginWithYandex(payload: {
   const { data } = await api.post<LoginResponse>('/auth/yandex', {
     code: payload.code,
     redirectUri: payload.redirectUri,
-    role: payload.role,
+    ...(payload.role != null ? { role: payload.role } : {}),
     acceptTerms: payload.acceptTerms,
   })
   useAuthStore.getState().setAuth(data.user, data.accessToken)
@@ -65,7 +66,7 @@ export async function loginWithYandex(payload: {
 /** Yandex Passport SDK (YaAuthSuggest) — после получения OAuth access_token на клиенте. */
 export async function loginWithYandexAccessToken(payload: {
   accessToken: string
-  role: 'student' | 'university'
+  role?: 'student' | 'university'
   acceptTerms: boolean
 }): Promise<LoginResponse> {
   clearAuth()
@@ -73,7 +74,7 @@ export async function loginWithYandexAccessToken(payload: {
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/yandex/access-token', {
     accessToken: payload.accessToken,
-    role: payload.role,
+    ...(payload.role != null ? { role: payload.role } : {}),
     acceptTerms: payload.acceptTerms,
   })
   useAuthStore.getState().setAuth(data.user, data.accessToken)

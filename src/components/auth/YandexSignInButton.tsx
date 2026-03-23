@@ -14,7 +14,8 @@ import { cn } from '@/utils/cn'
 
 export type YandexSignInButtonProps = {
   disabled?: boolean
-  role: 'student' | 'university'
+  /** Omit on login — backend uses role from DB. Required on registration. */
+  role?: 'student' | 'university'
   acceptTerms: boolean
   flow: YandexOAuthFlow
   className?: string
@@ -118,9 +119,10 @@ export function YandexSignInButton({
             }
             onBusyChangeRef.current?.(true)
             try {
+              const r = roleRef.current
               await loginWithYandexAccessToken({
                 accessToken,
-                role: roleRef.current,
+                ...(r != null ? { role: r } : {}),
                 acceptTerms: terms,
               })
               if (!cancelled) await onSuccessRef.current()

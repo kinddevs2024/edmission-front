@@ -1,18 +1,28 @@
-import { useEffect, useState, useCallback, type MouseEvent } from 'react'
+import { useEffect, useState, useCallback, useRef, type MouseEvent as ReactMouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
-import { Menu, X } from 'lucide-react'
+import { Languages, Menu, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
+import { loadLanguage } from '@/i18n'
+import { STORAGE_KEY, supportedLngs, type SupportedLng } from '@/i18n/config'
+
+const LANGUAGE_LABELS: Record<SupportedLng, string> = {
+  en: 'English',
+  ru: 'Русский',
+  uz: "O'zbek",
+}
 
 export function LandingHeader() {
-  const { t } = useTranslation('landing')
+  const { t, i18n } = useTranslation('landing')
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [mobileLangOpen, setMobileLangOpen] = useState(false)
+  const mobileLangRef = useRef<HTMLDivElement>(null)
   const HEADER_OFFSET = 88
 
   useEffect(() => {
@@ -38,6 +48,17 @@ export function LandingHeader() {
     return () => lockScroll(false)
   }, [menuOpen, lockScroll])
 
+  useEffect(() => {
+    const onDocClick = (e: globalThis.MouseEvent) => {
+      if (!mobileLangRef.current) return
+      if (!mobileLangRef.current.contains(e.target as Node)) {
+        setMobileLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [])
+
   const closeMenu = useCallback(() => {
     if (isClosing) return
     setIsClosing(true)
@@ -47,7 +68,7 @@ export function LandingHeader() {
     }, 280)
   }, [isClosing])
 
-  const handleLogoClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
+  const handleLogoClick = useCallback((event: ReactMouseEvent<HTMLAnchorElement>) => {
     if (location.pathname !== '/') return
     event.preventDefault()
     if (menuOpen) closeMenu()
@@ -74,6 +95,19 @@ export function LandingHeader() {
 
     performScroll()
   }
+
+  const selectLanguage = useCallback((lng: SupportedLng) => {
+    setMobileLangOpen(false)
+    void (async () => {
+      await loadLanguage(lng)
+      await i18n.changeLanguage(lng)
+      try {
+        localStorage.setItem(STORAGE_KEY, lng)
+      } catch {
+        /* ignore */
+      }
+    })()
+  }, [i18n])
 
   const menuItems = [
     { id: 'how-it-works', label: t('header.howItWorks') },
@@ -138,13 +172,52 @@ export function LandingHeader() {
           </div>
 
           {/* Mobile: Register + Menu or Close */}
-          <div className="lg:hidden flex items-center gap-2 flex-1 max-w-[240px] justify-end">
+          <div className="lg:hidden flex items-center gap-2 flex-1 max-w-[300px] justify-end">
             <Link
               to="/register"
               className="flex-1 min-w-0 flex items-center justify-center rounded-full h-11 px-4 bg-primary-accent text-primary-dark text-sm font-medium hover:opacity-90 transition-colors"
             >
               <span className="truncate">{t('header.register')}</span>
             </Link>
+            <div className="relative" ref={mobileLangRef}>
+              <button
+                type="button"
+                onClick={() => setMobileLangOpen((v) => !v)}
+                className="flex items-center justify-center rounded-full h-11 w-11 border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+                aria-label="Change language"
+                aria-expanded={mobileLangOpen}
+                aria-haspopup="true"
+              >
+                <Languages className="h-5 w-5 shrink-0" aria-hidden />
+              </button>
+              {mobileLangOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 min-w-[148px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50"
+                  role="menu"
+                >
+                  {supportedLngs.map((lng) => {
+                    const current = (i18n.language || 'en').split('-')[0].toLowerCase() as SupportedLng
+                    const isCurrent = current === lng
+                    return (
+                      <button
+                        key={lng}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => selectLanguage(lng)}
+                        className={clsx(
+                          'w-full px-3 py-2 text-left text-sm transition-colors',
+                          isCurrent
+                            ? 'bg-primary-accent/15 text-primary-accent font-medium'
+                            : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
+                        )}
+                      >
+                        {LANGUAGE_LABELS[lng]}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
             {menuOpen ? (
               <button
                 type="button"

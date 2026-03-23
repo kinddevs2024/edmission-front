@@ -2,6 +2,10 @@ import axios from 'axios'
 
 /** Map backend error message to errors namespace key. Returns key or empty string (then use raw message). */
 export function getApiErrorKey(error: unknown): string {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    const code = (error.response.data as { code?: string }).code
+    if (code === 'OAUTH_SIGNUP_REQUIRED') return 'oauthSignUpRequired'
+  }
   const msg = getMessage(error).toLowerCase()
   if (!msg) return 'default'
   if (msg.includes('invalid credentials') || msg.includes('unauthorized')) return 'invalidCredentials'

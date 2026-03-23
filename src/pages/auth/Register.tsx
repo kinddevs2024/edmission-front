@@ -274,61 +274,33 @@ export function Register() {
           {...register('confirmPassword')}
         />
         <div>
-          <p className="text-sm font-medium text-[var(--color-text)] mb-2">{t('auth:registerAs')}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <p className="text-sm font-medium text-[var(--color-text)] mb-2">{t('auth:roleChoice')}</p>
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setValue('role', 'student', { shouldValidate: true })}
               className={cn(
-                'flex items-center gap-3 p-4 rounded-card border-2 text-left transition-all',
+                'flex flex-col items-center justify-center gap-1.5 rounded-card border-2 px-2 py-3 text-sm transition-all',
                 role === 'student'
-                  ? 'border-primary-accent bg-primary-accent/10 shadow-md'
-                  : 'border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-text-muted)]'
+                  ? 'border-primary-accent bg-primary-accent/10'
+                  : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'
               )}
             >
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-lg flex items-center justify-center shrink-0',
-                  role === 'student'
-                    ? 'bg-primary-accent/20 text-primary-accent'
-                    : 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
-                )}
-              >
-                <GraduationCap className="w-6 h-6" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[var(--color-text)]">{t('auth:student')}</p>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                  {t('auth:studentRoleHint', 'I am applying to universities')}
-                </p>
-              </div>
+              <GraduationCap className="h-6 w-6 shrink-0 text-primary-accent" aria-hidden />
+              <span className="font-medium text-center leading-tight text-[var(--color-text)]">{t('auth:student')}</span>
             </button>
             <button
               type="button"
               onClick={() => setValue('role', 'university', { shouldValidate: true })}
               className={cn(
-                'flex items-center gap-3 p-4 rounded-card border-2 text-left transition-all',
+                'flex flex-col items-center justify-center gap-1.5 rounded-card border-2 px-2 py-3 text-sm transition-all',
                 role === 'university'
-                  ? 'border-primary-accent bg-primary-accent/10 shadow-md'
-                  : 'border-[var(--color-border)] bg-[var(--color-card)] hover:border-[var(--color-text-muted)]'
+                  ? 'border-primary-accent bg-primary-accent/10'
+                  : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'
               )}
             >
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-lg flex items-center justify-center shrink-0',
-                  role === 'university'
-                    ? 'bg-primary-accent/20 text-primary-accent'
-                    : 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
-                )}
-              >
-                <Building2 className="w-6 h-6" aria-hidden />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[var(--color-text)]">{t('auth:university')}</p>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                  {t('auth:universityRoleHint', 'I represent a university')}
-                </p>
-              </div>
+              <Building2 className="h-6 w-6 shrink-0 text-primary-accent" aria-hidden />
+              <span className="font-medium text-center leading-tight text-[var(--color-text)]">{t('auth:university')}</span>
             </button>
           </div>
           <input type="hidden" {...register('role')} />
