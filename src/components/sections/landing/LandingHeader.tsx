@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
-import { Languages, Menu, X } from 'lucide-react'
+import { Menu, UserRound, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { loadLanguage } from '@/i18n'
@@ -15,8 +15,14 @@ const LANGUAGE_LABELS: Record<SupportedLng, string> = {
   uz: "O'zbek",
 }
 
+const LANGUAGE_FLAG_SRC: Record<SupportedLng, string> = {
+  en: 'https://flagcdn.com/w80/us.png',
+  ru: 'https://flagcdn.com/w80/ru.png',
+  uz: 'https://flagcdn.com/w80/uz.png',
+}
+
 export function LandingHeader() {
-  const { t, i18n } = useTranslation('landing')
+  const { t, i18n } = useTranslation(['landing', 'auth'])
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -24,6 +30,9 @@ export function LandingHeader() {
   const [mobileLangOpen, setMobileLangOpen] = useState(false)
   const mobileLangRef = useRef<HTMLDivElement>(null)
   const HEADER_OFFSET = 88
+  const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim())
+  const showYandexAuth = Boolean(import.meta.env.VITE_YANDEX_CLIENT_ID?.trim())
+  const currentLng = (i18n.language || 'en').split('-')[0].toLowerCase() as SupportedLng
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -111,9 +120,8 @@ export function LandingHeader() {
 
   const menuItems = [
     { id: 'how-it-works', label: t('header.howItWorks') },
-    { id: 'for-universities', label: t('header.forUniversities') },
-    { id: 'trusted-by', label: t('header.trustedBy') },
-    { id: 'faq', label: t('header.faq') },
+    { id: 'about-us', label: t('header.aboutUs') },
+    { id: 'student-testimonials', label: t('header.studentTestimonials') },
   ]
 
   const NavLink = ({ item }: { item: (typeof menuItems)[number] }) => (
@@ -188,16 +196,22 @@ export function LandingHeader() {
                 aria-expanded={mobileLangOpen}
                 aria-haspopup="true"
               >
-                <Languages className="h-5 w-5 shrink-0" aria-hidden />
+                <span className="flex h-6 w-6 overflow-hidden rounded-full border border-black/10" aria-hidden>
+                  <img
+                    src={LANGUAGE_FLAG_SRC[currentLng]}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </span>
               </button>
               {mobileLangOpen && (
                 <div
-                  className="absolute right-0 top-full mt-2 min-w-[148px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50"
+                  className="absolute right-0 top-full mt-2 min-w-[176px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50"
                   role="menu"
                 >
                   {supportedLngs.map((lng) => {
-                    const current = (i18n.language || 'en').split('-')[0].toLowerCase() as SupportedLng
-                    const isCurrent = current === lng
+                    const isCurrent = currentLng === lng
                     return (
                       <button
                         key={lng}
@@ -205,13 +219,21 @@ export function LandingHeader() {
                         role="menuitem"
                         onClick={() => selectLanguage(lng)}
                         className={clsx(
-                          'w-full px-3 py-2 text-left text-sm transition-colors',
+                          'w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm leading-none transition-colors',
                           isCurrent
                             ? 'bg-primary-accent/15 text-primary-accent font-medium'
                             : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
                         )}
                       >
-                        {LANGUAGE_LABELS[lng]}
+                        <span className="flex h-5 w-5 shrink-0 overflow-hidden rounded-full border border-black/10" aria-hidden>
+                          <img
+                            src={LANGUAGE_FLAG_SRC[lng]}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        </span>
+                        <span className="flex-1 truncate leading-tight">{LANGUAGE_LABELS[lng]}</span>
                       </button>
                     )
                   })}
@@ -295,6 +317,38 @@ export function LandingHeader() {
                     {t('header.register')}
                   </Link>
                 </div>
+                {(showGoogleAuth || showYandexAuth) && (
+                  <div className="pt-2 space-y-2">
+                    {showGoogleAuth && (
+                      <Link
+                        to="/register"
+                        onClick={closeMenu}
+                        className="flex w-full items-center justify-center gap-2 rounded-input border border-[#dcdfe4] bg-white px-3 py-2.5 text-sm font-medium text-[#1f1f1f] hover:bg-[#f7f8fa] transition-colors"
+                      >
+                        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
+                          <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.8-5.4 3.8-3.3 0-5.9-2.7-5.9-6s2.6-6 5.9-6c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 6.9 2.2 2.8 6.3 2.8 11.4S6.9 20.6 12 20.6c6.9 0 9.2-4.8 9.2-7.2 0-.5 0-.8-.1-1.2H12z" />
+                          <path fill="#34A853" d="M3.7 7.8l3.2 2.3C7.7 8 9.7 6.4 12 6.4c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 8.4 2.2 5.2 4.3 3.7 7.8z" />
+                          <path fill="#FBBC05" d="M12 20.6c2.6 0 4.8-.9 6.3-2.5l-3-2.5c-.8.6-1.9 1.1-3.3 1.1-2.5 0-4.6-1.7-5.3-4l-3.3 2.5c1.5 3.7 4.9 5.4 8.6 5.4z" />
+                          <path fill="#4285F4" d="M21.2 13.4c0-.6-.1-1.1-.2-1.6H12v3.9h5.4c-.3 1.5-1.2 2.6-2.4 3.4l3 2.5c1.8-1.6 3.2-4 3.2-8.2z" />
+                        </svg>
+                        <span>{t('auth:continueWithGoogle')}</span>
+                      </Link>
+                    )}
+                    {showYandexAuth && (
+                      <Link
+                        to="/register"
+                        onClick={closeMenu}
+                        className="flex w-full items-center justify-between rounded-input bg-black px-3 py-2 text-sm font-medium text-white hover:opacity-95 transition-opacity"
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FC3F1D] text-sm font-bold">Я</span>
+                        <span className="mx-2 flex-1 text-center">{t('auth:continueWithYandex')}</span>
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#404040]">
+                          <UserRound className="h-4 w-4" aria-hidden />
+                        </span>
+                      </Link>
+                    )}
+                  </div>
+                )}
               </nav>
               <div className="p-4 border-t border-[var(--color-border)] flex items-center gap-3">
                 <LanguageMenu placement="top" />

@@ -13,7 +13,7 @@ export function AccreditationSection() {
   ] as const
 
   return (
-    <section id="accreditation" className="mx-auto max-w-7xl px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:px-8">
+    <section id="about-us" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:scroll-mt-28 lg:px-8">
       <Reveal>
         <SectionHeading
           eyebrow={t('accreditation.eyebrow')}
