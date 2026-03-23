@@ -53,6 +53,14 @@ export function FileUpload({
   }
 
   const isAvatar = variant === 'avatar'
+  const shouldTryImagePreview = (() => {
+    if (!value || !accept.includes('image')) return false
+    if (value.startsWith('data:')) return true
+    const lower = value.toLowerCase()
+    // If explicit non-image extension is present, avoid broken image preview.
+    if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|rar|7z)(\?|#|$)/i.test(lower)) return false
+    return true
+  })()
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -80,7 +88,7 @@ export function FileUpload({
           <Loader2 className={cn('animate-spin text-[var(--color-text-muted)]', isAvatar ? 'w-10 h-10' : 'w-8 h-8')} aria-hidden />
         ) : value ? (
           <>
-            {(accept.includes('image') && (/\.(jpe?g|png|gif|webp|svg)$/i.test(value) || /\.svg\b/i.test(value) || /\/uploads\//.test(value) || value.includes('uploads') || value.startsWith('data:'))) && !imgLoadError ? (
+            {shouldTryImagePreview && !imgLoadError ? (
               <img
                 src={getImageUrl(value)}
                 alt=""

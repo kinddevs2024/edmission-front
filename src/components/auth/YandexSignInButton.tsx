@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/store/uiStore'
 import {
   type YandexOAuthFlow,
+  buildYandexAuthorizeUrl,
   extractYandexSdkAccessToken,
   getYandexSuggestRedirectUri,
   loadYandexSuggestSdkScript,
@@ -41,6 +42,7 @@ export function YandexSignInButton({
   const { t, i18n } = useTranslation(['auth', 'errors'])
   const uiTheme = useUIStore((s) => s.theme)
   const clientId = import.meta.env.VITE_YANDEX_CLIENT_ID?.trim()
+  const [fallbackMode, setFallbackMode] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const parentIdRef = useRef(`yandex-passport-btn-${Math.random().toString(36).slice(2, 12)}`)
@@ -60,7 +62,7 @@ export function YandexSignInButton({
   onBusyChangeRef.current = onBusyChange
 
   useEffect(() => {
-    if (!clientId || disabled) return
+    if (!clientId || disabled || fallbackMode) return
     const parentId = parentIdRef.current
     const el = containerRef.current
     if (!el) return
@@ -97,8 +99,7 @@ export function YandexSignInButton({
 
         if (cancelled) return
         if (initResult.status !== 'ok' || typeof initResult.handler !== 'function') {
-          const code = 'code' in initResult ? String((initResult as { code?: string }).code || '') : ''
-          onErrorRef.current(code || t('auth:yandexSdkInitError', 'Could not initialize Yandex sign-in'))
+          setFallbackMode(true)
           return
         }
 
@@ -146,7 +147,7 @@ export function YandexSignInButton({
           })
       } catch (e) {
         if (!cancelled) {
-          onErrorRef.current(e instanceof Error ? e.message : t('auth:yandexSdkInitError'))
+          setFallbackMode(true)
         }
       }
     })()
@@ -155,9 +156,55 @@ export function YandexSignInButton({
       cancelled = true
       el.innerHTML = ''
     }
-  }, [clientId, disabled, uiTheme, i18n.language, t])
+  }, [clientId, disabled, fallbackMode, uiTheme, i18n.language, t])
 
   if (!clientId) return null
+
+  const handleFallbackClick = () => {
+    if (disabled) return
+    const f = flowRef.current
+    const terms = f === 'login' ? true : acceptTermsRef.current
+    if (f === 'register' && !terms) {
+      onErrorRef.current(t('auth:acceptTermsRequired'))
+      return
+    }
+    const selectedRole = roleRef.current ?? 'student'
+    window.location.href = buildYandexAuthorizeUrl(clientId, {
+      role: selectedRole,
+      acceptTerms: terms,
+      flow: f,
+    })
+  }
+
+  if (fallbackMode) {
+    return (
+      <button
+        type="button"
+        onClick={handleFallbackClick}
+        disabled={disabled}
+        className={cn(
+          'flex h-12 w-full max-w-[384px] mx-auto items-center rounded-[10px] bg-black px-2.5 py-2',
+          'shadow-[0_1px_2px_rgba(0,0,0,0.25)] ring-1 ring-black/80',
+          'transition-[opacity,transform] duration-150',
+          disabled ? 'cursor-not-allowed opacity-50 pointer-events-none' : 'hover:opacity-95 active:scale-[0.99]',
+          className
+        )}
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FC3F1D]" aria-hidden>
+          <span className="text-[17px] font-bold leading-none text-white translate-y-px">Я</span>
+        </span>
+        <span className="min-w-0 flex-1 px-2 text-center text-[15px] font-medium leading-tight text-white">
+          {flowRef.current === 'register' ? t('registerWithYandexId') : t('signInWithYandexId')}
+        </span>
+        <span
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#404040]"
+          aria-hidden
+        >
+          <span className="h-4 w-4 rounded-full bg-white/95" />
+        </span>
+      </button>
+    )
+  }
 
   return (
     <div

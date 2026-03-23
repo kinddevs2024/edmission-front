@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { Globe } from 'lucide-react'
 import i18n, { loadLanguage } from '@/i18n'
 import { supportedLngs, STORAGE_KEY, type SupportedLng } from '@/i18n/config'
 import { cn } from '@/utils/cn'
@@ -8,6 +7,12 @@ const LANGUAGE_LABELS: Record<SupportedLng, string> = {
   en: 'English',
   ru: 'Русский',
   uz: "O'zbek",
+}
+
+const LANGUAGE_FLAG_SRC: Record<SupportedLng, string> = {
+  en: 'https://flagcdn.com/w80/us.png',
+  ru: 'https://flagcdn.com/w80/ru.png',
+  uz: 'https://flagcdn.com/w80/uz.png',
 }
 
 export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 'top' }) {
@@ -48,7 +53,14 @@ export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 
         aria-expanded={open}
         aria-haspopup="true"
       >
-        <Globe className="h-4 w-4 text-[var(--color-text-muted)] shrink-0" aria-hidden />
+        <span className="flex h-4 w-4 shrink-0 overflow-hidden rounded-full border border-black/10" aria-hidden>
+          <img
+            src={LANGUAGE_FLAG_SRC[currentLng] ?? LANGUAGE_FLAG_SRC.en}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        </span>
         <span className="font-medium hidden sm:inline">{currentLabel}</span>
         <svg
           className={cn('h-4 w-4 text-[var(--color-text-muted)] transition-transform', open && 'rotate-180')}
@@ -76,12 +88,20 @@ export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 
               role="menuitem"
               onClick={() => handleSelect(lng)}
               className={cn(
-                'w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
+                'w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors',
                 currentLng === lng
                   ? 'bg-primary-accent/15 text-primary-accent font-medium'
                   : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
               )}
             >
+              <span className="flex h-5 w-5 shrink-0 overflow-hidden rounded-full border border-black/10" aria-hidden>
+                <img
+                  src={LANGUAGE_FLAG_SRC[lng]}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </span>
               <span className="flex-1">{LANGUAGE_LABELS[lng]}</span>
               {currentLng === lng && (
                 <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden>

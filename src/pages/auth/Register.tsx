@@ -323,6 +323,16 @@ export function Register() {
         )}
         {showOAuthAuth && (
           <div className="space-y-2 pt-1">
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center" aria-hidden>
+                <span className="w-full border-t border-[var(--color-border)]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-wide">
+                <span className="bg-[var(--color-card)] px-3 text-[var(--color-text-muted)]">
+                  {t('auth:orDivider')}
+                </span>
+              </div>
+            </div>
             <p className="text-xs text-[var(--color-text-muted)]">
               {showGoogleAuth && showYandexAuth
                 ? t('auth:oauthRegisterHint', 'Accept the terms above, then continue with Google or Yandex.')
@@ -337,30 +347,28 @@ export function Register() {
               />
             )}
             {showYandexAuth && (
-              <YandexSignInButton
-                disabled={loading || !watch('acceptTerms')}
-                role={role}
-                acceptTerms={watch('acceptTerms')}
-                flow="register"
-                onBusyChange={setLoading}
-                onError={(msg) => setSubmitError(msg)}
-                onSuccess={async () => {
-                  setSubmitError('')
-                  const user = useAuthStore.getState().user
-                  if (user) await navigateAfterAuth(user)
-                }}
-              />
+              <div
+                className={
+                  watch('acceptTerms')
+                    ? 'transition-opacity'
+                    : 'pointer-events-none opacity-60 saturate-50 transition-opacity'
+                }
+              >
+                <YandexSignInButton
+                  disabled={loading}
+                  role={role}
+                  acceptTerms={watch('acceptTerms')}
+                  flow="register"
+                  onBusyChange={setLoading}
+                  onError={(msg) => setSubmitError(msg)}
+                  onSuccess={async () => {
+                    setSubmitError('')
+                    const user = useAuthStore.getState().user
+                    if (user) await navigateAfterAuth(user)
+                  }}
+                />
+              </div>
             )}
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center" aria-hidden>
-                <span className="w-full border-t border-[var(--color-border)]" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-wide">
-                <span className="bg-[var(--color-card)] px-3 text-[var(--color-text-muted)]">
-                  {t('auth:orDivider')}
-                </span>
-              </div>
-            </div>
           </div>
         )}
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
