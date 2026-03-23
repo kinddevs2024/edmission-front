@@ -27,8 +27,15 @@ export interface AdminUser {
   email: string
   role: string
   name?: string
+  /** ISO date or empty when unknown */
   createdAt: string
   status: 'active' | 'suspended'
+}
+
+function normalizeAdminCreatedAt(raw: Record<string, unknown>): string {
+  const c = raw.createdAt
+  if (c == null || c === '') return ''
+  return String(c)
 }
 
 export interface AdminUniversityProfile {
@@ -218,14 +225,17 @@ export async function getAdminStats(): Promise<AdminStats> {
 export async function getUsers(params?: PaginationParams & { status?: string; role?: string }): Promise<PaginatedResponse<AdminUser>> {
   const res = await api.get<{ data?: Array<Record<string, unknown>>; total?: number; page?: number; limit?: number; totalPages?: number }>('/admin/users', { params })
   const rawList = res.data?.data ?? []
-  const data: AdminUser[] = rawList.map((raw) => ({
-    id: String(raw.id ?? raw._id ?? ''),
-    email: String(raw.email ?? ''),
-    role: String(raw.role ?? ''),
-    name: (raw.name as string | undefined) ?? undefined,
-    createdAt: raw.createdAt != null ? String(raw.createdAt) : new Date().toISOString(),
-    status: (raw.suspended === true ? 'suspended' : 'active') as 'active' | 'suspended',
-  }))
+  const data: AdminUser[] = rawList.map((raw) => {
+    const rec = raw as Record<string, unknown>
+    return {
+      id: String(rec.id ?? rec._id ?? ''),
+      email: String(rec.email ?? ''),
+      role: String(rec.role ?? ''),
+      name: (rec.name as string | undefined) ?? undefined,
+      createdAt: normalizeAdminCreatedAt(rec),
+      status: (rec.suspended === true ? 'suspended' : 'active') as 'active' | 'suspended',
+    }
+  })
   return {
     data,
     total: res.data?.total ?? 0,
@@ -243,13 +253,13 @@ export interface UpdateUserPayload {
 
 export async function updateUser(userId: string, payload: UpdateUserPayload): Promise<AdminUser> {
   const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}`, payload)
-  const raw = data ?? {}
+  const raw = (data ?? {}) as Record<string, unknown>
   return {
     id: String(raw.id ?? raw._id ?? ''),
     email: String(raw.email ?? ''),
     role: String(raw.role ?? ''),
     name: (raw.name as string | undefined) ?? undefined,
-    createdAt: raw.createdAt != null ? String(raw.createdAt) : new Date().toISOString(),
+    createdAt: normalizeAdminCreatedAt(raw),
     status: (raw.suspended ? 'suspended' : 'active') as 'active' | 'suspended',
   }
 }

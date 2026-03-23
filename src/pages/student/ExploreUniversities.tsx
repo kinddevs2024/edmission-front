@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -52,6 +52,8 @@ const TARGET_COUNTRY_OPTIONS = [
   { code: 'AE', label: 'UAE' },
   { code: 'CN', label: 'China' },
 ] as const
+const UNIVERSITIES_PAGE_SIZE = 12
+
 const DEGREE_LEVEL_OPTIONS = ['Bachelor', 'Master', 'PhD', 'Foundation', 'Associate']
 const PROGRAM_LANGUAGE_OPTIONS = ['English', 'Russian', 'Uzbek', 'German', 'French', 'Turkish', 'Chinese', 'Arabic']
 type TranslateLabel = (key: string, defaultValue?: string) => string
@@ -165,14 +167,32 @@ export function ExploreUniversities() {
 
   const { data: universitiesData, isLoading: loading } = useQuery({
     queryKey: ['student', 'universities', page, filters],
-    queryFn: () => getUniversities(buildUniversitySearchParams(page, 12, filters)),
+    queryFn: () => getUniversities(buildUniversitySearchParams(page, UNIVERSITIES_PAGE_SIZE, filters)),
     staleTime: 30 * 1000,
   })
   const list = universitiesData?.data ?? []
-  const total = universitiesData?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / 12))
 
-  const { data: profileFilterCounts } = useQuery({
+  const profileFallbackLockRef = useRef(false)
+
+  /** While the query key changes (new page), data is briefly undefined — avoid total=0 or clamping page to 1. */
+  const stableTotalRef = useRef(0)
+  useEffect(() => {
+    stableTotalRef.current = 0
+  }, [filters])
+  useEffect(() => {
+    const nextTotal = universitiesData?.total
+    if (typeof nextTotal === 'number' && Number.isFinite(nextTotal)) {
+      stableTotalRef.current = nextTotal
+    }
+  }, [universitiesData])
+
+  const total =
+    typeof universitiesData?.total === 'number' && Number.isFinite(universitiesData.total)
+      ? universitiesData.total
+      : stableTotalRef.current
+  const totalPages = Math.max(1, Math.ceil(total / UNIVERSITIES_PAGE_SIZE))
+
+  const { data: profileFilterCounts, isLoading: profileCountsLoading } = useQuery({
     queryKey: ['student', 'profile', 'filterCounts'],
     queryFn: getStudentProfile,
     select: (profile) => ({
@@ -196,8 +216,32 @@ export function ExploreUniversities() {
   })
 
   useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
+    if (loading) return
+    if (universitiesData == null) return
+    const nextTotal = universitiesData.total ?? 0
+    const tp = Math.max(1, Math.ceil(nextTotal / UNIVERSITIES_PAGE_SIZE))
+    if (page > tp) setPage(tp)
+  }, [loading, universitiesData, page])
+
+  /** If "match my profile" is on but profile criteria exclude every university, turn the layer off so the catalog is visible. */
+  useEffect(() => {
+    if (loading) return
+    if (profileCountsLoading) return
+    if (universitiesData == null) return
+    if (!filters.useProfileFilters) {
+      profileFallbackLockRef.current = false
+      return
+    }
+    if (profileCriteriaCount === 0) return
+    if (page !== 1) return
+    if ((universitiesData.total ?? 0) > 0) return
+    if (profileFallbackLockRef.current) return
+    profileFallbackLockRef.current = true
+
+    setFilters((current) => ({ ...current, useProfileFilters: false }))
+    setDraftFilters((current) => ({ ...current, useProfileFilters: false }))
+    notifyInfo(t('student:profileFilterNoMatches'))
+  }, [loading, profileCountsLoading, universitiesData, filters.useProfileFilters, page, profileCriteriaCount, t])
 
   useEffect(() => {
     const params: Record<string, string> = {}
@@ -626,13 +670,21 @@ export function ExploreUniversities() {
 
           {totalPages > 1 ? (
             <div className="mt-6 flex justify-center gap-2">
-              <Button variant="secondary" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1}>
+              <Button
+                variant="secondary"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page <= 1 || loading}
+              >
                 {t('common:prev', 'Previous')}
               </Button>
               <span className="px-4 py-2 text-sm text-[var(--color-text-muted)]">
                 {t('common:pageOfTotal', { page, totalPages, total, defaultValue: 'Page {{page}} of {{totalPages}} · {{total}} total' })}
               </span>
-              <Button variant="secondary" onClick={() => setPage((current) => current + 1)} disabled={page >= totalPages}>
+              <Button
+                variant="secondary"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={page >= totalPages || loading}
+              >
                 {t('common:next', 'Next')}
               </Button>
             </div>

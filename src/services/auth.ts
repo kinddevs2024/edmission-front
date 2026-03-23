@@ -23,6 +23,64 @@ export type RegisterResult =
   | { needsVerification: true; email: string }
   | LoginResponse
 
+export async function loginWithGoogle(payload: {
+  idToken: string
+  role: 'student' | 'university'
+  /** Set true when creating a new account (registration). */
+  acceptTerms: boolean
+}): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/google', {
+    idToken: payload.idToken,
+    role: payload.role,
+    acceptTerms: payload.acceptTerms,
+  })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
+export async function loginWithYandex(payload: {
+  code: string
+  redirectUri: string
+  role: 'student' | 'university'
+  acceptTerms: boolean
+}): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/yandex', {
+    code: payload.code,
+    redirectUri: payload.redirectUri,
+    role: payload.role,
+    acceptTerms: payload.acceptTerms,
+  })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
+/** Yandex Passport SDK (YaAuthSuggest) — после получения OAuth access_token на клиенте. */
+export async function loginWithYandexAccessToken(payload: {
+  accessToken: string
+  role: 'student' | 'university'
+  acceptTerms: boolean
+}): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/yandex/access-token', {
+    accessToken: payload.accessToken,
+    role: payload.role,
+    acceptTerms: payload.acceptTerms,
+  })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   // Всегда начинаем логин "с нуля": очищаем возможные старые токены/пользователя
   clearAuth()

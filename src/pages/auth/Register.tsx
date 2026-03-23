@@ -4,7 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { register as registerApi, verifyEmailByCode, resendVerificationCode } from '@/services/auth'
+import { register as registerApi, verifyEmailByCode, resendVerificationCode, loginWithGoogle } from '@/services/auth'
+import { useAuthStore } from '@/store/authStore'
 import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import i18n, { loadLanguage } from '@/i18n'
@@ -15,6 +16,8 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { GraduationCap, Building2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton'
+import { YandexSignInButton } from '@/components/auth/YandexSignInButton'
 
 export function Register() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
@@ -52,11 +55,16 @@ export function Register() {
   )
   type FormData = z.infer<typeof schema>
 
+  const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim())
+  const showYandexAuth = Boolean(import.meta.env.VITE_YANDEX_CLIENT_ID?.trim())
+  const showOAuthAuth = showGoogleAuth || showYandexAuth
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -70,6 +78,47 @@ export function Register() {
     const t = setInterval(() => setResendCooldown((c) => Math.max(0, c - 1)), 1000)
     return () => clearInterval(t)
   }, [step, resendCooldown])
+
+  const navigateAfterAuth = async (user: { role: string }) => {
+    const nextUrl = user.role === 'student' ? '/student/dashboard' : '/university/select'
+    if (isBrowserLanguageSupported()) {
+      const lng = getBrowserPreferredLanguage()
+      await loadLanguage(lng)
+      i18n.changeLanguage(lng)
+      try {
+        localStorage.setItem(STORAGE_KEY, lng)
+      } catch {
+        /* ignore */
+      }
+      navigate(nextUrl)
+    } else {
+      navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`)
+    }
+  }
+
+  const handleGoogleCredential = async (credential: string) => {
+    if (!getValues('acceptTerms')) {
+      setSubmitError(t('auth:acceptTermsRequired'))
+      return
+    }
+    setSubmitError('')
+    setLoading(true)
+    try {
+      const data = await loginWithGoogle({
+        idToken: credential,
+        role: getValues('role'),
+        acceptTerms: true,
+      })
+      await navigateAfterAuth(data.user)
+    } catch (err) {
+      const apiErr = getApiError(err)
+      const errList = apiErr.errors as Array<{ field?: string; message?: string }> | undefined
+      const firstMsg = Array.isArray(errList) && errList[0]?.message ? errList[0].message : null
+      setSubmitError(firstMsg ?? apiErr.message ?? t(`errors:${getApiErrorKey(err)}`))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const onResend = async () => {
     if (resendCooldown > 0 || resendLoading) return
@@ -100,21 +149,7 @@ export function Register() {
         setPendingEmail(result.email)
         setStep('code')
       } else if ('user' in result && result.user) {
-        const nextUrl =
-          result.user.role === 'student' ? '/student/dashboard' : '/university/select'
-        if (isBrowserLanguageSupported()) {
-          const lng = getBrowserPreferredLanguage()
-          await loadLanguage(lng)
-          i18n.changeLanguage(lng)
-          try {
-            localStorage.setItem(STORAGE_KEY, lng)
-          } catch {
-            /* ignore */
-          }
-          navigate(nextUrl)
-        } else {
-          navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`)
-        }
+        await navigateAfterAuth(result.user)
       }
     } catch (err) {
       const apiErr = getApiError(err)
@@ -139,21 +174,7 @@ export function Register() {
     setCodeLoading(true)
     try {
       const result = await verifyEmailByCode(pendingEmail, code)
-      const nextUrl =
-        result.user.role === 'student' ? '/student/dashboard' : '/university/select'
-      if (isBrowserLanguageSupported()) {
-        const lng = getBrowserPreferredLanguage()
-        await loadLanguage(lng)
-        i18n.changeLanguage(lng)
-        try {
-          localStorage.setItem(STORAGE_KEY, lng)
-        } catch {
-          /* ignore */
-        }
-        navigate(nextUrl)
-      } else {
-        navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`)
-      }
+      await navigateAfterAuth(result.user)
     } catch (err) {
       const apiErr = getApiError(err)
       setCodeError(apiErr.message ?? t('errors:unknown'))
@@ -327,6 +348,48 @@ export function Register() {
         </div>
         {errors.acceptTerms && (
           <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>
+        )}
+        {showOAuthAuth && (
+          <div className="space-y-2 pt-1">
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {showGoogleAuth && showYandexAuth
+                ? t('auth:oauthRegisterHint', 'Accept the terms above, then continue with Google or Yandex.')
+                : showYandexAuth
+                  ? t('auth:yandexRegisterHint', 'Accept the terms above, then continue with Yandex.')
+                  : t('auth:googleRegisterHint')}
+            </p>
+            {showGoogleAuth && (
+              <GoogleSignInButton
+                disabled={loading || !watch('acceptTerms')}
+                onCredential={(c) => void handleGoogleCredential(c)}
+              />
+            )}
+            {showYandexAuth && (
+              <YandexSignInButton
+                disabled={loading || !watch('acceptTerms')}
+                role={role}
+                acceptTerms={watch('acceptTerms')}
+                flow="register"
+                onBusyChange={setLoading}
+                onError={(msg) => setSubmitError(msg)}
+                onSuccess={async () => {
+                  setSubmitError('')
+                  const user = useAuthStore.getState().user
+                  if (user) await navigateAfterAuth(user)
+                }}
+              />
+            )}
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center" aria-hidden>
+                <span className="w-full border-t border-[var(--color-border)]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-wide">
+                <span className="bg-[var(--color-card)] px-3 text-[var(--color-text-muted)]">
+                  {t('auth:orDivider')}
+                </span>
+              </div>
+            </div>
+          </div>
         )}
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         <Button type="submit" className="w-full" loading={loading} disabled={loading}>

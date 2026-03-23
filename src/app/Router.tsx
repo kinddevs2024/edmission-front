@@ -19,6 +19,7 @@ const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail').then((m) => ({
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword').then((m) => ({ default: m.ResetPassword })))
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword').then((m) => ({ default: m.SetPassword })))
 const ChooseLanguage = lazy(() => import('@/pages/auth/ChooseLanguage').then((m) => ({ default: m.ChooseLanguage })))
+const YandexCallback = lazy(() => import('@/pages/auth/YandexCallback').then((m) => ({ default: m.YandexCallback })))
 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
@@ -170,6 +171,7 @@ export function Router() {
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
         <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><SetPassword /></ProtectedRoute>} />
         <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
+        <Route path="/auth/yandex/callback" element={<YandexCallback />} />
       </Route>
 
       <Route path="/" element={<MainLayout />}>
