@@ -39,6 +39,18 @@ export function UniversityDetail() {
     return value
   }
 
+  const getProgramDegree = (program: Program & { degreeLevel?: string }) =>
+    program.degree ?? program.degreeLevel ?? ''
+
+  const getProgramTuition = (program: Program & { tuitionFee?: number }) =>
+    program.tuition ?? program.tuitionFee
+
+  const formatScholarshipDeadline = (iso?: string | null) => {
+    if (!iso) return null
+    const d = new Date(iso)
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString(i18n.language)
+  }
+
   useEffect(() => {
     getApplications({ limit: 500 }).then((res) => {
       const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === id)
@@ -189,29 +201,103 @@ export function UniversityDetail() {
 
       {programs.length > 0 && (
         <Card>
-          <CardTitle>Programs</CardTitle>
-          <ul className="space-y-2">
-            {programs.map((program) => (
-              <li key={program.id} className="flex items-center justify-between">
-                <span>{formatDegree(program.degree)} - {program.field}</span>
-                {program.tuition != null ? <span>{program.tuition}</span> : null}
-                {program.language ? <Badge variant="info">{getLocalizedLanguageName(program.language, i18n.language)}</Badge> : null}
-              </li>
-            ))}
+          <CardTitle>{t('university:facultyProgramsLabel', 'Programs')}</CardTitle>
+          <ul className="space-y-3">
+            {programs.map((program) => {
+              const p = program as Program & { durationYears?: number; entryRequirements?: string }
+              const degreeLabel = formatDegree(getProgramDegree(p))
+              const fieldLabel = p.field?.trim() ?? ''
+              const title =
+                p.name?.trim() ||
+                [degreeLabel, fieldLabel].filter(Boolean).join(' — ') ||
+                t('documents:common.document', 'Program')
+              const tuition = getProgramTuition(p)
+              const durationYears = p.durationYears
+              const durationLabel =
+                durationYears != null && Number.isFinite(Number(durationYears))
+                  ? t('student:programYears', '{{count}} yr', { count: Number(durationYears) })
+                  : p.duration?.trim()
+                    ? p.duration
+                    : null
+
+              return (
+                <li
+                  key={program.id}
+                  className="rounded-card border border-[var(--color-border)] px-3 py-3 space-y-2"
+                >
+                  <div className="font-medium text-[var(--color-text)]">{title}</div>
+                  {p.name?.trim() && (degreeLabel || fieldLabel) ? (
+                    <div className="text-sm text-[var(--color-text-muted)]">
+                      {[degreeLabel, fieldLabel].filter(Boolean).join(' · ')}
+                    </div>
+                  ) : null}
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]">
+                    {durationLabel ? (
+                      <span>
+                        {t('student:programDuration', 'Duration')}: {durationLabel}
+                      </span>
+                    ) : null}
+                    {tuition != null && Number.isFinite(Number(tuition)) ? (
+                      <span>
+                        {t('university:tuitionPrice', 'Tuition')}: {Number(tuition).toLocaleString()}
+                      </span>
+                    ) : null}
+                    {p.language ? (
+                      <Badge variant="info">{getLocalizedLanguageName(p.language, i18n.language)}</Badge>
+                    ) : null}
+                  </div>
+                  {p.entryRequirements?.trim() ? (
+                    <p className="text-sm text-[var(--color-text-muted)] whitespace-pre-wrap border-t border-[var(--color-border)] pt-2">
+                      {p.entryRequirements}
+                    </p>
+                  ) : null}
+                </li>
+              )
+            })}
           </ul>
         </Card>
       )}
 
       {scholarships.length > 0 && (
         <Card>
-          <CardTitle>Scholarships</CardTitle>
-          <ul className="space-y-2">
-            {scholarships.map((s) => (
-              <li key={s.id} className="flex justify-between items-center">
-                <span>{s.name}</span>
-                <Badge variant="success">{s.coveragePercent}% · {s.remainingSlots ?? (s.maxSlots - (s.usedSlots ?? 0))} left</Badge>
-              </li>
-            ))}
+          <CardTitle>{t('university:navScholarships', 'Scholarships')}</CardTitle>
+          <ul className="space-y-3">
+            {scholarships.map((s) => {
+              const deadlineText = formatScholarshipDeadline(s.deadline ?? s.applicationDeadline)
+              const cov = Number(s.coveragePercent)
+              const slots = s.remainingSlots ?? (s.maxSlots != null ? s.maxSlots - (s.usedSlots ?? 0) : NaN)
+              const covOk = Number.isFinite(cov)
+              const slotsOk = Number.isFinite(slots)
+
+              return (
+                <li
+                  key={s.id}
+                  className="rounded-card border border-[var(--color-border)] px-3 py-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <span className="font-medium text-[var(--color-text)]">{s.name}</span>
+                    {deadlineText ? (
+                      <span className="mt-1 block text-xs text-[var(--color-text-muted)]">
+                        {t('student:scholarshipDeadline', 'Deadline')}: {deadlineText}
+                      </span>
+                    ) : null}
+                    {s.eligibility?.trim() ? (
+                      <p className="mt-2 text-sm text-[var(--color-text-muted)] whitespace-pre-wrap">{s.eligibility}</p>
+                    ) : null}
+                  </div>
+                  {(covOk || slotsOk) && (
+                    <Badge variant="success" className="shrink-0 self-start">
+                      {[
+                        covOk ? `${cov}%` : null,
+                        slotsOk ? t('student:scholarshipSlotsLeft', '{{count}} left', { count: slots }) : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Badge>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </Card>
       )}

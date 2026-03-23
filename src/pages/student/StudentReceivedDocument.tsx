@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
-import { CelebrationModal } from '@/components/documents/CelebrationModal'
 import { DocumentCanvasStage } from '@/components/documents/DocumentCanvasStage'
 import { DocumentSummaryPanel } from '@/components/documents/DocumentSummaryPanel'
 import { DocumentStatusBadge } from '@/components/documents/DocumentStatusBadge'
@@ -20,8 +19,9 @@ export function StudentReceivedDocument() {
   const { id } = useParams()
   const [document, setDocument] = useState<UniversityDocumentSummary | null>(null)
   const [loading, setLoading] = useState(true)
-  const [celebrationOpen, setCelebrationOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState<'accept' | 'decline' | 'postpone' | null>(null)
+  /** One auto view-mark per document id (avoids duplicate API calls in Strict Mode). */
+  const lastAutoViewDocumentId = useRef<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -29,7 +29,16 @@ export function StudentReceivedDocument() {
     getIssuedDocument(id)
       .then((data) => {
         setDocument(data)
-        setCelebrationOpen(!data.viewedAt && data.status === 'sent')
+        // User is already on the document page — no second "you received an offer" modal.
+        // Mark as viewed so global offer celebration and this page stay in sync.
+        const shouldMarkView = data.status === 'sent' && !data.viewedAt
+        const alreadySentForThisId = lastAutoViewDocumentId.current === id
+        if (shouldMarkView && !alreadySentForThisId) {
+          lastAutoViewDocumentId.current = id
+          viewIssuedDocument(id)
+            .then(setDocument)
+            .catch(toastApiError)
+        }
       })
       .catch((error) => {
         toastApiError(error)
@@ -50,16 +59,6 @@ export function StudentReceivedDocument() {
     [document]
   )
   const sceneZoom = scene ? (scene.page.width > scene.page.height ? 0.32 : 0.45) : 0.45
-
-  const handleViewDocument = () => {
-    if (!id) return
-    viewIssuedDocument(id)
-      .then((data) => {
-        setDocument(data)
-        setCelebrationOpen(false)
-      })
-      .catch(toastApiError)
-  }
 
   const runDecision = async (action: 'accept' | 'decline' | 'postpone', runner: () => Promise<UniversityDocumentSummary>) => {
     setActionLoading(action)
@@ -88,14 +87,6 @@ export function StudentReceivedDocument() {
     <div className="space-y-4">
       <PageTitle title={document.title ?? t('documents:common.document', 'Document')} icon="FileText" />
 
-      <CelebrationModal
-        open={celebrationOpen}
-        universityName={document.university?.name ?? t('documents:common.university', 'University')}
-        type={document.type}
-        onView={handleViewDocument}
-        onClose={() => setCelebrationOpen(false)}
-      />
-
       <Card className="flex flex-wrap items-start justify-between gap-3 border border-[var(--color-border)]">
         <div>
           <h2 className="text-2xl font-semibold">{document.university?.name ?? t('documents:common.university', 'University')}</h2>
@@ -120,22 +111,6 @@ export function StudentReceivedDocument() {
           {t('documents:studentDocument.closedForFurtherActions', 'This document is closed for further actions.')}
         </Card>
       )}
-
-      {document.events?.length ? (
-        <Card className="space-y-3 border border-[var(--color-border)]">
-          <h3 className="text-lg font-semibold">{t('documents:common.timeline', 'Timeline')}</h3>
-          <div className="space-y-2">
-            {document.events.map((event) => (
-              <div key={event.id} className="rounded-[18px] border border-[var(--color-border)] px-3 py-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium">{event.eventType}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">{new Date(event.createdAt).toLocaleString()}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      ) : null}
 
       <div className="flex justify-end">
         <Button variant="secondary" onClick={() => navigate('/student/offers')}>{t('documents:studentDocument.backToOffers', 'Back to offers')}</Button>

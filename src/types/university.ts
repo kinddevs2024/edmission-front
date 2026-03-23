@@ -47,12 +47,19 @@ export interface UniversityProfile {
 export interface Program {
   id: string
   universityId: string
-  degree: string
-  field: string
+  /** Display title from university / catalog */
+  name?: string
+  degree?: string
+  /** Same as degree in many APIs */
+  degreeLevel?: string
+  field?: string
   tuition?: number
+  tuitionFee?: number
   duration?: string
+  durationYears?: number
   language?: string
   requirements?: string
+  entryRequirements?: string
 }
 
 export interface Faculty {
@@ -84,7 +91,9 @@ export interface Scholarship {
   maxSlots: number
   usedSlots?: number
   remainingSlots?: number
+  /** ISO string from API when valid */
   deadline?: string
+  applicationDeadline?: string
   eligibility?: string
   createdAt?: string
 }

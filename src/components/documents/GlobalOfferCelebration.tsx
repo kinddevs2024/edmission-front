@@ -1,24 +1,34 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useSocket } from '@/hooks/useSocket'
 import { listIssuedDocuments } from '@/services/documents'
 import { CelebrationModal } from '@/components/documents/CelebrationModal'
 import type { UniversityDocumentSummary } from '@/types/documentModule'
 
-const ACTIVE_STATUSES: UniversityDocumentSummary['status'][] = ['sent', 'viewed', 'postponed']
+/** Offer celebration only for documents the student has not opened yet (backend sets status + viewedAt on view). */
+function needsOfferCelebration(document: UniversityDocumentSummary, dismissedId: string | null): boolean {
+  if (document.id === dismissedId) return false
+  if (document.viewedAt) return false
+  return document.status === 'sent' || document.status === 'postponed'
+}
 
 export function GlobalOfferCelebration() {
   const { user } = useAuth()
   const { onNotification } = useSocket()
   const navigate = useNavigate()
+  const location = useLocation()
   const [documents, setDocuments] = useState<UniversityDocumentSummary[]>([])
   const [dismissedId, setDismissedId] = useState<string | null>(null)
 
+  const refreshOffers = useCallback(() => {
+    listIssuedDocuments({ type: 'offer' }).then(setDocuments).catch(() => setDocuments([]))
+  }, [])
+
   useEffect(() => {
     if (user?.role !== 'student') return
-    listIssuedDocuments({ type: 'offer' }).then(setDocuments).catch(() => setDocuments([]))
-  }, [user?.role])
+    refreshOffers()
+  }, [user?.role, location.pathname, refreshOffers])
 
   useEffect(() => {
     if (user?.role !== 'student') return
@@ -27,12 +37,12 @@ export function GlobalOfferCelebration() {
       listIssuedDocuments({ type: 'offer' }).then((items) => {
         setDismissedId(null)
         setDocuments(items)
-      }).catch(() => {})
+      }).catch(() => { })
     })
   }, [onNotification, user?.role])
 
   const pendingOffer = useMemo(
-    () => documents.find((document) => ACTIVE_STATUSES.includes(document.status) && document.id !== dismissedId),
+    () => documents.find((document) => needsOfferCelebration(document, dismissedId)),
     [documents, dismissedId]
   )
 
@@ -45,7 +55,9 @@ export function GlobalOfferCelebration() {
       type={pendingOffer.type}
       onClose={() => setDismissedId(pendingOffer.id)}
       onView={() => {
-        setDismissedId(null)
+        // Dismiss this offer in the global layer so the modal does not stay open
+        // after navigation (clearing dismissedId was a bug — it re-selected the same doc).
+        setDismissedId(pendingOffer.id)
         navigate(`/student/received-documents/${pendingOffer.id}`)
       }}
     />
