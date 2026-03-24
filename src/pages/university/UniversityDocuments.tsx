@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card } from '@/components/ui/Card'
@@ -8,10 +8,14 @@ import { DocumentCanvasStage } from '@/components/documents/DocumentCanvasStage'
 import { DocumentSummaryPanel } from '@/components/documents/DocumentSummaryPanel'
 import { DocumentStatusBadge } from '@/components/documents/DocumentStatusBadge'
 import { TemplateCard } from '@/components/documents/TemplateCard'
-import { deleteIssuedDocument, duplicateDocumentTemplate, getIssuedDocument, getDocumentTemplates, listIssuedDocuments, revokeIssuedDocument, updateDocumentTemplate } from '@/services/documents'
-import { parseScene } from '@/utils/documentScene'
+import { Modal } from '@/components/ui/Modal'
+import { createDocumentTemplate, deleteIssuedDocument, duplicateDocumentTemplate, getIssuedDocument, getDocumentTemplates, listIssuedDocuments, revokeIssuedDocument, updateDocumentTemplate } from '@/services/documents'
+import { uploadFile } from '@/services/upload'
+import { useDocumentEditorStore } from '@/store/documentEditorStore'
+import { createBlankScene, parseScene, stringifyScene } from '@/utils/documentScene'
 import { toastApiError } from '@/utils/toastError'
-import type { DocumentTemplate, UniversityDocumentSummary } from '@/types/documentModule'
+import type { DocumentPageFormat, DocumentTemplate, UniversityDocumentSummary } from '@/types/documentModule'
+import { UploadCloud } from 'lucide-react'
 
 type DocumentsTab = 'templates' | 'sent' | 'drafts' | 'settings'
 
@@ -27,6 +31,14 @@ export function UniversityDocuments() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'active' | 'archived'>('all')
   const [selectedDocument, setSelectedDocument] = useState<UniversityDocumentSummary | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [uploadingTemplate, setUploadingTemplate] = useState(false)
+  const [templateUploadFile, setTemplateUploadFile] = useState<File | null>(null)
+  const [templateUploadPreview, setTemplateUploadPreview] = useState('')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const resetEditor = useDocumentEditorStore((state) => state.reset)
+  const setEditorMeta = useDocumentEditorStore((state) => state.setMetadata)
+  const addEditorElement = useDocumentEditorStore((state) => state.addElement)
 
   const loadTemplates = () =>
     getDocumentTemplates({
@@ -95,6 +107,111 @@ export function UniversityDocuments() {
       .catch(toastApiError)
   }
 
+  const handleUploadTemplateBackground = async () => {
+    if (!templateUploadFile) return
+    setUploadingTemplate(true)
+    try {
+      const pageConfig = await resolvePageConfig(templateUploadFile)
+      const fileUrl = await uploadFile(templateUploadFile)
+      resetEditor({
+        type: typeFilter === 'scholarship' ? 'scholarship' : 'offer',
+        pageFormat: pageConfig.pageFormat,
+        width: pageConfig.width,
+        height: pageConfig.height,
+      })
+      const nextScene = useDocumentEditorStore.getState().scene
+      setEditorMeta({
+        name: templateUploadFile.name.replace(/\.[^.]+$/, ''),
+        assets: [
+          {
+            type: templateUploadFile.type === 'application/pdf' ? 'pdf_background' : 'background',
+            fileUrl,
+            fileName: templateUploadFile.name,
+            mimeType: templateUploadFile.type || 'application/octet-stream',
+          },
+        ],
+      })
+      if (templateUploadFile.type !== 'application/pdf') {
+        addEditorElement({
+          id: `background-${Date.now()}`,
+          type: 'image',
+          x: 0,
+          y: 0,
+          width: nextScene.page.width,
+          height: nextScene.page.height,
+          src: fileUrl,
+          locked: true,
+          layer: -1,
+        })
+      }
+      setUploadModalOpen(false)
+      setTemplateUploadFile(null)
+      if (templateUploadPreview) {
+        URL.revokeObjectURL(templateUploadPreview)
+        setTemplateUploadPreview('')
+      }
+      navigate('/university/documents/templates/new')
+    } catch (error) {
+      toastApiError(error)
+    } finally {
+      setUploadingTemplate(false)
+    }
+  }
+
+  const handleSaveTemplateFromUpload = async () => {
+    if (!templateUploadFile) return
+    setUploadingTemplate(true)
+    try {
+      const pageConfig = await resolvePageConfig(templateUploadFile)
+      const fileUrl = await uploadFile(templateUploadFile)
+      const scene = createBlankScene(pageConfig.pageFormat, pageConfig.width, pageConfig.height)
+      if (templateUploadFile.type !== 'application/pdf') {
+        scene.elements.push({
+          id: `background-${Date.now()}`,
+          type: 'image',
+          x: 0,
+          y: 0,
+          width: scene.page.width,
+          height: scene.page.height,
+          src: fileUrl,
+          locked: true,
+          layer: -1,
+        })
+      }
+      await createDocumentTemplate({
+        name: templateUploadFile.name.replace(/\.[^.]+$/, '') || 'Template',
+        type: typeFilter === 'scholarship' ? 'scholarship' : 'offer',
+        status: 'draft',
+        pageFormat: scene.page.format,
+        width: scene.page.width,
+        height: scene.page.height,
+        editorVersion: '1.0.0',
+        canvasJson: stringifyScene(scene),
+        assets: [
+          {
+            type: templateUploadFile.type === 'application/pdf' ? 'pdf_background' : 'background',
+            fileUrl,
+            fileName: templateUploadFile.name,
+            mimeType: templateUploadFile.type || 'application/octet-stream',
+            width: scene.page.width,
+            height: scene.page.height,
+          },
+        ],
+      })
+      setUploadModalOpen(false)
+      setTemplateUploadFile(null)
+      if (templateUploadPreview) {
+        URL.revokeObjectURL(templateUploadPreview)
+        setTemplateUploadPreview('')
+      }
+      await loadTemplates()
+    } catch (error) {
+      toastApiError(error)
+    } finally {
+      setUploadingTemplate(false)
+    }
+  }
+
   const tabs: Array<{ id: DocumentsTab; label: string }> = [
     { id: 'templates', label: t('documents:universityDocuments.tabs.templates', 'Templates') },
     { id: 'sent', label: t('documents:universityDocuments.tabs.sent', 'Sent documents') },
@@ -103,6 +220,7 @@ export function UniversityDocuments() {
   ]
 
   return (
+    <>
     <div className="space-y-4">
       <PageTitle title={t('documents:universityDocuments.pageTitle', 'Documents')} icon="FileText" />
 
@@ -130,7 +248,12 @@ export function UniversityDocuments() {
               <Button variant={statusFilter === 'active' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('active')}>{t('documents:templateStatus.active', 'Active')}</Button>
               <Button variant={statusFilter === 'archived' ? 'primary' : 'secondary'} size="sm" onClick={() => setStatusFilter('archived')}>{t('documents:templateStatus.archived', 'Archived')}</Button>
             </div>
-            <Button onClick={() => navigate('/university/documents/templates/new')}>{t('documents:universityDocuments.createTemplate', 'Create template')}</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => setUploadModalOpen(true)}>
+                {t('documents:universityDocuments.uploadDocument', 'Upload document')}
+              </Button>
+              <Button onClick={() => navigate('/university/documents/templates/new')}>{t('documents:universityDocuments.createTemplate', 'Create template')}</Button>
+            </div>
           </div>
 
           {loading ? (
@@ -283,5 +406,103 @@ export function UniversityDocuments() {
       ) : null}
 
     </div>
+    
+    <Modal
+      open={uploadModalOpen}
+      onClose={() => setUploadModalOpen(false)}
+      title={t('documents:universityDocuments.uploadDocument', 'Upload document')}
+      footer={
+        <>
+          <Button variant="secondary" onClick={() => setUploadModalOpen(false)}>{t('common:cancel', 'Cancel')}</Button>
+          <Button variant="secondary" onClick={handleSaveTemplateFromUpload} disabled={!templateUploadFile || uploadingTemplate} loading={uploadingTemplate}>
+            {t('common:save', 'Save')}
+          </Button>
+          <Button onClick={handleUploadTemplateBackground} disabled={!templateUploadFile || uploadingTemplate} loading={uploadingTemplate}>
+            {t('documents:universityDocuments.continueToEditor', 'Continue to editor')}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,application/pdf"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0] ?? null
+            setTemplateUploadFile(file)
+            if (templateUploadPreview) URL.revokeObjectURL(templateUploadPreview)
+            setTemplateUploadPreview(file ? URL.createObjectURL(file) : '')
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="group w-full rounded-card border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg)]/70 p-8 text-center transition-colors hover:border-primary-accent hover:bg-primary-accent/5"
+        >
+          <div className="mx-auto flex w-full max-w-md flex-col items-center gap-2">
+            <UploadCloud className="h-8 w-8 text-[var(--color-text-muted)] group-hover:text-primary-accent" />
+            <p className="text-sm font-medium text-[var(--color-text)]">
+              {t('documents:universityDocuments.uploadDropzoneTitle', 'Click to choose a file')}
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {t('documents:universityDocuments.uploadDropzoneHint', 'Image or PDF works best as template background')}
+            </p>
+          </div>
+        </button>
+        {templateUploadFile ? (
+          <p className="text-sm text-[var(--color-text-muted)] break-all">{templateUploadFile.name}</p>
+        ) : null}
+        {templateUploadFile && templateUploadPreview ? (
+          templateUploadFile.type.startsWith('image/') ? (
+            <img src={templateUploadPreview} alt="" className="w-full max-h-72 rounded-card object-cover bg-[var(--color-border)]/30" />
+          ) : (
+            <div className="rounded-card border border-dashed border-[var(--color-border)] p-3 text-sm text-[var(--color-text-muted)]">
+              {t('documents:universityDocuments.fileSelected', 'File selected and ready to continue')}
+            </div>
+          )
+        ) : null}
+      </div>
+    </Modal>
+    </>
   )
+}
+
+async function resolvePageConfig(file: File): Promise<{ pageFormat: DocumentPageFormat; width?: number; height?: number }> {
+  if (!file.type.startsWith('image/')) {
+    return { pageFormat: 'A4_PORTRAIT' }
+  }
+  try {
+    const dimensions = await getImageDimensions(file)
+    return {
+      pageFormat: 'CUSTOM',
+      width: Math.max(320, Math.round(dimensions.width)),
+      height: Math.max(320, Math.round(dimensions.height)),
+    }
+  } catch {
+    return { pageFormat: 'A4_PORTRAIT' }
+  }
+}
+
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file)
+    const image = new Image()
+    image.onload = () => {
+      const width = image.naturalWidth || image.width
+      const height = image.naturalHeight || image.height
+      URL.revokeObjectURL(objectUrl)
+      if (!width || !height) {
+        reject(new Error('Invalid image dimensions'))
+        return
+      }
+      resolve({ width, height })
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Image load failed'))
+    }
+    image.src = objectUrl
+  })
 }

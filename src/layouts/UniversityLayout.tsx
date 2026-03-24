@@ -35,6 +35,7 @@ export function UniversityLayout() {
             { to: '/university/students', label: t('navDiscovery', 'Discovery'), icon: 'Users' },
             { to: '/university/pipeline', label: t('navPipeline', 'Pipeline'), icon: 'GitBranch' },
             { to: '/university/documents', label: 'Documents', icon: 'FileText' },
+            { to: '/university/flyers', label: t('navFlyers', 'Flyers'), icon: 'Image' },
             { to: '/university/scholarships', label: t('navScholarships', 'Scholarships'), icon: 'Wallet' },
             { to: '/university/faculties', label: t('navFaculties', 'Faculties'), icon: 'Building2' },
             { to: '/university/analytics', label: t('navAnalytics', 'Analytics'), icon: 'BarChart3' },

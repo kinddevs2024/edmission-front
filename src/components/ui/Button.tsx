@@ -27,10 +27,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
 }
 
-const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-input transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98]'
+const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-input transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]'
 const variantClasses = {
-  primary: 'bg-primary-accent text-primary-dark hover:bg-primary-accent/90 shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-button-hover)]',
-  secondary: 'border-2 border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)]',
+  primary: 'bg-primary-accent text-primary-dark hover:bg-primary-accent/90 shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-button-hover)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)] disabled:shadow-none',
+  secondary: 'border-2 border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)] disabled:bg-[var(--color-border)]/40 disabled:text-[var(--color-text-muted)]',
   ghost: 'bg-transparent hover:bg-[var(--color-border)]',
   danger: 'bg-red-500 text-white hover:bg-red-600 hover:shadow-md',
 }

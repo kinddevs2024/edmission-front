@@ -98,6 +98,24 @@ export interface Scholarship {
   createdAt?: string
 }
 
+export interface UniversityFlyer {
+  id: string
+  universityId?: string
+  title?: string
+  source?: 'upload' | 'url' | 'editor'
+  mediaUrl?: string
+  mediaType?: string
+  canvasJson?: string
+  pageFormat?: 'A4_PORTRAIT' | 'A4_LANDSCAPE' | 'LETTER' | 'CUSTOM'
+  width?: number
+  height?: number
+  editorVersion?: string
+  previewImageUrl?: string
+  isPublished?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export type PipelineStage =
   | 'interested'
   | 'contacted'

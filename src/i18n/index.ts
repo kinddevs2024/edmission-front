@@ -2,6 +2,7 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { supportedLngs, defaultNS, fallbackLng, namespaces, getInitialLanguage } from './config'
 import { studentEn, commonEn, schoolEn } from './fallbackEn'
+import { supplementalPatches } from './supplementalPatches'
 
 /** Inline fallback when fetch returns empty (always works). */
 const FALLBACK_EN: Record<string, object> = { student: studentEn, common: commonEn, school: schoolEn }
@@ -111,10 +112,17 @@ async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<R
 
 function applyLocalePatches(lng: string, resources: Record<string, object>): Record<string, object> {
   const patchByNs = LOCALE_PATCHES[lng]
-  if (!patchByNs) return resources
   const next = { ...resources }
-  for (const [ns, patch] of Object.entries(patchByNs)) {
-    next[ns] = { ...(next[ns] as Record<string, unknown> | undefined), ...patch }
+  if (patchByNs) {
+    for (const [ns, patch] of Object.entries(patchByNs)) {
+      next[ns] = { ...(next[ns] as Record<string, unknown> | undefined), ...patch }
+    }
+  }
+  const extraPatch = supplementalPatches[lng as keyof typeof supplementalPatches]
+  if (extraPatch) {
+    for (const [ns, patch] of Object.entries(extraPatch)) {
+      next[ns] = { ...(next[ns] as Record<string, unknown> | undefined), ...(patch as Record<string, unknown>) }
+    }
   }
   return next
 }

@@ -76,6 +76,7 @@ export function MainLayout() {
         { to: '/university/students', label: t('university:navDiscovery', 'Discovery'), icon: 'Users' },
         { to: '/university/pipeline', label: t('university:navPipeline', 'Pipeline'), icon: 'GitBranch' },
         { to: '/university/documents', label: 'Documents', icon: 'FileText' },
+        { to: '/university/flyers', label: t('university:navFlyers', 'Flyers'), icon: 'Image' },
         { to: '/university/scholarships', label: t('university:navScholarships', 'Scholarships'), icon: 'Wallet' },
         { to: '/university/faculties', label: t('university:navFaculties', 'Faculties'), icon: 'Building2' },
         { to: '/university/analytics', label: t('university:navAnalytics', 'Analytics'), icon: 'BarChart3' },

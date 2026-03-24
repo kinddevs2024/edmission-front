@@ -511,8 +511,14 @@ export function StudentProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-4">
-        <p className="text-[var(--color-text-muted)]">{t('loadingProfile')}</p>
+      <div className="space-y-4 p-4">
+        <div className="h-8 w-72 rounded-card bg-[var(--color-border)] animate-pulse" />
+        <div className="h-24 rounded-card bg-[var(--color-border)] animate-pulse" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div key={idx} className="h-28 rounded-card bg-[var(--color-border)] animate-pulse" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -642,7 +648,7 @@ export function StudentProfilePage() {
             <Button type="button" variant="secondary" onClick={closeSection}>
               {t('common:cancel', 'Cancel')}
             </Button>
-            <Button type="button" onClick={handleModalSave} disabled={saving} loading={saving}>
+            <Button type="button" onClick={handleModalSave} disabled={saving || !isDirty} loading={saving}>
               {t('common:save')}
             </Button>
           </>

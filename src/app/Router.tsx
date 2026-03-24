@@ -48,6 +48,8 @@ const UniversitySelect = lazy(() => import('@/pages/university/UniversitySelect'
 const OfferTemplates = lazy(() => import('@/pages/university/OfferTemplates').then((m) => ({ default: m.OfferTemplates })))
 const UniversityDocuments = lazy(() => import('@/pages/university/UniversityDocuments').then((m) => ({ default: m.UniversityDocuments })))
 const DocumentTemplateEditorPage = lazy(() => import('@/pages/university/DocumentTemplateEditorPage').then((m) => ({ default: m.DocumentTemplateEditorPage })))
+const UniversityFlyers = lazy(() => import('@/pages/university/UniversityFlyers').then((m) => ({ default: m.UniversityFlyers })))
+const UniversityFlyerEditorPage = lazy(() => import('@/pages/university/UniversityFlyerEditorPage').then((m) => ({ default: m.UniversityFlyerEditorPage })))
 
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
 const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics').then((m) => ({ default: m.AdminAnalytics })))
@@ -217,6 +219,8 @@ export function Router() {
           <Route path="analytics" element={<UniversityAnalytics />} />
           <Route path="chat" element={<UniversityChat />} />
           <Route path="documents" element={<UniversityDocuments />} />
+          <Route path="flyers" element={<UniversityFlyers />} />
+          <Route path="flyers/new" element={<UniversityFlyerEditorPage />} />
           <Route path="documents/templates/new" element={<DocumentTemplateEditorPage />} />
           <Route path="documents/templates/:id/edit" element={<DocumentTemplateEditorPage />} />
           <Route path="offer-templates" element={<OfferTemplates />} />

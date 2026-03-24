@@ -22,6 +22,7 @@ export const SITE_PAGES: SitePageItem[] = [
   { path: '/university/profile', labelKey: 'university:navProfile', terms: ['profile', 'профиль', 'profil'] },
   { path: '/university/students', labelKey: 'university:navDiscovery', terms: ['discovery', 'students', 'студенты', 'talabalar'] },
   { path: '/university/pipeline', labelKey: 'university:navPipeline', terms: ['pipeline', 'пайплайн', 'pipeline'] },
+  { path: '/university/flyers', labelKey: 'university:navFlyers', terms: ['flyers', 'flyer', 'флаер', 'флайер', 'poster', 'пост', 'media'] },
   { path: '/university/scholarships', labelKey: 'university:navScholarships', terms: ['scholarships', 'стипендии', 'stipendiyalar'] },
   { path: '/university/faculties', labelKey: 'university:navFaculties', terms: ['faculties', 'факультеты', 'fakultetlar'] },
   { path: '/university/analytics', labelKey: 'university:navAnalytics', terms: ['analytics', 'аналитика', 'tahlil'] },

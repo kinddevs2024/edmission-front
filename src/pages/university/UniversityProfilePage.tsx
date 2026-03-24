@@ -58,7 +58,7 @@ export function UniversityProfilePage() {
   const [, setProfile] = useState<UniversityProfile | null>(null)
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       logo: '',
@@ -119,8 +119,10 @@ export function UniversityProfilePage() {
 
   if (loading) {
     return (
-      <div className="w-full">
-        <p className="text-[var(--color-text-muted)]">{t('university:loadingProfile')}</p>
+      <div className="w-full space-y-4">
+        <div className="h-8 w-64 rounded-card bg-[var(--color-border)] animate-pulse" />
+        <Card><div className="h-52 rounded-card bg-[var(--color-border)] animate-pulse" /></Card>
+        <Card><div className="h-40 rounded-card bg-[var(--color-border)] animate-pulse" /></Card>
       </div>
     )
   }
@@ -281,7 +283,7 @@ export function UniversityProfilePage() {
         </Card>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={saving} loading={saving}>
+          <Button type="submit" disabled={saving || !isDirty} loading={saving}>
             {t('common:save')}
           </Button>
         </div>

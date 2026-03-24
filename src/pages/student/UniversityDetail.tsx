@@ -13,7 +13,8 @@ import { toastApiError } from '@/utils/toastError'
 import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
 import { MessageCircle } from 'lucide-react'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
-import type { UniversityProfile, Program, Scholarship, Faculty } from '@/types/university'
+import { getPublicUniversityFlyers } from '@/services/university'
+import type { UniversityProfile, Program, Scholarship, Faculty, UniversityFlyer } from '@/types/university'
 import { notifySuccess } from '@/utils/notify'
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
@@ -22,6 +23,7 @@ export function UniversityDetail() {
   const [programs, setPrograms] = useState<Program[]>([])
   const [scholarships, setScholarships] = useState<Scholarship[]>([])
   const [faculties, setFaculties] = useState<Faculty[]>([])
+  const [flyers, setFlyers] = useState<UniversityFlyer[]>([])
   const [matchScore, setMatchScore] = useState<number | null>(null)
   const [matchBreakdown, setMatchBreakdown] = useState<Record<string, number> | null>(null)
   const [interested, setInterested] = useState(false)
@@ -81,6 +83,13 @@ export function UniversityDetail() {
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
+      })
+    getPublicUniversityFlyers(id)
+      .then((items) => {
+        if (!cancelled) setFlyers(items)
+      })
+      .catch(() => {
+        if (!cancelled) setFlyers([])
       })
     return () => { cancelled = true }
   }, [id])
@@ -313,6 +322,52 @@ export function UniversityDetail() {
               </li>
             ))}
           </ul>
+        </Card>
+      )}
+
+      {flyers.length > 0 && (
+        <Card>
+          <CardTitle>{t('university:navFlyers', 'Flyers')}</CardTitle>
+          <div className="grid gap-3 md:grid-cols-2">
+            {flyers.map((flyer) => {
+              const mediaType = (flyer.mediaType ?? '').toLowerCase()
+              const isImage = mediaType.startsWith('image/')
+              const isVideo = mediaType.startsWith('video/')
+              const editorPreview = flyer.previewImageUrl ? getImageUrl(flyer.previewImageUrl) : ''
+              const mediaHref = flyer.mediaUrl ? getImageUrl(flyer.mediaUrl) : ''
+              return (
+                <div key={flyer.id} className="rounded-card border border-[var(--color-border)] p-3 space-y-2">
+                  {flyer.title ? <h3 className="font-medium text-[var(--color-text)]">{flyer.title}</h3> : null}
+                  {flyer.source === 'editor' && editorPreview ? (
+                    <img
+                      src={editorPreview}
+                      alt={flyer.title ?? ''}
+                      loading="lazy"
+                      className="w-full max-h-72 rounded-card object-cover bg-[var(--color-border)]/30"
+                    />
+                  ) : isImage ? (
+                    <img
+                      src={mediaHref}
+                      alt={flyer.title ?? ''}
+                      loading="lazy"
+                      className="w-full max-h-72 rounded-card object-cover bg-[var(--color-border)]/30"
+                    />
+                  ) : isVideo ? (
+                    <video src={mediaHref} controls className="w-full max-h-72 rounded-card bg-black/80" />
+                  ) : (
+                    <a
+                      href={mediaHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-primary-accent underline"
+                    >
+                      Open document
+                    </a>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </Card>
       )}
 

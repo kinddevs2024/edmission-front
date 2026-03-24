@@ -235,6 +235,24 @@ mergeNamespacePatch('en', 'university', {
   layoutMinimal: 'Minimal',
   offerTemplateDefaultTitle: 'Offer for {{studentName}}',
   offerTemplateDefaultBody: 'Dear {{studentName}},\n\nWe are pleased to offer you admission to {{programName}}.',
+  navFlyers: 'Flyers',
+  flyers: {
+    pageTitle: 'Flyers',
+    pageHint: 'Create visual posts for students. Primary option is upload from device; editor mode is optional.',
+    addFlyer: 'Add flyer',
+    createWithEditor: 'Create with Redactor Editor',
+    optionalTitle: 'Title (optional)',
+    optionalTitlePlaceholder: 'Optional post title',
+    uploadFromDevice: 'Upload from device',
+    fileSelected: 'File selected and ready to publish',
+    dropzoneTitle: 'Click to choose a file',
+    dropzoneHint: 'Images, videos and documents are supported',
+    publish: 'Publish flyer',
+    saving: 'Saving...',
+    empty: 'No flyers yet. Click "Add flyer" to publish your first post.',
+    editorTitle: 'Create flyer with editor',
+    editorPost: 'Created with editor',
+  },
 })
 
 mergeNamespacePatch('ru', 'university', {
@@ -243,6 +261,24 @@ mergeNamespacePatch('ru', 'university', {
   layoutMinimal: 'Минималистичный',
   offerTemplateDefaultTitle: 'Оффер для {{studentName}}',
   offerTemplateDefaultBody: 'Здравствуйте, {{studentName}}!\n\nМы рады предложить вам зачисление на программу {{programName}}.',
+  navFlyers: 'Флайеры',
+  flyers: {
+    pageTitle: 'Флайеры',
+    pageHint: 'Создавайте визуальные посты для студентов. Основной вариант — загрузка с устройства, редактор — дополнительный.',
+    addFlyer: 'Добавить флайер',
+    createWithEditor: 'Создать через редактор',
+    optionalTitle: 'Название (необязательно)',
+    optionalTitlePlaceholder: 'Необязательное название поста',
+    uploadFromDevice: 'Загрузить с устройства',
+    fileSelected: 'Файл выбран и готов к публикации',
+    dropzoneTitle: 'Нажмите, чтобы выбрать файл',
+    dropzoneHint: 'Поддерживаются изображения, видео и документы',
+    publish: 'Опубликовать флайер',
+    saving: 'Сохранение...',
+    empty: 'Пока нет флайеров. Нажмите «Добавить флайер», чтобы опубликовать первый пост.',
+    editorTitle: 'Создать флайер в редакторе',
+    editorPost: 'Создано через редактор',
+  },
 })
 
 mergeNamespacePatch('uz', 'university', {
@@ -251,12 +287,37 @@ mergeNamespacePatch('uz', 'university', {
   layoutMinimal: 'Minimal',
   offerTemplateDefaultTitle: '{{studentName}} uchun taklif',
   offerTemplateDefaultBody: 'Hurmatli {{studentName}},\n\nSizga {{programName}} dasturiga qabul taklif qilinayotganidan mamnunmiz.',
+  navFlyers: 'Flayerlar',
+  flyers: {
+    pageTitle: 'Flayerlar',
+    pageHint: 'Talabalar uchun vizual postlar yarating. Asosiy usul — qurilmadan yuklash, redaktor esa qo‘shimcha.',
+    addFlyer: 'Flayer qo‘shish',
+    createWithEditor: 'Redaktor orqali yaratish',
+    optionalTitle: 'Sarlavha (ixtiyoriy)',
+    optionalTitlePlaceholder: 'Post uchun ixtiyoriy sarlavha',
+    uploadFromDevice: 'Qurilmadan yuklash',
+    fileSelected: 'Fayl tanlandi va nashrga tayyor',
+    dropzoneTitle: 'Fayl tanlash uchun bosing',
+    dropzoneHint: 'Rasm, video va hujjatlar qo‘llab-quvvatlanadi',
+    publish: 'Flayerni nashr qilish',
+    saving: 'Saqlanmoqda...',
+    empty: 'Hali flayerlar yo‘q. Birinchi postni chiqarish uchun «Flayer qo‘shish» tugmasini bosing.',
+    editorTitle: 'Redaktorda flayer yaratish',
+    editorPost: 'Redaktor orqali yaratilgan',
+  },
 })
 
 mergeNamespacePatch('en', 'documents', {
   type: {
     offer: 'Offer',
     scholarship: 'Scholarship',
+  },
+  universityDocuments: {
+    uploadDocument: 'Upload document',
+    continueToEditor: 'Continue to editor',
+    uploadDropzoneTitle: 'Click to choose a file',
+    uploadDropzoneHint: 'Image or PDF works best as template background',
+    fileSelected: 'File selected and ready to continue',
   },
 })
 
@@ -265,12 +326,26 @@ mergeNamespacePatch('ru', 'documents', {
     offer: 'Оффер',
     scholarship: 'Стипендия',
   },
+  universityDocuments: {
+    uploadDocument: 'Загрузить документ',
+    continueToEditor: 'Продолжить в редактор',
+    uploadDropzoneTitle: 'Нажмите, чтобы выбрать файл',
+    uploadDropzoneHint: 'Изображение или PDF лучше всего подходят как фон шаблона',
+    fileSelected: 'Файл выбран и готов к продолжению',
+  },
 })
 
 mergeNamespacePatch('uz', 'documents', {
   type: {
     offer: 'Taklif',
     scholarship: 'Stipendiya',
+  },
+  universityDocuments: {
+    uploadDocument: 'Hujjat yuklash',
+    continueToEditor: 'Redaktorga o‘tish',
+    uploadDropzoneTitle: 'Fayl tanlash uchun bosing',
+    uploadDropzoneHint: 'Rasm yoki PDF shablon foni uchun eng mos',
+    fileSelected: 'Fayl tanlandi va davom etishga tayyor',
   },
 })
 

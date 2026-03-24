@@ -48,6 +48,7 @@ export function Profile() {
   const [linkedin, setLinkedin] = useState(user?.socialLinks?.linkedin ?? '')
   const [facebook, setFacebook] = useState(user?.socialLinks?.facebook ?? '')
   const [whatsapp, setWhatsapp] = useState(user?.socialLinks?.whatsapp ?? '')
+  const [accountSaving, setAccountSaving] = useState(false)
 
   useEffect(() => {
     setName(user?.name ?? '')
@@ -102,6 +103,7 @@ export function Profile() {
   }
 
   const handleAccountSave = () => {
+    setAccountSaving(true)
     updateProfile({
       name,
       phone,
@@ -109,7 +111,17 @@ export function Profile() {
     })
       .then(() => getProfile())
       .catch(toastApiError)
+      .finally(() => setAccountSaving(false))
   }
+
+  const accountDirty =
+    (name ?? '') !== (user?.name ?? '') ||
+    (phone ?? '') !== (user?.phone ?? '') ||
+    (telegram ?? '') !== (user?.socialLinks?.telegram ?? '') ||
+    (instagram ?? '') !== (user?.socialLinks?.instagram ?? '') ||
+    (linkedin ?? '') !== (user?.socialLinks?.linkedin ?? '') ||
+    (facebook ?? '') !== (user?.socialLinks?.facebook ?? '') ||
+    (whatsapp ?? '') !== (user?.socialLinks?.whatsapp ?? '')
 
   return (
     <div className="w-full space-y-4">
@@ -145,7 +157,9 @@ export function Profile() {
           <Input label="WhatsApp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+998 90 123 45 67" />
         </div>
         <div className="mt-4">
-          <Button onClick={handleAccountSave}>{t('save', 'Save')}</Button>
+          <Button onClick={handleAccountSave} disabled={!accountDirty || accountSaving} loading={accountSaving}>
+            {t('save', 'Save')}
+          </Button>
         </div>
       </Card>
 

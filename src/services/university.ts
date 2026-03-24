@@ -1,7 +1,7 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { DocumentPageFormat, StudentProfileDocumentType } from '@/types/documentModule'
-import type { UniversityProfile, Scholarship, Faculty, GlobalFaculty } from '@/types/university'
+import type { UniversityProfile, Scholarship, Faculty, GlobalFaculty, UniversityFlyer } from '@/types/university'
 import type { SocialLinks } from '@/types/user'
 
 type UniversityProfileResponse = UniversityProfile & { universityName?: string; tagline?: string; establishedYear?: number; minLanguageLevel?: string; tuitionPrice?: number }
@@ -108,6 +108,30 @@ export async function updateFaculty(id: string, payload: { name?: string; descri
 
 export async function deleteFaculty(id: string): Promise<void> {
   await api.delete(`/university/faculties/${id}`)
+}
+
+export async function getUniversityFlyers(): Promise<UniversityFlyer[]> {
+  const { data } = await api.get<UniversityFlyer[]>('/university/flyers')
+  return data ?? []
+}
+
+export async function createUniversityFlyer(payload: Partial<UniversityFlyer>): Promise<UniversityFlyer> {
+  const { data } = await api.post<UniversityFlyer>('/university/flyers', payload)
+  return data
+}
+
+export async function updateUniversityFlyer(id: string, payload: Partial<UniversityFlyer>): Promise<UniversityFlyer> {
+  const { data } = await api.patch<UniversityFlyer>(`/university/flyers/${id}`, payload)
+  return data
+}
+
+export async function deleteUniversityFlyer(id: string): Promise<void> {
+  await api.delete(`/university/flyers/${id}`)
+}
+
+export async function getPublicUniversityFlyers(universityId: string): Promise<UniversityFlyer[]> {
+  const { data } = await api.get<UniversityFlyer[]>(`/student/universities/${universityId}/flyers`)
+  return data ?? []
 }
 
 export interface FunnelAnalytics {
