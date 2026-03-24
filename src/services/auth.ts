@@ -135,6 +135,7 @@ export async function logout(): Promise<void> {
     queryClient.clear()
     useAuthStore.getState().logout()
     useAIChatStore.getState().resetSession()
+    window.location.href = '/'
   }
 }
 

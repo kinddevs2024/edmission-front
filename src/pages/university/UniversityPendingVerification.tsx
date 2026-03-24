@@ -15,7 +15,7 @@ export function UniversityPendingVerification() {
     } catch (error) {
       toastApiError(error)
     } finally {
-      window.location.href = '/login'
+      window.location.href = '/'
     }
   }
 
