@@ -240,8 +240,7 @@ export function ExploreUniversities() {
 
     setFilters((current) => ({ ...current, useProfileFilters: false }))
     setDraftFilters((current) => ({ ...current, useProfileFilters: false }))
-    notifyInfo(t('student:profileFilterNoMatches'))
-  }, [loading, profileCountsLoading, universitiesData, filters.useProfileFilters, page, profileCriteriaCount, t])
+  }, [loading, profileCountsLoading, universitiesData, filters.useProfileFilters, page, profileCriteriaCount])
 
   useEffect(() => {
     const params: Record<string, string> = {}
