@@ -66,16 +66,16 @@ export function TrustedSection() {
           className="relative mt-8 overflow-hidden logos-viewport"
           aria-label={t('trusted.title')}
         >
-          <div className="flex w-max trusted-logos-marquee gap-10 px-2 pb-2">
+          <div className="flex w-max trusted-logos-marquee items-center gap-12 py-2">
             {marqueeLogos.map((logo, i) => (
               <div
                 key={`${logo.id}-${i}`}
-                className="trusted-logo-item flex h-12 w-32 flex-shrink-0 items-center justify-center opacity-100 sm:h-14 sm:w-40"
+                className="flex h-14 w-44 shrink-0 items-center justify-center px-2 sm:h-16 sm:w-48"
               >
                 <img
                   src={logo.logoUrl}
                   alt={logo.name}
-                  className="max-h-full w-full object-contain object-center"
+                  className="max-h-12 max-w-full object-contain object-center sm:max-h-14"
                   loading="lazy"
                 />
               </div>

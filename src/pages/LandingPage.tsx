@@ -5,7 +5,6 @@ import { HowItWorksSection } from '@/components/sections/landing/HowItWorksSecti
 import { AccreditationSection } from '@/components/sections/landing/AccreditationSection'
 import { CertificationsSection } from '@/components/sections/landing/CertificationsSection'
 import { StudentTestimonialsSection } from '@/components/sections/landing/StudentTestimonialsSection'
-import { TestimonialsSection } from '@/components/sections/landing/TestimonialsSection'
 import { CtaBlock } from '@/components/sections/landing/CtaBlock'
 import { FAQSection } from '@/components/sections/landing/FAQSection'
 import { FinalCtaSection } from '@/components/sections/landing/FinalCtaSection'
@@ -26,7 +25,6 @@ export function LandingPage() {
       <AccreditationSection />
       <CertificationsSection />
       <StudentTestimonialsSection />
-      <TestimonialsSection />
       <CtaBlock />
       <Suspense fallback={<div className="min-h-[50vh] w-full" />}>
         <LandingBelowFold />

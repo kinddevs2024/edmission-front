@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
 import { Menu, UserRound, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
-import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { loadLanguage } from '@/i18n'
 import { STORAGE_KEY, supportedLngs, type SupportedLng } from '@/i18n/config'
 
@@ -84,6 +83,19 @@ export function LandingHeader() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [closeMenu, location.pathname, menuOpen])
 
+  /** MainLayout keeps the page in an overflow-auto flex child, not window — scroll that ancestor. */
+  const getScrollParent = (node: HTMLElement): Element | Window => {
+    let parent = node.parentElement
+    while (parent && parent !== document.documentElement) {
+      const { overflowY } = getComputedStyle(parent)
+      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') {
+        return parent
+      }
+      parent = parent.parentElement
+    }
+    return window
+  }
+
   const scrollTo = (id: string) => {
     const target = document.getElementById(id)
     if (!target) {
@@ -92,8 +104,20 @@ export function LandingHeader() {
     }
 
     const performScroll = () => {
-      const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+      const scroller = getScrollParent(target)
+      if (scroller === window) {
+        const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+        return
+      }
+      const el = scroller as HTMLElement
+      const st = el.scrollTop
+      const containerTop = el.getBoundingClientRect().top
+      const targetTop = target.getBoundingClientRect().top
+      el.scrollTo({
+        top: Math.max(0, st + targetTop - containerTop - HEADER_OFFSET),
+        behavior: 'smooth',
+      })
     }
 
     if (menuOpen) {
@@ -164,7 +188,6 @@ export function LandingHeader() {
           {/* Desktop: Language, Theme, Login, Register */}
           <div className="hidden lg:flex items-center gap-2">
             <LanguageMenu />
-            <ThemeSwitch />
             <Link
               to="/login"
               className="rounded-input border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
@@ -352,7 +375,6 @@ export function LandingHeader() {
               </nav>
               <div className="p-4 border-t border-[var(--color-border)] flex items-center gap-3">
                 <LanguageMenu placement="top" />
-                <ThemeSwitch />
               </div>
             </aside>
           </>,
