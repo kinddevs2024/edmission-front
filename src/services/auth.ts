@@ -160,12 +160,20 @@ export async function setPassword(newPassword: string): Promise<void> {
 export async function getProfile(): Promise<User> {
   const { data } = await api.get<User>('/auth/me')
   useAuthStore.getState().setUser(data)
+  const token = useAuthStore.getState().accessToken
+  if (token) {
+    saveAuth(data, token, getStoredRefreshToken())
+  }
   return data
 }
 
 export async function updateProfile(patch: Partial<Pick<User, 'name' | 'phone' | 'socialLinks' | 'avatar' | 'notificationPreferences' | 'onboardingTutorialSeen'>>): Promise<User> {
   const { data } = await api.patch<User>('/auth/me', patch)
   useAuthStore.getState().setUser(data)
+  const token = useAuthStore.getState().accessToken
+  if (token) {
+    saveAuth(data, token, getStoredRefreshToken())
+  }
   return data
 }
 

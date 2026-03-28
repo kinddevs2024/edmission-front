@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { setPassword, getProfile } from '@/services/auth'
 import { useAuth } from '@/hooks/useAuth'
+import { navigateAfterLogin } from '@/utils/navigateAfterAuth'
 import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
 import { newPasswordValueSchema } from '@/utils/authPasswordZod'
 import { Button } from '@/components/ui/Button'
@@ -18,6 +19,12 @@ export function SetPassword() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user) return
+    if (user.mustChangePassword || user.mustSetLocalPassword) return
+    navigateAfterLogin(navigate, user)
+  }, [user, navigate])
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)

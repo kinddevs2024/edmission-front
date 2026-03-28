@@ -247,8 +247,6 @@ export function Profile() {
           <dd>{user?.email}</dd>
           <dt className="text-[var(--color-text-muted)]">{t('name')}</dt>
           <dd>{user?.name ?? '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{t('role')}</dt>
-          <dd>{user?.role}</dd>
         </dl>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <Input label={t('name')} value={name} onChange={(e) => setName(e.target.value)} />
