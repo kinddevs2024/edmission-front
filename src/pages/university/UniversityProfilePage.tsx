@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Building2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -12,7 +13,8 @@ import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { useTranslation } from 'react-i18next'
 import { getProfile, updateProfile } from '@/services/university'
-import { getApiError } from '@/services/auth'
+import { getApiError, getProfile as refreshAuthUser } from '@/services/auth'
+import { getImageUrl } from '@/services/upload'
 import type { UniversityProfile } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 
@@ -65,6 +67,9 @@ export function UniversityProfilePage() {
     },
   })
   const logoValue = watch('logo') ?? ''
+  const nameValue = watch('name') ?? ''
+  const [logoPreviewError, setLogoPreviewError] = useState(false)
+  useEffect(() => setLogoPreviewError(false), [logoValue])
 
   useEffect(() => {
     getProfile()
@@ -110,6 +115,7 @@ export function UniversityProfilePage() {
         tuitionPrice: data.tuitionPrice ?? undefined,
       })
       setProfile(updated)
+      await refreshAuthUser().catch(() => {})
     } catch (e) {
       setError(getApiError(e).message)
     } finally {
@@ -133,6 +139,26 @@ export function UniversityProfilePage() {
         <PageTitle title={t('university:profileTitle')} icon="User" />
       </div>
       <p className="text-[var(--color-text-muted)]">{t('university:profileIntro')}</p>
+
+      <div className="flex flex-wrap items-center gap-4" data-onboarding="university-profile-logo-preview">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-[var(--color-border)] bg-[var(--color-card)] flex items-center justify-center overflow-hidden shrink-0">
+          {logoValue.trim() && !logoPreviewError ? (
+            <img
+              src={getImageUrl(logoValue)}
+              alt=""
+              className="w-full h-full object-contain p-1.5"
+              onError={() => setLogoPreviewError(true)}
+            />
+          ) : (
+            <Building2 className="w-8 h-8 sm:w-9 sm:h-9 text-[var(--color-text-muted)]" aria-hidden />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--color-text)] truncate">
+            {nameValue || t('university:profileTitle')}
+          </h2>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {error && (

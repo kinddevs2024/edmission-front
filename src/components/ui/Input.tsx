@@ -66,8 +66,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <button
         type="button"
         tabIndex={-1}
-        className="p-1 rounded hover:bg-black/10 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-        onClick={isControlled ? onPasswordVisibilityToggle : () => setInternalShow((v) => !v)}
+        className="relative z-20 p-1 rounded hover:bg-black/10 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          if (isControlled) onPasswordVisibilityToggle?.()
+          else setInternalShow((v) => !v)
+        }}
         aria-label={showPassword ? t('hidePassword') : t('showPassword')}
       >
         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -94,7 +99,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error && 'border-red-500 focus:ring-red-500',
               success && 'border-green-500',
               !error && !success && 'border-[var(--color-border)]',
-              icon && 'pr-10',
+              icon && 'pr-11',
+              isPassword && showPasswordToggle && 'edmission-password-custom-toggle',
               className
             )}
             aria-invalid={!!error}
@@ -102,7 +108,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {icon && (
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8">
+            <div className="pointer-events-auto absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center">
               {icon}
             </div>
           )}

@@ -11,7 +11,13 @@ interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'size'> {
 }
 
 export const Textarea = forwardRef<HTMLDivElement, TextareaProps>(
-  function Textarea({ label, error, resize = false, variant = 'outlined', color = 'green', size = 'md', className, ...props }, ref) {
+  function Textarea(
+    { label, error, resize = false, variant = 'outlined', color = 'green', size = 'md', className, placeholder: placeholderProp, ...props },
+    ref
+  ) {
+    // MT outlined + label: use space placeholder so only the floating label shows (no duplicate hint inside the field).
+    const placeholder =
+      label != null && String(label).trim() !== '' ? (placeholderProp ?? ' ') : placeholderProp
     return (
       <MTTextarea
         ref={ref}
@@ -22,7 +28,7 @@ export const Textarea = forwardRef<HTMLDivElement, TextareaProps>(
         error={!!error}
         resize={resize}
         className={className}
-        placeholder={props.placeholder ?? ' '}
+        placeholder={placeholder}
         containerProps={{ className: 'min-w-0 w-full' }}
         onResize={undefined}
         onResizeCapture={undefined}

@@ -7,7 +7,13 @@ export function AuthLayout() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface-light dark:bg-primary-dark p-3 sm:p-4 safe-area-pb">
       <div className="w-full max-w-md">
-        <Suspense fallback={<div className="h-48 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary-accent border-t-transparent rounded-full animate-spin" /></div>}>
+        <Suspense
+          fallback={
+            <div className="flex min-h-[min(70dvh,32rem)] w-full items-center justify-center py-12" aria-hidden>
+              <div className="h-8 w-8 shrink-0 rounded-full border-2 border-primary-accent border-t-transparent animate-spin" />
+            </div>
+          }
+        >
           <Outlet />
         </Suspense>
       </div>

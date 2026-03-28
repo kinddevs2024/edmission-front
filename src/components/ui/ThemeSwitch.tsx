@@ -1,60 +1,51 @@
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/store/uiStore'
 import { Moon, Sun } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
-/** Track = rounded-input (12px). Inner thumb radius = 12px - 2px padding = 10px so edges align with site. */
-const TRACK_PADDING = 2
-const TRACK_RADIUS_PX = 12
-const THUMB_RADIUS_PX = TRACK_RADIUS_PX - TRACK_PADDING
-
+/** One tap toggles light ↔ dark; icons crossfade with a small rotation. */
 export function ThemeSwitch() {
+  const { t } = useTranslation('common')
   const theme = useUIStore((s) => s.theme)
-  const setTheme = useUIStore((s) => s.setTheme)
+  const toggleTheme = useUIStore((s) => s.toggleTheme)
   const isDark = theme === 'dark'
 
   return (
-    <div
-      className="flex border border-[var(--color-border)] bg-[var(--color-bg)]"
-      style={{ borderRadius: TRACK_RADIUS_PX, padding: TRACK_PADDING }}
-      role="group"
-      aria-label="Theme"
+    <button
+      type="button"
+      onClick={() => toggleTheme()}
+      className={cn(
+        'relative h-10 w-10 shrink-0 overflow-hidden rounded-input border border-[var(--color-border)] bg-[var(--color-bg)]',
+        'flex items-center justify-center',
+        'transition-[background-color,box-shadow,transform] duration-200',
+        'hover:border-primary-accent/35 hover:bg-[var(--color-border)]/15 hover:shadow-[0_0_0_1px_var(--color-primary-accent)]/10',
+        'active:scale-[0.94]',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)]'
+      )}
+      aria-label={t('themeToggle')}
+      aria-pressed={isDark}
+      title={t('themeToggle')}
     >
-      <button
-        type="button"
-        onClick={() => setTheme('light')}
+      <Sun
         className={cn(
-          'p-1.5 transition-colors duration-200',
-          !isDark ? 'bg-primary-accent text-primary-dark' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+          'absolute h-[1.125rem] w-[1.125rem] transition-all duration-300 ease-out',
+          isDark
+            ? 'scale-50 rotate-90 opacity-0'
+            : 'scale-100 rotate-0 opacity-100 text-amber-500 dark:text-amber-400'
         )}
-        style={{
-          borderTopLeftRadius: THUMB_RADIUS_PX,
-          borderBottomLeftRadius: THUMB_RADIUS_PX,
-          borderTopRightRadius: 0,
-          borderBottomRightRadius: 0,
-        }}
-        aria-label="Light theme"
-        aria-pressed={!isDark}
-      >
-        <Sun className="w-4 h-4" />
-      </button>
-      <button
-        type="button"
-        onClick={() => setTheme('dark')}
+        strokeWidth={2.25}
+        aria-hidden
+      />
+      <Moon
         className={cn(
-          'p-1.5 transition-colors duration-200',
-          isDark ? 'bg-primary-accent text-primary-dark' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+          'absolute h-[1.125rem] w-[1.125rem] transition-all duration-300 ease-out',
+          isDark
+            ? 'scale-100 rotate-0 opacity-100 text-sky-400'
+            : 'scale-50 -rotate-90 opacity-0'
         )}
-        style={{
-          borderTopLeftRadius: 0,
-          borderBottomLeftRadius: 0,
-          borderTopRightRadius: THUMB_RADIUS_PX,
-          borderBottomRightRadius: THUMB_RADIUS_PX,
-        }}
-        aria-label="Dark theme"
-        aria-pressed={isDark}
-      >
-        <Moon className="w-4 h-4" />
-      </button>
-    </div>
+        strokeWidth={2.25}
+        aria-hidden
+      />
+    </button>
   )
 }

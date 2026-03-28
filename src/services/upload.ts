@@ -13,7 +13,11 @@ export const DEFAULT_STUDENT_AVATAR = '/default-student-avatar.svg'
 export function getImageUrl(value: string | undefined | null): string {
   if (!value) return ''
   if (value.startsWith('http') || value.startsWith('data:')) return value
-  const path = value.startsWith('/') ? value : `/${value}`
+  let path = value.startsWith('/') ? value : `/${value}`
+  // Express serves files at /api/uploads; older data may store /uploads/... only
+  if (path.startsWith('/uploads/') && !path.startsWith('/api/')) {
+    path = `/api${path}`
+  }
   return apiOrigin ? `${apiOrigin}${path}` : path
 }
 
@@ -30,9 +34,7 @@ export function getStudentAvatarUrl(avatarUrl: string | undefined | null): strin
 export async function uploadFile(file: File): Promise<string> {
   const formData = new FormData()
   formData.append('file', file)
-  const { data } = await api.post<{ url: string }>('/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const { data } = await api.post<{ url: string }>('/upload', formData)
   return resolveUploadUrl(data?.url ?? '')
 }
 
@@ -42,9 +44,7 @@ export async function uploadFile(file: File): Promise<string> {
 export async function uploadAvatarForRegister(file: File): Promise<string> {
   const formData = new FormData()
   formData.append('file', file)
-  const { data } = await api.post<{ url: string }>('/upload/avatar', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  const { data } = await api.post<{ url: string }>('/upload/avatar', formData)
   return resolveUploadUrl(data?.url ?? '')
 }
 

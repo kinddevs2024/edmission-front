@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 type NotifyOptions = {
   description?: string
   duration?: number
+  action?: { label: string; onClick: () => void }
 }
 
 const BASE_CLASS =
@@ -13,14 +14,16 @@ export function notifySuccess(message: string, options: NotifyOptions = {}): voi
     description: options.description,
     duration: options.duration ?? 3800,
     className: BASE_CLASS,
+    action: options.action,
   })
 }
 
 export function notifyInfo(message: string, options: NotifyOptions = {}): void {
   toast(message, {
     description: options.description,
-    duration: options.duration ?? 4200,
+    duration: options.duration ?? 5200,
     className: BASE_CLASS,
+    action: options.action,
   })
 }
 
@@ -29,5 +32,6 @@ export function notifyError(message: string, options: NotifyOptions = {}): void 
     description: options.description,
     duration: options.duration ?? 5200,
     className: BASE_CLASS,
+    action: options.action,
   })
 }

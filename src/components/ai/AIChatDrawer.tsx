@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { useAIChatStore, type ChatMessage } from '@/store/aiChatStore'
 import { parseAIActions } from '@/utils/parseAIActions'
+import {
+  AIStreamingPlaceholder,
+  isAssistantAwaitingFirstChunk,
+} from '@/components/ai/AIStreamingPlaceholder'
 
 const FALLBACK_PLACEHOLDERS = ['Type your question…', 'What would you like to ask?', 'How can I help?']
 const FALLBACK_SUGGESTED = [
@@ -226,7 +230,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   return (
     <>
       <motion.div
-        className={cn('fixed inset-0 z-40 bg-black/30', !open && 'pointer-events-none')}
+        className={cn('fixed inset-0 z-[55] bg-black/30', !open && 'pointer-events-none')}
         initial={false}
         animate={{ opacity: open ? 1 : 0 }}
         transition={{ duration: 0.2 }}
@@ -234,14 +238,20 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         aria-hidden
       />
       <motion.div
-        className="fixed inset-0 md:inset-auto md:right-0 md:top-0 md:bottom-0 z-50 w-full md:max-w-md bg-[var(--color-card)] border-l border-[var(--color-border)] shadow-xl flex flex-col"
+        className={cn(
+          'fixed z-[60] flex w-full flex-col min-h-0 bg-[var(--color-card)] shadow-xl',
+          'border-l border-[var(--color-border)]',
+          /* Mobile: full viewport height so flex children can shrink and the list scrolls */
+          'inset-0 h-[100dvh] max-h-[100dvh]',
+          'md:inset-auto md:left-auto md:right-0 md:top-0 md:bottom-0 md:h-auto md:max-h-none md:max-w-md'
+        )}
         initial={false}
         animate={{ x: open ? 0 : '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         role="dialog"
         aria-label={t('openAIChat')}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] shrink-0">
+        <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
           <div className="flex flex-col gap-0.5 min-w-0">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-primary-accent shrink-0" aria-hidden />
@@ -288,7 +298,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col items-center justify-center p-4"
+            className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto p-4"
           >
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -346,7 +356,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
           </motion.div>
         ) : (
           <div
-            className="flex-1 overflow-y-auto p-4 space-y-4"
+            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 overscroll-contain"
             onMouseUp={handleSelectText}
             onTouchEnd={handleSelectText}
           >
@@ -364,7 +374,12 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                 )}
               >
                 {m.role === 'assistant' && (
-                  <div className="shrink-0 w-8 h-8 rounded-full bg-primary-accent/20 flex items-center justify-center">
+                  <div
+                    className={cn(
+                      'shrink-0 w-8 h-8 rounded-full bg-primary-accent/20 flex items-center justify-center',
+                      isAssistantAwaitingFirstChunk(m, loading, messages) && 'ai-avatar-working'
+                    )}
+                  >
                     <Bot className="w-4 h-4 text-primary-accent" aria-hidden />
                   </div>
                 )}
@@ -382,15 +397,17 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                       <p className="whitespace-pre-wrap break-words">{m.thinking}</p>
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap break-words">
+                  <div className="whitespace-pre-wrap break-words">
                     {m.role === 'assistant' && m.text ? (
-                      <MessageTextWithLinks text={m.text} className="whitespace-pre-wrap break-words" />
+                      <p className="whitespace-pre-wrap break-words m-0">
+                        <MessageTextWithLinks text={m.text} className="whitespace-pre-wrap break-words" />
+                      </p>
                     ) : m.text ? (
-                      m.text
-                    ) : loading && m.id === messages[messages.length - 1]?.id ? (
-                      <span className="text-[var(--color-text-muted)] animate-pulse">...</span>
+                      <p className="whitespace-pre-wrap break-words m-0">{m.text}</p>
+                    ) : isAssistantAwaitingFirstChunk(m, loading, messages) ? (
+                      <AIStreamingPlaceholder />
                     ) : null}
-                  </p>
+                  </div>
                 </div>
                 {m.role === 'user' && (
                   <div className="shrink-0 w-8 h-8 rounded-full bg-[var(--color-border)]/30 flex items-center justify-center">
@@ -400,23 +417,6 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
               </motion.div>
             ))}
             </AnimatePresence>
-            {loading && (() => {
-              const last = messages[messages.length - 1]
-              const isStreamingAssistant = last?.role === 'assistant'
-              const hasContent = isStreamingAssistant && (Boolean(last?.text) || Boolean(last?.thinking))
-              if (isStreamingAssistant && hasContent) return null
-              if (isStreamingAssistant) return null
-              return (
-                <div className="flex gap-2 justify-start">
-                  <div className="shrink-0 w-8 h-8 rounded-full bg-primary-accent/20 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-primary-accent animate-pulse" aria-hidden />
-                  </div>
-                  <div className="rounded-card px-4 py-2.5 bg-[var(--color-border)]/25 text-sm text-[var(--color-text-muted)]">
-                    {t('typing')}
-                  </div>
-                </div>
-              )
-            })()}
             {error && <p className="text-sm text-red-500">{error}</p>}
             {rateLimitMessage && (
               <p className="text-sm text-amber-600 dark:text-amber-400">{rateLimitMessage}</p>
@@ -439,7 +439,11 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         )}
 
         {(messages.length > 0 || loading) && (
-        <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--color-border)] shrink-0" data-chat-form>
+        <form
+          onSubmit={handleSubmit}
+          className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-card)] p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))]"
+          data-chat-form
+        >
           {selectionAsk && (
             <p className="text-xs text-[var(--color-text-muted)] mb-2">
               {t('askingAboutSelection')}

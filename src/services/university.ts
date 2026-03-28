@@ -228,6 +228,7 @@ export interface DiscoverStudentItem {
     verifiedAt?: string
     portfolioCompletionPercent?: number
     languages?: { language: string; level: string }[]
+    profileVisibility?: 'private' | 'public'
   }
   inPipeline: boolean
 }
@@ -334,6 +335,7 @@ export interface FullStudentProfile {
   budgetCurrency?: string
   interestedFaculties?: string[]
   preferredCountries?: string[]
+  profileVisibility?: 'private' | 'public'
 }
 
 export async function getStudentProfile(studentId: string): Promise<FullStudentProfile> {

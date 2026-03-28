@@ -1,8 +1,9 @@
-import { useState, useEffect, type Ref } from 'react'
+import { useState, useEffect, useRef, type Ref } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
 import { uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
 import { getApiError } from '@/services/auth'
 import { cn } from '@/utils/cn'
+import { AvatarCropModal } from '@/components/ui/AvatarCropModal'
 
 interface FileUploadProps {
   value?: string
@@ -32,14 +33,61 @@ export function FileUpload({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [imgLoadError, setImgLoadError] = useState(false)
+  const [cropOpen, setCropOpen] = useState(false)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const cropObjectUrlRef = useRef<string | null>(null)
   useEffect(() => setImgLoadError(false), [value])
 
   const uploadFn = publicUpload ? uploadAvatarForRegister : uploadFile
 
+  const isAvatar = variant === 'avatar'
+
+  const closeCrop = () => {
+    if (cropObjectUrlRef.current) {
+      URL.revokeObjectURL(cropObjectUrlRef.current)
+      cropObjectUrlRef.current = null
+    }
+    setCropSrc(null)
+    setCropOpen(false)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (cropObjectUrlRef.current) URL.revokeObjectURL(cropObjectUrlRef.current)
+    }
+  }, [])
+
+  const handleCropConfirm = async (blob: Blob) => {
+    setError('')
+    setUploading(true)
+    try {
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+      const url = await uploadFn(file)
+      onChange(url)
+      closeCrop()
+    } catch (err: unknown) {
+      setError(getApiError(err).message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    const input = e.target
     if (!file) return
+    input.value = ''
     setError('')
+
+    if (isAvatar) {
+      if (cropObjectUrlRef.current) URL.revokeObjectURL(cropObjectUrlRef.current)
+      const url = URL.createObjectURL(file)
+      cropObjectUrlRef.current = url
+      setCropSrc(url)
+      setCropOpen(true)
+      return
+    }
+
     setUploading(true)
     try {
       const url = await uploadFn(file)
@@ -48,11 +96,9 @@ export function FileUpload({
       setError(getApiError(err).message)
     } finally {
       setUploading(false)
-      e.target.value = ''
     }
   }
 
-  const isAvatar = variant === 'avatar'
   const shouldTryImagePreview = (() => {
     if (!value || !accept.includes('image')) return false
     if (value.startsWith('data:')) return true
@@ -64,6 +110,15 @@ export function FileUpload({
 
   return (
     <div className={cn('space-y-2', className)}>
+      {isAvatar && (
+        <AvatarCropModal
+          open={cropOpen}
+          imageSrc={cropSrc}
+          onClose={closeCrop}
+          onConfirm={handleCropConfirm}
+          busy={uploading}
+        />
+      )}
       {label && (
         <label className="block text-sm font-medium text-[var(--color-text)]">
           {label}
@@ -81,7 +136,7 @@ export function FileUpload({
           accept={accept}
           onChange={handleFile}
           className="absolute inset-0 cursor-pointer opacity-0 z-10"
-          disabled={uploading}
+          disabled={uploading || cropOpen}
           aria-label={label ?? 'Upload file'}
         />
         {uploading ? (

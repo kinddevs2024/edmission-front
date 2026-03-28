@@ -7,6 +7,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  /** Avoid stale pre-bundle after adding deps (504 Outdated Optimize Dep). */
+  optimizeDeps: {
+    include: ['react-easy-crop'],
+  },
   build: {
     rollupOptions: {
       output: {

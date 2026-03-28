@@ -17,7 +17,7 @@ import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, ExternalLink } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, ExternalLink, Lock } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -94,14 +94,16 @@ const schema = z.object({
   preferredCountries: z.array(z.string()).optional(),
   budgetAmount: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(0).optional()),
   budgetCurrency: z.string().optional(),
+  profileVisibility: z.enum(['private', 'public']),
 })
 
 type FormData = z.infer<typeof schema>
 
-type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works'
+type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'privacy'
 
-const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User }[] = [
+const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof Lock }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
+  { id: 'privacy', titleKey: 'stepPrivacy', icon: Lock },
   { id: 'location', titleKey: 'stepLocation', icon: MapPin },
   { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
   { id: 'about', titleKey: 'stepAbout', icon: FileText },
@@ -158,6 +160,8 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
       return Array.isArray(profile.experiences) && profile.experiences.length > 0 ? 100 : 0
     case 'works':
       return Array.isArray(profile.portfolioWorks) && profile.portfolioWorks.length > 0 ? 100 : 0
+    case 'privacy':
+      return 100
     default:
       return 0
   }
@@ -281,6 +285,7 @@ export function StudentProfilePage() {
       preferredCountries: [],
       budgetAmount: undefined,
       budgetCurrency: 'USD',
+      profileVisibility: 'private',
     },
   })
 
@@ -423,6 +428,7 @@ export function StudentProfilePage() {
       preferredCountries: data.preferredCountries ?? [],
       budgetAmount: data.budgetAmount,
       budgetCurrency: data.budgetCurrency ?? 'USD',
+      profileVisibility: data.profileVisibility === 'public' ? 'public' : 'private',
     }
   }
 
@@ -481,6 +487,7 @@ export function StudentProfilePage() {
       preferredCountries: data.preferredCountries ?? [],
       budgetAmount: data.budgetAmount != null ? data.budgetAmount : undefined,
       budgetCurrency: data.budgetCurrency || undefined,
+      profileVisibility: data.profileVisibility,
     }
   }
 
@@ -527,11 +534,18 @@ export function StudentProfilePage() {
     <div className="w-full space-y-5 min-h-0">
       <PageTitle title={t('portfolioTitle')} icon="User" />
       <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
-        <img
-          src={getStudentAvatarUrl(profile?.avatarUrl)}
-          alt=""
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[var(--color-border)] flex-shrink-0 bg-[var(--color-border)]"
-        />
+        <Link
+          to="/profile"
+          className="block shrink-0 rounded-full transition-[box-shadow,transform] hover:scale-[1.02] hover:ring-2 hover:ring-primary-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+          aria-label={t('common:profile')}
+          title={t('common:profile')}
+        >
+          <img
+            src={getStudentAvatarUrl(profile?.avatarUrl)}
+            alt=""
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[var(--color-border)] bg-[var(--color-border)]"
+          />
+        </Link>
         <div className="min-w-0 flex-1">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
             {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || t('portfolioTitle')}
@@ -662,6 +676,29 @@ export function StudentProfilePage() {
                 <Input label={t('lastName')} error={errors.lastName?.message} {...register('lastName')} />
               </div>
               <Input label={t('birthDate')} type="date" error={errors.birthDate?.message} {...register('birthDate')} />
+            </>
+          )}
+
+          {openSection === 'privacy' && (
+            <>
+              <p className="text-sm font-medium text-[var(--color-text)]">{t('profileVisibilityTitle')}</p>
+              <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">{t('profileVisibilityHint')}</p>
+              <div className="space-y-4 mt-2">
+                <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
+                  <input type="radio" value="private" className="mt-1" {...register('profileVisibility')} />
+                  <span>
+                    <span className="font-medium text-[var(--color-text)] block">{t('profileVisibilityPrivate')}</span>
+                    <span className="text-sm text-[var(--color-text-muted)]">{t('profileVisibilityPrivateLong')}</span>
+                  </span>
+                </label>
+                <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
+                  <input type="radio" value="public" className="mt-1" {...register('profileVisibility')} />
+                  <span>
+                    <span className="font-medium text-[var(--color-text)] block">{t('profileVisibilityPublic')}</span>
+                    <span className="text-sm text-[var(--color-text-muted)]">{t('profileVisibilityPublicLong')}</span>
+                  </span>
+                </label>
+              </div>
             </>
           )}
 

@@ -80,6 +80,7 @@ const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.P
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
 const AIChatPage = lazy(() => import('@/pages/AIChatPage').then((m) => ({ default: m.AIChatPage })))
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage })))
+const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })))
 const PaymentPage = lazy(() => import('@/pages/PaymentPage').then((m) => ({ default: m.PaymentPage })))
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess').then((m) => ({ default: m.PaymentSuccess })))
 const PaymentCancel = lazy(() => import('@/pages/PaymentCancel').then((m) => ({ default: m.PaymentCancel })))
@@ -90,7 +91,7 @@ const Maintenance = lazy(() => import('@/pages/Maintenance').then((m) => ({ defa
 
 function PageFallback() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center" aria-hidden>
+    <div className="min-h-[100dvh] w-full flex items-center justify-center" aria-hidden>
       <div className="w-8 h-8 border-2 border-[var(--color-primary-accent)] border-t-transparent rounded-full animate-spin" />
     </div>
   )
@@ -102,11 +103,15 @@ function AIPageOrRedirect() {
   return <AIChatPage />
 }
 
+function needsPasswordGate(user: { mustChangePassword?: boolean; mustSetLocalPassword?: boolean } | null | undefined) {
+  return Boolean(user?.mustChangePassword || user?.mustSetLocalPassword)
+}
+
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: Role[] }) {
   const { isAuthenticated, role, user } = useAuth()
   const location = window.location.pathname
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if ((user as { mustChangePassword?: boolean })?.mustChangePassword && !location.startsWith('/set-password')) {
+  if (needsPasswordGate(user) && !location.startsWith('/set-password')) {
     return <Navigate to="/set-password" replace />
   }
   if (role && !allowedRoles.includes(role)) {
@@ -119,6 +124,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, user } = useAuth()
   if (!isAuthenticated) return <>{children}</>
+  if (needsPasswordGate(user)) return <Navigate to="/set-password" replace />
   let redirect: string
   if (role === 'student') redirect = '/student/dashboard'
   else if (role === 'university') {
@@ -132,7 +138,8 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 
 function LandingOrRedirect() {
   const { isAuthenticated, role, user } = useAuth()
-  if (!isAuthenticated) return <Landing /> 
+  if (!isAuthenticated) return <Landing />
+  if (needsPasswordGate(user)) return <Navigate to="/set-password" replace />
   let to: string
   if (role === 'student') to = '/student/dashboard'
   else if (role === 'university') {
@@ -182,6 +189,14 @@ export function Router() {
         <Route path="cookies" element={<Cookies />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><Profile /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><NotificationsPage /></ProtectedRoute>} />
+        <Route
+          path="search"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}>
+              <SearchPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><AIPageOrRedirect /></ProtectedRoute>} />
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />

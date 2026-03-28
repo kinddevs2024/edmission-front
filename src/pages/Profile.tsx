@@ -1,28 +1,54 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { getProfile as getUniversityProfile, updateProfile as updateUniversityProfile } from '@/services/university'
 import { useAuth } from '@/hooks/useAuth'
-import { getProfile, updateProfile, getApiError, logout as logoutApi } from '@/services/auth'
+import { getProfile, updateProfile, getApiError, logout as logoutApi, changePassword } from '@/services/auth'
 import { useAuthStore } from '@/store/authStore'
 import { setup2FA, verifyAndEnable2FA, disable2FA } from '@/services/twoFactor'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { toastApiError } from '@/utils/toastError'
+import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
+import { newPasswordValueSchema } from '@/utils/authPasswordZod'
+import { notifySuccess } from '@/utils/notify'
 import type { NotificationPreferences } from '@/types/user'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { updateStudentProfile } from '@/services/student'
 
+type ChangePasswordForm = { currentPassword: string; newPassword: string; confirmPassword: string }
+
 export function Profile() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'university', 'auth', 'errors'])
   const { user } = useAuth()
   const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar ?? '')
+  const [universityLogoUrl, setUniversityLogoUrl] = useState('')
   useEffect(() => {
     if (user?.avatar !== undefined) setAvatarUrl(user.avatar ?? '')
   }, [user?.avatar])
+
+  useEffect(() => {
+    if (user?.role !== 'university') {
+      setUniversityLogoUrl('')
+      return
+    }
+    const fromSession = (user?.avatar ?? '').trim()
+    if (fromSession) {
+      setUniversityLogoUrl(fromSession)
+      return
+    }
+    getUniversityProfile()
+      .then((p) => setUniversityLogoUrl((p.logo ?? p.logoUrl ?? '').trim()))
+      .catch(() => setUniversityLogoUrl(''))
+  }, [user?.role, user?.avatar])
 
   const prefs = user?.notificationPreferences ?? { emailApplicationUpdates: true, emailTrialReminder: true }
 
@@ -102,6 +128,14 @@ export function Profile() {
       .catch(toastApiError)
   }
 
+  const handleUniversityLogoChange = (url: string) => {
+    if (user?.role !== 'university') return
+    setUniversityLogoUrl(url)
+    updateUniversityProfile({ logo: url })
+      .then(() => getProfile())
+      .catch(toastApiError)
+  }
+
   const handleAccountSave = () => {
     setAccountSaving(true)
     updateProfile({
@@ -123,6 +157,63 @@ export function Profile() {
     (facebook ?? '') !== (user?.socialLinks?.facebook ?? '') ||
     (whatsapp ?? '') !== (user?.socialLinks?.whatsapp ?? '')
 
+  const canChangePassword = user?.localPasswordConfigured !== false
+  const changePasswordSchema = useMemo(
+    () =>
+      z
+        .object({
+          currentPassword: z.string().min(1, t('auth:currentPasswordRequired')),
+          newPassword: newPasswordValueSchema({
+            min: t('auth:passwordMinLength'),
+            uppercase: t('auth:passwordUppercase'),
+            lowercase: t('auth:passwordLowercase'),
+            number: t('auth:passwordNumber'),
+          }),
+          confirmPassword: z.string(),
+        })
+        .refine((d) => d.newPassword === d.confirmPassword, {
+          message: t('auth:passwordsMustMatch'),
+          path: ['confirmPassword'],
+        }),
+    [t]
+  )
+  const {
+    register: registerPw,
+    handleSubmit: handleSubmitPw,
+    reset: resetPw,
+    formState: { errors: pwErrors },
+  } = useForm<ChangePasswordForm>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
+  })
+  const [pwSubmitError, setPwSubmitError] = useState('')
+  const [pwLoading, setPwLoading] = useState(false)
+  const [showPwFields, setShowPwFields] = useState(false)
+  const [pwModalOpen, setPwModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (!pwModalOpen) {
+      resetPw()
+      setPwSubmitError('')
+    }
+  }, [pwModalOpen, resetPw])
+
+  const onChangePasswordSubmit = async (data: ChangePasswordForm) => {
+    setPwSubmitError('')
+    setPwLoading(true)
+    try {
+      await changePassword(data.currentPassword, data.newPassword)
+      resetPw()
+      await getProfile()
+      notifySuccess(t('auth:passwordChangedSuccess'))
+      setPwModalOpen(false)
+    } catch (err) {
+      setPwSubmitError(getFormSubmitErrorMessage(err, t))
+    } finally {
+      setPwLoading(false)
+    }
+  }
+
   return (
     <div className="w-full space-y-4">
       <PageTitle title={t('profile')} icon="Settings" />
@@ -131,11 +222,23 @@ export function Profile() {
         {user?.role === 'student' && (
           <div className="mt-4">
             <FileUpload
-              label={t('avatar')}
+              label={t('common:avatar')}
               variant="avatar"
               value={avatarUrl || user?.avatar}
               onChange={handleAvatarChange}
-              hint={t('uploadPhotoOrLink')}
+              hint={t('common:uploadPhotoOrLink')}
+            />
+          </div>
+        )}
+        {user?.role === 'university' && (
+          <div className="mt-4">
+            <FileUpload
+              label={t('university:logo', 'University logo')}
+              variant="avatar"
+              value={universityLogoUrl || user?.avatar}
+              onChange={handleUniversityLogoChange}
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              hint={t('university:uploadLogoOrUrl', 'Upload a logo or set the full URL on the university profile page')}
             />
           </div>
         )}
@@ -156,12 +259,72 @@ export function Profile() {
           <Input label="Facebook" value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/username" />
           <Input label="WhatsApp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+998 90 123 45 67" />
         </div>
-        <div className="mt-4">
+        <div className="mt-4 flex w-full min-w-0 items-center justify-between gap-3">
+          {canChangePassword ? (
+            <Button type="button" variant="secondary" onClick={() => setPwModalOpen(true)}>
+              {t('auth:changePassword')}
+            </Button>
+          ) : (
+            <Button variant="secondary" to="/set-password">
+              {t('auth:goToSetPassword')}
+            </Button>
+          )}
           <Button onClick={handleAccountSave} disabled={!accountDirty || accountSaving} loading={accountSaving}>
             {t('save', 'Save')}
           </Button>
         </div>
       </Card>
+
+      <Modal
+        open={pwModalOpen && canChangePassword}
+        onClose={() => setPwModalOpen(false)}
+        title={t('auth:changePassword')}
+        contentClassName="pb-4"
+      >
+        <p className="text-sm text-[var(--color-text-muted)] mb-4">{t('auth:changePasswordProfileHint')}</p>
+        <form onSubmit={handleSubmitPw(onChangePasswordSubmit)} className="space-y-3">
+          <Input
+            label={t('auth:currentPassword')}
+            type="password"
+            autoComplete="current-password"
+            error={pwErrors.currentPassword?.message}
+            passwordVisible={showPwFields}
+            onPasswordVisibilityToggle={() => setShowPwFields((v) => !v)}
+            showPasswordToggle
+            {...registerPw('currentPassword')}
+          />
+          <Input
+            label={t('auth:newPassword')}
+            type="password"
+            autoComplete="new-password"
+            hint={t('auth:passwordRequirements')}
+            error={pwErrors.newPassword?.message}
+            passwordVisible={showPwFields}
+            onPasswordVisibilityToggle={() => setShowPwFields((v) => !v)}
+            showPasswordToggle
+            {...registerPw('newPassword')}
+          />
+          <Input
+            label={t('auth:confirmPassword')}
+            type="password"
+            autoComplete="new-password"
+            error={pwErrors.confirmPassword?.message}
+            passwordVisible={showPwFields}
+            onPasswordVisibilityToggle={() => setShowPwFields((v) => !v)}
+            showPasswordToggle
+            {...registerPw('confirmPassword')}
+          />
+          {pwSubmitError && <p className="text-sm text-red-500">{pwSubmitError}</p>}
+          <div className="flex flex-wrap justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setPwModalOpen(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="submit" loading={pwLoading} disabled={pwLoading}>
+              {t('auth:changePassword')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <Card>
         <CardTitle>{t('settings')}</CardTitle>
@@ -185,7 +348,7 @@ export function Profile() {
       <Card>
         <CardTitle>{t('notificationPreferences')}</CardTitle>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">{t('notificationPreferencesHint')}</p>
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 flex flex-col gap-5">
           <Checkbox
             checked={!!prefs.emailApplicationUpdates}
             onChange={(e) => handlePrefChange('emailApplicationUpdates', e.target.checked)}

@@ -77,6 +77,7 @@ export function UniversityFlyers() {
       setSelectedFile(null)
       setSelectedPreviewUrl('')
       setShowCreate(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     } catch (error) {
       toastApiError(error)
     } finally {
@@ -123,6 +124,7 @@ export function UniversityFlyers() {
                 setSelectedFile(file)
                 if (selectedPreviewUrl) URL.revokeObjectURL(selectedPreviewUrl)
                 setSelectedPreviewUrl(file ? URL.createObjectURL(file) : '')
+                event.target.value = ''
               }}
             />
             <button

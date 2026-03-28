@@ -139,7 +139,7 @@
     width: auto !important;
     min-width: 0 !important;
     max-width: none !important;
-    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(6.75rem + env(safe-area-inset-bottom, 0px)) !important;
     top: auto !important;
     margin: 0 !important;
     padding: 1rem 1.25rem !important;

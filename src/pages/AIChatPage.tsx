@@ -11,6 +11,10 @@ import { updateStudentProfile } from '@/services/student'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { useAIChatStore, type ChatMessage } from '@/store/aiChatStore'
+import {
+  AIStreamingPlaceholder,
+  isAssistantAwaitingFirstChunk,
+} from '@/components/ai/AIStreamingPlaceholder'
 
 const FALLBACK_PLACEHOLDERS = ['Type your question…', 'What would you like to ask?', 'How can I help?']
 const FALLBACK_SUGGESTED = [
@@ -305,7 +309,12 @@ export function AIChatPage() {
                 )}
               >
                 {m.role === 'assistant' && (
-                  <div className="shrink-0 w-9 h-9 rounded-full bg-primary-accent/20 flex items-center justify-center">
+                  <div
+                    className={cn(
+                      'shrink-0 w-9 h-9 rounded-full bg-primary-accent/20 flex items-center justify-center',
+                      isAssistantAwaitingFirstChunk(m, loading, messages) && 'ai-avatar-working'
+                    )}
+                  >
                     <Bot className="w-5 h-5 text-primary-accent" aria-hidden />
                   </div>
                 )}
@@ -323,15 +332,17 @@ export function AIChatPage() {
                       <p className="whitespace-pre-wrap break-words">{m.thinking}</p>
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap break-words">
+                  <div className="whitespace-pre-wrap break-words">
                     {m.role === 'assistant' && m.text ? (
-                      <MessageTextWithLinks text={m.text} className="whitespace-pre-wrap break-words" />
+                      <p className="whitespace-pre-wrap break-words m-0">
+                        <MessageTextWithLinks text={m.text} className="whitespace-pre-wrap break-words" />
+                      </p>
                     ) : m.text ? (
-                      m.text
-                    ) : loading && m.id === messages[messages.length - 1]?.id ? (
-                      <span className="text-[var(--color-text-muted)] animate-pulse">...</span>
+                      <p className="whitespace-pre-wrap break-words m-0">{m.text}</p>
+                    ) : isAssistantAwaitingFirstChunk(m, loading, messages) ? (
+                      <AIStreamingPlaceholder />
                     ) : null}
-                  </p>
+                  </div>
                 </div>
                 {m.role === 'user' && (
                   <div className="shrink-0 w-9 h-9 rounded-full bg-[var(--color-border)]/30 flex items-center justify-center">
@@ -341,16 +352,6 @@ export function AIChatPage() {
               </motion.div>
             ))}
             </AnimatePresence>
-            {loading && messages[messages.length - 1]?.role !== 'assistant' && (
-              <div className="flex gap-3 justify-start">
-                <div className="shrink-0 w-9 h-9 rounded-full bg-primary-accent/20 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-primary-accent animate-pulse" aria-hidden />
-                </div>
-                <div className="rounded-card px-4 py-3 bg-[var(--color-border)]/25 text-[var(--color-text-muted)]">
-                  {t('typing')}
-                </div>
-              </div>
-            )}
             {error && <p className="text-sm text-red-500">{error}</p>}
             {rateLimitMessage && (
               <p className="text-sm text-amber-600 dark:text-amber-400">{rateLimitMessage}</p>

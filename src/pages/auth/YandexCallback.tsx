@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { navigateAfterLogin, navigateAfterRegistration } from '@/utils/navigateAfterAuth'
+import { showOAuthPasswordReminder } from '@/utils/oauthPasswordToast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { loginWithYandex } from '@/services/auth'
 import { getApiError } from '@/services/api'
@@ -7,11 +9,8 @@ import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import { decodeYandexOAuthState, getYandexRedirectUri } from '@/utils/yandexOAuth'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import i18n, { loadLanguage } from '@/i18n'
-import { isBrowserLanguageSupported, getBrowserPreferredLanguage, STORAGE_KEY } from '@/i18n/config'
-
 export function YandexCallback() {
-  const { t } = useTranslation(['common', 'auth', 'errors'])
+  const { t, i18n } = useTranslation(['common', 'auth', 'errors'])
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const [error, setError] = useState('')
@@ -52,36 +51,15 @@ export function YandexCallback() {
         })
         if (cancelled) return
 
-        if ((user as { mustChangePassword?: boolean }).mustChangePassword) {
-          navigate('/set-password', { replace: true })
-          return
+        if (user.mustSetLocalPassword) {
+          showOAuthPasswordReminder(t('auth:oauthPasswordToastTitle'), t('auth:oauthPasswordToastDesc'))
         }
 
         if (parsed.flow === 'register') {
-          const nextUrl = user.role === 'student' ? '/student/dashboard' : '/university/select'
-          if (isBrowserLanguageSupported()) {
-            const lng = getBrowserPreferredLanguage()
-            await loadLanguage(lng)
-            i18n.changeLanguage(lng)
-            try {
-              localStorage.setItem(STORAGE_KEY, lng)
-            } catch {
-              /* ignore */
-            }
-            navigate(nextUrl, { replace: true })
-          } else {
-            navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`, { replace: true })
-          }
-          return
+          await navigateAfterRegistration(navigate, user, i18n, { replace: true })
+        } else {
+          navigateAfterLogin(navigate, user, { replace: true })
         }
-
-        if (user.role === 'student') navigate('/student/dashboard', { replace: true })
-        else if (user.role === 'university') {
-          const up = (user as { universityProfile?: { id?: string; verified?: boolean } }).universityProfile
-          if (!up?.id) navigate('/university/select', { replace: true })
-          else navigate(up.verified ? '/university/dashboard' : '/university/pending', { replace: true })
-        } else if (user.role === 'school_counsellor') navigate('/school/dashboard', { replace: true })
-        else navigate('/admin', { replace: true })
       } catch (err) {
         if (cancelled) return
         const apiErr = getApiError(err)
@@ -96,7 +74,7 @@ export function YandexCallback() {
     return () => {
       cancelled = true
     }
-  }, [params, navigate, t])
+  }, [params, navigate, t, i18n])
 
   if (loading) {
     return (

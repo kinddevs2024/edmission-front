@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -16,7 +16,15 @@ import { Select } from '@/components/ui/Select'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
-import { getUniversities, showInterest, getInterestedUniversityIds, getInterestLimit, getStudentProfile, type UniversitiesParams } from '@/services/student'
+import {
+  getUniversities,
+  showInterest,
+  getInterestedUniversityIds,
+  getInterestLimit,
+  getStudentProfile,
+  type UniversitiesParams,
+} from '@/services/student'
+import type { UniversityListItem } from '@/types/university'
 import { toastApiError } from '@/utils/toastError'
 import { Building2, Search, SlidersHorizontal } from 'lucide-react'
 import { notifyInfo, notifySuccess } from '@/utils/notify'
@@ -106,7 +114,6 @@ function parseSort(value: string | null): UniversitiesParams['sort'] {
 export function ExploreUniversities() {
   const { t, i18n } = useTranslation(['student', 'common', 'university'])
   const [searchParams, setSearchParams] = useSearchParams()
-  const [page, setPage] = useState(Number(searchParams.get('page')) || 1)
   const [filters, setFilters] = useState<UniversityFilters>(() => ({
     ...createInitialFilters(true),
     search: searchParams.get('search') ?? '',
@@ -165,32 +172,45 @@ export function ExploreUniversities() {
   })
   const limitInfo = interestLimit ?? { allowed: true, current: 0, limit: 3 }
 
-  const { data: universitiesData, isLoading: loading } = useQuery({
-    queryKey: ['student', 'universities', page, filters],
-    queryFn: () => getUniversities(buildUniversitySearchParams(page, UNIVERSITIES_PAGE_SIZE, filters)),
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    isLoading: universitiesLoading,
+  } = useInfiniteQuery({
+    queryKey: ['student', 'universities', filters],
+    queryFn: ({ pageParam }) => getUniversities(buildUniversitySearchParams(pageParam, UNIVERSITIES_PAGE_SIZE, filters)),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, p) => sum + p.data.length, 0)
+      const serverTotal = lastPage.total
+      if (typeof serverTotal === 'number' && Number.isFinite(serverTotal) && loaded >= serverTotal) return undefined
+      if (lastPage.data.length < UNIVERSITIES_PAGE_SIZE) return undefined
+      return allPages.length + 1
+    },
     staleTime: 30 * 1000,
   })
-  const list = universitiesData?.data ?? []
+
+  const list = useMemo(() => {
+    const pages = data?.pages ?? []
+    const seen = new Set<string>()
+    const out: UniversityListItem[] = []
+    for (const p of pages) {
+      for (const u of p.data) {
+        if (seen.has(u.id)) continue
+        seen.add(u.id)
+        out.push(u)
+      }
+    }
+    return out
+  }, [data])
+
+  const total = typeof data?.pages?.[0]?.total === 'number' && Number.isFinite(data.pages[0].total) ? data.pages[0].total : list.length
 
   const profileFallbackLockRef = useRef(false)
-
-  /** While the query key changes (new page), data is briefly undefined — avoid total=0 or clamping page to 1. */
-  const stableTotalRef = useRef(0)
-  useEffect(() => {
-    stableTotalRef.current = 0
-  }, [filters])
-  useEffect(() => {
-    const nextTotal = universitiesData?.total
-    if (typeof nextTotal === 'number' && Number.isFinite(nextTotal)) {
-      stableTotalRef.current = nextTotal
-    }
-  }, [universitiesData])
-
-  const total =
-    typeof universitiesData?.total === 'number' && Number.isFinite(universitiesData.total)
-      ? universitiesData.total
-      : stableTotalRef.current
-  const totalPages = Math.max(1, Math.ceil(total / UNIVERSITIES_PAGE_SIZE))
+  const isInitialUniversitiesLoading = !data && isFetching
 
   const { data: profileFilterCounts, isLoading: profileCountsLoading } = useQuery({
     queryKey: ['student', 'profile', 'filterCounts'],
@@ -215,41 +235,34 @@ export function ExploreUniversities() {
     onError: toastApiError,
   })
 
-  useEffect(() => {
-    if (loading) return
-    if (universitiesData == null) return
-    const nextTotal = universitiesData.total ?? 0
-    const tp = Math.max(1, Math.ceil(nextTotal / UNIVERSITIES_PAGE_SIZE))
-    if (page > tp) setPage(tp)
-  }, [loading, universitiesData, page])
-
   /** If "match my profile" is on but profile criteria exclude every university, turn the layer off so the catalog is visible. */
   useEffect(() => {
-    if (loading) return
+    if (universitiesLoading) return
     if (profileCountsLoading) return
-    if (universitiesData == null) return
+    const pages = data?.pages
+    if (!pages || pages.length !== 1) return
+    const first = pages[0]
     if (!filters.useProfileFilters) {
       profileFallbackLockRef.current = false
       return
     }
     if (profileCriteriaCount === 0) return
-    if (page !== 1) return
-    if ((universitiesData.total ?? 0) > 0) return
+    if ((first.total ?? 0) > 0) return
+    if (first.data.length > 0) return
     if (profileFallbackLockRef.current) return
     profileFallbackLockRef.current = true
 
     setFilters((current) => ({ ...current, useProfileFilters: false }))
     setDraftFilters((current) => ({ ...current, useProfileFilters: false }))
-  }, [loading, profileCountsLoading, universitiesData, filters.useProfileFilters, page, profileCriteriaCount])
+  }, [universitiesLoading, profileCountsLoading, data?.pages, filters.useProfileFilters, profileCriteriaCount])
 
   useEffect(() => {
     const params: Record<string, string> = {}
     if (filters.search.trim()) params.search = filters.search.trim()
     if (filters.country) params.country = filters.country
     if (filters.sort && filters.sort !== 'match') params.sort = filters.sort
-    if (page > 1) params.page = String(page)
     setSearchParams(params, { replace: true })
-  }, [filters.search, filters.country, filters.sort, page, setSearchParams])
+  }, [filters.search, filters.country, filters.sort, setSearchParams])
 
   const filterCount = useMemo(() => countActiveFilters(filters, profileCriteriaCount), [filters, profileCriteriaCount])
   const showClear = filterCount > 0 || !filters.useProfileFilters
@@ -257,7 +270,6 @@ export function ExploreUniversities() {
   const interestLabel = limitInfo.limit != null ? `${limitInfo.current}/${limitInfo.limit}` : `${limitInfo.current}`
 
   const syncQuickFilters = (patch: Partial<UniversityFilters>) => {
-    setPage(1)
     setFilters((current) => ({ ...current, ...patch }))
     setDraftFilters((current) => ({ ...current, ...patch }))
   }
@@ -269,7 +281,6 @@ export function ExploreUniversities() {
 
   const handleApplyFullFilters = () => {
     const normalized = normalizeFilters(draftFilters)
-    setPage(1)
     setDraftFilters(normalized)
     setFilters(normalized)
     if (hasRangeAdjustment(draftFilters, normalized)) {
@@ -280,7 +291,6 @@ export function ExploreUniversities() {
 
   const handleClearFilters = () => {
     const cleared = createInitialFilters(false)
-    setPage(1)
     setFilters(cleared)
     setDraftFilters(cleared)
     setFilterModalOpen(false)
@@ -387,7 +397,7 @@ export function ExploreUniversities() {
       <div className="flex flex-wrap items-center gap-2">
         <Search size={16} className="text-[var(--color-text-muted)]" />
         <p className="text-[var(--color-text-muted)]">
-          {list.length === 0 && !loading
+          {list.length === 0 && !isInitialUniversitiesLoading
             ? t('student:noUniversitiesFound', 'No universities found')
             : t('student:universitiesFound', { count: total, defaultValue: '{{count}} universities found' })}
         </p>
@@ -633,7 +643,7 @@ export function ExploreUniversities() {
         </div>
       </Modal>
 
-      {loading ? (
+      {isInitialUniversitiesLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
         </div>
@@ -667,24 +677,18 @@ export function ExploreUniversities() {
             ))}
           </div>
 
-          {totalPages > 1 ? (
-            <div className="mt-6 flex justify-center gap-2">
+          {hasNextPage ? (
+            <div className="mt-8 flex justify-center">
               <Button
                 variant="secondary"
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-                disabled={page <= 1 || loading}
+                type="button"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                loading={isFetchingNextPage}
               >
-                {t('common:prev', 'Previous')}
-              </Button>
-              <span className="px-4 py-2 text-sm text-[var(--color-text-muted)]">
-                {t('common:pageOfTotal', { page, totalPages, total, defaultValue: 'Page {{page}} of {{totalPages}} · {{total}} total' })}
-              </span>
-              <Button
-                variant="secondary"
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                disabled={page >= totalPages || loading}
-              >
-                {t('common:next', 'Next')}
+                {isFetchingNextPage
+                  ? t('common:loadingMoreUniversities', 'Loading…')
+                  : t('common:loadMoreUniversities', 'Show more')}
               </Button>
             </div>
           ) : null}

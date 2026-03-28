@@ -80,7 +80,7 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
 }
 
 /** Namespaces needed for first paint (common nav + school sidebar + documents UI). Load rest in background. */
-const CRITICAL_NS: readonly string[] = ['common', 'landing', 'student', 'school', 'documents']
+const CRITICAL_NS: readonly string[] = ['common', 'auth', 'landing', 'student', 'school', 'documents']
 const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
 
 function getLocalesBaseUrl(): string {
@@ -110,6 +110,28 @@ async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<R
   return out
 }
 
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === 'object' && !Array.isArray(v)
+}
+
+/** Deep-merge patch into base so nested keys (e.g. landing.hero) extend instead of replacing the whole branch. */
+function deepMergeResource(
+  base: Record<string, unknown>,
+  patch: Record<string, unknown>
+): Record<string, unknown> {
+  const out = { ...base }
+  for (const key of Object.keys(patch)) {
+    const pv = patch[key]
+    const bv = base[key]
+    if (isPlainObject(pv) && isPlainObject(bv)) {
+      out[key] = deepMergeResource(bv, pv)
+    } else if (pv !== undefined) {
+      out[key] = pv
+    }
+  }
+  return out
+}
+
 function applyLocalePatches(lng: string, resources: Record<string, object>): Record<string, object> {
   const patchByNs = LOCALE_PATCHES[lng]
   const next = { ...resources }
@@ -121,7 +143,8 @@ function applyLocalePatches(lng: string, resources: Record<string, object>): Rec
   const extraPatch = supplementalPatches[lng as keyof typeof supplementalPatches]
   if (extraPatch) {
     for (const [ns, patch] of Object.entries(extraPatch)) {
-      next[ns] = { ...(next[ns] as Record<string, unknown> | undefined), ...(patch as Record<string, unknown>) }
+      const base = (next[ns] as Record<string, unknown> | undefined) ?? {}
+      next[ns] = deepMergeResource(base, patch as Record<string, unknown>)
     }
   }
   return next

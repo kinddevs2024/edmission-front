@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Edge/IE: hide native password reveal so only our toggle shows (avoids two “eyes” and broken toggling). */
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Chromium/WebKit: hide inner decoration container so native “eye” does not stack on our toggle */
+input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
+  display: none;
+}
+
 :root {
   --color-primary-dark: #0f172a;
   --color-primary-accent: #84cc16;
@@ -53,6 +66,13 @@
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-accent;
   }
+
+  /* Скрыть системный синий «×» у type=search (используем свою иконку) */
+  input[type='search']::-webkit-search-cancel-button,
+  input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
 }
 
 /* Scrollbar: thin, themed */
@@ -81,6 +101,20 @@
 
 .safe-area-pb {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+/**
+ * Space below scrollable content on mobile so it clears the fixed BottomNav
+ * (offset bottom-3 + bar height + labels) plus home indicator / safe area.
+ */
+.pb-mobile-nav {
+  padding-bottom: calc(6.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .pb-mobile-nav {
+    padding-bottom: 3rem;
+  }
 }
 
 /* Subtle background pattern (Telegram-like dots) for student/explore pages */
@@ -274,6 +308,22 @@
 }
 
 /* Progress bar fill animation */
+@keyframes ai-avatar-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-accent) 50%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primary-accent) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-accent) 0%, transparent);
+  }
+}
+
+.ai-avatar-working {
+  animation: ai-avatar-pulse 1.5s ease-out infinite;
+}
+
 @keyframes progress-fill {
   from {
     transform: scaleX(0);

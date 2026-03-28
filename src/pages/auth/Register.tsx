@@ -8,8 +8,8 @@ import { register as registerApi, verifyEmailByCode, resendVerificationCode, log
 import { useAuthStore } from '@/store/authStore'
 import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
-import i18n, { loadLanguage } from '@/i18n'
-import { isBrowserLanguageSupported, getBrowserPreferredLanguage, STORAGE_KEY } from '@/i18n/config'
+import { navigateAfterRegistration } from '@/utils/navigateAfterAuth'
+import { showOAuthPasswordReminder } from '@/utils/oauthPasswordToast'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Checkbox } from '@/components/ui/Checkbox'
@@ -20,7 +20,7 @@ import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton'
 import { YandexSignInButton } from '@/components/auth/YandexSignInButton'
 
 export function Register() {
-  const { t } = useTranslation(['common', 'auth', 'errors'])
+  const { t, i18n } = useTranslation(['common', 'auth', 'errors'])
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -79,23 +79,6 @@ export function Register() {
     return () => clearInterval(t)
   }, [step, resendCooldown])
 
-  const navigateAfterAuth = async (user: { role: string }) => {
-    const nextUrl = user.role === 'student' ? '/student/dashboard' : '/university/select'
-    if (isBrowserLanguageSupported()) {
-      const lng = getBrowserPreferredLanguage()
-      await loadLanguage(lng)
-      i18n.changeLanguage(lng)
-      try {
-        localStorage.setItem(STORAGE_KEY, lng)
-      } catch {
-        /* ignore */
-      }
-      navigate(nextUrl)
-    } else {
-      navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`)
-    }
-  }
-
   const handleGoogleCredential = async (credential: string) => {
     if (!getValues('acceptTerms')) {
       setSubmitError(t('auth:acceptTermsRequired'))
@@ -109,7 +92,10 @@ export function Register() {
         role: getValues('role'),
         acceptTerms: true,
       })
-      await navigateAfterAuth(data.user)
+      if (data.user.mustSetLocalPassword) {
+        showOAuthPasswordReminder(t('auth:oauthPasswordToastTitle'), t('auth:oauthPasswordToastDesc'))
+      }
+      await navigateAfterRegistration(navigate, data.user, i18n)
     } catch (err) {
       const apiErr = getApiError(err)
       const errList = apiErr.errors as Array<{ field?: string; message?: string }> | undefined
@@ -149,7 +135,7 @@ export function Register() {
         setPendingEmail(result.email)
         setStep('code')
       } else if ('user' in result && result.user) {
-        await navigateAfterAuth(result.user)
+        await navigateAfterRegistration(navigate, result.user, i18n)
       }
     } catch (err) {
       const apiErr = getApiError(err)
@@ -174,7 +160,7 @@ export function Register() {
     setCodeLoading(true)
     try {
       const result = await verifyEmailByCode(pendingEmail, code)
-      await navigateAfterAuth(result.user)
+      await navigateAfterRegistration(navigate, result.user, i18n)
     } catch (err) {
       const apiErr = getApiError(err)
       setCodeError(apiErr.message ?? t('errors:unknown'))
@@ -270,7 +256,7 @@ export function Register() {
           error={errors.confirmPassword?.message}
           passwordVisible={showPassword}
           onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle={false}
+          showPasswordToggle
           {...register('confirmPassword')}
         />
         <div>
@@ -364,7 +350,12 @@ export function Register() {
                   onSuccess={async () => {
                     setSubmitError('')
                     const user = useAuthStore.getState().user
-                    if (user) await navigateAfterAuth(user)
+                    if (user) {
+                      if (user.mustSetLocalPassword) {
+                        showOAuthPasswordReminder(t('auth:oauthPasswordToastTitle'), t('auth:oauthPasswordToastDesc'))
+                      }
+                      await navigateAfterRegistration(navigate, user, i18n)
+                    }
                   }}
                 />
               </div>

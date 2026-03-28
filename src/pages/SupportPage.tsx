@@ -155,7 +155,6 @@ export function SupportPage() {
           />
           <Textarea
             label={t('describeIssue')}
-            placeholder={t('describeIssue')}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={submitting}

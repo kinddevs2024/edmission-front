@@ -38,10 +38,14 @@ export interface User {
   createdAt?: string
   /** When true, user must set a new password on next login (e.g. temp password from school counsellor). */
   mustChangePassword?: boolean
+  /** When true, user signed up with Google/Yandex and must choose a password for email login. */
+  mustSetLocalPassword?: boolean
+  /** When false, account has no real local password yet (OAuth-only); use set-password first. */
+  localPasswordConfigured?: boolean
   subscription?: SubscriptionSummary
   notificationPreferences?: NotificationPreferences
   studentProfile?: { id: string; verifiedAt?: string | null; educationStatus?: 'in_school' | 'finished_school' | 'in_university' | 'finished_university' }
-  universityProfile?: { id: string; verified?: boolean; universityName?: string }
+  universityProfile?: { id: string; verified?: boolean; universityName?: string; logoUrl?: string }
   totpEnabled?: boolean
 }
 

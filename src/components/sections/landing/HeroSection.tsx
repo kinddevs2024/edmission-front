@@ -135,8 +135,8 @@ export function HeroSection() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs text-[var(--color-text-muted)]">{t('hero.preview.discovery')}</p>
-                    <p className="mt-1 text-lg font-semibold">Global Engineering Institute</p>
-                    <p className="text-sm text-[var(--color-text-muted)]">Berlin, Germany</p>
+                    <p className="mt-1 text-lg font-semibold">{t('hero.preview.sampleUniversity')}</p>
+                    <p className="text-sm text-[var(--color-text-muted)]">{t('hero.preview.sampleLocation')}</p>
                   </div>
                   <span className="rounded-full bg-primary-accent/15 px-3 py-1 text-sm font-semibold text-primary-accent">{t('hero.preview.match')}</span>
                 </div>

@@ -35,12 +35,14 @@ export function Providers({ children }: { children: ReactNode }) {
         {children}
         <Toaster
           richColors
-          position="top-right"
+          position="top-center"
           expand
           closeButton
+          visibleToasts={5}
           toastOptions={{
             className:
               'rounded-card border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] shadow-[var(--shadow-card)]',
+            style: { zIndex: 10050 },
           }}
         />
       </BrowserRouter>

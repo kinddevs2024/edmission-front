@@ -46,14 +46,14 @@ export function StudentLayout() {
     ],
     [t]
   )
-  // Mobile bottom bar: HOME → EXPLORE → APPLICATIONS → PROFILE → CHAT (fixed, same on all pages)
+  // Mobile bottom bar: HOME → APPLICATIONS → CATALOG (center) → CHAT → PROFILE (end)
   const bottomNavItems = useMemo(
     () => [
       { to: '/student/dashboard', label: t('navHome', 'Home'), icon: 'LayoutDashboard' },
-      { to: '/student/universities', label: t('navExplore', 'Explore'), icon: 'GraduationCap' },
       { to: '/student/applications', label: t('navApplications', 'Applications'), icon: 'FileCheck' },
-      { to: '/student/profile', label: t('navProfile', 'Profile'), icon: 'User' },
+      { to: '/student/universities', label: t('navExplore', 'Explore'), icon: 'GraduationCap' },
       { to: '/student/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
+      { to: '/student/profile', label: t('navProfile', 'Profile'), icon: 'User' },
     ],
     [t]
   )
@@ -67,7 +67,7 @@ export function StudentLayout() {
       <RoleOnboardingController role="student" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 transition-[margin-left] duration-200 pb-20 md:pb-12 bg-pattern-subtle flex flex-col',
+        'flex-1 min-w-0 transition-[margin-left] duration-200 pb-mobile-nav bg-pattern-subtle flex flex-col',
         isFixedHeightPage ? 'h-screen max-h-[100%] overflow-hidden' : 'min-h-screen',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>

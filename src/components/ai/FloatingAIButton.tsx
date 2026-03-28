@@ -7,8 +7,9 @@ export function FloatingAIButton() {
   const isOpen = useAIChatStore((s) => s.isDrawerOpen)
   const setDrawerOpen = useAIChatStore((s) => s.setDrawerOpen)
   const isAIPage = location.pathname === '/ai' || location.pathname.endsWith('/ai')
+  const isSearchPage = location.pathname === '/search'
 
-  if (isAIPage) return null
+  if (isAIPage || isSearchPage) return null
 
   return (
     <>
@@ -16,7 +17,7 @@ export function FloatingAIButton() {
         type="button"
         onClick={() => setDrawerOpen(true)}
         data-onboarding="floating-ai"
-        className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-30 w-14 h-14 rounded-full bg-primary-accent text-primary-dark shadow-lg hover:bg-primary-accent/90 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 flex items-center justify-center"
+        className="fixed z-30 w-14 h-14 rounded-full bg-primary-accent text-primary-dark shadow-lg hover:bg-primary-accent/90 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 flex items-center justify-center right-4 md:right-6 bottom-[calc(7.25rem+env(safe-area-inset-bottom,0px))] md:bottom-6"
         aria-label="Open Edmission AI"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

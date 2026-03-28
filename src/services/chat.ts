@@ -4,9 +4,9 @@ import type { Chat, Message } from '@/types/chat'
 type RawChat = {
   id: string
   universityId?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
-  studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
+  studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string; profileVisibility?: string }
   university?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
-  student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string }
+  student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string; profileVisibility?: string }
   lastMessage?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
   messages?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string }>
   acceptedAt?: string
@@ -34,7 +34,7 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
       name = String(o.universityName)
     } else {
       const combined = [o.firstName ?? '', o.lastName ?? ''].filter(Boolean).join(' ')
-      name = combined || o.name || o.userEmail || '—'
+      name = combined || o.name || o.userEmail || (currentUserRole === 'university' ? 'Student' : '—')
     }
   }
 

@@ -37,8 +37,11 @@ export function BottomNav({ items }: { items: NavItem[] }) {
             {...(onboardingId ? { 'data-onboarding': onboardingId } : {})}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center justify-center flex-1 py-2 px-1 text-xs font-medium transition-all duration-200 min-w-0 gap-1',
-                isActive ? 'text-primary-accent' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-2 text-xs font-medium transition-colors duration-200',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)]',
+                isActive
+                  ? 'bg-primary-accent/14 text-primary-accent'
+                  : 'text-[var(--color-text-muted)] active:bg-[var(--color-border)]/45 hover:text-[var(--color-text)]'
               )
             }
           >

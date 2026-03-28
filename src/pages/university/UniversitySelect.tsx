@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal'
 import axios from 'axios'
 import { getCatalog, createVerificationRequest, type CatalogUniversity } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
+import { getImageUrl } from '@/services/upload'
 
 function getApiError(err: unknown): { message: string; code?: string } | null {
   if (!axios.isAxiosError(err) || !err.response?.data) return null
@@ -163,7 +164,7 @@ export function UniversitySelect() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-12 h-12 rounded-lg bg-[var(--color-border)]/50 flex items-center justify-center shrink-0 overflow-hidden p-0.5">
                         {u.logoUrl ? (
-                          <img src={u.logoUrl} alt="" loading="lazy" className="w-full h-full object-contain" />
+                          <img src={getImageUrl(u.logoUrl)} alt="" loading="lazy" className="w-full h-full object-contain" />
                         ) : (
                           <Building2 className="w-6 h-6 text-[var(--color-text-muted)]" aria-hidden />
                         )}

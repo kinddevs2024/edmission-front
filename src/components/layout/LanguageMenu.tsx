@@ -48,7 +48,7 @@ export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-3 py-2 rounded-input border border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)]/20 transition-colors text-sm text-[var(--color-text)]"
+        className="inline-flex h-10 shrink-0 items-center gap-2 px-3 rounded-input border border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)]/20 transition-colors text-sm text-[var(--color-text)]"
         aria-label="Select language"
         aria-expanded={open}
         aria-haspopup="true"

@@ -139,10 +139,10 @@ export function MainLayout() {
     if (role === 'student') {
       return [
         { to: '/student/dashboard', label: t('student:navHome', 'Home'), icon: 'LayoutDashboard' },
-        { to: '/student/universities', label: t('student:navExplore', 'Explore'), icon: 'GraduationCap' },
         { to: '/student/applications', label: t('student:navApplications', 'Applications'), icon: 'FileCheck' },
-        { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },
+        { to: '/student/universities', label: t('student:navExplore', 'Explore'), icon: 'GraduationCap' },
         { to: '/student/chat', label: t('student:navChat', 'Chat'), icon: 'MessageCircle' },
+        { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },
       ]
     }
     if (role === 'university') {
@@ -174,8 +174,11 @@ export function MainLayout() {
     return []
   }, [role, t, tSchool])
 
+  // Only own mobile nav when /profile, /notifications, /ai, etc. For role layouts (student/*, …)
+  // never clear here — their useEffect would lose the race and navItems stay null (hamburger hidden).
   useEffect(() => {
-    if (showSidebar) setNavItems([...navItems, ...navBottomItems])
+    if (!showSidebar) return
+    setNavItems([...navItems, ...navBottomItems])
     return () => setNavItems(null)
   }, [showSidebar, navItems, navBottomItems, setNavItems])
 
@@ -202,8 +205,8 @@ export function MainLayout() {
         {showSidebar && navItems.length > 0 ? (
           <div className="flex h-full min-h-0">
           <Sidebar items={navItems} bottomItems={navBottomItems} />
-          <div className={cn('flex-1 min-w-0 min-h-0 pb-20 md:pb-12 transition-[margin-left] duration-200 flex flex-col bg-pattern-subtle', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-            <main className="p-3 sm:p-4 pb-12 flex-1 min-h-0 flex flex-col overflow-auto bg-pattern-subtle">
+          <div className={cn('flex-1 min-w-0 min-h-0 pb-mobile-nav transition-[margin-left] duration-200 flex flex-col bg-pattern-subtle', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
+            <main className="p-3 sm:p-4 pb-6 md:pb-12 flex-1 min-h-0 flex flex-col overflow-auto bg-pattern-subtle">
               <div className="max-w-content mx-auto w-full min-h-0 flex flex-col">
                 <Suspense fallback={<ContentFallback />}>
                   <Outlet />

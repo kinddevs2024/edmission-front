@@ -74,6 +74,8 @@ export interface StudentProfileData {
   preferredCountries?: string[]
   budgetAmount?: number
   budgetCurrency?: string
+  /** Default private: universities see a reduced profile. */
+  profileVisibility?: 'private' | 'public'
 }
 
 export async function getStudentProfile(): Promise<StudentProfileData> {

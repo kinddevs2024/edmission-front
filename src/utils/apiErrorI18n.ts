@@ -1,5 +1,26 @@
 import axios from 'axios'
 
+type ApiErrorBody = {
+  message?: string
+  code?: string
+  errors?: Array<{ field?: string; message?: string }>
+}
+
+/** Prefer first field error or concrete message for forms; fallback to i18n key. */
+export function getFormSubmitErrorMessage(error: unknown, t: (key: string) => string): string {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    const data = error.response.data as ApiErrorBody
+    if (Array.isArray(data.errors) && data.errors.length > 0) {
+      const first = data.errors.find((e) => e?.message?.trim())
+      if (first?.message) return first.message
+    }
+    const msg = typeof data.message === 'string' ? data.message.trim() : ''
+    if (msg && msg.toLowerCase() !== 'validation failed') return msg
+  }
+  const key = getApiErrorKey(error)
+  return t(`errors:${key}`)
+}
+
 /** Map backend error message to errors namespace key. Returns key or empty string (then use raw message). */
 export function getApiErrorKey(error: unknown): string {
   if (axios.isAxiosError(error) && error.response?.data) {

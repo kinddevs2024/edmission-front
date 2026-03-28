@@ -6,9 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { login, loginWithGoogle } from '@/services/auth'
 import { useAuthStore } from '@/store/authStore'
+import { navigateAfterLogin } from '@/utils/navigateAfterAuth'
+import { showOAuthPasswordReminder } from '@/utils/oauthPasswordToast'
 import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
-import type { User } from '@/types/user'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -16,20 +17,6 @@ import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton'
 import { YandexSignInButton } from '@/components/auth/YandexSignInButton'
 
 type FormData = { email: string; password: string }
-
-function navigateAfterLogin(navigate: ReturnType<typeof useNavigate>, user: User) {
-  if (user.mustChangePassword) {
-    navigate('/set-password')
-    return
-  }
-  if (user.role === 'student') navigate('/student/dashboard')
-  else if (user.role === 'university') {
-    const up = user.universityProfile
-    if (!up?.id) navigate('/university/select')
-    else navigate(up.verified ? '/university/dashboard' : '/university/pending')
-  } else if (user.role === 'school_counsellor') navigate('/school/dashboard')
-  else navigate('/admin')
-}
 
 export function Login() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
@@ -71,6 +58,12 @@ export function Login() {
         idToken: credential,
         acceptTerms: true,
       })
+      if (user.mustSetLocalPassword) {
+        showOAuthPasswordReminder(
+          t('auth:oauthPasswordToastTitle'),
+          t('auth:oauthPasswordToastDesc')
+        )
+      }
       navigateAfterLogin(navigate, user)
     } catch (err) {
       const apiErr = getApiError(err)
@@ -139,7 +132,15 @@ export function Login() {
               onSuccess={() => {
                 setSubmitError('')
                 const user = useAuthStore.getState().user
-                if (user) navigateAfterLogin(navigate, user)
+                if (user) {
+                  if (user.mustSetLocalPassword) {
+                    showOAuthPasswordReminder(
+                      t('auth:oauthPasswordToastTitle'),
+                      t('auth:oauthPasswordToastDesc')
+                    )
+                  }
+                  navigateAfterLogin(navigate, user)
+                }
               }}
             />
           )}

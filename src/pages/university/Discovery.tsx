@@ -16,7 +16,7 @@ import { getStudentAvatarUrl } from '@/services/upload'
 import { getStudents, type DiscoverStudentItem, type StudentSearchParams } from '@/services/university'
 import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDisplay'
 import { toastApiError } from '@/utils/toastError'
-import { MessageCircle, Search, SlidersHorizontal, User } from 'lucide-react'
+import { Lock, MessageCircle, Search, SlidersHorizontal, User } from 'lucide-react'
 
 const COUNTRY_OPTIONS = [
   { value: '', label: 'All countries' },
@@ -552,8 +552,12 @@ export function Discovery() {
                   <Card interactive tilt className="flex h-full flex-col">
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="h-11 w-11 overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-border)]">
-                          <img src={getStudentAvatarUrl(student?.avatarUrl)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        <div className="h-11 w-11 overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-border)] flex items-center justify-center shrink-0">
+                          {student?.profileVisibility === 'private' ? (
+                            <Lock className="h-5 w-5 text-[var(--color-text-muted)]" aria-hidden />
+                          ) : (
+                            <img src={getStudentAvatarUrl(student?.avatarUrl)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                          )}
                         </div>
                         <div className="min-w-0">
                           <CardTitle className="truncate">{name}</CardTitle>

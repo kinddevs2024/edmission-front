@@ -10,7 +10,7 @@ import { getStudentProfile, type FullStudentProfile } from '@/services/universit
 import { getApiError } from '@/services/api'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
-import { MessageCircle, FileText, ExternalLink } from 'lucide-react'
+import { MessageCircle, FileText, ExternalLink, Lock } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
 
@@ -67,7 +67,10 @@ export function UniversityStudentProfile() {
     )
   }
 
-  const name = getStudentDisplayName(profile, t('university:studentLabel'))
+  const isPrivate = profile.profileVisibility === 'private'
+  const name = isPrivate
+    ? t('university:privateStudentPageTitle', 'Private student profile')
+    : getStudentDisplayName(profile, t('university:studentLabel'))
 
   return (
     <div className="space-y-6">
@@ -79,6 +82,13 @@ export function UniversityStudentProfile() {
       </div>
 
       <PageTitle title={name} icon="User" />
+
+      {isPrivate ? (
+        <div className="rounded-card border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-[var(--color-text)] flex gap-2 items-start">
+          <Lock className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" aria-hidden />
+          <p>{t('university:privateProfileBanner')}</p>
+        </div>
+      ) : null}
 
       <div className={cn('grid gap-6', 'md:grid-cols-[minmax(0,340px)_1fr]')}>
         <div className="space-y-4">
@@ -102,17 +112,27 @@ export function UniversityStudentProfile() {
             </Card>
           )}
           <div className="flex justify-center md:justify-start">
-            <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" loading="lazy" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
+            {isPrivate ? (
+              <div className="w-24 h-24 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] flex items-center justify-center" aria-hidden>
+                <Lock className="w-10 h-10 text-[var(--color-text-muted)]" />
+              </div>
+            ) : (
+              <img src={getStudentAvatarUrl(profile.avatarUrl)} alt="" loading="lazy" className="w-24 h-24 rounded-full object-cover border border-[var(--color-border)]" />
+            )}
           </div>
 
               <Card>
             <CardTitle>Personal</CardTitle>
+            {isPrivate ? (
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">{t('university:personalHiddenForPrivacy')}</p>
+            ) : (
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
               <dt className="text-[var(--color-text-muted)]">First name</dt><dd>{profile.firstName ?? '—'}</dd>
               <dt className="text-[var(--color-text-muted)]">Last name</dt><dd>{profile.lastName ?? '—'}</dd>
               <dt className="text-[var(--color-text-muted)]">Email</dt><dd>{profile.email ?? '—'}</dd>
               <dt className="text-[var(--color-text-muted)]">Date of birth</dt><dd>{profile.birthDate ? formatDate(profile.birthDate) : '—'}</dd>
             </dl>
+            )}
           </Card>
 
           <Card>

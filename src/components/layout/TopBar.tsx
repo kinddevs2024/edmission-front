@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { logout as logoutApi } from '@/services/auth'
 import { useSocket } from '@/hooks/useSocket'
@@ -15,18 +15,23 @@ import { MobileSearch } from './MobileSearch'
 import { MobileNavDrawer } from './MobileNavDrawer'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
-import { getStudentAvatarUrl } from '@/services/upload'
+import { getImageUrl } from '@/services/upload'
 import { getDashboardPath } from '@/utils/dashboardPath'
 import { notifyInfo } from '@/utils/notify'
 
 export function TopBar() {
   const { t } = useTranslation('common')
+  const { pathname } = useLocation()
   const { user } = useAuth()
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [avatarLoadError, setAvatarLoadError] = useState(false)
   const role = (user as { role?: string })?.role ?? null
   const dashboardPath = getDashboardPath(user)
   const { onNotification } = useSocket()
   const addNotification = useNotificationStore((s) => s.addNotification)
+
+  useEffect(() => {
+    setAvatarLoadError(false)
+  }, [user?.avatar])
 
   useEffect(() => {
     const unsubscribe = onNotification((payload) => {
@@ -48,11 +53,26 @@ export function TopBar() {
         createdAt: payload.createdAt ?? new Date().toISOString(),
       })
 
-      if (!document.hidden && (payload.title || payload.body)) {
-        notifyInfo(payload.title || t('notifications'), {
-          description: payload.body ?? '',
-          duration: 4500,
-        })
+      if (!document.hidden) {
+        const title = (payload.title || payload.body || t('notifications')).trim()
+        const description =
+          payload.title && payload.body && payload.body.trim() !== payload.title.trim()
+            ? payload.body
+            : undefined
+        if (title) {
+          notifyInfo(title, {
+            description,
+            duration: 6500,
+            action: link
+              ? {
+                  label: t('toastOpenNotification', 'Open'),
+                  onClick: () => {
+                    window.location.assign(link)
+                  },
+                }
+              : undefined,
+          })
+        }
       }
 
       // Browser notification when tab is in background
@@ -74,59 +94,114 @@ export function TopBar() {
   }, [onNotification, addNotification, role])
 
   return (
-    <header className="sticky top-0 z-30 h-16 border-b bg-[var(--color-card)] border-[var(--color-border)] flex items-center justify-between px-3 sm:px-4 gap-2">
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-        <MobileNavDrawer />
-        <Link
-          to={dashboardPath}
-          className="hidden sm:block truncate rounded-md px-1.5 py-1 text-sm text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
-        >
-          {t('appName')}
-        </Link>
+    <header
+      className={cn(
+        'sticky top-0 z-30 min-h-16 border-b bg-[var(--color-card)] border-[var(--color-border)] px-3 sm:px-4',
+        pathname === '/search' && 'max-md:hidden'
+      )}
+    >
+      {/* Tablet / desktop */}
+      <div className="hidden md:flex h-16 items-center justify-between gap-2 w-full">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+          <Link
+            to={dashboardPath}
+            className="truncate rounded-md px-1.5 py-1 text-base font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+          >
+            {t('appName')}
+          </Link>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
+          <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] shrink-0">
+            <GlobalSearch />
+          </div>
+          <NotificationsDropdown />
+          <div
+            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] min-[0px]:gap-1.5"
+            aria-label={t('language')}
+          >
+            <LanguageMenu />
+            <ThemeSwitch />
+          </div>
+          <Link
+            to="/profile"
+            className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)] bg-[var(--color-bg)] hover:border-primary-accent/50 transition-colors"
+            aria-label={user?.name || user?.email || t('profile')}
+          >
+            {user?.avatar && !avatarLoadError ? (
+              <img
+                src={getImageUrl(user.avatar)}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={() => setAvatarLoadError(true)}
+              />
+            ) : (
+              <span className="text-sm font-medium text-[var(--color-text-muted)]">
+                {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
+              </span>
+            )}
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:inline-flex"
+            onClick={() => logoutApi().catch(toastApiError)}
+          >
+            {t('logout')}
+          </Button>
+          <MobileNavDrawer />
+        </div>
       </div>
-      <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
-        <div className="hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] shrink-0">
-          <GlobalSearch />
-        </div>
-        <div className={cn('md:hidden flex-1 min-w-0 flex justify-end', mobileSearchOpen && 'flex-1')}>
-          <MobileSearch
-            open={mobileSearchOpen}
-            onOpen={() => setMobileSearchOpen(true)}
-            onClose={() => setMobileSearchOpen(false)}
-          />
-        </div>
-        <NotificationsDropdown />
-        {!mobileSearchOpen && (
-          <>
-            <div
-              className={cn(
-                'hidden md:flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)]',
-                'min-[0px]:gap-1.5'
-              )}
-              aria-label="Language and theme"
+
+      {/* Mobile: иконка поиска ведёт на /search (полноэкранная страница) */}
+      <div className="flex md:hidden min-h-16 w-full items-center gap-2 py-1.5">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Link
+              to={dashboardPath}
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-0.5 pr-1 transition-colors hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent sm:hidden"
+              aria-label={t('appName')}
             >
-              <LanguageMenu />
-              <ThemeSwitch />
-            </div>
+              <img
+                src="/logo/Group%201.png"
+                alt=""
+                className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                width={36}
+                height={36}
+              />
+              <span className="truncate text-lg font-semibold leading-snug tracking-tight text-[var(--color-text)]">
+                {t('appName')}
+              </span>
+            </Link>
+            <Link
+              to={dashboardPath}
+              className="hidden sm:flex min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-base font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+            >
+              {t('appName')}
+            </Link>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <MobileSearch />
+            <NotificationsDropdown />
             <Link
               to="/profile"
               className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)] bg-[var(--color-bg)] hover:border-primary-accent/50 transition-colors"
               aria-label={user?.name || user?.email || t('profile')}
             >
-              {user?.avatar ? (
-                <img src={getStudentAvatarUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
+              {user?.avatar && !avatarLoadError ? (
+                <img
+                  src={getImageUrl(user.avatar)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={() => setAvatarLoadError(true)}
+                />
               ) : (
                 <span className="text-sm font-medium text-[var(--color-text-muted)]">
                   {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
                 </span>
               )}
             </Link>
-            <Button variant="ghost" size="sm" onClick={() => logoutApi().catch(toastApiError)}>
-              {t('logout')}
-            </Button>
-          </>
-        )}
-      </div>
+            <MobileNavDrawer />
+          </div>
+        </div>
     </header>
   )
 }

@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { setPassword, getProfile } from '@/services/auth'
-import { getApiErrorKey } from '@/utils/apiErrorI18n'
+import { useAuth } from '@/hooks/useAuth'
+import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
+import { newPasswordValueSchema } from '@/utils/authPasswordZod'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -14,14 +16,30 @@ type FormData = { newPassword: string; confirmPassword: string }
 
 export function SetPassword() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const schema = z.object({
-    newPassword: z.string().min(8, t('auth:passwordMinLength')),
-    confirmPassword: z.string(),
-  }).refine((d) => d.newPassword === d.confirmPassword, { message: t('auth:passwordsMustMatch'), path: ['confirmPassword'] })
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          newPassword: newPasswordValueSchema({
+            min: t('auth:passwordMinLength'),
+            uppercase: t('auth:passwordUppercase'),
+            lowercase: t('auth:passwordLowercase'),
+            number: t('auth:passwordNumber'),
+          }),
+          confirmPassword: z.string(),
+        })
+        .refine((d) => d.newPassword === d.confirmPassword, {
+          message: t('auth:passwordsMustMatch'),
+          path: ['confirmPassword'],
+        }),
+    [t]
+  )
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -32,16 +50,16 @@ export function SetPassword() {
     setLoading(true)
     try {
       await setPassword(data.newPassword)
-      const user = await getProfile()
-      if (user.role === 'student') navigate('/student/dashboard', { replace: true })
-      else if (user.role === 'university') {
-        const verified = (user as { universityProfile?: { verified?: boolean } }).universityProfile?.verified
-        navigate(verified ? '/university/dashboard' : '/university/pending', { replace: true })
-      } else if (user.role === 'school_counsellor') navigate('/school/dashboard', { replace: true })
+      const nextUser = await getProfile()
+      if (nextUser.role === 'student') navigate('/student/dashboard', { replace: true })
+      else if (nextUser.role === 'university') {
+        const up = nextUser.universityProfile
+        if (!up?.id) navigate('/university/select', { replace: true })
+        else navigate(up.verified ? '/university/dashboard' : '/university/pending', { replace: true })
+      } else if (nextUser.role === 'school_counsellor') navigate('/school/dashboard', { replace: true })
       else navigate('/admin', { replace: true })
     } catch (err) {
-      const key = getApiErrorKey(err)
-      setSubmitError(t(`errors:${key}`))
+      setSubmitError(getFormSubmitErrorMessage(err, t))
     } finally {
       setLoading(false)
     }
@@ -49,17 +67,22 @@ export function SetPassword() {
 
   return (
     <Card className="p-6">
-      <CardTitle className="mb-4">{t('auth:setPassword', 'Set your password')}</CardTitle>
+      <CardTitle className="mb-4">{t('auth:setPassword')}</CardTitle>
       <p className="text-sm text-[var(--color-text-muted)] mb-4">
-        {t('auth:setPasswordHint', 'You need to set a new password to continue. Use a strong password.')}
+        {user?.mustSetLocalPassword
+          ? t('auth:oauthSetPasswordPageHint')
+          : t('auth:setPasswordHint')}
       </p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={t('auth:newPassword')}
           type="password"
           autoComplete="new-password"
-          hint={t('auth:passwordMinLength')}
+          hint={t('auth:passwordRequirements')}
           error={errors.newPassword?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
           {...register('newPassword')}
         />
         <Input
@@ -67,6 +90,9 @@ export function SetPassword() {
           type="password"
           autoComplete="new-password"
           error={errors.confirmPassword?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
           {...register('confirmPassword')}
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}

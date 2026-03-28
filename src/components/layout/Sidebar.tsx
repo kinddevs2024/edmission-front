@@ -79,8 +79,8 @@ export function Sidebar({
           collapsed ? 'justify-center' : 'justify-start'
         )}
       >
-        <img src="/logo/Group%201.png" alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" aria-hidden />
-        {!collapsed && <span className="font-semibold text-primary-accent">Edmission</span>}
+        <img src="/logo/Group%201.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" aria-hidden />
+        {!collapsed && <span className="text-lg font-semibold text-primary-accent">Edmission</span>}
       </Link>
       <nav className="flex-1 min-h-0 flex flex-col p-3">
         <div className="flex-1 overflow-y-auto space-y-0.5">

@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { resetPassword } from '@/services/auth'
-import { getApiErrorKey } from '@/utils/apiErrorI18n'
+import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
+import { newPasswordValueSchema } from '@/utils/authPasswordZod'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -21,11 +22,26 @@ export function ResetPassword() {
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const schema = z.object({
-    newPassword: z.string().min(8, t('auth:passwordMinLength')),
-    confirmPassword: z.string(),
-  }).refine((d) => d.newPassword === d.confirmPassword, { message: t('auth:passwordsMustMatch'), path: ['confirmPassword'] })
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          newPassword: newPasswordValueSchema({
+            min: t('auth:passwordMinLength'),
+            uppercase: t('auth:passwordUppercase'),
+            lowercase: t('auth:passwordLowercase'),
+            number: t('auth:passwordNumber'),
+          }),
+          confirmPassword: z.string(),
+        })
+        .refine((d) => d.newPassword === d.confirmPassword, {
+          message: t('auth:passwordsMustMatch'),
+          path: ['confirmPassword'],
+        }),
+    [t]
+  )
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -54,8 +70,7 @@ export function ResetPassword() {
         navigate('/choose-language?next=/login', { replace: true })
       }
     } catch (err) {
-      const key = getApiErrorKey(err)
-      setSubmitError(t(`errors:${key}`))
+      setSubmitError(getFormSubmitErrorMessage(err, t))
     } finally {
       setLoading(false)
     }
@@ -88,8 +103,11 @@ export function ResetPassword() {
           label={t('auth:newPassword')}
           type="password"
           autoComplete="new-password"
-          hint={t('auth:passwordMinLength')}
+          hint={t('auth:passwordRequirements')}
           error={errors.newPassword?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
           {...register('newPassword')}
         />
         <Input
@@ -97,6 +115,9 @@ export function ResetPassword() {
           type="password"
           autoComplete="new-password"
           error={errors.confirmPassword?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
           {...register('confirmPassword')}
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}

@@ -434,6 +434,7 @@ export function UniversityDocuments() {
             setTemplateUploadFile(file)
             if (templateUploadPreview) URL.revokeObjectURL(templateUploadPreview)
             setTemplateUploadPreview(file ? URL.createObjectURL(file) : '')
+            event.target.value = ''
           }}
         />
         <button

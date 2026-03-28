@@ -64,6 +64,9 @@ export function StudentDashboard() {
     { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
   ]
   const onboardingDone = onboardingSteps.every((s) => s.done)
+  const showAppsSection = activeApplications.length > 0
+  const showOffersSection = offers.length > 0
+  const showAppsOffersGrid = showAppsSection || showOffersSection
 
   return (
     <div className="space-y-8 pb-12 mb-4">
@@ -148,59 +151,57 @@ export function StudentDashboard() {
         ) : (
           <p className="text-[var(--color-text-muted)]">{t('completeProfileForRecs')}</p>
         )}
-        <Link
-          to="/student/universities"
-          className="inline-block mt-4 px-4 py-2 text-sm font-medium rounded-input bg-primary-accent text-primary-dark hover:opacity-90 transition-opacity"
-        >
-          {t('exploreUniversities')}
-        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Link to="/student/applications">
-          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
-            <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
-          {activeApplications.length === 0 ? (
-            <p className="text-[var(--color-text-muted)]">{t('noActiveApplications')}</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {activeApplications.slice(0, 5).map((a) => (
-                <li
-                  key={a.id}
-                  className="grid grid-cols-[minmax(0,1fr)_104px_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
-                >
-                  <span className="truncate pr-2">{a.universityName ?? a.universityId}</span>
-                  <span className="justify-self-start text-sm text-[var(--color-text-muted)]">{a.status}</span>
-                  <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allApplications')}</span>
-          </Card>
-        </Link>
-        <Link to="/student/offers">
-          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
-          <CardTitle>{t('recentOffers')}</CardTitle>
-          {offers.length === 0 ? (
-            <p className="text-[var(--color-text-muted)]">{t('noOffersYet')}</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {offers.slice(0, 3).map((o) => (
-                <li
-                  key={o.id}
-                  className="grid grid-cols-[minmax(0,1fr)_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
-                >
-                  <span className="truncate pr-2">{o.universityName ?? o.universityId}</span>
-                  <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allOffers')}</span>
-          </Card>
-        </Link>
-      </div>
+      {showAppsOffersGrid ? (
+        <div
+          className={
+            showAppsSection && showOffersSection
+              ? 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+              : 'grid grid-cols-1 gap-6'
+          }
+        >
+          {showAppsSection ? (
+            <Link to="/student/applications">
+              <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+                <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
+                <ul className="mt-3 space-y-2">
+                  {activeApplications.slice(0, 5).map((a) => (
+                    <li
+                      key={a.id}
+                      className="grid grid-cols-[minmax(0,1fr)_104px_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
+                    >
+                      <span className="truncate pr-2">{a.universityName ?? a.universityId}</span>
+                      <span className="justify-self-start text-sm text-[var(--color-text-muted)]">{a.status}</span>
+                      <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
+                    </li>
+                  ))}
+                </ul>
+                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allApplications')}</span>
+              </Card>
+            </Link>
+          ) : null}
+          {showOffersSection ? (
+            <Link to="/student/offers">
+              <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+                <CardTitle>{t('recentOffers')}</CardTitle>
+                <ul className="mt-3 space-y-2">
+                  {offers.slice(0, 3).map((o) => (
+                    <li
+                      key={o.id}
+                      className="grid grid-cols-[minmax(0,1fr)_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
+                    >
+                      <span className="truncate pr-2">{o.universityName ?? o.universityId}</span>
+                      <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
+                    </li>
+                  ))}
+                </ul>
+                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allOffers')}</span>
+              </Card>
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         <Button to="/student/universities">{t('exploreUniversities')}</Button>
