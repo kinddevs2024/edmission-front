@@ -13,6 +13,7 @@ import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
+import { useAutoReadNotifications } from '@/hooks/useAutoReadNotifications'
 
 const SIDEBAR_PATHS = ['/profile', '/notifications', '/ai', '/payment', '/payment/success', '/payment/cancel', '/support']
 
@@ -35,6 +36,8 @@ export function MainLayout() {
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
   const showSidebar = isAuthenticated && isSidebarPath(location.pathname)
   const isChatPage = location.pathname === '/student/chat' || location.pathname === '/university/chat'
+
+  useAutoReadNotifications(role ?? null, isAuthenticated)
 
   const { navItems, navBottomItems } = useMemo(() => {
     const educationStatus = user?.studentProfile?.educationStatus as

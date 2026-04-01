@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,7 +17,7 @@ import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, ExternalLink, Lock } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Circle, ExternalLink, Lock } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -221,6 +221,29 @@ function FacultyMarqueeLabel({ text }: { text: string }) {
     </span>
   )
 }
+
+function hasFilledValue(value: unknown) {
+  return value != null && String(value).trim() !== ''
+}
+
+function getMinimalChecklist(profile: StudentProfileData | null, t: (key: string, defaultValue?: string) => string) {
+  const hasName = Boolean(hasFilledValue(profile?.firstName) || hasFilledValue(profile?.lastName))
+  const hasLocation = Boolean(hasFilledValue(profile?.country) || hasFilledValue(profile?.city))
+  const hasEducation =
+    Boolean(hasFilledValue(profile?.educationStatus)) &&
+    Boolean(
+      hasFilledValue(profile?.schoolName) ||
+      hasFilledValue(profile?.gradeLevel) ||
+      profile?.graduationYear != null ||
+      (profile?.schoolsAttended?.some((item) => hasFilledValue(item.institutionName)) ?? false)
+    )
+
+  return [
+    { label: t('student:minProfileName', 'Name'), done: hasName },
+    { label: t('student:minProfileLocation', 'Location'), done: hasLocation },
+    { label: t('student:minProfileEducation', 'Education'), done: hasEducation },
+  ]
+}
 const GRADING_SCHEME_OPTIONS = [
   { value: 'Other', labelKey: 'gradingOther' as const },
   { value: 'GCE Advanced Level Education', labelKey: 'gradingGCE' as const },
@@ -266,11 +289,11 @@ export function StudentProfilePage() {
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
-  const [expandedSkillsBlock, setExpandedSkillsBlock] = useState<'skills' | 'interests' | 'hobbies'>('skills')
   const [displayPercent, setDisplayPercent] = useState(0)
   const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
+  const sectionSnapshotRef = useRef('')
 
-  const { register, reset, control, watch, setValue, getValues, formState: { errors, isDirty } } = useForm<FormData>({
+  const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       skills: [],
@@ -296,6 +319,25 @@ export function StudentProfilePage() {
 
   const avatarUrl = watch('avatarUrl')
   const educationStatus = watch('educationStatus')
+  const targetDegreeLevel = watch('targetDegreeLevel')
+  const educationStepOneDone = Boolean(educationStatus)
+  const educationStepTwoDone = Boolean(
+    educationStatus && (
+      hasFilledValue(watch('schoolName')) ||
+      hasFilledValue(watch('gradeLevel')) ||
+      watch('graduationYear') != null
+    )
+  )
+  const needsDegreeGoal = educationStatus === 'in_university' || educationStatus === 'finished_university'
+  const educationStepThreeDone = needsDegreeGoal ? Boolean(targetDegreeLevel) : true
+  const educationStepFourDone = (watch('languages')?.length ?? 0) > 0 || hasFilledValue(watch('languageLevel'))
+  const educationVisibleSteps = needsDegreeGoal ? 4 : 3
+  const educationCompletedSteps = [
+    educationStepOneDone,
+    educationStepTwoDone,
+    ...(needsDegreeGoal ? [educationStepThreeDone] : []),
+    educationStepFourDone,
+  ].filter(Boolean).length
   const gradingSchemeOptions = GRADING_SCHEME_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
   const gradeScaleOptions = GRADE_SCALE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))
   const highestEducationOptions = HIGHEST_EDUCATION_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
@@ -324,10 +366,6 @@ export function StudentProfilePage() {
   }, [])
 
   useEffect(() => {
-    if (openSection === 'skills') setExpandedSkillsBlock('skills')
-  }, [openSection])
-
-  useEffect(() => {
     const target = profile?.portfolioCompletionPercent ?? 0
     const t = setTimeout(() => setDisplayPercent(target), 80)
     return () => clearTimeout(t)
@@ -343,15 +381,25 @@ export function StudentProfilePage() {
       .finally(() => setLoading(false))
   }, [reset, t])
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (!openSection) return false
+    return sectionSnapshotRef.current !== JSON.stringify(getValues())
+  }, [getValues, openSection, watch()])
+
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!isDirty) return
+      if (!hasUnsavedChanges) return
       event.preventDefault()
       event.returnValue = ''
     }
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
-  }, [isDirty])
+  }, [hasUnsavedChanges])
+
+  useEffect(() => {
+    if (!openSection) return
+    sectionSnapshotRef.current = JSON.stringify(getValues())
+  }, [getValues, openSection])
 
   function toDateInputValue(value: unknown): string {
     if (!value) return ''
@@ -499,6 +547,7 @@ export function StudentProfilePage() {
       const updated = await updateStudentProfile(buildPayload(data))
       setProfile(updated)
       reset(mapProfileToFormData(updated))
+      sectionSnapshotRef.current = JSON.stringify(mapProfileToFormData(updated))
       setOpenSection(null)
       notifySuccess(t('common:saved', 'Saved'))
     } catch (e) {
@@ -509,10 +558,13 @@ export function StudentProfilePage() {
   }
 
   const verified = user?.studentProfile?.verifiedAt
+  const minimalChecklist = getMinimalChecklist(profile, t)
+  const minimalChecklistDone = minimalChecklist.filter((item) => item.done).length
   const closeSection = () => {
-    if (isDirty && !saving && !window.confirm(t('common:unsavedChanges', 'You have unsaved changes. Close without saving?'))) {
+    if (hasUnsavedChanges && !saving && !window.confirm(t('common:unsavedChanges', 'You have unsaved changes. Close without saving?'))) {
       return
     }
+    if (profile) reset(mapProfileToFormData(profile))
     setOpenSection(null)
   }
 
@@ -581,6 +633,38 @@ export function StudentProfilePage() {
         </div>
       </Card>
 
+      {!profile?.minimalPortfolioComplete && (
+        <Card className="p-4 sm:p-5 border-primary-accent/25 bg-[var(--color-card)]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">
+                {t('student:minProfileUnlockTitle', 'Complete the minimum profile to unlock universities')}
+              </p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                {t('student:minProfileUnlockDesc', 'Fill the 3 required parts first: name, location, and education.')}
+              </p>
+            </div>
+            <div className="text-sm font-medium text-primary-accent">
+              {minimalChecklistDone}/{minimalChecklist.length}
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {minimalChecklist.map((item) => (
+              <div key={item.label} className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] px-3 py-3">
+                {item.done ? (
+                  <Check className="h-4 w-4 shrink-0 text-green-500" />
+                ) : (
+                  <Circle className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" />
+                )}
+                <span className={cn('text-sm', item.done ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]')}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {SECTIONS.map((sec) => {
           const isFaculties = sec.id === 'faculties'
@@ -591,7 +675,10 @@ export function StudentProfilePage() {
             <button
               key={sec.id}
               type="button"
-              onClick={() => setOpenSection(sec.id)}
+              onClick={() => {
+                if (profile) reset(mapProfileToFormData(profile))
+                setOpenSection(sec.id)
+              }}
               className={cn(
                 'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
               )}
@@ -662,7 +749,7 @@ export function StudentProfilePage() {
             <Button type="button" variant="secondary" onClick={closeSection}>
               {t('common:cancel', 'Cancel')}
             </Button>
-            <Button type="button" onClick={handleModalSave} disabled={saving || !isDirty} loading={saving}>
+            <Button type="button" onClick={handleModalSave} disabled={saving || !hasUnsavedChanges} loading={saving}>
               {t('common:save')}
             </Button>
           </>
@@ -736,133 +823,203 @@ export function StudentProfilePage() {
 
           {openSection === 'education' && (
             <>
-              <p className="text-base font-medium text-[var(--color-text)] mb-3">{t('educationStatusLabel')}</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                {EDUCATION_STATUS_OPTIONS.map((o) => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    onClick={() => setValue('educationStatus', o.value, { shouldDirty: true })}
-                    className={cn(
-                      'p-4 rounded-xl border-2 text-left text-sm font-medium transition-all',
-                      educationStatus === o.value
-                        ? 'border-[var(--color-primary-accent)] bg-[var(--color-primary-accent)]/10 text-[var(--color-text)]'
-                        : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-muted)] hover:border-[var(--color-primary-accent)]/50'
-                    )}
-                  >
-                    {t(o.labelKey)}
-                  </button>
-                ))}
+              <div className="mb-6 rounded-2xl border border-[var(--color-primary-accent)]/20 bg-[var(--color-primary-accent)]/5 p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--color-text)]">
+                      {t('student:educationProgressTitle', 'Education setup progress')}
+                    </p>
+                    <p className="text-sm text-[var(--color-text-muted)]">
+                      {t('student:educationProgressHint', 'Complete these steps so we can unlock the right universities for you.')}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[var(--color-card)] px-3 py-1 text-sm font-semibold text-[var(--color-text)]">
+                    {educationCompletedSteps}/{educationVisibleSteps}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-[var(--color-card)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[var(--color-primary-accent)] transition-all"
+                    style={{ width: `${(educationCompletedSteps / educationVisibleSteps) * 100}%` }}
+                  />
+                </div>
               </div>
 
-              <Select label={t('applyingForDegree')} options={targetDegreeOptions} placeholder="—" {...register('targetDegreeLevel')} className="mb-5 text-base" />
-
-              {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
-                <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
-                  <Input label={t('schoolName')} {...register('schoolName')} placeholder="Лицей №1" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
-                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2024" />
-                  </div>
-                  <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0–4" />
-                </div>
-              )}
-
-              {(educationStatus === 'in_university' || educationStatus === 'finished_university') && (
-                <div className="space-y-3 mb-5 p-4 rounded-xl bg-[var(--color-card)] border border-[var(--color-border)]">
-                  <Input label={t('institutionName')} {...register('schoolName')} placeholder="ТашГУ" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder="1 курс, 2 курс…" />
-                    <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2025" />
+              <Card className="mb-5 p-5 border border-[var(--color-border)]">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">1</div>
+                  <div>
+                    <p className="text-base font-semibold text-[var(--color-text)]">{t('student:whoAreYouTitle', 'Who are you?')}</p>
+                    <p className="text-sm text-[var(--color-text-muted)]">{t('student:whoAreYouHint', 'Choose your current study stage first.')}</p>
                   </div>
                 </div>
-              )}
-
-              <div className="flex items-center justify-between gap-3 p-3 mb-5 rounded-xl border border-[var(--color-primary-accent)]/30 bg-[var(--color-primary-accent)]/5">
-                <span className="text-sm text-[var(--color-text)]">{t('linkToSchoolHint')}</span>
-                <Link to="/student/schools" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-[var(--color-primary-accent)] font-medium hover:underline">
-                  {t('chooseSchool')} <ExternalLink className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              <p className="text-base font-medium text-[var(--color-text)] mb-2">{t('languageLevel')}</p>
-              <div className="space-y-3 mb-6">
-                {languageFields.length > 0 && (
-                  <ul className="space-y-2" role="list">
-                    {languageFields.map((field, i) => (
-                      <li
-                        key={field.id}
-                        className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm"
-                      >
-                        <span className="font-medium text-[var(--color-text)]">{watch(`languages.${i}.language`)}</span>
-                        <span className="text-[var(--color-text-muted)]">·</span>
-                        <span className="text-sm text-[var(--color-text-muted)]">{watch(`languages.${i}.level`)}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeLanguage(i)}
-                          className="ml-auto text-[var(--color-text-muted)] hover:text-red-500"
-                          aria-label="Remove"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <Card className="p-3 border border-dashed border-[var(--color-border)] bg-[var(--color-bg)]">
-                  <div className="flex flex-wrap gap-2 items-end">
-                    <div className="min-w-[100px]">
-                      <Select
-                        value={newLanguage}
-                        onChange={(e) => {
-                          setNewLanguage(e.target.value)
-                          if (e.target.value !== 'Other') setCustomLanguageName('')
-                        }}
-                        options={languageOptions}
-                        aria-label="Language"
-                        className="rounded-xl bg-[var(--color-card)]"
-                      />
-                    </div>
-                    {newLanguage === 'Other' && (
-                      <div className="min-w-[120px]">
-                        <input
-                          type="text"
-                          value={customLanguageName}
-                          onChange={(e) => setCustomLanguageName(e.target.value)}
-                          placeholder="Язык"
-                          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent"
-                        />
-                      </div>
-                    )}
-                    <div className="min-w-[80px]">
-                      <Select
-                        value={newLevel}
-                        onChange={(e) => setNewLevel(e.target.value)}
-                        options={levelOptions}
-                        aria-label="Level"
-                        className="rounded-xl bg-[var(--color-card)]"
-                      />
-                    </div>
-                    <Button
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {EDUCATION_STATUS_OPTIONS.map((o) => (
+                    <button
+                      key={o.value}
                       type="button"
-                      size="sm"
-                      className="rounded-xl h-[42px] px-4"
                       onClick={() => {
-                        const langToAdd = newLanguage === 'Other' ? customLanguageName.trim() : newLanguage
-                        if (!langToAdd) return
-                        appendLanguage({ language: langToAdd, level: newLevel })
-                        if (newLanguage === 'Other') setCustomLanguageName('')
+                        setValue('educationStatus', o.value, { shouldDirty: true })
+                        if (o.value === 'in_school') {
+                          setValue('targetDegreeLevel', undefined, { shouldDirty: true })
+                        }
                       }}
-                      icon={<Plus className="w-4 h-4" />}
-                      disabled={newLanguage === 'Other' && !customLanguageName.trim()}
+                      className={cn(
+                        'p-4 rounded-xl border-2 text-left text-sm font-medium transition-all',
+                        educationStatus === o.value
+                          ? 'border-[var(--color-primary-accent)] bg-[var(--color-primary-accent)]/10 text-[var(--color-text)]'
+                          : 'border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text-muted)] hover:border-[var(--color-primary-accent)]/50'
+                      )}
                     >
-                      {t('addLanguage')}
-                    </Button>
+                      {t(o.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {educationStepOneDone && (
+                <Card className="mb-5 p-5 border border-[var(--color-border)]">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">2</div>
+                    <div>
+                      <p className="text-base font-semibold text-[var(--color-text)]">{t('student:studyBackgroundTitle', 'Tell us about your current education')}</p>
+                      <p className="text-sm text-[var(--color-text-muted)]">{t('student:studyBackgroundHint', 'Add the basics so we understand your academic background.')}</p>
+                    </div>
+                  </div>
+
+                  {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
+                    <div className="space-y-3">
+                      <Input label={t('schoolName')} {...register('schoolName')} placeholder="Lyceum No.1" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
+                        <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2026" />
+                      </div>
+                      <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0-4" />
+                    </div>
+                  )}
+
+                  {(educationStatus === 'in_university' || educationStatus === 'finished_university') && (
+                    <div className="space-y-3">
+                      <Input label={t('institutionName')} {...register('schoolName')} placeholder="TashGU" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder="1 course, 2 course..." />
+                        <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2027" />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-3 p-3 mt-4 rounded-xl border border-[var(--color-primary-accent)]/30 bg-[var(--color-primary-accent)]/5">
+                    <span className="text-sm text-[var(--color-text)]">{t('linkToSchoolHint')}</span>
+                    <Link to="/student/schools" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-[var(--color-primary-accent)] font-medium hover:underline">
+                      {t('chooseSchool')} <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </Card>
-              </div>
+              )}
+
+              {educationStepOneDone && needsDegreeGoal && (
+                <Card className="mb-5 p-5 border border-[var(--color-border)]">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">3</div>
+                    <div>
+                      <p className="text-base font-semibold text-[var(--color-text)]">{t('student:degreeGoalTitle', 'Applying for degree')}</p>
+                      <p className="text-sm text-[var(--color-text-muted)]">{t('student:degreeGoalHint', 'Choose which degree you want to apply for next.')}</p>
+                    </div>
+                  </div>
+                  <Select label={t('applyingForDegree')} options={targetDegreeOptions} placeholder="-" {...register('targetDegreeLevel')} className="text-base" />
+                </Card>
+              )}
+
+              {educationStepOneDone && (
+                <Card className="mb-6 p-5 border border-[var(--color-border)]">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">
+                      {needsDegreeGoal ? 4 : 3}
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-[var(--color-text)]">{t('languageLevel')}</p>
+                      <p className="text-sm text-[var(--color-text-muted)]">{t('student:languageLevelHint', 'Add the languages you can study in. This helps us match you correctly.')}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {languageFields.length > 0 && (
+                      <ul className="space-y-2" role="list">
+                        {languageFields.map((field, i) => (
+                          <li
+                            key={field.id}
+                            className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-sm"
+                          >
+                            <span className="font-medium text-[var(--color-text)]">{watch(`languages.${i}.language`)}</span>
+                            <span className="text-[var(--color-text-muted)]">·</span>
+                            <span className="text-sm text-[var(--color-text-muted)]">{watch(`languages.${i}.level`)}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeLanguage(i)}
+                              className="ml-auto text-[var(--color-text-muted)] hover:text-red-500"
+                              aria-label="Remove"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <Card className="p-3 border border-dashed border-[var(--color-border)] bg-[var(--color-bg)]">
+                      <div className="flex flex-wrap gap-2 items-end">
+                        <div className="min-w-[100px]">
+                          <Select
+                            value={newLanguage}
+                            onChange={(e) => {
+                              setNewLanguage(e.target.value)
+                              if (e.target.value !== 'Other') setCustomLanguageName('')
+                            }}
+                            options={languageOptions}
+                            aria-label="Language"
+                            className="rounded-xl bg-[var(--color-card)]"
+                          />
+                        </div>
+                        {newLanguage === 'Other' && (
+                          <div className="min-w-[120px]">
+                            <input
+                              type="text"
+                              value={customLanguageName}
+                              onChange={(e) => setCustomLanguageName(e.target.value)}
+                              placeholder="Language"
+                              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-accent focus:border-transparent"
+                            />
+                          </div>
+                        )}
+                        <div className="min-w-[80px]">
+                          <Select
+                            value={newLevel}
+                            onChange={(e) => setNewLevel(e.target.value)}
+                            options={levelOptions}
+                            aria-label="Level"
+                            className="rounded-xl bg-[var(--color-card)]"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="rounded-xl h-[42px] px-4"
+                          onClick={() => {
+                            const langToAdd = newLanguage === 'Other' ? customLanguageName.trim() : newLanguage
+                            if (!langToAdd) return
+                            appendLanguage({ language: langToAdd, level: newLevel })
+                            if (newLanguage === 'Other') setCustomLanguageName('')
+                          }}
+                          icon={<Plus className="w-4 h-4" />}
+                          disabled={newLanguage === 'Other' && !customLanguageName.trim()}
+                        >
+                          {t('addLanguage')}
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                </Card>
+              )}
 
               <button
                 type="button"
@@ -948,59 +1105,18 @@ export function StudentProfilePage() {
           {openSection === 'skills' && (
             <>
               {!criteria ? (
-                <p className="text-[var(--color-text-muted)]">Loading options…</p>
+                <p className="text-[var(--color-text-muted)]">Loading options...</p>
               ) : (
-                <div className="space-y-2">
-                  {(['skills', 'interests', 'hobbies'] as const).map((block) => {
-                    const isOpen = expandedSkillsBlock === block
-                    const label = block === 'skills' ? t('skillsPlaceholder') : block === 'interests' ? t('student:interestsBlock', 'Interests') : t('student:hobbiesBlock', 'Hobbies & activities')
-                    return (
-                      <div key={block} className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => setExpandedSkillsBlock(block)}
-                          className="w-full flex items-center justify-between gap-2 px-3 py-3 text-left text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-bg)] transition-colors"
-                        >
-                          <span>{label}</span>
-                          {isOpen ? <ChevronDown className="w-4 h-4 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
-                        </button>
-                        {isOpen && (
-                          <div className="px-3 pb-3 pt-0 border-t border-[var(--color-border)]">
-                            {block === 'skills' && (
-                              <ChipSelect
-                                options={criteria.skills}
-                                value={watch('skills') ?? []}
-                                onChange={(v) => setValue('skills', v, { shouldDirty: true })}
-                                max={50}
-                                placeholder={t('skillsPlaceholder')}
-                                className="mt-3"
-                              />
-                            )}
-                            {block === 'interests' && (
-                              <ChipSelect
-                                options={criteria.interests}
-                                value={watch('interests') ?? []}
-                                onChange={(v) => setValue('interests', v, { shouldDirty: true })}
-                                max={30}
-                                placeholder={t('student:interestsPlaceholder', 'Select interests (e.g. IT, books, travel)')}
-                                className="mt-3"
-                              />
-                            )}
-                            {block === 'hobbies' && (
-                              <ChipSelect
-                                options={criteria.hobbies}
-                                value={watch('hobbies') ?? []}
-                                onChange={(v) => setValue('hobbies', v, { shouldDirty: true })}
-                                max={30}
-                                placeholder={t('student:hobbiesPlaceholder', 'Select hobbies and activities')}
-                                className="mt-3"
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+                  <p className="text-sm font-medium text-[var(--color-text)]">{t('skillsPlaceholder')}</p>
+                  <ChipSelect
+                    options={criteria.skills}
+                    value={watch('skills') ?? []}
+                    onChange={(v) => setValue('skills', v, { shouldDirty: true })}
+                    max={50}
+                    placeholder={t('skillsPlaceholder')}
+                    className="mt-3"
+                  />
                 </div>
               )}
             </>

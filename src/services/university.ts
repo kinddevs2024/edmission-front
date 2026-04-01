@@ -154,7 +154,7 @@ export interface UniversityDashboardData {
   acceptedCount?: number
   acceptanceRate?: number
   verified?: boolean
-  topRecommendations: { id: string; matchScore?: number; student?: { _id?: string; firstName?: string; lastName?: string; gpa?: number; country?: string; userEmail?: string } }[]
+  topRecommendations: { id: string; matchScore?: number; student?: { _id?: string; firstName?: string; lastName?: string; name?: string; gpa?: number; country?: string; userEmail?: string } }[]
 }
 
 export async function getDashboard(): Promise<UniversityDashboardData> {
@@ -165,7 +165,7 @@ export async function getDashboard(): Promise<UniversityDashboardData> {
 export interface PipelineItem {
   id: string
   status: string
-  student?: { _id?: unknown; firstName?: string; lastName?: string; country?: string; gpa?: number; userEmail?: string }
+  student?: { _id?: unknown; firstName?: string; lastName?: string; name?: string; country?: string; gpa?: number; userEmail?: string }
   updatedAt?: string
 }
 
@@ -214,6 +214,7 @@ export interface DiscoverStudentItem {
   student: {
     firstName?: string
     lastName?: string
+    name?: string
     userEmail?: string
     country?: string
     city?: string
@@ -288,6 +289,7 @@ export interface FullStudentProfile {
   id: string
   firstName?: string
   lastName?: string
+  name?: string
   email?: string
   phone?: string
   socialLinks?: SocialLinks

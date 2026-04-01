@@ -38,6 +38,7 @@ const LANGUAGE_CERT_TYPES: { value: string; label: string; scores?: { min: numbe
   { value: 'IELTS', label: 'IELTS', scores: { min: 0, max: 9 } },
   { value: 'TOEFL', label: 'TOEFL', scores: { min: 0, max: 120 } },
   { value: 'Cambridge', label: 'Cambridge' },
+  { value: 'CEFR', label: 'CEFR' },
   { value: 'Duolingo', label: 'Duolingo', scores: { min: 0, max: 160 } },
   { value: 'other', label: 'Other' },
 ]
@@ -109,7 +110,8 @@ export function StudentDocuments() {
       return
     }
     const trimmedName = name.trim()
-    if (!trimmedName) {
+    const resolvedName = trimmedName || (isLanguageCert ? certificateType.trim() : '')
+    if (!resolvedName) {
       setError('Please enter a document name.')
       return
     }
@@ -125,7 +127,7 @@ export function StudentDocuments() {
         source: 'upload',
         type,
         fileUrl,
-        name: trimmedName,
+        name: resolvedName,
       }
       if (isLanguageCert) {
         payload.certificateType = certificateType
@@ -285,12 +287,14 @@ export function StudentDocuments() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Name <span className="text-red-500">*</span></label>
+                <label className="mb-1 block text-sm font-medium">
+                  {isLanguageCert ? 'Name' : <>Name <span className="text-red-500">*</span></>}
+                </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  placeholder={isLanguageCert ? 'e.g. IELTS' : 'e.g. High school diploma'}
+                  placeholder={isLanguageCert ? 'Optional, auto-filled from certificate type' : 'e.g. High school diploma'}
                   className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2"
                   aria-label="Document name"
                 />
@@ -329,7 +333,7 @@ export function StudentDocuments() {
                       type="text"
                       value={score}
                       onChange={(event) => setScore(event.target.value)}
-                      placeholder="e.g. B2, C1"
+                      placeholder={certificateType === 'CEFR' ? 'e.g. B1, B2, C1' : 'e.g. B2, C1'}
                       className="w-full rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2"
                       aria-label="Level"
                     />
@@ -346,7 +350,7 @@ export function StudentDocuments() {
               label="File (image or PDF)"
             />
 
-            <Button className="mt-1" size="sm" onClick={handleAddUpload} disabled={adding || !fileUrl.trim() || !name.trim() || (isLanguageCert && !score.trim())} loading={adding}>
+            <Button className="mt-1" size="sm" onClick={handleAddUpload} disabled={adding || !fileUrl.trim() || (!name.trim() && !isLanguageCert) || (isLanguageCert && !score.trim())} loading={adding}>
               Submit for review
             </Button>
           </div>

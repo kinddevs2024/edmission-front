@@ -81,14 +81,14 @@ function getSortLabel(value: UniversitiesParams['sort'], t: TranslateLabel): str
   if (value === 'tuition_asc') return t('student:sortTuitionLow', 'Tuition: low to high')
   if (value === 'tuition_desc') return t('student:sortTuitionHigh', 'Tuition: high to low')
   if (value === 'newest') return t('student:sortNewest', 'Newest first')
-  return t('student:matchScore', 'Match score')
+  return t('student:sortBestFit', 'Best fit')
 }
 
 function createInitialFilters(useProfileFilters = true): UniversityFilters {
   return {
     search: '',
     country: '',
-    sort: 'match',
+    sort: 'name',
     facultyCodes: [],
     degreeLevels: [],
     programLanguages: [],
@@ -108,7 +108,7 @@ function createInitialFilters(useProfileFilters = true): UniversityFilters {
 
 function parseSort(value: string | null): UniversitiesParams['sort'] {
   if (value === 'name' || value === 'rating' || value === 'tuition_asc' || value === 'tuition_desc' || value === 'newest') return value
-  return 'match'
+  return 'name'
 }
 
 export function ExploreUniversities() {
@@ -164,6 +164,12 @@ export function ExploreUniversities() {
     staleTime: 2 * 60 * 1000,
   })
   const interestedIds = new Set(interestedIdsData ?? [])
+  const { data: studentProfile } = useQuery({
+    queryKey: ['student', 'profile', 'exploreGate'],
+    queryFn: getStudentProfile,
+    staleTime: 60 * 1000,
+  })
+  const minimalProfileComplete = studentProfile?.minimalPortfolioComplete ?? false
 
   const { data: interestLimit } = useQuery({
     queryKey: ['student', 'interestLimit'],
@@ -200,12 +206,13 @@ export function ExploreUniversities() {
     for (const p of pages) {
       for (const u of p.data) {
         if (seen.has(u.id)) continue
+        if (interestedIds.has(u.id)) continue
         seen.add(u.id)
         out.push(u)
       }
     }
     return out
-  }, [data])
+  }, [data, interestedIds])
 
   const total = typeof data?.pages?.[0]?.total === 'number' && Number.isFinite(data.pages[0].total) ? data.pages[0].total : list.length
 
@@ -379,7 +386,19 @@ export function ExploreUniversities() {
         ) : null}
       </Card>
 
-      {filters.useProfileFilters && profileCriteriaCount > 0 ? (
+      {!minimalProfileComplete ? (
+        <Card>
+          <EmptyState
+            icon={<Building2 className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
+            title={t('student:completeMinimalProfileTitle', 'Complete your profile first')}
+            description={t('student:completeMinimalProfileDesc', 'Universities will appear after you complete the minimum student profile: name, location, and education history.')}
+            actionLabel={t('student:navProfile', 'Profile')}
+            actionTo="/student/profile"
+          />
+        </Card>
+      ) : null}
+
+      {minimalProfileComplete && filters.useProfileFilters && profileCriteriaCount > 0 ? (
         <p className="text-sm text-[var(--color-text-muted)]">
           {t('student:profileFiltersApplied', 'Using your profile')}: {profileCriteria.faculties} {t('student:faculties', 'faculties')}, {profileCriteria.countries} {t('student:countries', 'countries')}
         </p>
@@ -394,6 +413,7 @@ export function ExploreUniversities() {
         </p>
       ) : null}
 
+      {minimalProfileComplete && (
       <div className="flex flex-wrap items-center gap-2">
         <Search size={16} className="text-[var(--color-text-muted)]" />
         <p className="text-[var(--color-text-muted)]">
@@ -402,6 +422,7 @@ export function ExploreUniversities() {
             : t('student:universitiesFound', { count: total, defaultValue: '{{count}} universities found' })}
         </p>
       </div>
+      )}
 
       <Modal
         open={filterModalOpen}
@@ -643,7 +664,7 @@ export function ExploreUniversities() {
         </div>
       </Modal>
 
-      {isInitialUniversitiesLoading ? (
+      {!minimalProfileComplete ? null : isInitialUniversitiesLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
         </div>
@@ -666,13 +687,7 @@ export function ExploreUniversities() {
                 className="animate-card-enter opacity-0"
                 style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
               >
-                <UniversityCard
-                  university={university}
-                  showMatch
-                  onInterest={handleInterest}
-                  interested={interestedIds.has(university.id)}
-                  interestDisabled={!canShowInterest}
-                />
+                <UniversityCard university={university} onInterest={handleInterest} interested={interestedIds.has(university.id)} interestDisabled={!canShowInterest} />
               </div>
             ))}
           </div>
@@ -691,7 +706,7 @@ export function ExploreUniversities() {
                   : t('common:loadMoreUniversities', 'Show more')}
               </Button>
             </div>
-          ) : null}
+      ) : null}
         </>
       )}
     </div>

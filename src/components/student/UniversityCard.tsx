@@ -1,7 +1,6 @@
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { MatchScore } from './MatchScore'
 import { getImageUrl } from '@/services/upload'
 import { useDominantColor } from '@/hooks/useDominantColor'
 import { useUIStore } from '@/store/uiStore'
@@ -22,7 +21,6 @@ interface UniversityCardProps {
 
 export function UniversityCard({
   university,
-  showMatch = true,
   showRequirements = true,
   onInterest,
   interested,
@@ -37,8 +35,6 @@ export function UniversityCard({
     city,
     description,
     hasScholarship,
-    matchScore,
-    matchBreakdown,
     minLanguageLevel,
     tuitionPrice,
   } = university
@@ -90,9 +86,7 @@ export function UniversityCard({
             </p>
           </div>
         </div>
-        {showMatch && matchScore != null ? (
-          <MatchScore score={matchScore} breakdown={matchBreakdown} variant="badge" size="sm" />
-        ) : null}
+        {null}
       </div>
       {description ? (
         <p className="mb-4 flex-1 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>

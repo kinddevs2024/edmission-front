@@ -1,6 +1,7 @@
 type StudentDisplayShape = {
   firstName?: string | null
   lastName?: string | null
+  name?: string | null
   email?: string | null
   userEmail?: string | null
 }
@@ -22,6 +23,9 @@ export function getStudentDisplayName(student: StudentDisplayShape | null | unde
     .join(' ')
 
   if (fullName) return fullName
+
+  const accountName = typeof student.name === 'string' ? student.name.trim() : ''
+  if (accountName) return accountName
 
   return getStudentContactEmail(student) ?? fallback
 }

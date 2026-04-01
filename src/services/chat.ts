@@ -21,7 +21,6 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
   const stuLike = raw.studentId ?? raw.student
   const other = currentUserRole === 'student' ? (uniLike ?? stuLike) : (stuLike ?? uniLike)
 
-  // Prefer underlying profile _id for participant id so profile links work
   const participantId =
     other && typeof other === 'object' && '_id' in other && (other as { _id?: unknown })._id != null
       ? String((other as { _id: unknown })._id)

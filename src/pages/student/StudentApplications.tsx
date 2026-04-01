@@ -65,9 +65,9 @@ export function StudentApplications() {
         ) : applications.length === 0 ? (
           <EmptyState
             icon={<MessageCircle className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
-            title={t('student:noApplications')}
-            description={t('student:noApplicationsDesc')}
-            actionLabel={t('student:exploreUniversities')}
+            title={t('student:noApplications', 'No applications yet')}
+            description={t('student:noApplicationsDesc', 'Explore universities and show interest to start applying.')}
+            actionLabel={t('student:exploreUniversities', 'Explore universities')}
             actionTo="/student/universities"
           />
         ) : (

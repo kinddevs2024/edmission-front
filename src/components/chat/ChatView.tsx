@@ -132,7 +132,7 @@ export function ChatView() {
   }, [loadChats])
 
   useEffect(() => {
-    const chatId = searchParams.get('chat')
+    const chatId = searchParams.get('chat') ?? searchParams.get('chatId')
     if (chatId && chats.length > 0 && !chatsLoading) {
       const existing = chats.find((c) => c.id === chatId)
       if (existing) {

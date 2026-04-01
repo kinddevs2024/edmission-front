@@ -139,8 +139,14 @@ export async function logout(): Promise<void> {
   }
 }
 
-export async function forgotPassword(email: string): Promise<void> {
-  await api.post('/auth/forgot-password', { email })
+export interface ForgotPasswordResponse {
+  success: true
+  resetLink?: string
+}
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  const { data } = await api.post<ForgotPasswordResponse>('/auth/forgot-password', { email })
+  return data
 }
 
 /** Verify by link token (e.g. from email link). */

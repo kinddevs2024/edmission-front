@@ -15,6 +15,7 @@ type FormData = { email: string }
 export function ForgotPassword() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
   const [sent, setSent] = useState(false)
+  const [resetLink, setResetLink] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -25,7 +26,8 @@ export function ForgotPassword() {
     setError('')
     setLoading(true)
     try {
-      await forgotPassword(data.email)
+      const result = await forgotPassword(data.email)
+      setResetLink(result.resetLink ?? '')
       setSent(true)
     } catch (err) {
       const key = getApiErrorKey(err)
@@ -40,6 +42,14 @@ export function ForgotPassword() {
       <Card className="p-6">
         <CardTitle className="mb-2">{t('auth:verifyEmail')}</CardTitle>
         <p className="text-[var(--color-text-muted)] mb-4">{t('auth:verifyEmailSent')}</p>
+        {resetLink && (
+          <p className="mb-4 break-all text-sm text-[var(--color-text-muted)]">
+            Dev reset link:{' '}
+            <a href={resetLink} className="text-primary-accent hover:underline">
+              {resetLink}
+            </a>
+          </p>
+        )}
         <Link to="/login" className="text-primary-accent hover:underline">{t('common:back')}</Link>
       </Card>
     )

@@ -62,6 +62,7 @@ export function StudentDashboard() {
   const onboardingSteps = [
     { label: t('stepMinimalProfile'), to: '/student/profile', done: minimalComplete },
     { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
+    { label: t('student:stepFirstApplication', 'Show interest to one university'), to: '/student/universities', done: applications.length > 0 },
   ]
   const onboardingDone = onboardingSteps.every((s) => s.done)
   const showAppsSection = activeApplications.length > 0
@@ -136,7 +137,7 @@ export function StudentDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <CardSkeleton /><CardSkeleton /><CardSkeleton />
           </div>
-        ) : recommendations.length > 0 ? (
+        ) : minimalComplete && recommendations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recommendations.slice(0, 5).map((u, index) => (
               <div
@@ -144,12 +145,16 @@ export function StudentDashboard() {
                 className="animate-card-enter opacity-0"
                 style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
               >
-                <UniversityCard university={u} showMatch showRequirements={false} onInterest={() => {}} />
+                <UniversityCard university={u} showRequirements={false} onInterest={() => {}} />
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-[var(--color-text-muted)]">{t('completeProfileForRecs')}</p>
+          <p className="text-[var(--color-text-muted)]">
+            {minimalComplete
+              ? t('student:noUniversitiesFound', 'No universities found')
+              : t('completeProfileForRecs')}
+          </p>
         )}
       </div>
 
