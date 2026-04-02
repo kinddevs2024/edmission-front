@@ -4,6 +4,7 @@ import { useUIStore } from '@/store/uiStore'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 import { getNavIcon } from '@/components/icons/NavIcons'
+import { BrandLogo, BrandMark } from '@/components/layout/BrandLogo'
 import { getDashboardPath } from '@/utils/dashboardPath'
 
 export interface NavItem {
@@ -78,9 +79,13 @@ export function Sidebar({
           'flex items-center gap-2',
           collapsed ? 'justify-center' : 'justify-start'
         )}
+        aria-label="Edmission"
       >
-        <img src="/logo/Group%201.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" aria-hidden />
-        {!collapsed && <span className="text-lg font-semibold text-primary-accent">Edmission</span>}
+        {collapsed ? (
+          <BrandMark className="h-9 w-9 shrink-0 rounded-lg overflow-hidden" />
+        ) : (
+          <BrandLogo mode="dark" imageClassName="h-8 w-auto" />
+        )}
       </Link>
       <nav className="flex-1 min-h-0 flex flex-col p-3">
         <div className="flex-1 overflow-y-auto space-y-0.5">

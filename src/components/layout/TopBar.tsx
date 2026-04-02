@@ -13,6 +13,7 @@ import { LanguageMenu } from './LanguageMenu'
 import { GlobalSearch } from './GlobalSearch'
 import { MobileSearch } from './MobileSearch'
 import { MobileNavDrawer } from './MobileNavDrawer'
+import { BrandLogo } from './BrandLogo'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
 import { getImageUrl } from '@/services/upload'
@@ -105,9 +106,10 @@ export function TopBar() {
         <div className="flex min-w-0 items-center gap-2 sm:gap-4">
           <Link
             to={dashboardPath}
-            className="truncate rounded-md px-1.5 py-1 text-base font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+            className="rounded-md px-1 py-1 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+            aria-label={t('appName')}
           >
-            {t('appName')}
+            <BrandLogo imageClassName="h-9 w-auto" />
           </Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
@@ -157,25 +159,17 @@ export function TopBar() {
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Link
               to={dashboardPath}
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-0.5 pr-1 transition-colors hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent sm:hidden"
+              className="flex min-w-0 flex-1 items-center rounded-lg py-0.5 pr-1 transition-colors hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent sm:hidden"
               aria-label={t('appName')}
             >
-              <img
-                src="/logo/Group%201.png"
-                alt=""
-                className="h-9 w-9 shrink-0 rounded-lg object-cover"
-                width={36}
-                height={36}
-              />
-              <span className="truncate text-lg font-semibold leading-snug tracking-tight text-[var(--color-text)]">
-                {t('appName')}
-              </span>
+              <BrandLogo imageClassName="h-8 w-auto max-w-[156px]" />
             </Link>
             <Link
               to={dashboardPath}
-              className="hidden sm:flex min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-base font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              className="hidden sm:flex min-w-0 flex-1 rounded-md px-1 py-1 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              aria-label={t('appName')}
             >
-              {t('appName')}
+              <BrandLogo imageClassName="h-9 w-auto" />
             </Link>
           </div>
           <div className="flex shrink-0 items-center gap-1">

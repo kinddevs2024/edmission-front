@@ -31,6 +31,11 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    /** Allow embedding the SPA in Expo Web (other port) and Expo Go web preview. */
+    cors: true,
+    headers: {
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:4000',

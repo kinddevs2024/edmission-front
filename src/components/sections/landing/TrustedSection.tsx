@@ -1,39 +1,49 @@
+import { useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { getTrustedUniversityLogoPage } from '@/services/public'
+import { getImageUrl } from '@/services/upload'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
-type TrustedUniversityLogo = {
-  id: string
-  name: string
-  logoUrl: string
-}
-
-const TRUSTED_UNIVERSITY_LOGOS: TrustedUniversityLogo[] = [
-  { id: 'geneva', name: 'Geneva Business School', logoUrl: '/landing/geneva-logo.svg' },
-  { id: 'neoma', name: 'NEOMA Business School', logoUrl: '/landing/neoma_logo.svg' },
-  { id: 'ubi', name: 'UBI Business School', logoUrl: '/landing/ubi-business-school.webp' },
-  { id: 'logo-main', name: 'Partner University 1', logoUrl: '/landing/logo.svg' },
-  { id: 'logo-png', name: 'Partner University 2', logoUrl: '/landing/logo.png' },
-  { id: 'school-logo', name: 'Partner University 3', logoUrl: '/landing/logo_schools_u4a5a5402_af3d6608.jpg' },
-  { id: 'www-2', name: 'Partner University 4', logoUrl: '/landing/logo_www_2.png' },
-  { id: 'group-78', name: 'Partner University 5', logoUrl: '/landing/Group-78.png' },
-  { id: 'images', name: 'Partner University 6', logoUrl: '/landing/images.png' },
-  { id: 'images-1', name: 'Partner University 7', logoUrl: '/landing/images%20(1).png' },
-  { id: 'images-2', name: 'Partner University 8', logoUrl: '/landing/images%20(2).png' },
-  { id: 'copy-3', name: 'Partner University 9', logoUrl: '/landing/image%20copy%203.png' },
-  { id: 'copy-4', name: 'Partner University 10', logoUrl: '/landing/image%20copy%204.png' },
-  { id: 'copy-5', name: 'Partner University 11', logoUrl: '/landing/image%20copy%205.png' },
-  { id: 'copy-6', name: 'Partner University 12', logoUrl: '/landing/image%20copy%206.png' },
-  { id: 'copy-7', name: 'Partner University 13', logoUrl: '/landing/image%20copy%207.png' },
-  { id: 'unnamed-jpg', name: 'Partner University 14', logoUrl: '/landing/unnamed.jpg' },
-  { id: 'unnamed-png', name: 'Partner University 15', logoUrl: '/landing/unnamed.png' },
-  { id: 'seneca', name: 'Seneca College', logoUrl: '/landing/%EC%84%B8%EB%84%A4%EC%B9%B4-%EC%BB%AC%EB%A6%AC%EC%A7%80-%EB%A1%9C%EA%B3%A0.jpg' },
-]
+const TRUSTED_LOGOS_PAGE_SIZE = 24
 
 export function TrustedSection() {
   const { t } = useTranslation('landing')
-  const logos = TRUSTED_UNIVERSITY_LOGOS
+  const logosQuery = useInfiniteQuery({
+    queryKey: ['trustedUniversityLogos', 'landing', TRUSTED_LOGOS_PAGE_SIZE],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      getTrustedUniversityLogoPage({
+        limit: TRUSTED_LOGOS_PAGE_SIZE,
+        offset: pageParam,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = logosQuery
+
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage) return
+    const timer = window.setTimeout(() => {
+      void fetchNextPage()
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  const logos = useMemo(() => {
+    const pages = logosQuery.data?.pages ?? []
+    const seen = new Set<string>()
+    return pages.flatMap((page) =>
+      page.items.filter((logo) => {
+        const key = `${logo.id}:${logo.logoUrl}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+    )
+  }, [logosQuery.data?.pages])
 
   const stats = [
     {
@@ -60,7 +70,7 @@ export function TrustedSection() {
         />
       </Reveal>
 
-      {/* Partner university logos carousel */}
+      {/* Partner university logos carousel — logos from verified universities (API). */}
       {logos.length > 0 && (
         <div
           className="relative mt-8 overflow-hidden logos-viewport"
@@ -73,7 +83,7 @@ export function TrustedSection() {
                 className="flex h-14 w-44 shrink-0 items-center justify-center px-2 sm:h-16 sm:w-48"
               >
                 <img
-                  src={logo.logoUrl}
+                  src={getImageUrl(logo.logoUrl)}
                   alt={logo.name}
                   className="max-h-12 max-w-full object-contain object-center sm:max-h-14"
                   loading="lazy"

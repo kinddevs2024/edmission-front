@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
 import { Menu, UserRound, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
+import { BrandLogo } from '@/components/layout/BrandLogo'
 import { loadLanguage } from '@/i18n'
 import { STORAGE_KEY, supportedLngs, type SupportedLng } from '@/i18n/config'
 
@@ -171,10 +172,10 @@ export function LandingHeader() {
         <Link
           to="/"
           onClick={handleLogoClick}
-          className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)] shrink-0"
+          className="flex items-center text-lg font-semibold text-[var(--color-text)] shrink-0 rounded-md py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+          aria-label={t('footer.brand')}
         >
-          <img src="/logo/Group%201.png" alt="" className="h-8 w-8 rounded-lg object-cover" aria-hidden />
-          {t('footer.brand')}
+          <BrandLogo imageClassName="h-8 w-auto sm:h-9" />
         </Link>
 
         {/* Desktop: nav links - compact, left to right */}

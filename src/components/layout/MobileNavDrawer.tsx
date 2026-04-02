@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { MoreHorizontal, X } from 'lucide-react'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { useAuth } from '@/hooks/useAuth'
 import { getNavIcon } from '@/components/icons/NavIcons'
+import { BrandLogo } from '@/components/layout/BrandLogo'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
 import { cn } from '@/utils/cn'
 import { getDashboardPath } from '@/utils/dashboardPath'
@@ -45,7 +46,7 @@ export function MobileNavDrawer() {
         className="lg:hidden flex items-center justify-center w-10 h-10 rounded-input hover:bg-[var(--color-border)]/30 transition-colors"
         aria-label={t('openMainMenu')}
       >
-        <Menu className="w-5 h-5 text-[var(--color-text)]" aria-hidden />
+        <MoreHorizontal className="w-5 h-5 text-[var(--color-text)]" aria-hidden />
       </button>
 
       <AnimatePresence
@@ -84,10 +85,10 @@ export function MobileNavDrawer() {
               <Link
                 to={dashboardPath}
                 onClick={() => setOpen(false)}
-                className="flex min-w-0 flex-1 items-center justify-start gap-3 rounded-xl px-1 py-1 transition-colors hover:text-primary-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+                className="flex min-w-0 flex-1 items-center justify-start rounded-xl px-1 py-1 transition-colors hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+                aria-label={t('appName')}
               >
-                <img src="/logo/Group%201.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
-                <span className="truncate text-left text-lg font-semibold text-[var(--color-text)]">{t('appName')}</span>
+                <BrandLogo imageClassName="h-8 w-auto max-w-[156px]" />
               </Link>
               <button
                 type="button"
