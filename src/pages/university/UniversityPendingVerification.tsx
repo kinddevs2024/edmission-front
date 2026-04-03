@@ -20,7 +20,7 @@ export function UniversityPendingVerification() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--color-bg)]">
+    <div className="min-h-screen flex items-center justify-center p-4 pb-page-bottom-cta bg-[var(--color-bg)]">
       <Card className="max-w-md w-full p-6 text-center">
         <div className="w-14 h-14 rounded-full bg-primary-accent/20 flex items-center justify-center mx-auto mb-4">
           <ShieldCheck className="w-7 h-7 text-primary-accent" aria-hidden />

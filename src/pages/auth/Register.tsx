@@ -18,6 +18,7 @@ import { GraduationCap, Building2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton'
 import { YandexSignInButton } from '@/components/auth/YandexSignInButton'
+import { BrandMark } from '@/components/layout/BrandLogo'
 
 export function Register() {
   const { t, i18n } = useTranslation(['common', 'auth', 'errors'])
@@ -228,7 +229,10 @@ export function Register() {
 
   return (
     <Card className="p-6">
-      <CardTitle className="mb-4">{t('common:register')}</CardTitle>
+      <div className="mb-4 flex flex-col items-center gap-2 text-center">
+        <BrandMark className="h-14 w-14" />
+        <CardTitle>sing-up to Edmission</CardTitle>
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={t('auth:email')}
@@ -370,13 +374,7 @@ export function Register() {
           to="/login"
           className="block text-sm text-[var(--color-text-muted)] hover:underline text-center"
         >
-          {t('auth:haveAccount')} {t('common:login')}
-        </Link>
-        <Link
-          to="/"
-          className="block text-sm text-[var(--color-text-muted)] hover:underline text-center mt-1"
-        >
-          {t('common:home')}
+          {t('auth:haveAccount')} Sign in
         </Link>
       </form>
     </Card>

@@ -1,41 +1,70 @@
 import { forwardRef } from 'react'
-import { Textarea as MTTextarea } from '@material-tailwind/react'
+import { cn } from '@/utils/cn'
 
 interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'size'> {
   label?: string
-  error?: boolean
+  /** Boolean or error message string (same pattern as `Input`). */
+  error?: boolean | string
   resize?: boolean
+  /** Kept for API compatibility; styling matches app inputs. */
   variant?: 'outlined' | 'standard' | 'static'
   color?: 'green' | 'blue' | 'gray' | 'amber' | 'red'
   size?: 'md' | 'lg'
 }
 
-export const Textarea = forwardRef<HTMLDivElement, TextareaProps>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea(
-    { label, error, resize = false, variant = 'outlined', color = 'green', size = 'md', className, placeholder: placeholderProp, ...props },
+    {
+      label,
+      error,
+      resize = false,
+      variant: _variant = 'outlined',
+      color: _color = 'green',
+      size = 'md',
+      className,
+      id,
+      rows = 4,
+      placeholder,
+      ...props
+    },
     ref
   ) {
-    // MT outlined + label: use space placeholder so only the floating label shows (no duplicate hint inside the field).
-    const placeholder =
-      label != null && String(label).trim() !== '' ? (placeholderProp ?? ' ') : placeholderProp
+    const hasError = Boolean(error)
+    const errorMessage = typeof error === 'string' ? error : undefined
+    const tid = id ?? (label ? String(label).toLowerCase().replace(/\s+/g, '-') : undefined)
+    const minH = size === 'lg' ? 'min-h-[120px]' : 'min-h-[88px]'
+
     return (
-      <MTTextarea
-        ref={ref}
-        variant={variant}
-        size={size}
-        color={color}
-        label={label}
-        error={!!error}
-        resize={resize}
-        className={className}
-        placeholder={placeholder}
-        containerProps={{ className: 'min-w-0 w-full' }}
-        onResize={undefined}
-        onResizeCapture={undefined}
-        onPointerEnterCapture={undefined}
-        onPointerLeaveCapture={undefined}
-        {...props}
-      />
+      <div className="w-full min-w-0">
+        {label ? (
+          <label htmlFor={tid} className="mb-1 block text-sm font-medium text-[var(--color-text)]">
+            {label}
+          </label>
+        ) : null}
+        <textarea
+          ref={ref}
+          id={tid}
+          rows={rows}
+          placeholder={placeholder}
+          className={cn(
+            'w-full rounded-input border bg-transparent px-3 py-2.5 text-[var(--color-text)]',
+            'placeholder:text-[var(--color-text-muted)]/60',
+            'focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0',
+            hasError ? 'border-red-500 focus:ring-red-500' : 'border-[var(--color-border)]',
+            !resize && 'resize-none',
+            minH,
+            className
+          )}
+          aria-invalid={hasError}
+          aria-describedby={errorMessage && tid ? `${tid}-error` : undefined}
+          {...props}
+        />
+        {errorMessage ? (
+          <p id={`${tid}-error`} className="mt-1 text-sm text-red-500">
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
     )
   }
 )

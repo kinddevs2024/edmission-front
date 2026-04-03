@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
-import { formatDateTime } from '@/utils/format'
+import { formatDateTime, formatChatMessageTime } from '@/utils/format'
+import { Check, CheckCheck } from 'lucide-react'
 import type { Message } from '@/types/chat'
 
 interface MessageBubbleProps {
@@ -8,6 +9,33 @@ interface MessageBubbleProps {
 }
 
 const EMOJI_SIZE = 'text-4xl'
+
+function OutgoingStatusFooter({
+  createdAt,
+  editedAt,
+  read,
+  mutedClass,
+}: {
+  createdAt: string
+  editedAt?: string
+  read?: boolean
+  mutedClass: string
+}) {
+  const time = formatChatMessageTime(createdAt)
+  return (
+    <p className={cn('text-xs mt-1 inline-flex flex-wrap items-center gap-x-1 gap-y-0.5', mutedClass)}>
+      {time ? <span>{time}</span> : null}
+      {editedAt ? <span>· Edited</span> : null}
+      <span className="inline-flex items-center shrink-0" title={read ? 'Read' : 'Sent'} aria-label={read ? 'Read' : 'Sent'}>
+        {read ? (
+          <CheckCheck className="w-3.5 h-3.5 opacity-95" strokeWidth={2.5} aria-hidden />
+        ) : (
+          <Check className="w-3.5 h-3.5 opacity-75" strokeWidth={2.5} aria-hidden />
+        )}
+      </span>
+    </p>
+  )
+}
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isFromMe = message.isFromMe ?? false
@@ -83,15 +111,24 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <div
           className={cn(
             'rounded-card px-4 py-3 flex min-w-[80px]',
-            replyBlock ? 'flex-col items-start gap-2' : 'items-center justify-center',
+            replyBlock ? 'flex-col items-start gap-2' : isFromMe ? 'flex-col items-end gap-1' : 'items-center justify-center',
             isFromMe ? 'bg-primary-accent/20 text-primary-accent' : 'bg-[var(--color-border)]/50'
           )}
         >
           {replyBlock}
           <span className={EMOJI_SIZE} role="img" aria-label="Reaction">{emoji}</span>
-          <p className={cn('text-xs text-[var(--color-text-muted)]', replyBlock ? '' : 'ml-2')}>
-            {formatDateTime(message.createdAt)}
-          </p>
+          {isFromMe ? (
+            <OutgoingStatusFooter
+              createdAt={message.createdAt}
+              editedAt={message.editedAt}
+              read={message.read}
+              mutedClass="text-[var(--color-text-muted)]"
+            />
+          ) : (
+            <p className={cn('text-xs text-[var(--color-text-muted)]', replyBlock ? '' : 'ml-2')}>
+              {formatChatMessageTime(message.createdAt) || formatDateTime(message.createdAt)}
+            </p>
+          )}
         </div>
       </div>
     )
@@ -102,17 +139,25 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div className={cn('flex w-full', isFromMe ? 'justify-end' : 'justify-start')}>
         <div
           className={cn(
-            'max-w-[75%] rounded-card px-3 py-2 text-sm flex flex-col gap-2',
+            'max-w-[88%] rounded-card px-3.5 py-2.5 text-base flex flex-col gap-2 md:max-w-[75%] md:px-3 md:py-2 md:text-sm',
             isFromMe ? 'bg-primary-accent text-primary-dark' : 'bg-[var(--color-border)] text-[var(--color-text)]'
           )}
         >
           {replyBlock}
           <audio controls src={message.attachmentUrl} className="max-w-full h-9" preload="metadata" />
-          <p className={cn('text-xs', isFromMe ? 'text-primary-dark/70' : 'text-[var(--color-text-muted)]')}>
-            {formatDateTime(message.createdAt)}
-            {message.editedAt && ' · Edited'}
-            {message.read && isFromMe && ' · Read'}
-          </p>
+          {isFromMe ? (
+            <OutgoingStatusFooter
+              createdAt={message.createdAt}
+              editedAt={message.editedAt}
+              read={message.read}
+              mutedClass="text-primary-dark/70"
+            />
+          ) : (
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {formatChatMessageTime(message.createdAt) || formatDateTime(message.createdAt)}
+              {message.editedAt && ' · Edited'}
+            </p>
+          )}
         </div>
       </div>
     )
@@ -122,17 +167,25 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     <div className={cn('flex w-full', isFromMe ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[75%] rounded-card px-3 py-2 text-sm',
+          'max-w-[88%] rounded-card px-3.5 py-2.5 text-base md:max-w-[75%] md:px-3 md:py-2 md:text-sm',
           isFromMe ? 'bg-primary-accent text-primary-dark' : 'bg-[var(--color-border)] text-[var(--color-text)]'
         )}
       >
         {replyBlock}
         <p className="whitespace-pre-wrap break-words">{displayText}</p>
-        <p className={cn('text-xs mt-1', isFromMe ? 'text-primary-dark/70' : 'text-[var(--color-text-muted)]')}>
-          {formatDateTime(message.createdAt)}
-          {message.editedAt && ' · Edited'}
-          {message.read && isFromMe && ' · Read'}
-        </p>
+        {isFromMe ? (
+          <OutgoingStatusFooter
+            createdAt={message.createdAt}
+            editedAt={message.editedAt}
+            read={message.read}
+            mutedClass="text-primary-dark/70"
+          />
+        ) : (
+          <p className="text-xs mt-1 text-[var(--color-text-muted)]">
+            {formatChatMessageTime(message.createdAt) || formatDateTime(message.createdAt)}
+            {message.editedAt && ' · Edited'}
+          </p>
+        )}
       </div>
     </div>
   )

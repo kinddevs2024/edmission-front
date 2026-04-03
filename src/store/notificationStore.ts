@@ -41,6 +41,8 @@ interface NotificationState {
   setNotifications: (items: NotificationItem[]) => void
   markAsRead: (id: string) => void
   markManyAsRead: (ids: string[]) => void
+  /** Align UI with chat read: all in-app "message" rows for this chatId */
+  markMessageNotificationsReadForChat: (chatId: string) => void
   markAllAsRead: () => void
   removeNotification: (id: string) => void
   removeNotifications: (ids: string[]) => void
@@ -67,6 +69,25 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     set((s) => {
       const idSet = new Set(ids)
       const items = s.items.map((n) => (idSet.has(n.id) ? { ...n, read: true } : n))
+      return {
+        items,
+        unreadCount: items.filter((n) => !n.read).length,
+      }
+    }),
+  markMessageNotificationsReadForChat: (chatId) =>
+    set((s) => {
+      const cid = String(chatId).trim()
+      if (!cid) return s
+      const items = s.items.map((n) => {
+        if (n.read || n.type !== 'message') return n
+        const ref = n.referenceId?.trim()
+        const metaChat =
+          n.metadata && typeof n.metadata === 'object' && n.metadata !== null && 'chatId' in n.metadata
+            ? String((n.metadata as { chatId?: unknown }).chatId ?? '').trim()
+            : ''
+        if (ref === cid || metaChat === cid) return { ...n, read: true }
+        return n
+      })
       return {
         items,
         unreadCount: items.filter((n) => !n.read).length,

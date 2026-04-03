@@ -61,7 +61,7 @@ export function PaymentPage() {
 
   if (!user || (user.role !== 'student' && user.role !== 'university')) {
     return (
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto pb-page-bottom-cta">
         <PageTitle title={t('subscription')} icon="CreditCard" />
         <Card>
           <p className="text-[var(--color-text-muted)]">{t('subscriptionPlansHint')}</p>
@@ -71,7 +71,7 @@ export function PaymentPage() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6">
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-page-bottom-cta">
       <PageTitle title={t('subscriptionAndPayment')} icon="CreditCard" />
       {error && (
         <Card className="border-red-500/50 bg-red-500/5">

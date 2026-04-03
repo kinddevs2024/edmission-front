@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useLayoutEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MessageBubble } from './MessageBubble'
@@ -42,6 +42,8 @@ interface MessageThreadProps {
   isTyping?: boolean
   role?: 'student' | 'university'
   onAcceptStudent?: (params: { positionType: 'budget' | 'grant' | 'other'; positionLabel?: string; congratulatoryMessage: string }) => void | Promise<unknown>
+  /** Mobile split view: back to conversation list */
+  onMobileBack?: () => void
 }
 
 type VoiceDraft = {
@@ -86,11 +88,13 @@ export function MessageThread({
   isTyping,
   role,
   onAcceptStudent,
+  onMobileBack,
 }: MessageThreadProps) {
   const { t } = useTranslation(['common', 'chat'])
   const inputRef = useRef<HTMLInputElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
   const messageListRef = useRef<HTMLDivElement>(null)
+  const prevChatIdRef = useRef<string | null>(null)
+  const wasNearBottomRef = useRef(true)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -120,8 +124,42 @@ export function MessageThread({
   const [isCompactViewport, setIsCompactViewport] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    const el = messageListRef.current
+    if (!el) return
+    const threshold = 100
+    const update = () => {
+      wasNearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= threshold
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    return () => el.removeEventListener('scroll', update)
+  }, [chat?.id])
+
+  useLayoutEffect(() => {
+    if (!chat?.id) {
+      prevChatIdRef.current = null
+      return
+    }
+
+    const el = messageListRef.current
+    if (!el) return
+
+    if (prevChatIdRef.current !== chat.id) {
+      prevChatIdRef.current = chat.id
+      wasNearBottomRef.current = true
+      el.scrollTop = el.scrollHeight
+      return
+    }
+
+    if (loading) return
+
+    const last = messages[messages.length - 1]
+    const shouldStick = wasNearBottomRef.current || last?.isFromMe === true
+    if (shouldStick) {
+      el.scrollTop = el.scrollHeight
+      wasNearBottomRef.current = true
+    }
+  }, [chat?.id, messages, loading])
 
   useEffect(() => {
     if (chat?.id && onMarkRead) onMarkRead()
@@ -487,7 +525,7 @@ export function MessageThread({
 
   if (!chat) {
     return (
-      <div className="flex-1 flex items-center justify-center text-[var(--color-text-muted)] bg-[var(--color-card)]">
+      <div className="flex min-h-0 flex-1 items-center justify-center bg-[var(--color-card)] text-[var(--color-text-muted)]">
         {t('common:selectConversation')}
       </div>
     )
@@ -504,11 +542,14 @@ export function MessageThread({
     { value: 'other', label: t('chat:positionOther') },
   ]
   const showAcceptButton = role === 'university' && !chat.acceptedAt && onAcceptStudent
-  const profileUrl = role === 'student'
-    ? `/student/universities/${chat.participant.id}`
-    : role === 'university'
-      ? `/university/students/${chat.participant.id}`
-      : null
+  const counterpartyProfileId = (chat.participant.id ?? '').trim()
+  const hasProfileIdForLink = /^[a-f0-9]{24}$/i.test(counterpartyProfileId)
+  const profileUrl =
+    hasProfileIdForLink && role === 'student'
+      ? `/student/universities/${counterpartyProfileId}`
+      : hasProfileIdForLink && role === 'university'
+        ? `/university/students/${counterpartyProfileId}`
+        : null
   const menuMessage = contextMenu?.message
   const canReply = !isReadOnly && menuMessage && menuMessage.type !== 'system'
   const canCopy = !!menuMessage?.text
@@ -525,96 +566,111 @@ export function MessageThread({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-[var(--color-card)]">
-      <div className="px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-card)] flex items-center justify-between gap-2 flex-wrap">
-        <div>
-          <p className="font-medium">{chat.participant.name}</p>
-          {chat.acceptedAt && (
-            <p className="text-xs text-primary-accent font-medium mt-0.5">
-              {t('chat:accepted')}: {chat.acceptancePositionLabel || chat.acceptancePositionType || '—'}
-            </p>
-          )}
+      <div className="px-2 py-2 sm:px-4 md:py-2 border-b border-[var(--color-border)] bg-[var(--color-card)] flex items-center justify-between gap-2 flex-wrap shrink-0">
+        <div className="flex min-w-0 flex-1 items-start gap-2">
+          {onMobileBack ? (
+            <Button type="button" variant="ghost" size="sm" className="shrink-0 md:hidden -ml-1" onClick={onMobileBack}>
+              {t('common:back')}
+            </Button>
+          ) : null}
+          <div className="min-w-0">
+            <p className="font-medium text-sm sm:text-base leading-tight truncate">{chat.participant.name}</p>
+            {chat.acceptedAt ? (
+              <p className="text-[10px] sm:text-xs text-primary-accent font-medium mt-0.5 line-clamp-2 md:line-clamp-none">
+                {t('chat:accepted')}: {chat.acceptancePositionLabel || chat.acceptancePositionType || '—'}
+              </p>
+            ) : null}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2 flex-wrap justify-end">
           {profileUrl && (
             <Link
               to={profileUrl}
-              className="inline-flex items-center gap-1.5 rounded-input px-2 py-1.5 text-sm font-medium text-primary-accent hover:bg-primary-accent/10 transition-colors"
+              className="inline-flex items-center justify-center rounded-input p-2 sm:gap-1.5 sm:px-2 sm:py-1.5 text-sm font-medium text-primary-accent hover:bg-primary-accent/10 transition-colors"
               title={t('chat:openProfile', 'Open profile')}
             >
-              <ExternalLink className="w-4 h-4" aria-hidden />
-              <span>{t('chat:openProfile', 'Open profile')}</span>
+              <ExternalLink className="w-4 h-4 shrink-0" aria-hidden />
+              <span className="hidden sm:inline">{t('chat:openProfile', 'Open profile')}</span>
             </Link>
           )}
           {showAcceptButton && (
             <Button
               size="sm"
+              className="!px-2 sm:!px-3"
               onClick={() => setAcceptModalOpen(true)}
               icon={<GraduationCap className="w-4 h-4" />}
               title={t('chat:acceptTooltip')}
             >
-              {t('chat:accept')}
+              <span className="hidden sm:inline">{t('chat:accept')}</span>
             </Button>
           )}
           {role === 'university' ? (
             <Button
               size="sm"
               variant="secondary"
+              className="!px-2 sm:!px-3"
               onClick={() => setSendDocumentOpen(true)}
               icon={<FileText className="w-4 h-4" />}
+              title="Send document"
             >
-              Send document
+              <span className="hidden sm:inline">Send document</span>
             </Button>
           ) : null}
         </div>
       </div>
 
-      <div ref={messageListRef} className="relative flex-1 overflow-y-auto bg-[var(--color-bg)] p-4 space-y-3">
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-12 rounded-card bg-[var(--color-border)] animate-pulse max-w-[75%]" />
-            ))}
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className="group relative"
-              onContextMenu={(event) => {
-                if (!canOpenContextMenu(message)) return
-                event.preventDefault()
-                openContextMenu(message, event.currentTarget)
-              }}
-            >
-              {canOpenContextMenu(message) ? (
-                <button
-                  type="button"
-                  className={cn(
-                    'absolute top-2 z-10 h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/95 text-[var(--color-text-muted)] shadow-md transition hover:text-[var(--color-text)]',
-                    isCompactViewport ? 'flex' : 'hidden group-hover:flex',
-                    message.isFromMe ? 'right-2' : 'left-2'
-                  )}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    openContextMenu(message, event.currentTarget.parentElement as HTMLElement)
-                  }}
-                  aria-label={t('chat:messageActions', 'Message actions')}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              ) : null}
-              <MessageBubble message={message} />
+      <div
+        ref={messageListRef}
+        className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain bg-[var(--color-bg)] px-3 py-3 sm:p-4 [touch-action:pan-y]"
+      >
+        <div className="mt-auto flex w-full min-w-0 flex-col gap-3 py-1">
+          {loading ? (
+            <div className="flex flex-col gap-3">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="h-12 max-w-[75%] animate-pulse rounded-card bg-[var(--color-border)]" />
+              ))}
             </div>
-          ))
-        )}
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="rounded-card px-3 py-2 bg-[var(--color-border)] text-sm text-[var(--color-text-muted)]">
-              {t('common:typing')}
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className="group relative"
+                onContextMenu={(event) => {
+                  if (!canOpenContextMenu(message)) return
+                  event.preventDefault()
+                  openContextMenu(message, event.currentTarget)
+                }}
+              >
+                {canOpenContextMenu(message) ? (
+                  <button
+                    type="button"
+                    className={cn(
+                      'absolute top-2 z-10 h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/95 text-[var(--color-text-muted)] shadow-md transition hover:text-[var(--color-text)]',
+                      isCompactViewport ? 'flex' : 'hidden group-hover:flex',
+                      message.isFromMe ? 'right-2' : 'left-2'
+                    )}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      openContextMenu(message, event.currentTarget.parentElement as HTMLElement)
+                    }}
+                    aria-label={t('chat:messageActions', 'Message actions')}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                ) : null}
+                <MessageBubble message={message} />
+              </div>
+            ))
+          )}
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="rounded-card bg-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-muted)]">
+                {t('common:typing')}
+              </div>
             </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
+          )}
+          <div className="h-px w-full shrink-0" aria-hidden />
+        </div>
 
         {contextMenu && !isCompactViewport ? (
           <div
@@ -741,7 +797,10 @@ export function MessageThread({
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
+      <form
+        onSubmit={handleSubmit}
+        className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-card)] p-3 pb-[max(0.75rem,calc(0.35rem+env(safe-area-inset-bottom,0px)))] sm:p-4 md:pb-4"
+      >
         {composerMode && (
           <div className="mb-2 flex items-center justify-between rounded-card bg-[var(--color-bg)] px-3 py-2 text-xs text-[var(--color-text-muted)]">
             <div className="truncate">

@@ -22,6 +22,16 @@ export function formatDateTime(date: string | Date, locale: string = 'en'): stri
   }).format(parsed)
 }
 
+/** Chat message footer: never show em dash placeholder (confused with status). */
+export function formatChatMessageTime(date: string | Date, locale: string = 'en'): string {
+  const parsed = toValidDate(date)
+  if (!parsed) return ''
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(parsed)
+}
+
 export function formatNumber(value: number, locale: string = 'en'): string {
   return new Intl.NumberFormat(locale).format(value)
 }

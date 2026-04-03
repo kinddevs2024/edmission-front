@@ -8,6 +8,7 @@ import { getPipeline, updateInterestStatus } from '@/services/university'
 import type { PipelineItem } from '@/services/university'
 import type { PipelineStage } from '@/types/university'
 import { toastApiError } from '@/utils/toastError'
+import { pickStudentProfileId } from '@/utils/mongoId'
 import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDisplay'
 import { CheckCircle2, ChevronRight, Clock3, FileCheck2, MessageCircle, Send, User, UserCheck, XCircle } from 'lucide-react'
 
@@ -54,7 +55,7 @@ interface PipelineStudent {
 function mapPipelineItem(item: PipelineItem): PipelineStudent {
   const student = item.student
   return {
-    id: student?._id != null ? String(student._id) : item.id,
+    id: pickStudentProfileId(item),
     name: getStudentDisplayName(student, 'Student'),
     email: getStudentContactEmail(student),
     applicationId: item.id,

@@ -67,7 +67,7 @@ export function AdminUniversityRequests() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('admin:universityRequests', 'University requests')} icon="Users" />
+      <PageTitle title={t('admin:universityRequests', 'Requests')} icon="Users" />
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">

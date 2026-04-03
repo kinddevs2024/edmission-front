@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { getDashboard, type UniversityDashboardData } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 import { Bot, Users, BarChart3, MessageCircle, Send, ShieldCheck } from 'lucide-react'
+import { pickStudentProfileId } from '@/utils/mongoId'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
 
 const STAGE_LABELS: Record<string, string> = {
@@ -41,7 +42,7 @@ export function UniversityDashboard() {
   const topRecs = dashboard?.topRecommendations ?? []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-page-bottom-cta">
       <div className="flex flex-wrap items-center gap-2" data-onboarding="university-dashboard-overview">
         <PageTitle title={t('university:dashboard', 'Dashboard')} icon="LayoutDashboard" />
         {dashboard?.verified && (
@@ -124,7 +125,7 @@ export function UniversityDashboard() {
               {topRecs.slice(0, 5).map((r) => {
                 const st = r.student
                 const name = getStudentDisplayName(st, 'Student')
-                const studentId = st && '_id' in st ? String((st as { _id: unknown })._id) : ''
+                const studentId = pickStudentProfileId({ studentProfileId: r.studentProfileId, student: st })
                 const canOpenProfile = Boolean(studentId)
                 return (
                   <li key={r.id} className="flex justify-between items-center text-sm">

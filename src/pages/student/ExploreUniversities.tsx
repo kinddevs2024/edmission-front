@@ -332,9 +332,6 @@ export function ExploreUniversities() {
             <h2 className="text-xl font-semibold text-[var(--color-text)]">
               {t('student:quickUniversityFilters', 'Quick filters for fast discovery')}
             </h2>
-            <p className="max-w-3xl text-sm text-[var(--color-text-muted)]">
-              {t('student:quickUniversityFiltersHint', 'Search universities by name, program, faculty, requirements, and country. Open the full filter for a deeper search across all university data.')}
-            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="default">{filterCount} {t('student:activeFilters', 'active')}</Badge>

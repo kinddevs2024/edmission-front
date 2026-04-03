@@ -9,7 +9,7 @@ const DEBOUNCE_MS = 300
 
 export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
   const { afterNavigate } = options ?? {}
-  const { t } = useTranslation(['common', 'student', 'university'])
+  const { t } = useTranslation(['common', 'student', 'university', 'admin'])
   const { user } = useAuth()
   const role = (user as { role?: string })?.role ?? 'student'
   const navigate = useNavigate()

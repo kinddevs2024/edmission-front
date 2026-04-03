@@ -1,34 +1,95 @@
 import { api } from './api'
 import type { Chat, Message } from '@/types/chat'
 
+type RawLastMessage = {
+  id?: string
+  _id?: unknown
+  message?: string
+  text?: string
+  createdAt?: string
+  isRead?: boolean
+  senderId?: string | { id?: string; _id?: unknown }
+}
+
+function rawLastMessageSenderId(last: RawLastMessage | undefined): string | undefined {
+  if (!last) return undefined
+  const s = last.senderId
+  if (typeof s === 'string' && s.trim()) return s
+  if (s && typeof s === 'object') {
+    if (s.id != null) return String(s.id)
+    if (s._id != null) return String(s._id)
+  }
+  return undefined
+}
+
+/** Profile id from populated ref or plain ObjectId string (Mongoose selective populate may omit _id unless listed). */
+function extractRefProfileId(ref: unknown): string | undefined {
+  if (ref == null) return undefined
+  if (typeof ref === 'string') {
+    const s = ref.trim()
+    return /^[a-f0-9]{24}$/i.test(s) ? s : undefined
+  }
+  if (typeof ref === 'object' && !Array.isArray(ref)) {
+    const o = ref as Record<string, unknown>
+    const rawId = o._id ?? o.id
+    if (rawId != null && typeof rawId !== 'object') {
+      const s = String(rawId).trim()
+      if (/^[a-f0-9]{24}$/i.test(s)) return s
+    }
+    if (rawId != null && typeof rawId === 'object' && rawId !== null && '$oid' in (rawId as object)) {
+      const oid = (rawId as { $oid?: string }).$oid
+      if (typeof oid === 'string' && /^[a-f0-9]{24}$/i.test(oid)) return oid
+    }
+  }
+  return undefined
+}
+
+export function coerceIsoDateString(value: unknown): string {
+  if (value == null) return new Date().toISOString()
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? new Date().toISOString() : value.toISOString()
+  const d = new Date(typeof value === 'string' || typeof value === 'number' ? value : String(value))
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString()
+}
+
 type RawChat = {
   id: string
   universityId?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string; profileVisibility?: string }
   university?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string; profileVisibility?: string }
-  lastMessage?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string; senderId?: { id?: string; _id?: unknown } }>
-  messages?: Array<{ id?: string; _id?: unknown; message?: string; text?: string; createdAt?: string }>
+  lastMessage?: RawLastMessage[]
+  messages?: RawLastMessage[]
   acceptedAt?: string
   acceptancePositionType?: string
   acceptancePositionLabel?: string
   isReadOnly?: boolean
   readOnlyReason?: string
+  unreadCount?: number
+  /** StudentProfile _id — for university → student profile links */
+  studentProfileId?: string
+  /** UniversityProfile _id — for student → university catalog page */
+  universityProfileId?: string
 }
 
-function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'): Chat {
+function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university', viewerUserId?: string | null): Chat {
   const uniLike = raw.universityId ?? raw.university
   const stuLike = raw.studentId ?? raw.student
-  const other = currentUserRole === 'student' ? (uniLike ?? stuLike) : (stuLike ?? uniLike)
+  /** Counterparty in the thread only — never fall back to "self" or the wrong side for profile links. */
+  const partyRef = currentUserRole === 'student' ? uniLike : stuLike
 
-  const participantId =
-    other && typeof other === 'object' && '_id' in other && (other as { _id?: unknown })._id != null
-      ? String((other as { _id: unknown })._id)
-      : raw.id
+  const uniPid =
+    typeof raw.universityProfileId === 'string' && /^[a-f0-9]{24}$/i.test(raw.universityProfileId.trim())
+      ? raw.universityProfileId.trim()
+      : extractRefProfileId(uniLike)
+  const stuPid =
+    typeof raw.studentProfileId === 'string' && /^[a-f0-9]{24}$/i.test(raw.studentProfileId.trim())
+      ? raw.studentProfileId.trim()
+      : extractRefProfileId(stuLike)
+  const participantId = currentUserRole === 'student' ? (uniPid ?? '') : (stuPid ?? '')
 
   let name = '—'
-  if (other && typeof other === 'object') {
-    const o = other as { universityName?: string; firstName?: string; lastName?: string; name?: string; userEmail?: string }
+  if (partyRef && typeof partyRef === 'object') {
+    const o = partyRef as { universityName?: string; firstName?: string; lastName?: string; name?: string; userEmail?: string }
     if (o.universityName) {
       name = String(o.universityName)
     } else {
@@ -38,11 +99,13 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
   }
 
   const avatar =
-    other && typeof other === 'object' && 'logoUrl' in other
-      ? (other as { logoUrl?: string }).logoUrl
-      : (other as { avatarUrl?: string } | undefined)?.avatarUrl
+    partyRef && typeof partyRef === 'object' && 'logoUrl' in partyRef
+      ? (partyRef as { logoUrl?: string }).logoUrl
+      : (partyRef as { avatarUrl?: string } | undefined)?.avatarUrl
   const lastMsgArr = raw.lastMessage ?? raw.messages ?? []
   const lastMsg = lastMsgArr[0]
+  const lastSenderId = rawLastMessageSenderId(lastMsg)
+  const lastIsFromMe = Boolean(viewerUserId && lastSenderId && lastSenderId === viewerUserId)
   return {
     id: raw.id,
     participant: {
@@ -55,12 +118,13 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
       ? {
           id: String(lastMsg.id ?? lastMsg._id ?? ''),
           text: String(lastMsg.message ?? lastMsg.text ?? ''),
-          createdAt: String(lastMsg.createdAt ?? ''),
-          isFromMe: false,
+          createdAt: coerceIsoDateString(lastMsg.createdAt),
+          isFromMe: lastIsFromMe,
+          read: Boolean(lastMsg.isRead),
         }
       : undefined,
-    unreadCount: 0,
-    updatedAt: lastMsg?.createdAt ?? new Date().toISOString(),
+    unreadCount: typeof raw.unreadCount === 'number' && Number.isFinite(raw.unreadCount) ? Math.max(0, Math.floor(raw.unreadCount)) : 0,
+    updatedAt: lastMsg?.createdAt ? coerceIsoDateString(lastMsg.createdAt) : new Date().toISOString(),
     acceptedAt: raw.acceptedAt,
     acceptancePositionType: raw.acceptancePositionType,
     acceptancePositionLabel: raw.acceptancePositionLabel,
@@ -69,16 +133,19 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university'):
   }
 }
 
-export async function getChats(currentUserRole: 'student' | 'university'): Promise<Chat[]> {
+export async function getChats(currentUserRole: 'student' | 'university', viewerUserId?: string | null): Promise<Chat[]> {
   const { data } = await api.get<RawChat[]>('/chat')
   const list = Array.isArray(data) ? data : []
-  return list.map((c) => normalizeChat(c, currentUserRole))
+  return list.map((c) => normalizeChat(c, currentUserRole, viewerUserId))
 }
 
-export async function createChat(params: { studentId?: string; universityId?: string }): Promise<Chat> {
+export async function createChat(
+  params: { studentId?: string; universityId?: string },
+  viewerUserId?: string | null
+): Promise<Chat> {
   const { data } = await api.post<RawChat>('/chat', params)
   const role = params.studentId ? 'university' : 'student'
-  return normalizeChat(data, role)
+  return normalizeChat(data, role, viewerUserId)
 }
 
 type MessagesResponse = { data?: Array<Record<string, unknown>>; total?: number; page?: number; limit?: number; totalPages?: number }
@@ -94,7 +161,7 @@ export async function getMessages(chatId: string, params?: { page?: number; limi
     type: (m.type as Message['type']) ?? 'text',
     attachmentUrl: m.attachmentUrl,
     metadata: m.metadata,
-    createdAt: m.createdAt,
+    createdAt: coerceIsoDateString(m.createdAt),
     editedAt: m.editedAt,
     read: m.isRead ?? m.read,
   })) as Message[]

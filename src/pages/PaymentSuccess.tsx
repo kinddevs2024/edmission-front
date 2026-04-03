@@ -4,7 +4,7 @@ import { CheckCircle } from 'lucide-react'
 
 export function PaymentSuccess() {
   return (
-    <div className="max-w-md mx-auto py-12 text-center">
+    <div className="max-w-md mx-auto py-12 text-center pb-page-bottom-cta">
       <Card className="p-8">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" aria-hidden />
         <CardTitle>Payment successful</CardTitle>

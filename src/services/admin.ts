@@ -135,15 +135,27 @@ export interface PendingDocumentItem {
   height?: number
   editorVersion?: string
   name?: string
+  certificateType?: string
+  score?: string
   status: string
   studentId: unknown
   studentName: string
   createdAt?: string
+  rejectionReason?: string
+  reviewedAt?: string
+  reviewedBy?: string
 }
 
-export async function getPendingDocuments(): Promise<PendingDocumentItem[]> {
-  const { data } = await api.get<PendingDocumentItem[]>('/admin/documents/pending')
+export type AdminDocumentFilter = 'pending' | 'approved' | 'rejected' | 'all'
+
+export async function getAdminStudentDocuments(status: AdminDocumentFilter = 'pending'): Promise<PendingDocumentItem[]> {
+  const { data } = await api.get<PendingDocumentItem[]>('/admin/documents', { params: { status } })
   return data ?? []
+}
+
+/** @deprecated use getAdminStudentDocuments('pending') */
+export async function getPendingDocuments(): Promise<PendingDocumentItem[]> {
+  return getAdminStudentDocuments('pending')
 }
 
 export async function reviewDocument(

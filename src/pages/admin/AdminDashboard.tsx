@@ -44,7 +44,7 @@ export function AdminDashboard() {
   const healthClass = stats?.healthStatus === 'ok' ? 'text-[#22C55E]' : stats?.healthStatus === 'degraded' ? 'text-amber-500' : 'text-red-500'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-page-bottom-cta">
       <PageTitle title={t('dashboard')} icon="LayoutDashboard" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

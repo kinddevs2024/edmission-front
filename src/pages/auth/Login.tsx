@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/Input'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton'
 import { YandexSignInButton } from '@/components/auth/YandexSignInButton'
+import { BrandMark } from '@/components/layout/BrandLogo'
 
 type FormData = { email: string; password: string }
 
@@ -76,7 +77,10 @@ export function Login() {
 
   return (
     <Card className="p-6">
-      <CardTitle className="mb-4">{t('common:appName')} — {t('common:login')}</CardTitle>
+      <div className="mb-4 flex flex-col items-center gap-2 text-center">
+        <BrandMark className="h-14 w-14" />
+        <CardTitle>sing-in to Edmission</CardTitle>
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={t('auth:email')}
@@ -96,29 +100,21 @@ export function Login() {
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         <div className="flex flex-col gap-2">
           <Button type="submit" className="w-full" loading={loading} disabled={loading}>
-            {t('common:login')}
+            Sign in
           </Button>
-          <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">
-            {t('auth:forgotPassword')}
-          </Link>
-          <Link to="/register" className="text-sm text-[var(--color-text-muted)] hover:underline">
-            {t('auth:noAccount')} {t('common:register')}
-          </Link>
-          <Link to="/" className="text-sm text-[var(--color-text-muted)] hover:underline">
-            {t('common:home')}
-          </Link>
+          <div className="flex items-center justify-between gap-3">
+            <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">
+              {t('auth:forgotPassword')}
+            </Link>
+            <Link to="/register" className="text-xs text-[var(--color-text-muted)] hover:underline text-right">
+              {t('auth:noAccountShort', 'No account?')} {t('common:register')}
+            </Link>
+          </div>
         </div>
       </form>
 
       {showOAuthAuth && (
         <div className="mt-6 space-y-4 pt-6 border-t border-[var(--color-border)]">
-          <p className="text-xs text-center text-[var(--color-text-muted)]">
-            {showGoogleAuth && showYandexAuth
-              ? t('auth:oauthLoginHint', 'By continuing you agree to our Terms and Privacy Policy.')
-              : showYandexAuth
-                ? t('auth:yandexLoginHint', 'By continuing with Yandex you agree to our Terms and Privacy Policy.')
-                : t('auth:googleLoginHint')}
-          </p>
           {showGoogleAuth && (
             <GoogleSignInButton disabled={loading} onCredential={(c) => void handleGoogleCredential(c)} />
           )}

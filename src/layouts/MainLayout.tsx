@@ -51,7 +51,7 @@ export function MainLayout() {
       return {
         navItems: [
         { to: '/student/dashboard', label: t('student:dashboard', 'Dashboard'), icon: 'LayoutDashboard' },
-        { to: '/ai', label: t('student:navEdmissionAi', 'Edmission AI'), icon: 'Bot' },
+        { to: '/student/ai', label: t('student:navEdmissionAi', 'Edmission AI'), icon: 'Bot' },
         { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },
         { to: '/student/universities', label: t('student:navUniversities', 'Universities'), icon: 'GraduationCap' },
         ...(showMySchools
@@ -98,9 +98,11 @@ export function MainLayout() {
       return {
         navItems: [
           { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+          { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
           { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
           { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
           { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
+          { to: '/admin/faculties', label: t('admin:faculties', 'Faculties'), icon: 'GraduationCap' },
           { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
           { to: '/admin/investors', label: t('admin:investors', 'Investors'), icon: 'Building2' },
           { to: '/admin/landing-certificates', label: t('admin:landingCertificates', 'Landing Certificates'), icon: 'Award' },
@@ -152,7 +154,6 @@ export function MainLayout() {
       return [
         { to: '/university/dashboard', label: t('university:navHome', 'Home'), icon: 'LayoutDashboard' },
         { to: '/university/students', label: t('university:navDiscovery', 'Discovery'), icon: 'Users' },
-        { to: '/university/pipeline', label: t('university:navPipeline', 'Pipeline'), icon: 'GitBranch' },
         { to: '/university/profile', label: t('university:navProfile', 'Profile'), icon: 'User' },
         { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
       ]
@@ -160,10 +161,10 @@ export function MainLayout() {
     if (role === 'admin') {
       return [
         { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+        { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
         { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
         { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
-        { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
-        { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
+        { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
       ]
     }
     if (role === 'school_counsellor') {
@@ -196,7 +197,7 @@ export function MainLayout() {
   }, [isAuthenticated])
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-[var(--color-bg)]">
+    <div className="flex flex-1 flex-col min-h-0 h-screen max-h-screen overflow-hidden bg-[var(--color-bg)]">
       {isAuthenticated && <TopBar />}
       <div
         ref={scrollContainerRef}
@@ -220,10 +221,12 @@ export function MainLayout() {
           <BottomNav items={bottomNavItems} />
           </div>
         ) : (
-          <main className="min-h-full flex-1 flex flex-col p-2 sm:p-2 pb-12">
-            <Suspense fallback={<ContentFallback />}>
-              <Outlet />
-            </Suspense>
+          <main className="flex min-h-0 flex-1 flex-col p-2 sm:p-2 pb-mobile-nav md:pb-12 bg-pattern-subtle">
+            <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+              <Suspense fallback={<ContentFallback />}>
+                <Outlet />
+              </Suspense>
+            </div>
           </main>
         )}
       </div>

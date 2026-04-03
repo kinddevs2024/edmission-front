@@ -174,6 +174,7 @@ export function Router() {
       <Route path="/maintenance" element={<Maintenance />} />
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path="/sing-in" element={<Navigate to="/login" replace />} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />

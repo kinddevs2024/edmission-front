@@ -127,7 +127,7 @@ export function UniversitySelect() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] py-8 px-4">
+    <div className="min-h-screen bg-[var(--color-bg)] py-8 px-4 pb-page-bottom-cta">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-semibold text-[var(--color-text)] mb-2">
           {t('university:selectYourUniversity', 'Select your university')}

@@ -83,6 +83,11 @@ export async function getStudentProfile(): Promise<StudentProfileData> {
   return data
 }
 
+export async function getStudentUniversityCountries(): Promise<string[]> {
+  const { data } = await api.get<{ data?: string[] }>('/student/university-countries')
+  return data?.data ?? []
+}
+
 export async function updateStudentProfile(patch: Partial<StudentProfileData>): Promise<StudentProfileData> {
   const { data } = await api.patch<StudentProfileData>('/student/profile', patch)
   return data

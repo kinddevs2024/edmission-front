@@ -16,6 +16,7 @@ const PATH_PREFIXES = [
   '/payment',
   '/support',
   '/ai',
+  '/sing-in',
   '/login',
   '/register',
   '/forgot-password',

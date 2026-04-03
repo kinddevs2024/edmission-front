@@ -83,11 +83,17 @@ export function useSocket() {
     }
   }, [])
 
-  const onRead = useCallback((callback: (data: { chatId: string; messageId?: string }) => void) => {
+  const emitMarkChatRead = useCallback((chatId: string) => {
+    if (socketInstance?.connected) {
+      socketInstance.emit('mark_read', { chatId })
+    }
+  }, [])
+
+  const onMessagesRead = useCallback((callback: (data: { chatId: string }) => void) => {
     if (!socketInstance) return () => {}
-    socketInstance.on('read', callback)
+    socketInstance.on('messages_read', callback)
     return () => {
-      socketInstance?.off('read', callback)
+      socketInstance?.off('messages_read', callback)
     }
   }, [])
 
@@ -129,7 +135,8 @@ export function useSocket() {
     joinChat,
     leaveChat,
     onNewMessage,
-    onRead,
+    onMessagesRead,
+    emitMarkChatRead,
     onMessageUpdated,
     onMessageDeleted,
     onNotification,

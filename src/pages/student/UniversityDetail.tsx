@@ -54,12 +54,14 @@ export function UniversityDetail() {
   }
 
   useEffect(() => {
+    const appUniversityId = uni?.id ?? id
+    if (!appUniversityId) return
     getApplications({ limit: 500 }).then((res) => {
-      const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === id)
+      const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === appUniversityId)
       setInterested(hasId)
     }).catch(toastApiError)
     getInterestLimit().then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit })).catch(toastApiError)
-  }, [id])
+  }, [id, uni?.id])
 
   useEffect(() => {
     if (!id) return
@@ -77,19 +79,20 @@ export function UniversityDetail() {
           setMatchScore(u.matchScore)
           setMatchBreakdown(u.breakdown ?? null)
         }
+        const flyerUniversityId = String(u.id ?? id)
+        getPublicUniversityFlyers(flyerUniversityId)
+          .then((items) => {
+            if (!cancelled) setFlyers(items)
+          })
+          .catch(() => {
+            if (!cancelled) setFlyers([])
+          })
       })
       .catch((e) => {
         if (!cancelled) { toastApiError(e); setUni(null) }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
-      })
-    getPublicUniversityFlyers(id)
-      .then((items) => {
-        if (!cancelled) setFlyers(items)
-      })
-      .catch(() => {
-        if (!cancelled) setFlyers([])
       })
     return () => { cancelled = true }
   }, [id])
@@ -371,7 +374,7 @@ export function UniversityDetail() {
         </Card>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 md:mb-2 md:pb-8">
         <Button onClick={handleInterest} disabled={interested || !interestLimit.allowed}>
           {interested ? t('student:interestedButton') : !interestLimit.allowed ? t('student:interestLimitReached') : t('student:showInterest')}
         </Button>

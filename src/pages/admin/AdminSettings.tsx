@@ -49,7 +49,7 @@ export function AdminSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-page-bottom-cta">
       <PageTitle title={t('settings.title', 'System settings')} icon="Settings" />
 
       <Card>

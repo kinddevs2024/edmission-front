@@ -134,7 +134,7 @@ export function UniversityProfilePage() {
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 pb-page-bottom-cta">
       <div data-onboarding="university-profile-overview">
         <PageTitle title={t('university:profileTitle')} icon="User" />
       </div>

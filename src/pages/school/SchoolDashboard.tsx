@@ -51,7 +51,7 @@ export function SchoolDashboard() {
   }, [])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-page-bottom-cta">
       <div>
         <PageTitle title={t('dashboard')} icon="LayoutDashboard" />
         {schoolName && (

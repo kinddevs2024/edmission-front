@@ -73,7 +73,7 @@ export function SetPassword() {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 pb-page-bottom-cta">
       <CardTitle className="mb-4">{t('auth:setPassword')}</CardTitle>
       <p className="text-sm text-[var(--color-text-muted)] mb-4">
         {user?.mustSetLocalPassword

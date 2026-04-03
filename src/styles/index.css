@@ -52,10 +52,18 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
 @layer base {
   html {
     @apply antialiased;
+    height: 100%;
   }
 
   body {
     @apply bg-[var(--color-bg)] text-[var(--color-text)] font-sans text-base;
+    min-height: 100%;
+  }
+
+  #root {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   /* Focus visible for keyboard a11y (WCAG) */
@@ -105,15 +113,30 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
 
 /**
  * Space below scrollable content on mobile so it clears the fixed BottomNav
- * (offset bottom-3 + bar height + labels) plus home indicator / safe area.
+ * (bottom-3 offset + bar + labels + touch margin) plus home indicator / safe area.
  */
 .pb-mobile-nav {
-  padding-bottom: calc(6.75rem + env(safe-area-inset-bottom, 0px));
+  /* BottomNav: bottom-3 + bar + labels + FAB margin — extra gap so CTAs/cards clear the bar */
+  padding-bottom: calc(9.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 768px) {
   .pb-mobile-nav {
-    padding-bottom: 3rem;
+    padding-bottom: 0;
+  }
+}
+
+/**
+ * Extra space below page content when the last block is primary actions (save / CTA buttons).
+ * Not applied to long list pages (catalog, chat, etc.).
+ */
+.pb-page-bottom-cta {
+  padding-bottom: max(1.75rem, calc(0.75rem + env(safe-area-inset-bottom, 0px)));
+}
+
+@media (min-width: 768px) {
+  .pb-page-bottom-cta {
+    padding-bottom: 2.5rem;
   }
 }
 

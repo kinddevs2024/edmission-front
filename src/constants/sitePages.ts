@@ -28,6 +28,13 @@ export const SITE_PAGES: SitePageItem[] = [
   { path: '/university/analytics', labelKey: 'university:navAnalytics', terms: ['analytics', 'аналитика', 'tahlil'] },
   { path: '/university/chat', labelKey: 'common:chat', terms: ['chat', 'чат', 'suhbat'] },
   { path: '/university/ai', labelKey: 'common:edmissionAi', terms: ['ai', 'assistant', 'помощник', 'yordamchi'] },
+  { path: '/admin/dashboard', labelKey: 'admin:dashboard', terms: ['dashboard', 'home', 'главная', 'boshqaruv'] },
+  { path: '/admin/analytics', labelKey: 'admin:analytics', terms: ['analytics', 'аналитика', 'tahlil'] },
+  {
+    path: '/admin/universities',
+    labelKey: 'admin:universityCatalog',
+    terms: ['university catalog', 'catalog', 'universities', 'каталог вузов', 'каталог', 'universitetlar'],
+  },
   { path: '/notifications', labelKey: 'common:notifications', terms: ['notifications', 'уведомления', 'bildirishnomalar'] },
   { path: '/profile', labelKey: 'common:profile', terms: ['profile', 'профиль', 'profil'] },
   { path: '/ai', labelKey: 'common:edmissionAi', terms: ['ai', 'assistant', 'помощник', 'yordamchi'] },

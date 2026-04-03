@@ -83,12 +83,12 @@ export function UniversityLayout() {
   }
 
   return (
-    <div className="flex min-h-full items-start">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-1">
       <RoleOnboardingController role="university" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 pb-mobile-nav transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
-        isFixedHeightPage ? 'h-screen max-h-[100%] overflow-hidden' : 'min-h-screen',
+        'flex-1 min-w-0 pb-mobile-nav transition-[margin-left] duration-200 flex flex-col',
+        isFixedHeightPage ? 'h-full max-h-full min-h-0 overflow-hidden' : 'min-h-full',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

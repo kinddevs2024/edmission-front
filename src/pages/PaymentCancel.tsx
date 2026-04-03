@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 
 export function PaymentCancel() {
   return (
-    <div className="max-w-md mx-auto py-12 text-center">
+    <div className="max-w-md mx-auto py-12 text-center pb-page-bottom-cta">
       <Card className="p-8">
         <CardTitle>Payment cancelled</CardTitle>
         <p className="text-[var(--color-text-muted)] mt-2">

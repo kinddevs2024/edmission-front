@@ -7,6 +7,7 @@ import i18n from '@/i18n'
 const PATH_TITLES: Record<string, string> = {
   '/': 'common:appName',
   '/login': 'auth:login',
+  '/sing-in': 'auth:login',
   '/register': 'auth:register',
   '/forgot-password': 'auth:forgotPassword',
   '/verify-email': 'auth:verifyEmail',

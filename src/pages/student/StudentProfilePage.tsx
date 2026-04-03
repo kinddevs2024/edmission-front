@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
-import { getStudentProfile, updateStudentProfile, type StudentProfileData, type StudentExperience, type StudentPortfolioWork } from '@/services/student'
+import { getStudentProfile, getStudentUniversityCountries, updateStudentProfile, type StudentProfileData, type StudentExperience, type StudentPortfolioWork } from '@/services/student'
+import { getMyDocuments, type StudentDocumentItem } from '@/services/studentDocuments'
 import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
@@ -98,6 +99,18 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
+
+function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormData {
+  if (!storageKey) return base
+  try {
+    const raw = localStorage.getItem(storageKey)
+    if (!raw) return base
+    const draft = JSON.parse(raw) as Partial<FormData>
+    return { ...base, ...draft }
+  } catch {
+    return base
+  }
+}
 
 type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'privacy'
 
@@ -291,9 +304,13 @@ export function StudentProfilePage() {
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
   const [displayPercent, setDisplayPercent] = useState(0)
   const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
-  const sectionSnapshotRef = useRef('')
+  const [educationWizardStep, setEducationWizardStep] = useState(1)
+  const [preferredCountryOptions, setPreferredCountryOptions] = useState<string[]>([])
+  const [languageCertificates, setLanguageCertificates] = useState<StudentDocumentItem[]>([])
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false)
+  const profileDraftStorageKey = useMemo(() => (user?.id ? `student-profile-draft:${user.id}` : null), [user?.id])
 
-  const { register, reset, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
+  const { register, reset, control, watch, setValue, getValues, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       skills: [],
@@ -322,22 +339,15 @@ export function StudentProfilePage() {
   const targetDegreeLevel = watch('targetDegreeLevel')
   const educationStepOneDone = Boolean(educationStatus)
   const educationStepTwoDone = Boolean(
-    educationStatus && (
-      hasFilledValue(watch('schoolName')) ||
-      hasFilledValue(watch('gradeLevel')) ||
-      watch('graduationYear') != null
-    )
+    educationStatus &&
+    hasFilledValue(watch('schoolName')) &&
+    hasFilledValue(watch('gradeLevel')) &&
+    watch('graduationYear') != null
   )
   const needsDegreeGoal = educationStatus === 'in_university' || educationStatus === 'finished_university'
   const educationStepThreeDone = needsDegreeGoal ? Boolean(targetDegreeLevel) : true
   const educationStepFourDone = (watch('languages')?.length ?? 0) > 0 || hasFilledValue(watch('languageLevel'))
   const educationVisibleSteps = needsDegreeGoal ? 4 : 3
-  const educationCompletedSteps = [
-    educationStepOneDone,
-    educationStepTwoDone,
-    ...(needsDegreeGoal ? [educationStepThreeDone] : []),
-    educationStepFourDone,
-  ].filter(Boolean).length
   const gradingSchemeOptions = GRADING_SCHEME_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
   const gradeScaleOptions = GRADE_SCALE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))
   const highestEducationOptions = HIGHEST_EDUCATION_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))
@@ -360,10 +370,65 @@ export function StudentProfilePage() {
   ]
   const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
   const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
+  const countrySelectOptions = useMemo(() => {
+    const fallback = COUNTRY_CODE_OPTIONS.map((item) => item.label)
+    const source = preferredCountryOptions.length > 0 ? preferredCountryOptions : fallback
+    const currentCountry = String(watch('country') ?? '').trim()
+    const values = Array.from(new Set([...source, ...(currentCountry ? [currentCountry] : [])]))
+    return values.map((value) => ({ value, label: value }))
+  }, [preferredCountryOptions, watch('country')])
+  const attendedInstitutionTypeOptions = educationStatus === 'in_school'
+    ? [{ value: 'school', label: t('institutionTypeSchool') }]
+    : institutionTypeOptions
+  const canGoNextEducationStep = educationWizardStep === 1
+    ? educationStepOneDone
+    : educationWizardStep === 2
+      ? educationStepTwoDone
+      : educationWizardStep === 3 && needsDegreeGoal
+        ? educationStepThreeDone
+        : educationStepFourDone
 
   useEffect(() => {
     getProfileCriteria().then(setCriteria).catch(() => setCriteria({ skills: [], interests: [], hobbies: [] }))
   }, [])
+
+  useEffect(() => {
+    if (openSection === 'education') {
+      setEducationWizardStep(1)
+    }
+  }, [openSection])
+
+  useEffect(() => {
+    if (!needsDegreeGoal && educationWizardStep > 3) {
+      setEducationWizardStep(3)
+    }
+  }, [needsDegreeGoal, educationWizardStep])
+
+  useEffect(() => {
+    if (educationStatus !== 'in_school') return
+    setValue('schoolCompleted', false, { shouldDirty: true })
+    const current = getValues('schoolsAttended') ?? []
+    if (current.length === 0) return
+    const normalized = current.map((entry) => ({ ...entry, institutionType: 'school' as const }))
+    setValue('schoolsAttended', normalized, { shouldDirty: true })
+  }, [educationStatus, getValues, setValue])
+
+  useEffect(() => {
+    getStudentUniversityCountries()
+      .then((countries) => {
+        setPreferredCountryOptions(countries)
+      })
+      .catch(() => setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label)))
+  }, [])
+
+  useEffect(() => {
+    if (openSection !== 'education') return
+    getMyDocuments()
+      .then((docs) => {
+        setLanguageCertificates(docs.filter((doc) => doc.type === 'language_certificate'))
+      })
+      .catch(() => setLanguageCertificates([]))
+  }, [openSection])
 
   useEffect(() => {
     const target = profile?.portfolioCompletionPercent ?? 0
@@ -375,16 +440,27 @@ export function StudentProfilePage() {
     getStudentProfile()
       .then((data) => {
         setProfile(data)
-        reset(mapProfileToFormData(data))
+        const initialValues = mapProfileToFormData(data)
+        reset(mergeProfileWithDraft(initialValues, profileDraftStorageKey))
       })
       .catch((e) => setError(getApiError(e).message))
       .finally(() => setLoading(false))
-  }, [reset, t])
+  }, [profileDraftStorageKey, reset])
 
-  const hasUnsavedChanges = useMemo(() => {
-    if (!openSection) return false
-    return sectionSnapshotRef.current !== JSON.stringify(getValues())
-  }, [getValues, openSection, watch()])
+  useEffect(() => {
+    if (!profileDraftStorageKey) return
+    const subscription = watch((values) => {
+      if (!isDirty) return
+      try {
+        localStorage.setItem(profileDraftStorageKey, JSON.stringify(values))
+      } catch {
+        // ignore storage errors
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [isDirty, profileDraftStorageKey, watch])
+
+  const hasUnsavedChanges = Boolean(openSection && isDirty)
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -395,11 +471,6 @@ export function StudentProfilePage() {
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [hasUnsavedChanges])
-
-  useEffect(() => {
-    if (!openSection) return
-    sectionSnapshotRef.current = JSON.stringify(getValues())
-  }, [getValues, openSection])
 
   function toDateInputValue(value: unknown): string {
     if (!value) return ''
@@ -544,10 +615,17 @@ export function StudentProfilePage() {
     setSaving(true)
     try {
       const data = getValues()
-      const updated = await updateStudentProfile(buildPayload(data))
-      setProfile(updated)
-      reset(mapProfileToFormData(updated))
-      sectionSnapshotRef.current = JSON.stringify(mapProfileToFormData(updated))
+      await updateStudentProfile(buildPayload(data))
+      const fullProfile = await getStudentProfile()
+      setProfile(fullProfile)
+      reset(mapProfileToFormData(fullProfile))
+      if (profileDraftStorageKey) {
+        try {
+          localStorage.removeItem(profileDraftStorageKey)
+        } catch {
+          // ignore storage errors
+        }
+      }
       setOpenSection(null)
       notifySuccess(t('common:saved', 'Saved'))
     } catch (e) {
@@ -560,12 +638,16 @@ export function StudentProfilePage() {
   const verified = user?.studentProfile?.verifiedAt
   const minimalChecklist = getMinimalChecklist(profile, t)
   const minimalChecklistDone = minimalChecklist.filter((item) => item.done).length
-  const closeSection = () => {
-    if (hasUnsavedChanges && !saving && !window.confirm(t('common:unsavedChanges', 'You have unsaved changes. Close without saving?'))) {
-      return
-    }
+  const forceCloseSection = () => {
     if (profile) reset(mapProfileToFormData(profile))
     setOpenSection(null)
+  }
+  const closeSection = () => {
+    if (hasUnsavedChanges && !saving) {
+      setShowUnsavedModal(true)
+      return
+    }
+    forceCloseSection()
   }
 
   if (loading) {
@@ -583,7 +665,7 @@ export function StudentProfilePage() {
   }
 
   return (
-    <div className="w-full space-y-5 min-h-0">
+    <div className="w-full space-y-5 min-h-0 pb-page-bottom-cta">
       <PageTitle title={t('portfolioTitle')} icon="User" />
       <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
         <Link
@@ -633,7 +715,7 @@ export function StudentProfilePage() {
         </div>
       </Card>
 
-      {!profile?.minimalPortfolioComplete && (
+      {profile?.minimalPortfolioComplete === false && (
         <Card className="p-4 sm:p-5 border-primary-accent/25 bg-[var(--color-card)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -713,6 +795,7 @@ export function StudentProfilePage() {
                         className="text-[var(--color-border)]"
                         stroke="currentColor"
                         strokeWidth="2.5"
+                        strokeLinecap="round"
                         fill="none"
                         d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
                       />
@@ -720,6 +803,7 @@ export function StudentProfilePage() {
                         className="text-[var(--color-primary-accent)] transition-all duration-500"
                         stroke="currentColor"
                         strokeWidth="2.5"
+                        strokeLinecap="round"
                         fill="none"
                         strokeDasharray={`${(pct / 100) * 97.4}, 97.4`}
                         d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
@@ -792,27 +876,29 @@ export function StudentProfilePage() {
           {openSection === 'location' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label={t('country')} error={errors.country?.message} {...register('country')} placeholder={t('country')} />
+                <Select label={t('country')} error={errors.country?.message} options={countrySelectOptions} placeholder={t('student:preferredCountriesPlaceholder', 'Select countries')} {...register('country')} />
                 <Input label={t('city')} error={errors.city?.message} {...register('city')} placeholder={t('city')} />
               </div>
               <div className="mt-4 space-y-3">
                 <div>
-                  <p className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:preferredCountries', 'Preferred countries')}</p>
-                  <p className="text-xs text-[var(--color-text-muted)] mb-2">
-                    {t('student:preferredCountriesHint', 'Where would you like to study?')}
-                  </p>
+                  <div className="mb-1 flex items-center gap-2">
+                    <p className="block text-sm font-medium text-[var(--color-text)]">{t('student:preferredCountriesPlaceholder', 'Select countries')}</p>
+                    <span className="group relative inline-flex items-center">
+                      <span
+                        className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-amber-500 text-[10px] font-bold leading-none text-amber-500"
+                        aria-label={t('student:preferredCountriesDetailedHint', 'Choose the countries where you want to study. We use this to match you with universities in those countries.')}
+                      >
+                        i
+                      </span>
+                      <span className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-10 hidden w-72 -translate-x-1/2 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-1.5 text-left text-xs text-[var(--color-text)] shadow-xl group-hover:block">
+                        {t('student:preferredCountriesDetailedHint', 'Choose the countries where you want to study. We use this to match you with universities in those countries.')}
+                      </span>
+                    </span>
+                  </div>
                   <ChipSelect
-                    options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
-                    value={(watch('preferredCountries') ?? []).map(
-                      (code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code
-                    )}
-                    onChange={(labels) => {
-                      const codes = labels
-                        .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
-                        .filter((v) => !!v)
-                        .map((v) => String(v))
-                      setValue('preferredCountries', codes, { shouldDirty: true })
-                    }}
+                    options={preferredCountryOptions.length > 0 ? preferredCountryOptions : COUNTRY_CODE_OPTIONS.map((c) => c.label)}
+                    value={watch('preferredCountries') ?? []}
+                    onChange={(countries) => setValue('preferredCountries', countries, { shouldDirty: true })}
                     max={8}
                     placeholder={t('student:preferredCountriesPlaceholder', 'Select countries')}
                   />
@@ -823,28 +909,12 @@ export function StudentProfilePage() {
 
           {openSection === 'education' && (
             <>
-              <div className="mb-6 rounded-2xl border border-[var(--color-primary-accent)]/20 bg-[var(--color-primary-accent)]/5 p-4">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--color-text)]">
-                      {t('student:educationProgressTitle', 'Education setup progress')}
-                    </p>
-                    <p className="text-sm text-[var(--color-text-muted)]">
-                      {t('student:educationProgressHint', 'Complete these steps so we can unlock the right universities for you.')}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-[var(--color-card)] px-3 py-1 text-sm font-semibold text-[var(--color-text)]">
-                    {educationCompletedSteps}/{educationVisibleSteps}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-[var(--color-card)] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[var(--color-primary-accent)] transition-all"
-                    style={{ width: `${(educationCompletedSteps / educationVisibleSteps) * 100}%` }}
-                  />
-                </div>
+              <div className="mb-4 flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm">
+                <span className="text-[var(--color-text-muted)]">{t('student:educationProgressTitle', 'Education setup progress')}</span>
+                <span className="font-semibold text-[var(--color-text)]">{educationWizardStep}/{educationVisibleSteps}</span>
               </div>
 
+              {educationWizardStep === 1 && (
               <Card className="mb-5 p-5 border border-[var(--color-border)]">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">1</div>
@@ -876,8 +946,9 @@ export function StudentProfilePage() {
                   ))}
                 </div>
               </Card>
+              )}
 
-              {educationStepOneDone && (
+              {educationWizardStep === 2 && (
                 <Card className="mb-5 p-5 border border-[var(--color-border)]">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">2</div>
@@ -894,7 +965,9 @@ export function StudentProfilePage() {
                         <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
                         <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2026" />
                       </div>
-                      <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0-4" />
+                      {educationStatus === 'finished_school' && (
+                        <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0-4" />
+                      )}
                     </div>
                   )}
 
@@ -917,7 +990,7 @@ export function StudentProfilePage() {
                 </Card>
               )}
 
-              {educationStepOneDone && needsDegreeGoal && (
+              {educationWizardStep === 3 && needsDegreeGoal && (
                 <Card className="mb-5 p-5 border border-[var(--color-border)]">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">3</div>
@@ -930,7 +1003,7 @@ export function StudentProfilePage() {
                 </Card>
               )}
 
-              {educationStepOneDone && (
+              {educationWizardStep === (needsDegreeGoal ? 4 : 3) && (
                 <Card className="mb-6 p-5 border border-[var(--color-border)]">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-accent)] text-sm font-semibold text-white">
@@ -942,6 +1015,30 @@ export function StudentProfilePage() {
                     </div>
                   </div>
                   <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
+                      <p className="text-sm text-[var(--color-text-muted)]">
+                        {t('student:certificateUploadHint', 'Confirm your language level with a certificate.')}
+                      </p>
+                      <Link to="/student/documents" className="inline-flex items-center rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-accent)] hover:text-[var(--color-primary-accent)]">
+                        {t('student:uploadCertificate', 'Загрузить сертификат')}
+                      </Link>
+                    </div>
+
+                    {languageCertificates.length > 0 ? (
+                      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-3">
+                        <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
+                          {t('student:languageCertificates', 'Language certificates')}
+                        </p>
+                        <ul className="space-y-1.5">
+                          {languageCertificates.map((doc) => (
+                            <li key={doc.id} className="text-sm text-[var(--color-text-muted)]">
+                              {[doc.certificateType || doc.name || 'Certificate', doc.score ? `(${doc.score})` : '', `- ${doc.status}`].filter(Boolean).join(' ')}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
                     {languageFields.length > 0 && (
                       <ul className="space-y-2" role="list">
                         {languageFields.map((field, i) => (
@@ -1021,6 +1118,27 @@ export function StudentProfilePage() {
                 </Card>
               )}
 
+              <div className="mb-5 flex items-center justify-between gap-3">
+                {educationWizardStep > 1 ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setEducationWizardStep((prev) => Math.max(1, prev - 1))}
+                  >
+                    {t('common:prev', 'Back')}
+                  </Button>
+                ) : <span />}
+                {educationWizardStep < educationVisibleSteps ? (
+                  <Button
+                    type="button"
+                    onClick={() => setEducationWizardStep((prev) => Math.min(educationVisibleSteps, prev + 1))}
+                    disabled={!canGoNextEducationStep}
+                  >
+                    {t('common:next', 'Next')}
+                  </Button>
+                ) : <span />}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setEducationShowAdvanced(!educationShowAdvanced)}
@@ -1036,10 +1154,12 @@ export function StudentProfilePage() {
                     <Select label={t('gradeScaleOutOf')} options={gradeScaleOptions} placeholder="—" {...register('gradeScale')} />
                   </div>
                   <Select label={t('highestLevelOfEducation')} options={highestEducationOptions} placeholder="—" {...register('highestEducationLevel')} />
-                  <Checkbox
-                    {...register('schoolCompleted')}
-                    label={t('schoolCompleted')}
-                  />
+                  {educationStatus !== 'in_school' && (
+                    <Checkbox
+                      {...register('schoolCompleted')}
+                      label={t('schoolCompleted')}
+                    />
+                  )}
                   <p className="text-sm font-medium text-[var(--color-text)]">{t('schoolsUniversitiesAttended')}</p>
                   <div className="space-y-3">
                 {schoolsAttendedFields.map((field, i) => (
@@ -1048,7 +1168,7 @@ export function StudentProfilePage() {
                       <span className="text-sm font-medium">{t('entryNumber', { n: i + 1 })}</span>
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label="Remove"><Trash2 className="w-4 h-4" /></Button>
                     </div>
-                    <Select label={t('institutionTypeLabel')} options={institutionTypeOptions} placeholder="—" {...register(`schoolsAttended.${i}.institutionType`)} />
+                    <Select label={t('institutionTypeLabel')} options={attendedInstitutionTypeOptions} placeholder="—" {...register(`schoolsAttended.${i}.institutionType`)} />
                     <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
                     <Input label={t('schoolName')} {...register(`schoolsAttended.${i}.institutionName`)} placeholder={t('schoolName')} />
                     <Input label={t('gradeLevel')} {...register(`schoolsAttended.${i}.educationLevel`)} placeholder={t('gradePlaceholder')} />
@@ -1249,6 +1369,33 @@ export function StudentProfilePage() {
             </>
           )}
         </div>
+      </Modal>
+
+      <Modal
+        open={showUnsavedModal}
+        onClose={() => setShowUnsavedModal(false)}
+        title={t('common:unsavedChangesTitle', 'Unsaved changes')}
+        footer={(
+          <>
+            <Button type="button" variant="secondary" onClick={() => setShowUnsavedModal(false)}>
+              {t('common:stay', 'Stay')}
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => {
+                setShowUnsavedModal(false)
+                forceCloseSection()
+              }}
+            >
+              {t('common:discardChanges', 'Discard changes')}
+            </Button>
+          </>
+        )}
+      >
+        <p className="text-sm text-[var(--color-text-muted)]">
+          {t('common:unsavedChanges', 'You have unsaved changes. Close without saving?')}
+        </p>
       </Modal>
     </div>
   )

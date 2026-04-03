@@ -154,7 +154,12 @@ export interface UniversityDashboardData {
   acceptedCount?: number
   acceptanceRate?: number
   verified?: boolean
-  topRecommendations: { id: string; matchScore?: number; student?: { _id?: string; firstName?: string; lastName?: string; name?: string; gpa?: number; country?: string; userEmail?: string } }[]
+  topRecommendations: {
+    id: string
+    matchScore?: number
+    studentProfileId?: string
+    student?: { _id?: string; firstName?: string; lastName?: string; name?: string; gpa?: number; country?: string; userEmail?: string }
+  }[]
 }
 
 export async function getDashboard(): Promise<UniversityDashboardData> {
@@ -164,6 +169,8 @@ export async function getDashboard(): Promise<UniversityDashboardData> {
 
 export interface PipelineItem {
   id: string
+  /** StudentProfile _id — use for /students/:id/profile (avoids Interest id and bad _id serialization). */
+  studentProfileId?: string
   status: string
   student?: { _id?: unknown; firstName?: string; lastName?: string; name?: string; country?: string; gpa?: number; userEmail?: string }
   updatedAt?: string

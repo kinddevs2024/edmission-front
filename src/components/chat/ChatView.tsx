@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -9,12 +9,14 @@ import {
   acceptStudent,
   updateMessage as updateChatMessage,
   deleteMessage as deleteChatMessage,
+  markAsRead,
+  coerceIsoDateString,
 } from '@/services/chat'
 import { useSocket } from '@/hooks/useSocket'
 import { useAuthStore } from '@/store/authStore'
+import { useNotificationStore } from '@/store/notificationStore'
 import { ChatList } from './ChatList'
 import { MessageThread } from './MessageThread'
-import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
@@ -48,7 +50,8 @@ export function ChatView() {
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list')
 
-  const { joinChat, leaveChat, onNewMessage, onRead, onNotification, onMessageUpdated, onMessageDeleted } = useSocket()
+  const { joinChat, leaveChat, onNewMessage, onMessagesRead, onNotification, onMessageUpdated, onMessageDeleted } = useSocket()
+  const loadChatsRequestIdRef = useRef(0)
 
   const normalizeMessage = useCallback((message: Message | Record<string, unknown>) => {
     const raw = message as Message & { sender?: { id?: string; _id?: unknown }; senderId?: string | { _id?: unknown } }
@@ -70,7 +73,7 @@ export function ChatView() {
       id: String(raw.id ?? ''),
       text: String(raw.text ?? raw.message ?? ''),
       type: raw.type ?? 'text',
-      createdAt: String(raw.createdAt ?? new Date().toISOString()),
+      createdAt: coerceIsoDateString(raw.createdAt),
       editedAt: raw.editedAt,
       isFromMe: raw.isFromMe ?? (!!currentUserId && senderId === currentUserId),
       sender: senderId ? { id: senderId } : raw.sender,
@@ -79,8 +82,15 @@ export function ChatView() {
 
   const loadChats = useCallback(
     async (options?: { selectedChatId?: string | null; selectChatId?: string; openThread?: boolean }) => {
-      const roleOrStudent = role ?? 'student'
-      const list = await getChats(roleOrStudent)
+      if (role !== 'student' && role !== 'university') {
+        return []
+      }
+      const requestId = ++loadChatsRequestIdRef.current
+      const list = await getChats(role, currentUserId ?? null)
+      if (requestId !== loadChatsRequestIdRef.current) {
+        return list
+      }
+
       setChats(list)
 
       const targetChatId = options?.selectChatId ?? options?.selectedChatId ?? null
@@ -96,7 +106,7 @@ export function ChatView() {
 
       return list
     },
-    [role]
+    [role, currentUserId]
   )
 
   const syncChatPreview = useCallback((chatId: string, nextMessages: Message[]) => {
@@ -178,7 +188,7 @@ export function ChatView() {
     if (!hasValidId || !role || chatsLoading) return
 
     const params = studentId ? { studentId } : { universityId: universityId! }
-    createChat(params)
+    createChat(params, currentUserId ?? null)
       .then((chat) => {
         setChats((prev) => (
           prev.some((current) => current.id === chat.id)
@@ -193,7 +203,7 @@ export function ChatView() {
         toastApiError(e)
         setSearchParams({}, { replace: true })
       })
-  }, [searchParams, role, chatsLoading, setSearchParams])
+  }, [searchParams, role, chatsLoading, setSearchParams, currentUserId])
 
   useEffect(() => {
     if (!selectedChat?.id) {
@@ -300,13 +310,20 @@ export function ChatView() {
   }, [selectedChat?.id, onMessageDeleted, syncChatPreview])
 
   useEffect(() => {
-    const unsub = onRead(({ chatId }) => {
+    const unsub = onMessagesRead(({ chatId }) => {
       setChats((prev) =>
         prev.map((chat) => (chat.id === chatId ? { ...chat, unreadCount: 0 } : chat))
       )
+      if (chatId === selectedChat?.id) {
+        getMessages(chatId)
+          .then((list) => {
+            setMessages(list.map(normalizeMessage))
+          })
+          .catch(() => {})
+      }
     })
     return unsub
-  }, [onRead])
+  }, [onMessagesRead, selectedChat?.id, normalizeMessage])
 
   const handleSend = useCallback(
     (params: string | import('@/services/chat').SendMessageParams) => {
@@ -420,56 +437,52 @@ export function ChatView() {
     [selectedChat, normalizeMessage, syncChatPreview]
   )
 
+  const markMessageNotificationsReadForChat = useNotificationStore((s) => s.markMessageNotificationsReadForChat)
+
   const handleMarkRead = useCallback(() => {
     if (!selectedChat?.id) return
+    const id = selectedChat.id
     setChats((prev) =>
-      prev.map((chat) => (chat.id === selectedChat.id ? { ...chat, unreadCount: 0 } : chat))
+      prev.map((chat) => (chat.id === id ? { ...chat, unreadCount: 0 } : chat))
     )
-  }, [selectedChat?.id])
+    markMessageNotificationsReadForChat(id)
+    markAsRead(id).catch(() => {})
+  }, [selectedChat?.id, markMessageNotificationsReadForChat])
 
   const showList = mobileView === 'list'
   const showThread = mobileView === 'thread'
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 h-full">
-      <div className="flex-1 flex flex-col border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
-        <div className="flex flex-1 overflow-hidden">
+    <div className="flex min-h-0 max-h-full flex-1 flex-col">
+      <div className="flex min-h-0 max-h-full flex-1 flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           <div
             className={cn(
-              'flex flex-col h-full w-full md:w-80 md:max-w-sm bg-[var(--color-card)] overflow-hidden',
+              'flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-card)] overflow-hidden md:w-80 md:max-w-sm md:flex-none',
               showList ? 'flex' : 'hidden md:flex'
             )}
           >
-            <div className="p-2 border-b border-[var(--color-border)] flex items-center gap-2 md:hidden">
-              <span className="font-medium">{t('chats')}</span>
+            <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border)] p-3 md:hidden">
+              <span className="text-base font-semibold">{t('chats')}</span>
             </div>
-            <ChatList
-              chats={chats}
-              selectedId={selectedChat?.id ?? null}
-              onSelect={(chat) => {
-                setSelectedChat(chat)
-                setMobileView('thread')
-              }}
-              loading={chatsLoading}
-            />
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+              <ChatList
+                chats={chats}
+                selectedId={selectedChat?.id ?? null}
+                onSelect={(chat) => {
+                  setSelectedChat(chat)
+                  setMobileView('thread')
+                }}
+                loading={chatsLoading}
+              />
+            </div>
           </div>
           <div
             className={cn(
-              'flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-[var(--color-card)] border-l border-[var(--color-border)]',
+              'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-l border-[var(--color-border)] bg-[var(--color-card)]',
               showThread ? 'flex' : 'hidden md:flex'
             )}
           >
-            {selectedChat ? (
-              <div className="p-2 border-b border-[var(--color-border)] flex items-center gap-2 md:hidden">
-                <Button variant="ghost" size="sm" onClick={() => setMobileView('list')}>
-                  {t('back')}
-                </Button>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{selectedChat.participant.name}</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">{t('chats')}</p>
-                </div>
-              </div>
-            ) : null}
             <MessageThread
               chat={selectedChat}
               messages={messages}
@@ -481,6 +494,7 @@ export function ChatView() {
               isTyping={false}
               role={role}
               onAcceptStudent={role === 'university' ? handleAcceptStudent : undefined}
+              onMobileBack={() => setMobileView('list')}
             />
           </div>
         </div>

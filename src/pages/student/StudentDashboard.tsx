@@ -38,15 +38,35 @@ export function StudentDashboard() {
   useEffect(() => {
     let cancelled = false
     setLoadingRecs(true)
+    const toId = (v: unknown) => (typeof v === 'string' ? v : (v && typeof v === 'object' && ('id' in v || '_id' in v) ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '') : ''))
+    const mapRecommendationToUniversity = (item: any): UniversityListItem | null => {
+      const source = (item?.university && typeof item.university === 'object') ? item.university : item
+      const id = toId(item?.universityId) || toId(source?._id) || toId(source?.id) || toId(item?.id)
+      const name = String(source?.name ?? source?.universityName ?? '').trim()
+      if (!id || !name) return null
+      return {
+        id,
+        name,
+        country: source?.country,
+        city: source?.city,
+        description: source?.description,
+        logo: source?.logo ?? source?.logoUrl,
+        logoUrl: source?.logoUrl ?? source?.logo,
+        matchScore: typeof item?.matchScore === 'number' ? item.matchScore : undefined,
+      } as UniversityListItem
+    }
     getRecommendations({ limit: 5 })
       .then((recs) => {
-        if (cancelled || !recs.data?.length) return
-        const toId = (v: unknown) => (typeof v === 'string' ? v : (v && typeof v === 'object' && ('id' in v || '_id' in v) ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '') : ''))
-        const ids = recs.data.map((r) => toId(r.universityId)).filter(Boolean).slice(0, 5)
-        return getCompareUniversities(ids)
+        if (cancelled || !recs.data?.length) return { compare: [], fallback: [] as UniversityListItem[] }
+        const ids = recs.data.map((r) => toId((r as any).universityId)).filter(Boolean).slice(0, 5)
+        const fallback = recs.data.map((r) => mapRecommendationToUniversity(r)).filter((u): u is UniversityListItem => Boolean(u)).slice(0, 5)
+        if (ids.length === 0) return { compare: [], fallback }
+        return getCompareUniversities(ids).then((compare) => ({ compare, fallback }))
       })
-      .then((list) => {
-        if (cancelled || !list?.length) return
+      .then((result) => {
+        if (cancelled || !result) return
+        const list = result.compare?.length ? result.compare : result.fallback
+        if (!list?.length) return
         setRecommendations(list.map((u) => ({
           ...u,
           name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '',
@@ -70,7 +90,7 @@ export function StudentDashboard() {
   const showAppsOffersGrid = showAppsSection || showOffersSection
 
   return (
-    <div className="space-y-8 pb-12 mb-4">
+    <div className="space-y-8 pb-page-bottom-cta">
       <div data-onboarding="student-dashboard-overview">
         <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
       </div>

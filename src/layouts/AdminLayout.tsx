@@ -22,9 +22,10 @@ export function AdminLayout() {
       { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
       { to: '/admin/users', label: t('users'), icon: 'Users' as const },
       { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
+      { to: '/admin/documents', label: t('documentReviewNav', 'Certificates'), icon: 'FileCheck' as const },
       { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
       { to: '/admin/faculties', label: t('faculties', 'Faculties'), icon: 'GraduationCap' as const },
-      { to: '/admin/university-requests', label: t('universityRequests', 'Uni requests'), icon: 'Users' as const },
+      { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' as const },
       { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
       { to: '/admin/landing-certificates', label: t('landingCertificates', 'Landing Certificates'), icon: 'Award' as const },
       { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
@@ -63,11 +64,11 @@ export function AdminLayout() {
   }, [setNavItems, navItems, navBottomItems])
 
   return (
-    <div className="flex min-h-full items-start">
+    <div className="flex flex-1 w-full min-h-full">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 pb-mobile-nav transition-[margin-left] duration-200 bg-pattern-subtle flex flex-col',
-        isFixedHeightPage ? 'h-screen max-h-[100%] overflow-hidden' : 'min-h-screen',
+        'flex-1 min-w-0 pb-mobile-nav transition-[margin-left] duration-200 flex flex-col',
+        isFixedHeightPage ? 'h-full max-h-full min-h-0 overflow-hidden' : 'min-h-full',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

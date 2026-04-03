@@ -69,7 +69,7 @@ export function UniversityOnboarding() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 pb-page-bottom-cta">
       <PageTitle title={t('university:onboardingTitle')} icon="GraduationCap" />
 
       <div className="flex gap-2 overflow-x-auto pb-2">
