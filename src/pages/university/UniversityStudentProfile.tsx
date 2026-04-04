@@ -10,7 +10,7 @@ import { getStudentProfile, type FullStudentProfile } from '@/services/universit
 import { getApiError } from '@/services/api'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { formatDate } from '@/utils/format'
-import { MessageCircle, FileText, ExternalLink, Lock } from 'lucide-react'
+import { MessageCircle, FileText, ExternalLink, Lock, Percent } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
 
@@ -88,6 +88,34 @@ export function UniversityStudentProfile() {
           <Lock className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" aria-hidden />
           <p>{t('university:privateProfileBanner')}</p>
         </div>
+      ) : null}
+
+      {profile.peerScholarships && profile.peerScholarships.length > 0 ? (
+        <Card className="border-primary-accent/25 bg-[var(--color-bg-muted)]/40">
+          <CardTitle className="flex items-center gap-2">
+            <Percent className="w-4 h-4 text-primary-accent shrink-0" aria-hidden />
+            {t('university:peerScholarshipsSectionTitle', 'Scholarships from other universities')}
+          </CardTitle>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {t(
+              'university:peerScholarshipsSectionIntro',
+              'This student received scholarship offers elsewhere. Only the city and coverage percentage are shown — not the institution name.'
+            )}
+          </p>
+          <ul className="mt-3 space-y-2 text-sm">
+            {profile.peerScholarships.map((row, i) => (
+              <li
+                key={i}
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2"
+              >
+                <span className="text-[var(--color-text-muted)]">{t('university:city', 'City')}:</span>
+                <span className="font-medium">{row.city?.trim() ? row.city : t('university:peerScholarshipsCityUnknown', '—')}</span>
+                <span className="text-[var(--color-text-muted)]">{t('university:coveragePercent', 'Coverage %')}:</span>
+                <span className="font-medium tabular-nums">{row.coveragePercent}%</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
       ) : null}
 
       <div className={cn('grid gap-6', 'md:grid-cols-[minmax(0,340px)_1fr]')}>

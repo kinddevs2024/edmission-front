@@ -340,6 +340,8 @@ export interface FullStudentProfile {
     editorVersion?: string
   }[]
   readiness?: ReadinessInfo
+  /** Scholarship-linked offers from other universities (city + % only). */
+  peerScholarships?: { city: string; coveragePercent: number }[]
   budgetAmount?: number
   budgetCurrency?: string
   interestedFaculties?: string[]
