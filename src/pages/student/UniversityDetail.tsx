@@ -27,7 +27,7 @@ export function UniversityDetail() {
   const [matchScore, setMatchScore] = useState<number | null>(null)
   const [matchBreakdown, setMatchBreakdown] = useState<Record<string, number> | null>(null)
   const [interested, setInterested] = useState(false)
-  const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; limit: number | null }>({ allowed: true, limit: 3 })
+  const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; limit: number | null } | null>(null)
   const [loading, setLoading] = useState(true)
 
   const formatDegree = (value?: string | null) => {
@@ -60,7 +60,9 @@ export function UniversityDetail() {
       const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === appUniversityId)
       setInterested(hasId)
     }).catch(toastApiError)
-    getInterestLimit().then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit })).catch(toastApiError)
+    getInterestLimit()
+      .then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit }))
+      .catch(() => setInterestLimit({ allowed: false, limit: 3 }))
   }, [id, uni?.id])
 
   useEffect(() => {
@@ -97,12 +99,16 @@ export function UniversityDetail() {
     return () => { cancelled = true }
   }, [id])
 
+  const interestLimitReady = interestLimit !== null
   const handleInterest = () => {
-    if (!id || interested || !interestLimit.allowed) return
+    if (!id || interested || !interestLimitReady || !interestLimit.allowed) return
     showInterest(id)
       .then(() => {
         setInterested(true)
         notifySuccess(t('student:interestedButton', 'Interested'))
+        getInterestLimit()
+          .then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit }))
+          .catch(() => setInterestLimit({ allowed: false, limit: 3 }))
       })
       .catch(toastApiError)
   }
@@ -375,8 +381,17 @@ export function UniversityDetail() {
       )}
 
       <div className="flex flex-wrap gap-2 md:mb-2 md:pb-8">
-        <Button onClick={handleInterest} disabled={interested || !interestLimit.allowed}>
-          {interested ? t('student:interestedButton') : !interestLimit.allowed ? t('student:interestLimitReached') : t('student:showInterest')}
+        <Button
+          onClick={handleInterest}
+          disabled={interested || interestLimit === null || !interestLimit.allowed}
+        >
+          {interested
+            ? t('student:interestedButton')
+            : interestLimit === null
+              ? t('common:loading', 'Loading…')
+              : !interestLimit.allowed
+                ? t('student:interestLimitReached')
+                : t('student:showInterest')}
         </Button>
         <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>{t('common:messageButton')}</Button>
         <Button to="/student/compare" variant="ghost">{t('common:addToCompare')}</Button>

@@ -52,18 +52,32 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
 @layer base {
   html {
     @apply antialiased;
+    min-height: 100dvh;
     height: 100%;
   }
 
   body {
-    @apply bg-[var(--color-bg)] text-[var(--color-text)] font-sans text-base;
-    min-height: 100%;
+    @apply text-[var(--color-text)] font-sans text-base;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    background-color: var(--color-bg);
+    background-image: radial-gradient(circle at 1px 1px, var(--color-border) 1px, transparent 0);
+    background-size: 24px 24px;
+    background-position: 0 0;
+    background-repeat: repeat;
+  }
+
+  .dark body {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
   }
 
   #root {
-    min-height: 100%;
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
+    min-height: 100dvh;
+    width: 100%;
   }
 
   /* Focus visible for keyboard a11y (WCAG) */
@@ -142,10 +156,11 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
 
 /* Subtle background pattern (Telegram-like dots) for student/explore pages */
 .bg-pattern-subtle {
+  background-color: var(--color-bg);
   background-image: radial-gradient(circle at 1px 1px, var(--color-border) 1px, transparent 0);
   background-size: 24px 24px;
   background-position: 0 0;
-  background-color: var(--color-bg);
+  background-repeat: repeat;
 }
 
 .dark .bg-pattern-subtle {

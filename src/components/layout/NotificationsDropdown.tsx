@@ -111,7 +111,7 @@ export function NotificationsDropdown() {
       {!isMobileLayout && mounted && (
         <div
           className={cn(
-            'z-50 flex flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]',
+            'z-[60] flex flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]',
             'fixed left-1/2 top-[calc(env(safe-area-inset-top)+4.25rem)] w-[min(calc(100vw-1rem),22rem)] max-h-[min(28rem,calc(100vh-5.5rem))] shadow-2xl',
             '-translate-x-1/2 origin-top transition-[transform,opacity] will-change-transform md:absolute md:right-0 md:left-auto md:top-full md:mt-1 md:w-80 md:max-h-[min(24rem,70vh)] md:translate-x-0 md:origin-top-right md:shadow-lg',
             open

@@ -20,11 +20,14 @@ export interface SelectionAsk {
 
 interface AIChatState {
   messages: ChatMessage[]
+  /** Which assistant bubble is receiving the active stream (drawer or full page). */
+  streamingAssistantId: string | null
   isDrawerOpen: boolean
   selectionAsk: SelectionAsk | null
   sessionId: string
   requestLimit: number
   requestsUsed: number
+  setStreamingAssistantId: (id: string | null) => void
   setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void
   addMessage: (msg: ChatMessage) => void
   updateMessage: (id: string, updater: (m: ChatMessage) => ChatMessage) => void
@@ -46,11 +49,13 @@ function createSessionId() {
 
 export const useAIChatStore = create<AIChatState>((set) => ({
   messages: [],
+  streamingAssistantId: null,
   isDrawerOpen: false,
   selectionAsk: null,
   sessionId: createSessionId(),
   requestLimit: 10,
   requestsUsed: 0,
+  setStreamingAssistantId: (id) => set({ streamingAssistantId: id }),
   setMessages: (msgs) =>
     set((s) => ({
       messages: typeof msgs === 'function' ? msgs(s.messages) : msgs,
@@ -65,10 +70,11 @@ export const useAIChatStore = create<AIChatState>((set) => ({
   toggleDrawer: () => set((s) => ({ isDrawerOpen: !s.isDrawerOpen })),
   setSelectionAsk: (sel) => set({ selectionAsk: sel }),
   incrementRequestsUsed: () => set((s) => ({ requestsUsed: s.requestsUsed + 1 })),
-  clearChat: () => set({ messages: [], selectionAsk: null }),
+  clearChat: () => set({ messages: [], selectionAsk: null, streamingAssistantId: null }),
   resetSession: () =>
     set({
       messages: [],
+      streamingAssistantId: null,
       isDrawerOpen: false,
       selectionAsk: null,
       sessionId: createSessionId(),

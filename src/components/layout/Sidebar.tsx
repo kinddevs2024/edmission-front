@@ -68,15 +68,14 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-primary-dark text-white transition-[width] duration-200 hidden lg:flex flex-col',
+        'fixed left-0 top-0 z-40 hidden h-dvh max-h-dvh min-h-0 flex-col bg-primary-dark text-white transition-[width] duration-200 lg:flex',
         collapsed ? 'w-[72px]' : 'w-sidebar'
       )}
     >
       <Link
         to={dashboardPath}
         className={cn(
-          'p-4 border-b border-white/10 h-16 min-h-[64px] shrink-0 transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-accent/70',
-          'flex items-center gap-2',
+          'box-border flex h-16 min-h-16 shrink-0 items-center gap-2 border-b border-white/10 px-4 transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-accent/70',
           collapsed ? 'justify-center' : 'justify-start'
         )}
         aria-label="Edmission"
@@ -87,7 +86,7 @@ export function Sidebar({
           <BrandLogo mode="dark" imageClassName="h-8 w-auto" />
         )}
       </Link>
-      <nav className="flex-1 min-h-0 flex flex-col p-3">
+      <nav className="flex min-h-0 flex-1 flex-col p-3">
         <div className="flex-1 overflow-y-auto space-y-0.5">
           {items.map((item) => (
             <NavLinkItem key={item.to} {...item} collapsed={collapsed} />

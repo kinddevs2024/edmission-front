@@ -87,13 +87,13 @@ export function UniversityLayout() {
       <RoleOnboardingController role="university" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 pb-mobile-nav transition-[margin-left] duration-200 flex flex-col',
-        isFixedHeightPage ? 'h-full max-h-full min-h-0 overflow-hidden' : 'min-h-full',
+        'flex min-h-0 min-w-0 flex-1 flex-col pb-mobile-nav transition-[margin-left] duration-200 lg:pt-16',
+        isFixedHeightPage ? 'h-full max-h-full overflow-hidden' : 'h-full',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(
-          'max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex flex-col',
-          isFixedHeightPage ? 'flex-1 min-h-0 overflow-hidden' : 'min-h-full'
+          'max-w-content mx-auto flex w-full flex-col px-2 animate-page-enter sm:px-4',
+          isFixedHeightPage ? 'h-full min-h-0 flex-1 overflow-hidden' : 'min-h-0 flex-1'
         )}>
           <Suspense fallback={<ContentFallback />}>
             <Outlet />

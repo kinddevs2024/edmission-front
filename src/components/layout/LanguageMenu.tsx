@@ -76,7 +76,7 @@ export function LanguageMenu({ placement = 'bottom' }: { placement?: 'bottom' | 
       {open && (
         <div
           className={cn(
-            'absolute right-0 min-w-[160px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg py-1 z-50 animate-modal-enter',
+            'absolute right-0 z-[60] min-w-[160px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] py-1 shadow-lg animate-modal-enter',
             placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
           )}
           role="menu"

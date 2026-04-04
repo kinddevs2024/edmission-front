@@ -46,6 +46,8 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
   const selectionAsk = useAIChatStore((s) => s.selectionAsk)
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
   const sessionId = useAIChatStore((s) => s.sessionId)
+  const streamingAssistantId = useAIChatStore((s) => s.streamingAssistantId)
+  const setStreamingAssistantId = useAIChatStore((s) => s.setStreamingAssistantId)
   const requestLimit = useAIChatStore((s) => s.requestLimit)
   const requestsUsed = useAIChatStore((s) => s.requestsUsed)
   const incrementRequestsUsed = useAIChatStore((s) => s.incrementRequestsUsed)
@@ -92,6 +94,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
       const assistantId = `a-${Date.now()}`
       const assistantMsg: ChatMessage = { id: assistantId, role: 'assistant', text: '', thinking: '' }
       addMessage(assistantMsg)
+      setStreamingAssistantId(assistantId)
 
       const historyForApi: { role: 'user' | 'assistant'; content: string }[] = [
         ...messages.slice(-19).map((m) => ({ role: m.role, content: m.text })),
@@ -140,9 +143,11 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                   updateStudentProfile(patch).catch(() => {})
                 }
               }
+              setStreamingAssistantId(null)
             },
             onError: (message) => {
               setLoading(false)
+              setStreamingAssistantId(null)
               if (message.toLowerCase().includes('limit') || message.includes('429')) {
                 setRateLimitMessage(message)
               } else {
@@ -154,6 +159,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         )
       } catch (err: unknown) {
         setLoading(false)
+        setStreamingAssistantId(null)
         removeMessage(assistantId)
         const msg =
           err && typeof err === 'object' && 'response' in err
@@ -169,7 +175,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
         }
       }
     },
-    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id, requestLimit, requestsUsed, incrementRequestsUsed, sessionId]
+    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, setStreamingAssistantId, placeholders, role, user?.id, requestLimit, requestsUsed, incrementRequestsUsed, sessionId]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -377,7 +383,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                   <div
                     className={cn(
                       'shrink-0 w-8 h-8 rounded-full bg-primary-accent/20 flex items-center justify-center',
-                      isAssistantAwaitingFirstChunk(m, loading, messages) && 'ai-avatar-working'
+                      isAssistantAwaitingFirstChunk(m, streamingAssistantId) && 'ai-avatar-working'
                     )}
                   >
                     <Bot className="w-4 h-4 text-primary-accent" aria-hidden />
@@ -404,7 +410,7 @@ export function AIChatDrawer({ open, onClose }: AIChatDrawerProps) {
                       </p>
                     ) : m.text ? (
                       <p className="whitespace-pre-wrap break-words m-0">{m.text}</p>
-                    ) : isAssistantAwaitingFirstChunk(m, loading, messages) ? (
+                    ) : isAssistantAwaitingFirstChunk(m, streamingAssistantId) ? (
                       <AIStreamingPlaceholder />
                     ) : null}
                   </div>

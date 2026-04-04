@@ -11,7 +11,66 @@ import { getMyDocuments } from '@/services/studentDocuments'
 import type { UniversityListItem } from '@/types/university'
 import type { Application, Offer } from '@/types/student'
 import { toastApiError } from '@/utils/toastError'
-import { CheckCircle, Circle } from 'lucide-react'
+import { cn } from '@/utils/cn'
+import { Building2, CheckCircle, Circle, Gift, GraduationCap, UserCircle } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
+const DASHBOARD_RECOMMENDATIONS = 3
+
+const statWatermarkClass =
+  'pointer-events-none absolute h-[5.75rem] w-[5.75rem] text-primary-accent/[0.1] dark:text-primary-accent/[0.16] sm:h-[6.25rem] sm:w-[6.25rem]'
+
+function DashboardStatWatermark({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <Icon
+      className={cn(statWatermarkClass, '-bottom-2 -right-2 sm:-bottom-2.5 sm:-right-2.5')}
+      strokeWidth={1.15}
+      aria-hidden
+    />
+  )
+}
+
+function recommendationRowToUniversityId(row: unknown): string {
+  const r = row as Record<string, unknown>
+  const uid = r.universityId
+  if (typeof uid === 'string' && uid.trim()) return uid.trim()
+  if (uid && typeof uid === 'object') {
+    const o = uid as { id?: unknown; _id?: unknown }
+    const s = String(o.id ?? o._id ?? '').trim()
+    if (s) return s
+  }
+  const uni = r.university
+  if (uni && typeof uni === 'object') {
+    const o = uni as { id?: unknown; _id?: unknown; universityName?: unknown }
+    const s = String(o.id ?? o._id ?? '').trim()
+    if (s) return s
+  }
+  return ''
+}
+
+function mergeUniversityListsForDashboard(
+  compare: UniversityListItem[],
+  fallback: UniversityListItem[],
+  limit: number
+): UniversityListItem[] {
+  const out: UniversityListItem[] = []
+  const seen = new Set<string>()
+  for (const u of compare) {
+    const id = u?.id?.trim()
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    out.push(u)
+    if (out.length >= limit) return out
+  }
+  for (const u of fallback) {
+    const id = u?.id?.trim()
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    out.push(u)
+    if (out.length >= limit) return out
+  }
+  return out
+}
 
 export function StudentDashboard() {
   const { t } = useTranslation(['student', 'common'])
@@ -41,7 +100,7 @@ export function StudentDashboard() {
     const toId = (v: unknown) => (typeof v === 'string' ? v : (v && typeof v === 'object' && ('id' in v || '_id' in v) ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '') : ''))
     const mapRecommendationToUniversity = (item: any): UniversityListItem | null => {
       const source = (item?.university && typeof item.university === 'object') ? item.university : item
-      const id = toId(item?.universityId) || toId(source?._id) || toId(source?.id) || toId(item?.id)
+      const id = recommendationRowToUniversityId(item) || toId(item?.universityId) || toId(source?._id) || toId(source?.id) || toId(item?.id)
       const name = String(source?.name ?? source?.universityName ?? '').trim()
       if (!id || !name) return null
       return {
@@ -55,18 +114,20 @@ export function StudentDashboard() {
         matchScore: typeof item?.matchScore === 'number' ? item.matchScore : undefined,
       } as UniversityListItem
     }
-    getRecommendations({ limit: 5 })
+    getRecommendations({ limit: 12 })
       .then((recs) => {
-        if (cancelled || !recs.data?.length) return { compare: [], fallback: [] as UniversityListItem[] }
-        const ids = recs.data.map((r) => toId((r as any).universityId)).filter(Boolean).slice(0, 5)
-        const fallback = recs.data.map((r) => mapRecommendationToUniversity(r)).filter((u): u is UniversityListItem => Boolean(u)).slice(0, 5)
+        if (cancelled || !recs.data?.length) return { compare: [] as UniversityListItem[], fallback: [] as UniversityListItem[] }
+        const fallback = recs.data
+          .map((r) => mapRecommendationToUniversity(r))
+          .filter((u): u is UniversityListItem => Boolean(u))
+        const ids = [...new Set(recs.data.map((r) => recommendationRowToUniversityId(r)).filter(Boolean))].slice(0, 12)
         if (ids.length === 0) return { compare: [], fallback }
         return getCompareUniversities(ids).then((compare) => ({ compare, fallback }))
       })
       .then((result) => {
         if (cancelled || !result) return
-        const list = result.compare?.length ? result.compare : result.fallback
-        if (!list?.length) return
+        const list = mergeUniversityListsForDashboard(result.compare ?? [], result.fallback ?? [], DASHBOARD_RECOMMENDATIONS)
+        if (!list.length) return
         setRecommendations(list.map((u) => ({
           ...u,
           name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '',
@@ -118,35 +179,47 @@ export function StudentDashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to="/student/profile">
-          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter" interactive>
-            <CardTitle>{t('profileCompletion')}</CardTitle>
-            <div className="mt-2">
-              <div className="h-2 rounded-full bg-[var(--color-border)] overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
-                  style={{ width: `${profilePercent}%` }}
-                />
+          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter transition-colors" interactive>
+            <DashboardStatWatermark icon={UserCircle} />
+            <div className="relative z-[1]">
+              <CardTitle>{t('profileCompletion')}</CardTitle>
+              <div className="mt-2">
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
+                  <div
+                    className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
+                    style={{ width: `${profilePercent}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-2xl font-semibold text-primary-accent">{profilePercent}%</p>
               </div>
-              <p className="text-2xl font-semibold text-primary-accent mt-1">{profilePercent}%</p>
             </div>
           </Card>
         </Link>
         <Link to="/student/applications">
-          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-1" interactive>
-            <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
-            <p className="text-2xl font-semibold">{activeApplications.length}</p>
+          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-1 transition-colors" interactive>
+            <DashboardStatWatermark icon={Building2} />
+            <div className="relative z-[1]">
+              <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
+              <p className="text-2xl font-semibold">{activeApplications.length}</p>
+            </div>
           </Card>
         </Link>
         <Link to="/student/offers">
-          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-2" interactive>
-            <CardTitle>{t('offers')}</CardTitle>
-            <p className="text-2xl font-semibold">{offers.length}</p>
+          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-2 transition-colors" interactive>
+            <DashboardStatWatermark icon={Gift} />
+            <div className="relative z-[1]">
+              <CardTitle>{t('offers')}</CardTitle>
+              <p className="text-2xl font-semibold">{offers.length}</p>
+            </div>
           </Card>
         </Link>
         <Link to="/student/applications">
-          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors animate-card-enter animate-stagger-3" interactive>
-            <CardTitle>{t('accepted')}</CardTitle>
-            <p className="text-2xl font-semibold">{acceptedCount}</p>
+          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-3 transition-colors" interactive>
+            <DashboardStatWatermark icon={GraduationCap} />
+            <div className="relative z-[1]">
+              <CardTitle>{t('accepted')}</CardTitle>
+              <p className="text-2xl font-semibold">{acceptedCount}</p>
+            </div>
           </Card>
         </Link>
       </div>
@@ -159,7 +232,7 @@ export function StudentDashboard() {
           </div>
         ) : minimalComplete && recommendations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations.slice(0, 5).map((u, index) => (
+            {recommendations.slice(0, DASHBOARD_RECOMMENDATIONS).map((u, index) => (
               <div
                 key={u.id}
                 className="animate-card-enter opacity-0"

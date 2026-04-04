@@ -19,6 +19,38 @@ import { toastApiError } from '@/utils/toastError'
 import { getImageUrl } from '@/services/upload'
 import { getDashboardPath } from '@/utils/dashboardPath'
 import { notifyInfo } from '@/utils/notify'
+import { useUIStore } from '@/store/uiStore'
+
+/** lg+ sidebar is visible: TopBar sits only above the main column (no logo here — brand is in the sidebar). */
+const MAIN_LAYOUT_SIDEBAR_PATHS = [
+  '/profile',
+  '/notifications',
+  '/ai',
+  '/payment',
+  '/payment/success',
+  '/payment/cancel',
+  '/support',
+] as const
+
+function desktopTopBarBesideSidebar(pathname: string): boolean {
+  if (pathname.startsWith('/search')) return false
+  if (
+    pathname === '/student' ||
+    pathname.startsWith('/student/') ||
+    pathname === '/university' ||
+    pathname.startsWith('/university/') ||
+    pathname === '/admin' ||
+    pathname.startsWith('/admin/') ||
+    pathname === '/school' ||
+    pathname.startsWith('/school/')
+  ) {
+    return true
+  }
+  return (
+    MAIN_LAYOUT_SIDEBAR_PATHS.some((p) => pathname === p) ||
+    pathname.startsWith('/support/')
+  )
+}
 
 export function TopBar() {
   const { t } = useTranslation('common')
@@ -94,31 +126,52 @@ export function TopBar() {
     return unsubscribe
   }, [onNotification, addNotification, role])
 
+  const hideOnMobileSearch = pathname === '/search'
+  const besideSidebar = desktopTopBarBesideSidebar(pathname)
+  const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed)
+
   return (
+    <>
     <header
       className={cn(
-        'sticky top-0 z-30 min-h-16 border-b bg-[var(--color-card)] border-[var(--color-border)] px-3 sm:px-4',
-        pathname === '/search' && 'max-md:hidden'
+        'fixed top-0 z-50 box-border flex min-h-16 flex-col overflow-visible border-b border-[var(--color-border)] bg-[var(--color-card)] px-3 sm:px-4 lg:h-16 lg:min-h-0 lg:shrink-0',
+        'right-0 transition-[left] duration-200 ease-out',
+        'left-0',
+        besideSidebar &&
+          (sidebarCollapsed ? 'lg:left-[72px]' : 'lg:left-[260px]'),
+        hideOnMobileSearch && 'max-md:hidden'
       )}
     >
-      {/* Tablet / desktop */}
-      <div className="hidden md:flex h-16 items-center justify-between gap-2 w-full">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
-          <Link
-            to={dashboardPath}
-            className="rounded-md px-1 py-1 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
-            aria-label={t('appName')}
-          >
-            <BrandLogo imageClassName="h-9 w-auto" />
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
-          <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] shrink-0">
+      {/* Desktop: beside sidebar — no logo (screenshot layout); full-width routes keep logo. */}
+      <div
+        className={cn(
+          'hidden min-h-0 w-full flex-1 items-center gap-2 md:flex lg:min-h-0',
+          besideSidebar ? 'justify-end' : 'justify-between'
+        )}
+      >
+        {!besideSidebar && (
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+            <Link
+              to={dashboardPath}
+              className="rounded-md px-1 py-1 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              aria-label={t('appName')}
+            >
+              <BrandLogo imageClassName="h-9 w-auto" />
+            </Link>
+          </div>
+        )}
+        <div
+          className={cn(
+            'flex min-w-0 items-center gap-2 sm:gap-3 justify-end',
+            !besideSidebar && 'flex-1'
+          )}
+        >
+          <div className="flex shrink-0 items-center">
             <GlobalSearch />
           </div>
           <NotificationsDropdown />
           <div
-            className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-[var(--color-border)] min-[0px]:gap-1.5"
+            className="flex min-[0px]:gap-1.5 items-center gap-2 border-l border-[var(--color-border)] pl-2 sm:pl-3"
             aria-label={t('language')}
           >
             <LanguageMenu />
@@ -155,7 +208,7 @@ export function TopBar() {
       </div>
 
       {/* Mobile: иконка поиска ведёт на /search (полноэкранная страница) */}
-      <div className="flex md:hidden min-h-16 w-full items-center gap-2 py-1.5">
+      <div className="flex min-h-16 w-full flex-1 items-center gap-2 py-1.5 md:hidden">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Link
               to={dashboardPath}
@@ -197,5 +250,15 @@ export function TopBar() {
           </div>
         </div>
     </header>
+    {/* Reserve space for fixed header; on lg beside sidebar the column gets lg:pt-16 instead */}
+    <div
+      className={cn(
+        'pointer-events-none h-16 shrink-0',
+        hideOnMobileSearch && 'max-md:hidden',
+        besideSidebar && 'lg:h-0'
+      )}
+      aria-hidden
+    />
+    </>
   )
 }

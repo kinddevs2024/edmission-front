@@ -91,7 +91,7 @@ export function GlobalSearch({ variant = 'default', onClose }: GlobalSearchProps
       {showDropdown && (
         <div
           className={cn(
-            'absolute left-0 right-0 top-full mt-1 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg z-50 animate-modal-enter overflow-x-hidden overflow-y-auto',
+            'absolute left-0 right-0 top-full z-[60] mt-1 overflow-x-hidden overflow-y-auto rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg animate-modal-enter',
             'max-h-[min(28rem,calc(100dvh-7rem))]'
           )}
         >

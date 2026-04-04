@@ -43,6 +43,8 @@ export function AIChatPage() {
   const selectionAsk = useAIChatStore((s) => s.selectionAsk)
   const setSelectionAsk = useAIChatStore((s) => s.setSelectionAsk)
   const sessionId = useAIChatStore((s) => s.sessionId)
+  const streamingAssistantId = useAIChatStore((s) => s.streamingAssistantId)
+  const setStreamingAssistantId = useAIChatStore((s) => s.setStreamingAssistantId)
   const requestLimit = useAIChatStore((s) => s.requestLimit)
   const requestsUsed = useAIChatStore((s) => s.requestsUsed)
   const incrementRequestsUsed = useAIChatStore((s) => s.incrementRequestsUsed)
@@ -67,7 +69,7 @@ export function AIChatPage() {
   const handleSend = useCallback(
     async (text: string, selectedText?: string) => {
       const trimmed = text.trim() || (selectedText ? 'Please explain or elaborate on the selected part.' : '')
-      if (!trimmed || loading) return
+      if (!trimmed || loading || streamingAssistantId) return
       if (requestsUsed >= requestLimit) {
         setRateLimitMessage(t('aiQuestionLimitReached', { limit: requestLimit, defaultValue: 'Question limit reached ({{limit}}). Refresh the page to reset it.' }))
         return
@@ -86,6 +88,7 @@ export function AIChatPage() {
 
       const assistantId = `a-${Date.now()}`
       addMessage({ id: assistantId, role: 'assistant', text: '', thinking: '' })
+      setStreamingAssistantId(assistantId)
 
       const historyForApi: { role: 'user' | 'assistant'; content: string }[] = [
         ...messages.slice(-19).map((m) => ({ role: m.role, content: m.text })),
@@ -133,9 +136,11 @@ export function AIChatPage() {
                   updateStudentProfile(patch).catch(() => {})
                 }
               }
+              setStreamingAssistantId(null)
             },
             onError: (message) => {
               setLoading(false)
+              setStreamingAssistantId(null)
               removeMessage(assistantId)
               if (message.toLowerCase().includes('limit') || message.includes('429')) {
                 setRateLimitMessage(message)
@@ -147,6 +152,7 @@ export function AIChatPage() {
         )
       } catch (err: unknown) {
         setLoading(false)
+        setStreamingAssistantId(null)
         removeMessage(assistantId)
         const msg =
           err && typeof err === 'object' && 'response' in err
@@ -162,7 +168,7 @@ export function AIChatPage() {
         }
       }
     },
-    [loading, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, placeholders, role, user?.id, requestLimit, requestsUsed, incrementRequestsUsed, sessionId]
+    [loading, streamingAssistantId, messages, t, addMessage, updateMessage, removeMessage, setSelectionAsk, setStreamingAssistantId, placeholders, role, user?.id, requestLimit, requestsUsed, incrementRequestsUsed, sessionId, navigate]
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -222,7 +228,7 @@ export function AIChatPage() {
     <div className="flex flex-col h-[calc(100vh-5rem)] min-h-[400px] overflow-hidden">
 
       <div className="flex-1 flex flex-col min-h-0 border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
-        {messages.length === 0 && !loading ? (
+        {messages.length === 0 && !loading && !streamingAssistantId ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -256,11 +262,11 @@ export function AIChatPage() {
                     placeholder={placeholder}
                     rows={1}
                     className="flex-1 min-h-[36px] max-h-32 bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-base py-1.5"
-                    disabled={loading}
+                    disabled={loading || !!streamingAssistantId}
                   />
                   <Button
                     type="submit"
-                    disabled={loading || !input.trim()}
+                    disabled={loading || !!streamingAssistantId || !input.trim()}
                     className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
                     icon={<Send className="w-5 h-5" />}
                     aria-label={t('send')}
@@ -312,7 +318,7 @@ export function AIChatPage() {
                   <div
                     className={cn(
                       'shrink-0 w-9 h-9 rounded-full bg-primary-accent/20 flex items-center justify-center',
-                      isAssistantAwaitingFirstChunk(m, loading, messages) && 'ai-avatar-working'
+                      isAssistantAwaitingFirstChunk(m, streamingAssistantId) && 'ai-avatar-working'
                     )}
                   >
                     <Bot className="w-5 h-5 text-primary-accent" aria-hidden />
@@ -339,7 +345,7 @@ export function AIChatPage() {
                       </p>
                     ) : m.text ? (
                       <p className="whitespace-pre-wrap break-words m-0">{m.text}</p>
-                    ) : isAssistantAwaitingFirstChunk(m, loading, messages) ? (
+                    ) : isAssistantAwaitingFirstChunk(m, streamingAssistantId) ? (
                       <AIStreamingPlaceholder />
                     ) : null}
                   </div>
@@ -373,7 +379,7 @@ export function AIChatPage() {
           </div>
         )}
 
-        {(messages.length > 0 || loading) && (
+        {(messages.length > 0 || loading || streamingAssistantId) && (
         <motion.form
           initial={false}
           animate={{ opacity: 1 }}
@@ -392,11 +398,11 @@ export function AIChatPage() {
               placeholder={selectionAsk ? t('aiPlaceholderSelection') : placeholder}
               rows={1}
               className="flex-1 min-h-[36px] max-h-40 w-full bg-transparent resize-none text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none text-sm py-1.5"
-              disabled={loading}
+              disabled={loading || !!streamingAssistantId}
             />
             <Button
               type="submit"
-              disabled={loading || (!input.trim() && !selectionAsk)}
+              disabled={loading || !!streamingAssistantId || (!input.trim() && !selectionAsk)}
               className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
               icon={<Send className="w-5 h-5" />}
               aria-label={t('send')}

@@ -3,16 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 import type { ChatMessage } from '@/store/aiChatStore'
 
+/** Uses global streaming id so the full page still shows the placeholder after leaving the drawer mid-stream. */
 export function isAssistantAwaitingFirstChunk(
   m: ChatMessage,
-  loading: boolean,
-  messages: ChatMessage[]
+  streamingAssistantId: string | null
 ): boolean {
-  const last = messages[messages.length - 1]
   return (
     m.role === 'assistant' &&
-    loading &&
-    m.id === last?.id &&
+    streamingAssistantId === m.id &&
     !m.text &&
     !(m.thinking != null && m.thinking.length > 0)
   )

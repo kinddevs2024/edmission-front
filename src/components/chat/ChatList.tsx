@@ -45,7 +45,7 @@ export function ChatList({ chats, selectedId, onSelect, loading }: ChatListProps
 
   if (sortedChats.length === 0) {
     return (
-      <div className="flex flex-1 flex-col justify-center p-4 text-center text-sm text-[var(--color-text-muted)] md:text-sm">
+      <div className="flex min-h-0 flex-1 flex-col justify-center p-4 text-center text-sm text-[var(--color-text-muted)] md:text-sm">
         {t('noConversationsYet', 'No conversations yet.')}
       </div>
     )

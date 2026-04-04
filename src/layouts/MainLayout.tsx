@@ -7,7 +7,6 @@ import { TopBar } from '@/components/layout/TopBar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingAIButton } from '@/components/ai/FloatingAIButton'
-import { VersionBadge } from '@/components/VersionBadge'
 import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
@@ -197,21 +196,26 @@ export function MainLayout() {
   }, [isAuthenticated])
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 h-screen max-h-screen overflow-hidden bg-[var(--color-bg)]">
+    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
       {isAuthenticated && <TopBar />}
       <div
         ref={scrollContainerRef}
         className={cn(
-          'flex-1 min-h-0 flex flex-col',
+          'flex min-h-0 flex-1 flex-col bg-transparent',
           isChatPage ? 'overflow-hidden' : 'overflow-auto'
         )}
       >
         {showSidebar && navItems.length > 0 ? (
-          <div className="flex h-full min-h-0">
+          <div className="flex h-full min-h-0 min-w-0 w-full flex-1">
           <Sidebar items={navItems} bottomItems={navBottomItems} />
-          <div className={cn('flex-1 min-w-0 min-h-0 pb-mobile-nav transition-[margin-left] duration-200 flex flex-col bg-pattern-subtle', collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar')}>
-            <main className="p-3 sm:p-4 pb-6 md:pb-12 flex-1 min-h-0 flex flex-col overflow-auto bg-pattern-subtle">
-              <div className="max-w-content mx-auto w-full min-h-0 flex flex-col">
+          <div
+            className={cn(
+              'flex h-full min-h-0 min-w-0 flex-1 flex-col pb-mobile-nav transition-[margin-left] duration-200 lg:pt-16',
+              collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
+            )}
+          >
+            <main className="flex h-full min-h-0 flex-1 flex-col overflow-auto bg-transparent p-3 pb-6 sm:p-4 md:pb-12">
+              <div className="max-w-content mx-auto flex min-h-0 w-full flex-col">
                 <Suspense fallback={<ContentFallback />}>
                   <Outlet />
                 </Suspense>
@@ -221,8 +225,18 @@ export function MainLayout() {
           <BottomNav items={bottomNavItems} />
           </div>
         ) : (
-          <main className="flex min-h-0 flex-1 flex-col p-2 sm:p-2 pb-mobile-nav md:pb-12 bg-pattern-subtle">
-            <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+          <main
+            className={cn(
+              'flex h-full min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent p-2 pb-mobile-nav sm:p-2 md:pb-12',
+              isChatPage && 'overflow-hidden'
+            )}
+          >
+            <div
+              className={cn(
+                'flex h-full min-h-0 w-full min-w-0 flex-1 flex-col',
+                isChatPage && 'overflow-hidden'
+              )}
+            >
               <Suspense fallback={<ContentFallback />}>
                 <Outlet />
               </Suspense>
@@ -231,7 +245,6 @@ export function MainLayout() {
         )}
       </div>
       {isAuthenticated && <FloatingAIButton />}
-      <VersionBadge />
       <CookieConsentBanner />
     </div>
   )

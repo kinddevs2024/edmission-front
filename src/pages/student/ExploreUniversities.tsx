@@ -171,12 +171,12 @@ export function ExploreUniversities() {
   })
   const minimalProfileComplete = studentProfile?.minimalPortfolioComplete ?? false
 
-  const { data: interestLimit } = useQuery({
+  const { data: interestLimit, isSuccess: interestLimitReady } = useQuery({
     queryKey: ['student', 'interestLimit'],
     queryFn: getInterestLimit,
     staleTime: 60 * 1000,
   })
-  const limitInfo = interestLimit ?? { allowed: true, current: 0, limit: 3 }
+  const limitInfo = interestLimit ?? { allowed: false, current: 0, limit: 3 }
 
   const {
     data,
@@ -239,7 +239,10 @@ export function ExploreUniversities() {
       queryClient.invalidateQueries({ queryKey: ['student', 'interestLimit'] })
       notifySuccess(t('student:interestedButton', 'Interested'))
     },
-    onError: toastApiError,
+    onError: (err) => {
+      toastApiError(err)
+      queryClient.invalidateQueries({ queryKey: ['student', 'interestLimit'] })
+    },
   })
 
   /** If "match my profile" is on but profile criteria exclude every university, turn the layer off so the catalog is visible. */
@@ -273,7 +276,7 @@ export function ExploreUniversities() {
 
   const filterCount = useMemo(() => countActiveFilters(filters, profileCriteriaCount), [filters, profileCriteriaCount])
   const showClear = filterCount > 0 || !filters.useProfileFilters
-  const canShowInterest = limitInfo.allowed
+  const canShowInterest = interestLimitReady && limitInfo.allowed
   const interestLabel = limitInfo.limit != null ? `${limitInfo.current}/${limitInfo.limit}` : `${limitInfo.current}`
 
   const syncQuickFilters = (patch: Partial<UniversityFilters>) => {
@@ -304,7 +307,7 @@ export function ExploreUniversities() {
   }
 
   const handleInterest = (id: string) => {
-    if (interestedIds.has(id) || !limitInfo.allowed) return
+    if (interestedIds.has(id) || !interestLimitReady || !limitInfo.allowed) return
     interestMutation.mutate(id)
   }
 
@@ -333,21 +336,31 @@ export function ExploreUniversities() {
               {t('student:quickUniversityFilters', 'Quick filters for fast discovery')}
             </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="default">{filterCount} {t('student:activeFilters', 'active')}</Badge>
-            <Badge variant={filters.useProfileFilters ? 'success' : 'default'}>
-              {filters.useProfileFilters
-                ? t('student:profileMatchingOn', 'Profile matching on')
-                : t('student:profileMatchingOff', 'Profile matching off')}
-            </Badge>
-            <Button variant="secondary" size="sm" onClick={openFullFilter} icon={<SlidersHorizontal size={16} />}>
-              {t('student:fullFilter', 'Full Filter')}
-            </Button>
-            {showClear ? (
-              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                {t('student:clearFilters', 'Clear filters')}
-              </Button>
+          <div className="flex flex-col items-end gap-2">
+            {limitInfo.limit != null ? (
+              <p className="max-w-[min(100%,22rem)] text-right text-xs text-[var(--color-text-muted)] sm:text-sm">
+                {t('student:interestUsage', { current: interestLabel, defaultValue: 'Interests used: {{current}}' })}
+                {!canShowInterest && limitInfo.limit != null && interestedIds.size >= limitInfo.limit
+                  ? ` ${t('student:interestLimitReachedInline', '(limit reached, upgrade to add more)')}`
+                  : null}
+              </p>
             ) : null}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Badge variant="default">{filterCount} {t('student:activeFilters', 'active')}</Badge>
+              <Badge variant={filters.useProfileFilters ? 'success' : 'default'}>
+                {filters.useProfileFilters
+                  ? t('student:profileMatchingOn', 'Profile matching on')
+                  : t('student:profileMatchingOff', 'Profile matching off')}
+              </Badge>
+              <Button variant="secondary" size="sm" onClick={openFullFilter} icon={<SlidersHorizontal size={16} />}>
+                {t('student:fullFilter', 'Full Filter')}
+              </Button>
+              {showClear ? (
+                <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                  {t('student:clearFilters', 'Clear filters')}
+                </Button>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -393,21 +406,6 @@ export function ExploreUniversities() {
             actionTo="/student/profile"
           />
         </Card>
-      ) : null}
-
-      {minimalProfileComplete && filters.useProfileFilters && profileCriteriaCount > 0 ? (
-        <p className="text-sm text-[var(--color-text-muted)]">
-          {t('student:profileFiltersApplied', 'Using your profile')}: {profileCriteria.faculties} {t('student:faculties', 'faculties')}, {profileCriteria.countries} {t('student:countries', 'countries')}
-        </p>
-      ) : null}
-
-      {limitInfo.limit != null ? (
-        <p className="text-sm text-[var(--color-text-muted)]">
-          {t('student:interestUsage', { current: interestLabel, defaultValue: 'Interests used: {{current}}' })}{' '}
-          {!canShowInterest && limitInfo.limit != null && interestedIds.size >= limitInfo.limit
-            ? t('student:interestLimitReachedInline', '(limit reached, upgrade to add more)')
-            : null}
-        </p>
       ) : null}
 
       {minimalProfileComplete && (
