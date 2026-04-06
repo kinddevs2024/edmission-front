@@ -28,6 +28,7 @@ import type { UniversityListItem } from '@/types/university'
 import { toastApiError } from '@/utils/toastError'
 import { Building2, Search, SlidersHorizontal } from 'lucide-react'
 import { notifyInfo, notifySuccess } from '@/utils/notify'
+import { getAllRegionCodesForFilter } from '@/utils/countryRegionCodes'
 
 type UniversityFilters = {
   search: string
@@ -49,17 +50,6 @@ type UniversityFilters = {
   useProfileFilters: boolean
 }
 
-const COUNTRY_VALUES = ['USA', 'UK', 'Germany', 'Netherlands', 'Uzbekistan', 'Russia', 'Kazakhstan', 'Turkey', 'Canada', 'Australia']
-const TARGET_COUNTRY_OPTIONS = [
-  { code: 'UZ', label: 'Uzbekistan' },
-  { code: 'KZ', label: 'Kazakhstan' },
-  { code: 'TJ', label: 'Tajikistan' },
-  { code: 'KG', label: 'Kyrgyzstan' },
-  { code: 'TM', label: 'Turkmenistan' },
-  { code: 'TR', label: 'Turkey' },
-  { code: 'AE', label: 'UAE' },
-  { code: 'CN', label: 'China' },
-] as const
 const UNIVERSITIES_PAGE_SIZE = 12
 
 const DEGREE_LEVEL_OPTIONS = ['Bachelor', 'Master', 'PhD', 'Foundation', 'Associate']
@@ -124,6 +114,7 @@ export function ExploreUniversities() {
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const queryClient = useQueryClient()
 
+  const regionCodes = useMemo(() => getAllRegionCodesForFilter(), [])
   const facultyOptions = useMemo(
     () => FIELD_OF_STUDY.map((item) => ({ code: item.id, label: t(item.titleKey) })),
     [t]
@@ -131,9 +122,9 @@ export function ExploreUniversities() {
   const countryOptions = useMemo(
     () => [
       { value: '', label: t('student:allCountries', 'All countries') },
-      ...COUNTRY_VALUES.map((country) => ({ value: country, label: getLocalizedCountryName(country, i18n.language) })),
+      ...regionCodes.map((code) => ({ value: code, label: getLocalizedCountryName(code, i18n.language) })),
     ],
-    [i18n.language, t]
+    [i18n.language, t, regionCodes]
   )
   const degreeLevelOptions = useMemo(
     () => DEGREE_LEVEL_OPTIONS.map((value) => ({ value, label: getDegreeLevelLabel(value, t) })),
@@ -144,8 +135,8 @@ export function ExploreUniversities() {
     [i18n.language]
   )
   const targetCountryOptions = useMemo(
-    () => TARGET_COUNTRY_OPTIONS.map((item) => ({ ...item, label: getLocalizedCountryName(item.code, i18n.language) })),
-    [i18n.language]
+    () => regionCodes.map((code) => ({ code, label: getLocalizedCountryName(code, i18n.language) })),
+    [i18n.language, regionCodes]
   )
   const sortOptions = useMemo(
     () => [

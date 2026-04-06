@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom'
 import { BackLink } from '@/components/ui/BackLink'
-import { StudentProfilePage } from '@/pages/student/StudentProfilePage'
+import { StudentDocuments } from '@/pages/student/StudentDocuments'
 
-export function CounsellorStudentProfile() {
+export function CounsellorStudentDocuments() {
   const { studentId } = useParams<{ studentId: string }>()
 
   if (!studentId) {
@@ -16,8 +16,8 @@ export function CounsellorStudentProfile() {
 
   return (
     <div className="space-y-4">
-      <BackLink to="/school/my-students">Back</BackLink>
-      <StudentProfilePage counsellorMode studentUserId={studentId} />
+      <BackLink to={`/school/students/${studentId}/profile`}>Back</BackLink>
+      <StudentDocuments counsellorMode studentUserId={studentId} />
     </div>
   )
 }

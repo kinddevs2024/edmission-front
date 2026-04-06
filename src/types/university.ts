@@ -10,9 +10,14 @@ export interface UniversityListItem {
   foundedYear?: number
   studentCount?: number
   hasScholarship?: boolean
+  /** For card: best scholarship coverage when available */
+  scholarships?: Array<{ coveragePercent?: number; name?: string }>
   matchScore?: number
   matchBreakdown?: Record<string, number>
   minLanguageLevel?: string
+  ieltsMinBand?: number
+  gpaMinMode?: 'scale' | 'percent'
+  gpaMinValue?: number
   tuitionPrice?: number
   facultyCodes?: string[]
   targetStudentCountries?: string[]
@@ -25,6 +30,8 @@ export interface UniversityProfile {
   slug?: string
   logo?: string
   logoUrl?: string
+  coverImage?: string
+  coverImageUrl?: string
   slogan?: string
   foundedYear?: number
   studentCount?: number
@@ -41,6 +48,10 @@ export interface UniversityProfile {
   facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
   minLanguageLevel?: string
+  /** Minimum IELTS band (0–9). Interest may require an uploaded certificate. */
+  ieltsMinBand?: number
+  gpaMinMode?: 'scale' | 'percent'
+  gpaMinValue?: number
   tuitionPrice?: number
 }
 

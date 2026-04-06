@@ -195,11 +195,11 @@ export function StudentDashboard() {
             </div>
           </Card>
         </Link>
-        <Link to="/student/applications">
+        <Link to="/student/interests">
           <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-1 transition-colors" interactive>
             <DashboardStatWatermark icon={Building2} />
             <div className="relative z-[1]">
-              <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
+              <CardTitle>{t('activeApplications', 'Active interests')}</CardTitle>
               <p className="text-2xl font-semibold">{activeApplications.length}</p>
             </div>
           </Card>
@@ -213,7 +213,7 @@ export function StudentDashboard() {
             </div>
           </Card>
         </Link>
-        <Link to="/student/applications">
+        <Link to="/student/interests">
           <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-3 transition-colors" interactive>
             <DashboardStatWatermark icon={GraduationCap} />
             <div className="relative z-[1]">
@@ -260,9 +260,9 @@ export function StudentDashboard() {
           }
         >
           {showAppsSection ? (
-            <Link to="/student/applications">
+            <Link to="/student/interests">
               <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
-                <CardTitle>{t('activeApplications', 'Active applications')}</CardTitle>
+                <CardTitle>{t('activeApplications', 'Active interests')}</CardTitle>
                 <ul className="mt-3 space-y-2">
                   {activeApplications.slice(0, 5).map((a) => (
                     <li
@@ -275,7 +275,7 @@ export function StudentDashboard() {
                     </li>
                   ))}
                 </ul>
-                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allApplications')}</span>
+                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allApplications', 'All interests')}</span>
               </Card>
             </Link>
           ) : null}
@@ -303,7 +303,7 @@ export function StudentDashboard() {
 
       <div className="flex flex-wrap gap-2">
         <Button to="/student/universities">{t('exploreUniversities')}</Button>
-        <Button to="/student/applications" variant="secondary">{t('myApplications', 'My applications')}</Button>
+        <Button to="/student/interests" variant="secondary">{t('myApplications', 'My interests')}</Button>
         <Button to="/student/chat" variant="ghost">{t('chats')}</Button>
       </div>
     </div>

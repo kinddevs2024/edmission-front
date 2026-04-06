@@ -1,5 +1,5 @@
-import { useParams } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -16,6 +16,8 @@ import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getPublicUniversityFlyers } from '@/services/university'
 import type { UniversityProfile, Program, Scholarship, Faculty, UniversityFlyer } from '@/types/university'
 import { notifySuccess } from '@/utils/notify'
+import { getMyDocuments } from '@/services/studentDocuments'
+import { getEffectiveIeltsMinBand } from '@/utils/admissionRequirements'
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
   const { t, i18n } = useTranslation(['common', 'student', 'university'])
@@ -29,6 +31,36 @@ export function UniversityDetail() {
   const [interested, setInterested] = useState(false)
   const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; limit: number | null } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [documents, setDocuments] = useState<Awaited<ReturnType<typeof getMyDocuments>>>([])
+
+  useEffect(() => {
+    getMyDocuments()
+      .then(setDocuments)
+      .catch(() => setDocuments([]))
+  }, [])
+
+  const ieltsMinEffective = useMemo(
+    () =>
+      getEffectiveIeltsMinBand(
+        (uni as unknown as { ieltsMinBand?: number })?.ieltsMinBand,
+        uni?.minLanguageLevel
+      ),
+    [uni]
+  )
+
+  const hasIeltsCertificateUpload = useMemo(
+    () =>
+      documents.some(
+        (d) =>
+          d.type === 'language_certificate' &&
+          !!d.fileUrl?.trim() &&
+          /ielts/i.test(`${d.certificateType ?? ''} ${d.name ?? ''}`)
+      ),
+    [documents]
+  )
+
+  const interestBlockedByIelts =
+    !interested && ieltsMinEffective != null && ieltsMinEffective > 0 && !hasIeltsCertificateUpload
 
   const formatDegree = (value?: string | null) => {
     if (!value) return ''
@@ -135,29 +167,46 @@ export function UniversityDetail() {
     <div className="space-y-6">
       <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          {(uni.logo ?? (uni as { logoUrl?: string }).logoUrl) ? (
-            <img src={getImageUrl((uni as { logo?: string; logoUrl?: string }).logo ?? (uni as { logoUrl?: string }).logoUrl)} alt="" loading="lazy" className="w-20 h-20 rounded-card object-contain bg-[var(--color-border)]/30 p-1" />
-          ) : (
-            <div className="w-20 h-20 rounded-card bg-[var(--color-border)]" />
-          )}
-          <div>
-            <h1 className="text-h1">{uni.name}</h1>
-            <p className="text-[var(--color-text-muted)]">
-              {[uni.country ? getLocalizedCountryName(uni.country, i18n.language) : '', uni.city].filter(Boolean).join(' · ')}
-              {uni.rating != null && ` · ${t('student:compareRating', 'Rating')} ${uni.rating}`}
-            </p>
-            {(uni.slogan ?? (uni as { tagline?: string }).tagline) && (
-              <p className="text-sm mt-1 text-[var(--color-text-muted)]">
-                {uni.slogan ?? (uni as { tagline?: string }).tagline}
-              </p>
-            )}
+      <div className="space-y-3">
+        {(uni as { coverImage?: string; coverImageUrl?: string }).coverImageUrl ||
+        (uni as { coverImage?: string; coverImageUrl?: string }).coverImage ? (
+          <div className="w-full h-36 sm:h-48 lg:h-56 rounded-card overflow-hidden bg-[var(--color-border)]/40">
+            <img
+              src={getImageUrl(
+                (uni as { coverImage?: string; coverImageUrl?: string }).coverImageUrl ??
+                  (uni as { coverImage?: string; coverImageUrl?: string }).coverImage
+              )}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
           </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {(uni.logo ?? (uni as { logoUrl?: string }).logoUrl) ? (
+              <img src={getImageUrl((uni as { logo?: string; logoUrl?: string }).logo ?? (uni as { logoUrl?: string }).logoUrl)} alt="" loading="lazy" className="w-20 h-20 rounded-card object-contain bg-[var(--color-border)]/30 p-1" />
+            ) : (
+              <div className="w-20 h-20 rounded-card bg-[var(--color-border)]" />
+            )}
+            <div>
+              <h1 className="text-h1">{uni.name}</h1>
+              <p className="text-[var(--color-text-muted)]">
+                {[uni.country ? getLocalizedCountryName(uni.country, i18n.language) : '', uni.city].filter(Boolean).join(' · ')}
+                {uni.rating != null && ` · ${t('student:compareRating', 'Rating')} ${uni.rating}`}
+              </p>
+              {(uni.slogan ?? (uni as { tagline?: string }).tagline) && (
+                <p className="text-sm mt-1 text-[var(--color-text-muted)]">
+                  {uni.slogan ?? (uni as { tagline?: string }).tagline}
+                </p>
+              )}
+            </div>
+          </div>
+          {matchScore != null && (
+            <MatchScore score={matchScore} breakdown={matchBreakdown ?? undefined} variant="circle" size="md" />
+          )}
         </div>
-        {matchScore != null && (
-          <MatchScore score={matchScore} breakdown={matchBreakdown ?? undefined} variant="circle" size="md" />
-        )}
       </div>
 
       <Card>
@@ -380,10 +429,22 @@ export function UniversityDetail() {
         </Card>
       )}
 
+      {interestBlockedByIelts ? (
+        <p className="text-sm text-amber-700 dark:text-amber-400/90 max-w-xl">
+          {t(
+            'student:interestBlockedIelts',
+            'This university requires IELTS. Upload your IELTS certificate under Documents to show interest.'
+          )}{' '}
+          <Link to="/student/documents" className="font-medium text-primary-accent underline">
+            {t('student:goToDocuments', 'Go to Documents')}
+          </Link>
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap gap-2 md:mb-2 md:pb-8">
         <Button
           onClick={handleInterest}
-          disabled={interested || interestLimit === null || !interestLimit.allowed}
+          disabled={interested || interestLimit === null || !interestLimit.allowed || interestBlockedByIelts}
         >
           {interested
             ? t('student:interestedButton')
@@ -391,7 +452,9 @@ export function UniversityDetail() {
               ? t('common:loading', 'Loading…')
               : !interestLimit.allowed
                 ? t('student:interestLimitReached')
-                : t('student:showInterest')}
+                : interestBlockedByIelts
+                  ? t('student:interestNeedsIelts', 'Upload IELTS certificate')
+                  : t('student:showInterest')}
         </Button>
         <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>{t('common:messageButton')}</Button>
         <Button to="/student/compare" variant="ghost">{t('common:addToCompare')}</Button>

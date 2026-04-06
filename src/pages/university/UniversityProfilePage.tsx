@@ -7,6 +7,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { ChipSelect } from '@/components/ui/ChipSelect'
@@ -28,14 +29,19 @@ const schema = z.object({
   slogan: z.string().optional(),
   foundedYear: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(1000).max(2100).optional()),
   studentCount: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
+  rating: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
   country: z.string().optional(),
   city: z.string().optional(),
   description: z.string().optional(),
   logo: uploadedLogoSchema,
+  coverImage: uploadedLogoSchema.optional(),
   facultyCodes: z.array(z.string()).optional(),
   facultyItems: z.record(z.string(), z.array(z.string())).optional(),
   targetStudentCountries: z.array(z.string()).optional(),
   minLanguageLevel: z.string().optional(),
+  ieltsMinBand: z.preprocess((v) => (v === '' || v === undefined ? undefined : v), z.coerce.number().min(0).max(9).optional()),
+  gpaMinMode: z.union([z.literal(''), z.literal('scale'), z.literal('percent')]).optional(),
+  gpaMinValue: z.preprocess((v) => (v === '' || v === undefined ? undefined : v), z.coerce.number().min(0).optional()),
   tuitionPrice: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
 })
 
@@ -64,6 +70,8 @@ export function UniversityProfilePage() {
     resolver: zodResolver(schema),
     defaultValues: {
       logo: '',
+      coverImage: '',
+      gpaMinMode: '' as '' | 'scale' | 'percent',
     },
   })
   const logoValue = watch('logo') ?? ''
@@ -80,14 +88,21 @@ export function UniversityProfilePage() {
           slogan: data.slogan ?? '',
           foundedYear: data.foundedYear ?? undefined,
           studentCount: data.studentCount ?? undefined,
+          rating: data.rating ?? undefined,
           country: data.country ?? '',
           city: data.city ?? '',
           description: data.description ?? '',
           logo: data.logo ?? '',
+          coverImage: (data as { coverImage?: string; coverImageUrl?: string }).coverImage
+            ?? (data as { coverImageUrl?: string }).coverImageUrl
+            ?? '',
           facultyCodes: data.facultyCodes ?? [],
           facultyItems: data.facultyItems ?? {},
           targetStudentCountries: data.targetStudentCountries ?? [],
           minLanguageLevel: data.minLanguageLevel ?? '',
+          ieltsMinBand: (data as { ieltsMinBand?: number }).ieltsMinBand ?? undefined,
+          gpaMinMode: ((data as { gpaMinMode?: string }).gpaMinMode as 'scale' | 'percent' | '') ?? '',
+          gpaMinValue: (data as { gpaMinValue?: number }).gpaMinValue ?? undefined,
           tuitionPrice: data.tuitionPrice ?? undefined,
         })
       })
@@ -104,14 +119,25 @@ export function UniversityProfilePage() {
         slogan: data.slogan || undefined,
         foundedYear: data.foundedYear ?? undefined,
         studentCount: data.studentCount ?? undefined,
+        rating: data.rating ?? undefined,
         country: data.country || undefined,
         city: data.city || undefined,
         description: data.description || undefined,
         logo: data.logo || undefined,
+        coverImage: data.coverImage || undefined,
         facultyCodes: data.facultyCodes ?? [],
         facultyItems: data.facultyItems ?? undefined,
         targetStudentCountries: data.targetStudentCountries ?? [],
         minLanguageLevel: data.minLanguageLevel || undefined,
+        ieltsMinBand: data.ieltsMinBand != null && Number.isFinite(data.ieltsMinBand) ? data.ieltsMinBand : undefined,
+        gpaMinMode:
+          data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent' ? data.gpaMinMode : undefined,
+        gpaMinValue:
+          data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent'
+            ? data.gpaMinValue != null && Number.isFinite(data.gpaMinValue)
+              ? data.gpaMinValue
+              : undefined
+            : undefined,
         tuitionPrice: data.tuitionPrice ?? undefined,
       })
       setProfile(updated)
@@ -167,17 +193,94 @@ export function UniversityProfilePage() {
           </div>
         )}
 
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardTitle>{t('university:sectionBasic')}</CardTitle>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Input label={t('university:universityName')} error={errors.name?.message} {...register('name')} required />
+              </div>
+              <div className="sm:col-span-2">
+                <Input label={t('university:slogan')} {...register('slogan')} placeholder={t('university:sloganPlaceholder')} />
+              </div>
+              <Input label={t('university:foundedYear')} type="number" {...register('foundedYear')} placeholder={t('university:foundedPlaceholder')} />
+              <Input label={t('university:studentCount')} type="number" {...register('studentCount')} placeholder={t('university:studentCountPlaceholder')} />
+              <div className="sm:col-span-2">
+                <Textarea
+                  label={t('university:description')}
+                  rows={3}
+                  placeholder={t('university:descriptionPlaceholder')}
+                  {...register('description')}
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <CardTitle>{t('university:sectionLocation')}</CardTitle>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Input label={t('university:country')} {...register('country')} />
+              <Input label={t('university:city')} {...register('city')} />
+              <Input
+                label={t('university:rating', 'Rating')}
+                type="number"
+                min={0}
+                step="0.1"
+                {...register('rating')}
+                placeholder={t('university:ratingPlaceholder', 'Enter rating')}
+              />
+            </div>
+          </Card>
+
+          <Card className="lg:col-span-2">
+            <CardTitle>{t('university:sectionRequirements', 'Requirements & Tuition')}</CardTitle>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Input label={t('university:minRequirements', 'Minimum requirements')} {...register('minLanguageLevel')} placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0" />
+              </div>
+              <Input
+                label={t('university:ieltsMinBand', 'Minimum IELTS band (optional)')}
+                type="number"
+                step="0.5"
+                min={0}
+                max={9}
+                {...register('ieltsMinBand')}
+                placeholder="e.g. 6.5"
+              />
+              <Select
+                label={t('university:gpaMinMode', 'GPA requirement (optional)')}
+                {...register('gpaMinMode')}
+                options={[
+                  { value: '', label: t('university:gpaMinModeNone', '— None —') },
+                  { value: 'scale', label: t('university:gpaMinModeScale', '4.0 scale (e.g. 3.0)') },
+                  { value: 'percent', label: t('university:gpaMinModePercent', 'Percentage (e.g. 85)') },
+                ]}
+              />
+              <Input
+                label={t('university:gpaMinValue', 'Minimum GPA value')}
+                type="number"
+                step="0.01"
+                {...register('gpaMinValue')}
+                placeholder={watch('gpaMinMode') === 'percent' ? '0–100' : '0–4'}
+              />
+              <Input label={t('university:tuitionPrice', 'Tuition price')} type="number" {...register('tuitionPrice')} placeholder="Annual cost in main currency" />
+              <p className="sm:col-span-2 text-xs text-[var(--color-text-muted)]">
+                {t('university:ieltsMinBandHint', 'When set, students must upload an IELTS certificate in Documents before they can show interest.')}
+              </p>
+            </div>
+          </Card>
+        </div>
+
         <Card>
-          <CardTitle>{t('university:sectionBasic')}</CardTitle>
-          <div className="mt-4 space-y-4">
-            <Input label={t('university:universityName')} error={errors.name?.message} {...register('name')} required />
-            <Input label={t('university:slogan')} {...register('slogan')} placeholder={t('university:sloganPlaceholder')} />
-            <Input label={t('university:foundedYear')} type="number" {...register('foundedYear')} placeholder={t('university:foundedPlaceholder')} />
-            <Input label={t('university:studentCount')} type="number" {...register('studentCount')} placeholder={t('university:studentCountPlaceholder')} />
+          <CardTitle>{t('university:logo', 'Logo')}</CardTitle>
+          <div className="mt-3 grid gap-3">
             <FileUpload
               label={t('university:logo', 'Logo')}
               value={logoValue}
-              onChange={(url) => setValue('logo', url, { shouldDirty: true, shouldValidate: true })}
+              onChange={(url) => {
+                if ((watch('logo') ?? '') === url) return
+                setValue('logo', url, { shouldDirty: true, shouldValidate: true })
+              }}
               accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
               hint={t('university:uploadLogoOrUrl', 'Upload from device or paste a direct logo URL below')}
             />
@@ -187,28 +290,21 @@ export function UniversityProfilePage() {
               {...register('logo')}
               placeholder="https://... or /api/uploads/..."
             />
-            <Textarea
-              label={t('university:description')}
-              rows={4}
-              placeholder={t('university:descriptionPlaceholder')}
-              {...register('description')}
+            <FileUpload
+              label={t('university:coverImage', 'Cover image')}
+              value={watch('coverImage') ?? ''}
+              onChange={(url) => {
+                if ((watch('coverImage') ?? '') === url) return
+                setValue('coverImage', url, { shouldDirty: true, shouldValidate: true })
+              }}
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              hint={t('university:coverImageHint', 'Optional large image shown on university detail page')}
             />
-          </div>
-        </Card>
-
-        <Card>
-          <CardTitle>{t('university:sectionLocation')}</CardTitle>
-          <div className="mt-4 space-y-4">
-            <Input label={t('university:country')} {...register('country')} />
-            <Input label={t('university:city')} {...register('city')} />
-          </div>
-        </Card>
-
-        <Card>
-          <CardTitle>{t('university:sectionRequirements', 'Requirements & Tuition')}</CardTitle>
-          <div className="mt-4 space-y-4">
-            <Input label={t('university:minRequirements', 'Minimum requirements')} {...register('minLanguageLevel')} placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0" />
-            <Input label={t('university:tuitionPrice', 'Tuition price')} type="number" {...register('tuitionPrice')} placeholder="Annual cost in main currency" />
+            <Input
+              label={t('university:coverImageUrl', 'Cover image URL')}
+              {...register('coverImage')}
+              placeholder="https://... or /api/uploads/..."
+            />
           </div>
         </Card>
 

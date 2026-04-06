@@ -44,7 +44,13 @@ export interface User {
   localPasswordConfigured?: boolean
   subscription?: SubscriptionSummary
   notificationPreferences?: NotificationPreferences
-  studentProfile?: { id: string; verifiedAt?: string | null; educationStatus?: 'in_school' | 'finished_school' | 'in_university' | 'finished_university' }
+  studentProfile?: {
+    id: string
+    verifiedAt?: string | null
+    educationStatus?: 'in_school' | 'finished_school' | 'in_university' | 'finished_university'
+    /** When set, student is managed by a school counsellor; hide school linking nav and school name for universities. */
+    counsellorUserId?: string
+  }
   universityProfile?: { id: string; verified?: boolean; universityName?: string; logoUrl?: string }
   totpEnabled?: boolean
 }

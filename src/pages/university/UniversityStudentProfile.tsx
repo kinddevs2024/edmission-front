@@ -191,7 +191,12 @@ export function UniversityStudentProfile() {
           <dt className="text-[var(--color-text-muted)]">Grade / level</dt><dd>{profile.gradeLevel ?? '—'}</dd>
           <dt className="text-[var(--color-text-muted)]">GPA</dt><dd>{profile.gpa != null ? profile.gpa : '—'}</dd>
           <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University completed' : 'School completed'}</dt><dd>{profile.schoolCompleted != null ? (profile.schoolCompleted ? 'Yes' : 'No') : '—'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University / Institution name' : 'School name'}</dt><dd>{profile.schoolName ?? '—'}</dd>
+          {profile.schoolName?.trim() ? (
+            <>
+              <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University / Institution name' : 'School name'}</dt>
+              <dd>{profile.schoolName}</dd>
+            </>
+          ) : null}
           <dt className="text-[var(--color-text-muted)]">Graduation year</dt><dd>{profile.graduationYear ?? '—'}</dd>
           {profile.gradingScheme && <><dt className="text-[var(--color-text-muted)]">Grading scheme</dt><dd>{profile.gradingScheme}</dd></>}
           {profile.gradeScale != null && <><dt className="text-[var(--color-text-muted)]">Grade scale (out of)</dt><dd>{profile.gradeScale}</dd></>}

@@ -173,6 +173,9 @@ export interface CounsellorStudentDocument {
   editorVersion?: string
   status: 'pending' | 'approved' | 'rejected'
   createdAt?: string
+  updatedAt?: string
+  reviewedAt?: string
+  rejectionReason?: string
 }
 
 export async function getStudentDocuments(studentUserId: string): Promise<CounsellorStudentDocument[]> {
@@ -182,9 +185,44 @@ export async function getStudentDocuments(studentUserId: string): Promise<Counse
 
 export async function addStudentDocument(
   studentUserId: string,
-  payload: { type: string; fileUrl: string; name?: string; certificateType?: string; score?: string }
+  payload: {
+    type: string
+    source?: 'upload' | 'editor'
+    fileUrl?: string
+    name?: string
+    certificateType?: string
+    score?: string
+    previewImageUrl?: string
+    canvasJson?: string
+    pageFormat?: DocumentPageFormat
+    width?: number
+    height?: number
+    editorVersion?: string
+  }
 ): Promise<CounsellorStudentDocument> {
   const { data } = await api.post<CounsellorStudentDocument>(`/counsellor/students/${studentUserId}/documents`, payload)
+  return data
+}
+
+export async function updateStudentDocument(
+  studentUserId: string,
+  documentId: string,
+  payload: {
+    type?: string
+    source?: 'upload' | 'editor'
+    fileUrl?: string
+    name?: string
+    certificateType?: string
+    score?: string
+    previewImageUrl?: string
+    canvasJson?: string
+    pageFormat?: DocumentPageFormat
+    width?: number
+    height?: number
+    editorVersion?: string
+  }
+): Promise<CounsellorStudentDocument> {
+  const { data } = await api.patch<CounsellorStudentDocument>(`/counsellor/students/${studentUserId}/documents/${documentId}`, payload)
   return data
 }
 

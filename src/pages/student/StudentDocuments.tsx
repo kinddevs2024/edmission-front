@@ -11,6 +11,12 @@ import {
   type SaveStudentDocumentPayload,
   type StudentDocumentItem,
 } from '@/services/studentDocuments'
+import {
+  addStudentDocument as addCounsellorStudentDocument,
+  deleteStudentDocument as deleteCounsellorStudentDocument,
+  getStudentDocuments as getCounsellorStudentDocuments,
+  updateStudentDocument as updateCounsellorStudentDocument,
+} from '@/services/counsellor'
 import { getApiError } from '@/services/auth'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -54,6 +60,27 @@ const SOURCE_LABEL: Record<'upload' | 'editor', string> = {
   editor: 'Built in editor',
 }
 
+const DOC_TYPE_SET: ReadonlySet<StudentProfileDocumentType> = new Set([
+  'passport',
+  'id_card',
+  'transcript',
+  'diploma',
+  'language_certificate',
+  'course_certificate',
+  'other',
+])
+
+function normalizeCounsellorDocs(input: Awaited<ReturnType<typeof getCounsellorStudentDocuments>>): StudentDocumentItem[] {
+  return input
+    .filter((doc): doc is typeof doc & { type: StudentProfileDocumentType } => DOC_TYPE_SET.has(doc.type as StudentProfileDocumentType))
+    .map((doc) => ({
+      ...doc,
+      type: doc.type as StudentProfileDocumentType,
+      source: doc.source === 'editor' ? 'editor' : 'upload',
+      status: doc.status ?? 'pending',
+    }))
+}
+
 function getScoreStep(certType: string): number {
   const certificate = LANGUAGE_CERT_TYPES.find((item) => item.value === certType)
   if (!certificate?.scores) return 1
@@ -63,7 +90,12 @@ function getScoreStep(certType: string): number {
   return 5
 }
 
-export function StudentDocuments() {
+type StudentDocumentsProps = {
+  counsellorMode?: boolean
+  studentUserId?: string
+}
+
+export function StudentDocuments({ counsellorMode = false, studentUserId }: StudentDocumentsProps) {
   const { t } = useTranslation('common')
   const { user } = useAuth()
   const resetEditor = useDocumentEditorStore((state) => state.reset)
@@ -85,8 +117,11 @@ export function StudentDocuments() {
 
   const load = () => {
     setLoading(true)
-    getMyDocuments()
-      .then(setDocs)
+    const request = counsellorMode && studentUserId
+      ? getCounsellorStudentDocuments(studentUserId)
+      : getMyDocuments()
+    request
+      .then((items) => setDocs(counsellorMode ? normalizeCounsellorDocs(items) : (items as StudentDocumentItem[])))
       .catch((loadError) => {
         toastApiError(loadError)
         setDocs([])
@@ -133,13 +168,17 @@ export function StudentDocuments() {
         payload.certificateType = certificateType
         payload.score = score.trim()
       }
-      await addDocument(payload)
+      if (counsellorMode && studentUserId) {
+        await addCounsellorStudentDocument(studentUserId, payload)
+      } else {
+        await addDocument(payload)
+      }
       setName('')
       setCertificateType('IELTS')
       setScore('')
       setFileUrl('')
       load()
-      getProfile().catch(toastApiError)
+      if (!counsellorMode) getProfile().catch(toastApiError)
     } catch (uploadError) {
       setError(getApiError(uploadError).message)
     } finally {
@@ -165,7 +204,7 @@ export function StudentDocuments() {
     loadSceneDocument({
       id: document.id,
       name: document.name ?? document.type.replace(/_/g, ' '),
-      type: document.type,
+      type: document.type as StudentProfileDocumentType,
       pageFormat: document.pageFormat ?? 'A4_PORTRAIT',
       width: document.width,
       height: document.height,
@@ -190,17 +229,21 @@ export function StudentDocuments() {
         previewImageUrl: payload.previewImageUrl,
       }
       const saved = editingDocumentId
-        ? await updateDocument(editingDocumentId, savePayload)
-        : await addDocument(savePayload)
+        ? counsellorMode && studentUserId
+          ? await updateCounsellorStudentDocument(studentUserId, editingDocumentId, savePayload)
+          : await updateDocument(editingDocumentId, savePayload)
+        : counsellorMode && studentUserId
+          ? await addCounsellorStudentDocument(studentUserId, savePayload)
+          : await addDocument(savePayload)
 
       setEditingDocumentId(saved.id)
       load()
-      getProfile().catch(toastApiError)
+      if (!counsellorMode) getProfile().catch(toastApiError)
       if (saved.canvasJson) {
         loadSceneDocument({
           id: saved.id,
           name: saved.name ?? saved.type.replace(/_/g, ' '),
-          type: saved.type,
+          type: saved.type as StudentProfileDocumentType,
           pageFormat: saved.pageFormat ?? 'A4_PORTRAIT',
           width: saved.width,
           height: saved.height,
@@ -218,7 +261,11 @@ export function StudentDocuments() {
   const handleDeleteDocument = async (document: StudentDocumentItem) => {
     if (!window.confirm(`Delete "${document.name ?? document.type.replace(/_/g, ' ')}"?`)) return
     try {
-      await deleteDocument(document.id)
+      if (counsellorMode && studentUserId) {
+        await deleteCounsellorStudentDocument(studentUserId, document.id)
+      } else {
+        await deleteDocument(document.id)
+      }
       if (editingDocumentId === document.id) {
         setEditingDocumentId(null)
         setComposerMode('upload')
@@ -227,7 +274,7 @@ export function StudentDocuments() {
         setPreviewDocument(null)
       }
       load()
-      getProfile().catch(toastApiError)
+      if (!counsellorMode) getProfile().catch(toastApiError)
     } catch (deleteError) {
       setError(getApiError(deleteError).message)
     }

@@ -565,7 +565,7 @@ export function MessageThread({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-[var(--color-card)]">
+    <div className="flex min-h-0 flex-1 basis-0 flex-col overflow-hidden bg-[var(--color-card)]">
       <div className="px-2 py-2 sm:px-4 md:py-2 border-b border-[var(--color-border)] bg-[var(--color-card)] flex items-center justify-between gap-2 flex-wrap shrink-0">
         <div className="flex min-w-0 flex-1 items-start gap-2">
           {onMobileBack ? (
@@ -621,7 +621,7 @@ export function MessageThread({
 
       <div
         ref={messageListRef}
-        className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain bg-[var(--color-bg)] px-3 py-3 sm:p-4 [touch-action:pan-y]"
+        className="relative flex min-h-0 flex-1 basis-0 flex-col overflow-y-auto overscroll-y-contain bg-[var(--color-bg)] px-3 py-3 sm:p-4 [touch-action:pan-y]"
       >
         <div className="mt-auto flex w-full min-w-0 flex-col gap-3 py-1">
           {loading ? (

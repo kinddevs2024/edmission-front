@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,16 +9,25 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
+import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
-import { getStudentProfile, getStudentUniversityCountries, updateStudentProfile, type StudentProfileData, type StudentExperience, type StudentPortfolioWork } from '@/services/student'
+import { getStudentProfile as getOwnStudentProfile, getStudentUniversityCountries, updateStudentProfile as updateOwnStudentProfile, type StudentProfileData, type StudentExperience, type StudentPortfolioWork } from '@/services/student'
 import { getMyDocuments, type StudentDocumentItem } from '@/services/studentDocuments'
+import {
+  getStudentProfile as getCounsellorStudentProfile,
+  getStudentDocuments as getCounsellorStudentDocuments,
+  addStudentDocument,
+  deleteStudentDocument,
+  updateMyStudent,
+  type CounsellorStudentDocument,
+} from '@/services/counsellor'
 import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Circle, ExternalLink, Lock } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Circle, ExternalLink, Lock, FileStack } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -112,18 +121,37 @@ function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormD
   }
 }
 
-type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'privacy'
+type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'privacy' | 'documents'
 
 const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof Lock }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
   { id: 'privacy', titleKey: 'stepPrivacy', icon: Lock },
   { id: 'location', titleKey: 'stepLocation', icon: MapPin },
   { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
+  { id: 'documents', titleKey: 'common:documents', icon: FileStack },
   { id: 'about', titleKey: 'stepAbout', icon: FileText },
   { id: 'skills', titleKey: 'stepSkills', icon: Sparkles },
   { id: 'faculties', titleKey: 'stepFaculties', icon: BookOpen },
   { id: 'experience', titleKey: 'stepExperience', icon: Briefcase },
   { id: 'works', titleKey: 'stepWorks', icon: FolderOpen },
+]
+
+const COUNSELLOR_DOC_TYPES = [
+  { value: 'transcript', label: 'Transcript' },
+  { value: 'diploma', label: 'Diploma' },
+  { value: 'language_certificate', label: 'Language certificate' },
+  { value: 'course_certificate', label: 'Course certificate' },
+  { value: 'passport', label: 'Passport' },
+  { value: 'id_card', label: 'ID card' },
+  { value: 'other', label: 'Other' },
+]
+
+const COUNSELLOR_LANGUAGE_CERT_TYPES = [
+  { value: 'IELTS', label: 'IELTS' },
+  { value: 'TOEFL', label: 'TOEFL' },
+  { value: 'Cambridge', label: 'Cambridge' },
+  { value: 'Duolingo', label: 'Duolingo' },
+  { value: 'other', label: 'Other' },
 ]
 
 function getSectionPercent(profile: StudentProfileData | null, sectionId: SectionId): number {
@@ -289,7 +317,13 @@ const COUNTRY_CODE_OPTIONS = [
   { code: 'CN', label: 'China' },
 ] as const
 
-export function StudentProfilePage() {
+type StudentProfilePageProps = {
+  studentUserId?: string
+  counsellorMode?: boolean
+}
+
+export function StudentProfilePage({ studentUserId, counsellorMode = false }: StudentProfilePageProps = {}) {
+  const navigate = useNavigate()
   const { t } = useTranslation('student', { useSuspense: false })
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -307,8 +341,20 @@ export function StudentProfilePage() {
   const [educationWizardStep, setEducationWizardStep] = useState(1)
   const [preferredCountryOptions, setPreferredCountryOptions] = useState<string[]>([])
   const [languageCertificates, setLanguageCertificates] = useState<StudentDocumentItem[]>([])
+  const [documents, setDocuments] = useState<CounsellorStudentDocument[]>([])
+  const [documentsLoading, setDocumentsLoading] = useState(false)
+  const [docAdding, setDocAdding] = useState(false)
+  const [docType, setDocType] = useState<string>('transcript')
+  const [docName, setDocName] = useState('')
+  const [docCertificateType, setDocCertificateType] = useState('IELTS')
+  const [docScore, setDocScore] = useState('')
+  const [docFileUrl, setDocFileUrl] = useState('')
+  const [previewDocument, setPreviewDocument] = useState<CounsellorStudentDocument | null>(null)
   const [showUnsavedModal, setShowUnsavedModal] = useState(false)
-  const profileDraftStorageKey = useMemo(() => (user?.id ? `student-profile-draft:${user.id}` : null), [user?.id])
+  const profileDraftStorageKey = useMemo(() => {
+    if (counsellorMode && studentUserId) return `counsellor-student-profile-draft:${studentUserId}`
+    return user?.id ? `student-profile-draft:${user.id}` : null
+  }, [counsellorMode, studentUserId, user?.id])
 
   const { register, reset, control, watch, setValue, getValues, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -370,6 +416,10 @@ export function StudentProfilePage() {
   ]
   const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
   const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
+  const displayedSections = useMemo(
+    () => (counsellorMode ? SECTIONS : SECTIONS.filter((section) => section.id !== 'documents')),
+    [counsellorMode]
+  )
   const countrySelectOptions = useMemo(() => {
     const fallback = COUNTRY_CODE_OPTIONS.map((item) => item.label)
     const source = preferredCountryOptions.length > 0 ? preferredCountryOptions : fallback
@@ -404,31 +454,63 @@ export function StudentProfilePage() {
     }
   }, [needsDegreeGoal, educationWizardStep])
 
+  const loadCounsellorDocuments = async () => {
+    if (!counsellorMode || !studentUserId) return
+    setDocumentsLoading(true)
+    try {
+      const docs = await getCounsellorStudentDocuments(studentUserId)
+      setDocuments(docs)
+      setLanguageCertificates(
+        docs
+          .filter((doc) => doc.type === 'language_certificate')
+          .map((doc) => ({ ...doc, status: doc.status ?? 'approved' }) as StudentDocumentItem)
+      )
+    } catch {
+      setDocuments([])
+      setLanguageCertificates([])
+    } finally {
+      setDocumentsLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (educationStatus !== 'in_school') return
-    setValue('schoolCompleted', false, { shouldDirty: true })
+    setValue('schoolCompleted', false, { shouldDirty: false })
     const current = getValues('schoolsAttended') ?? []
     if (current.length === 0) return
     const normalized = current.map((entry) => ({ ...entry, institutionType: 'school' as const }))
-    setValue('schoolsAttended', normalized, { shouldDirty: true })
+    setValue('schoolsAttended', normalized, { shouldDirty: false })
   }, [educationStatus, getValues, setValue])
 
   useEffect(() => {
+    if (counsellorMode) {
+      setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label))
+      return
+    }
     getStudentUniversityCountries()
       .then((countries) => {
         setPreferredCountryOptions(countries)
       })
       .catch(() => setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label)))
-  }, [])
+  }, [counsellorMode])
 
   useEffect(() => {
     if (openSection !== 'education') return
+    if (counsellorMode && studentUserId) {
+      loadCounsellorDocuments()
+      return
+    }
     getMyDocuments()
       .then((docs) => {
         setLanguageCertificates(docs.filter((doc) => doc.type === 'language_certificate'))
       })
       .catch(() => setLanguageCertificates([]))
-  }, [openSection])
+  }, [openSection, counsellorMode, studentUserId])
+
+  useEffect(() => {
+    if (openSection !== 'documents' || !counsellorMode || !studentUserId) return
+    loadCounsellorDocuments()
+  }, [openSection, counsellorMode, studentUserId])
 
   useEffect(() => {
     const target = profile?.portfolioCompletionPercent ?? 0
@@ -437,15 +519,22 @@ export function StudentProfilePage() {
   }, [profile?.portfolioCompletionPercent])
 
   useEffect(() => {
-    getStudentProfile()
-      .then((data) => {
+    const load = async () => {
+      try {
+        const data = counsellorMode && studentUserId
+          ? await (getCounsellorStudentProfile(studentUserId) as Promise<StudentProfileData>)
+          : await getOwnStudentProfile()
         setProfile(data)
         const initialValues = mapProfileToFormData(data)
         reset(mergeProfileWithDraft(initialValues, profileDraftStorageKey))
-      })
-      .catch((e) => setError(getApiError(e).message))
-      .finally(() => setLoading(false))
-  }, [profileDraftStorageKey, reset])
+      } catch (e) {
+        setError(getApiError(e).message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [profileDraftStorageKey, reset, counsellorMode, studentUserId])
 
   useEffect(() => {
     if (!profileDraftStorageKey) return
@@ -615,8 +704,14 @@ export function StudentProfilePage() {
     setSaving(true)
     try {
       const data = getValues()
-      await updateStudentProfile(buildPayload(data))
-      const fullProfile = await getStudentProfile()
+      if (counsellorMode && studentUserId) {
+        await updateMyStudent(studentUserId, buildPayload(data))
+      } else {
+        await updateOwnStudentProfile(buildPayload(data))
+      }
+      const fullProfile = counsellorMode && studentUserId
+        ? await (getCounsellorStudentProfile(studentUserId) as Promise<StudentProfileData>)
+        : await getOwnStudentProfile()
       setProfile(fullProfile)
       reset(mapProfileToFormData(fullProfile))
       if (profileDraftStorageKey) {
@@ -635,9 +730,41 @@ export function StudentProfilePage() {
     }
   }
 
-  const verified = user?.studentProfile?.verifiedAt
+  const verified = counsellorMode ? null : user?.studentProfile?.verifiedAt
   const minimalChecklist = getMinimalChecklist(profile, t)
   const minimalChecklistDone = minimalChecklist.filter((item) => item.done).length
+  const handleAddCounsellorDocument = async () => {
+    if (!counsellorMode || !studentUserId || !docFileUrl.trim()) return
+    setDocAdding(true)
+    try {
+      await addStudentDocument(studentUserId, {
+        type: docType,
+        fileUrl: docFileUrl.trim(),
+        name: docName.trim() || undefined,
+        certificateType: docType === 'language_certificate' ? docCertificateType : undefined,
+        score: docType === 'language_certificate' ? docScore.trim() || undefined : undefined,
+      })
+      setDocName('')
+      setDocScore('')
+      setDocFileUrl('')
+      await loadCounsellorDocuments()
+    } catch (e) {
+      setError(getApiError(e).message)
+    } finally {
+      setDocAdding(false)
+    }
+  }
+
+  const handleDeleteCounsellorDocument = async (docId: string) => {
+    if (!counsellorMode || !studentUserId) return
+    try {
+      await deleteStudentDocument(studentUserId, docId)
+      await loadCounsellorDocuments()
+    } catch (e) {
+      setError(getApiError(e).message)
+    }
+  }
+
   const forceCloseSection = () => {
     if (profile) reset(mapProfileToFormData(profile))
     setOpenSection(null)
@@ -748,8 +875,9 @@ export function StudentProfilePage() {
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {SECTIONS.map((sec) => {
+        {displayedSections.map((sec) => {
           const isFaculties = sec.id === 'faculties'
+          const isDocuments = sec.id === 'documents'
           const facultiesSelected = (profile?.interestedFaculties?.length ?? 0) > 0
           const pct = getSectionPercent(profile, sec.id)
           const Icon = sec.icon
@@ -758,6 +886,10 @@ export function StudentProfilePage() {
               key={sec.id}
               type="button"
               onClick={() => {
+                if (isDocuments && counsellorMode && studentUserId) {
+                  navigate(`/school/students/${studentUserId}/documents`)
+                  return
+                }
                 if (profile) reset(mapProfileToFormData(profile))
                 setOpenSection(sec.id)
               }}
@@ -769,11 +901,11 @@ export function StudentProfilePage() {
                   'relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)] shrink-0',
                 isFaculties && facultiesSelected && 'ring-2 ring-green-500/50 !bg-green-500/10'
               )}>
-                {isFaculties ? (
+                {isFaculties || isDocuments ? (
                   <>
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
                       <path
-                        className={facultiesSelected ? 'text-green-500' : 'text-[var(--color-border)]'}
+                        className={isFaculties && facultiesSelected ? 'text-green-500' : 'text-[var(--color-border)]'}
                         stroke="currentColor"
                         strokeWidth="2.5"
                         fill="none"
@@ -781,7 +913,7 @@ export function StudentProfilePage() {
                       />
                     </svg>
                     <span className="relative flex items-center justify-center">
-                      {facultiesSelected ? (
+                      {isFaculties && facultiesSelected ? (
                         <Check className="w-8 h-8 text-green-600 dark:text-green-400" strokeWidth={2.5} />
                       ) : (
                         <Icon className="w-8 h-8 text-[var(--color-text-muted)]" />
@@ -827,16 +959,22 @@ export function StudentProfilePage() {
       <Modal
         open={!!openSection}
         onClose={closeSection}
-        title={openSection ? t(SECTIONS.find((s) => s.id === openSection)!.titleKey) : ''}
+        title={openSection ? t(displayedSections.find((s) => s.id === openSection)?.titleKey ?? 'common:details') : ''}
         footer={openSection ? (
-          <>
+          openSection === 'documents' ? (
             <Button type="button" variant="secondary" onClick={closeSection}>
-              {t('common:cancel', 'Cancel')}
+              {t('common:close', 'Close')}
             </Button>
-            <Button type="button" onClick={handleModalSave} disabled={saving || !hasUnsavedChanges} loading={saving}>
-              {t('common:save')}
-            </Button>
-          </>
+          ) : (
+            <>
+              <Button type="button" variant="secondary" onClick={closeSection}>
+                {t('common:cancel', 'Cancel')}
+              </Button>
+              <Button type="button" onClick={handleModalSave} disabled={saving || !hasUnsavedChanges} loading={saving}>
+                {t('common:save')}
+              </Button>
+            </>
+          )
         ) : undefined}
       >
         <div className="space-y-4">
@@ -981,12 +1119,14 @@ export function StudentProfilePage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-3 p-3 mt-4 rounded-xl border border-[var(--color-primary-accent)]/30 bg-[var(--color-primary-accent)]/5">
-                    <span className="text-sm text-[var(--color-text)]">{t('linkToSchoolHint')}</span>
-                    <Link to="/student/schools" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-[var(--color-primary-accent)] font-medium hover:underline">
-                      {t('chooseSchool')} <ExternalLink className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
+                  {!counsellorMode ? (
+                    <div className="flex items-center justify-between gap-3 p-3 mt-4 rounded-xl border border-[var(--color-primary-accent)]/30 bg-[var(--color-primary-accent)]/5">
+                      <span className="text-sm text-[var(--color-text)]">{t('linkToSchoolHint')}</span>
+                      <Link to="/student/schools" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-[var(--color-primary-accent)] font-medium hover:underline">
+                        {t('chooseSchool')} <ExternalLink className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  ) : null}
                 </Card>
               )}
 
@@ -1019,9 +1159,11 @@ export function StudentProfilePage() {
                       <p className="text-sm text-[var(--color-text-muted)]">
                         {t('student:certificateUploadHint', 'Confirm your language level with a certificate.')}
                       </p>
-                      <Link to="/student/documents" className="inline-flex items-center rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-accent)] hover:text-[var(--color-primary-accent)]">
-                        {t('student:uploadCertificate', 'Загрузить сертификат')}
-                      </Link>
+                      {!counsellorMode ? (
+                        <Link to="/student/documents" className="inline-flex items-center rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-accent)] hover:text-[var(--color-primary-accent)]">
+                          {t('student:uploadCertificate', 'Загрузить сертификат')}
+                        </Link>
+                      ) : null}
                     </div>
 
                     {languageCertificates.length > 0 ? (
@@ -1216,7 +1358,10 @@ export function StudentProfilePage() {
                 label={t('avatarUrl')}
                 variant="avatar"
                 value={avatarUrl}
-                onChange={(url) => setValue('avatarUrl', url)}
+                onChange={(url) => {
+                  if ((watch('avatarUrl') ?? '') === url) return
+                  setValue('avatarUrl', url, { shouldDirty: true, shouldValidate: true })
+                }}
                 hint={t('uploadPhotoOrLink')}
               />
             </>
@@ -1356,7 +1501,10 @@ export function StudentProfilePage() {
                     <FileUpload
                       label={t('workFileOrLink')}
                       value={watch(`portfolioWorks.${i}.fileUrl`)}
-                      onChange={(url) => setValue(`portfolioWorks.${i}.fileUrl`, url)}
+                      onChange={(url) => {
+                        if ((watch(`portfolioWorks.${i}.fileUrl`) ?? '') === url) return
+                        setValue(`portfolioWorks.${i}.fileUrl`, url, { shouldDirty: true, shouldValidate: true })
+                      }}
                       accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
                     />
                     <Input label="" {...register(`portfolioWorks.${i}.linkUrl`)} placeholder="https://… (optional link)" />
@@ -1367,6 +1515,114 @@ export function StudentProfilePage() {
                 </Button>
               </div>
             </>
+          )}
+
+          {openSection === 'documents' && counsellorMode && (
+            <div className="space-y-4">
+              <p className="text-sm text-[var(--color-text-muted)]">
+                {t('student:documentsHint', 'Add transcripts, diplomas, language certificates, passport, etc.')}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t('student:documentType', 'Document type')}</label>
+                  <select
+                    value={docType}
+                    onChange={(e) => {
+                      setDocType(e.target.value)
+                      if (e.target.value !== 'language_certificate') setDocScore('')
+                    }}
+                    className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 bg-[var(--color-bg)]"
+                  >
+                    {COUNSELLOR_DOC_TYPES.map((item) => (
+                      <option key={item.value} value={item.value}>{item.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <Input
+                  label={t('student:documentName', 'Name')}
+                  value={docName}
+                  onChange={(e) => setDocName(e.target.value)}
+                  placeholder={docType === 'language_certificate' ? 'e.g. IELTS' : 'e.g. High school diploma'}
+                />
+              </div>
+              {docType === 'language_certificate' ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('student:certificateType', 'Certificate type')}</label>
+                    <select
+                      value={docCertificateType}
+                      onChange={(e) => setDocCertificateType(e.target.value)}
+                      className="w-full rounded-input border border-[var(--color-border)] px-3 py-2 bg-[var(--color-bg)]"
+                    >
+                      {COUNSELLOR_LANGUAGE_CERT_TYPES.map((item) => (
+                        <option key={item.value} value={item.value}>{item.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Input
+                    label={t('student:score', 'Score / level')}
+                    value={docScore}
+                    onChange={(e) => setDocScore(e.target.value)}
+                    placeholder="e.g. 7.0, B2"
+                  />
+                </div>
+              ) : null}
+              <FileUpload
+                label={t('student:file', 'File')}
+                value={docFileUrl}
+                onChange={setDocFileUrl}
+                accept="image/*,application/pdf"
+              />
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddCounsellorDocument}
+                disabled={docAdding || !docFileUrl.trim()}
+                loading={docAdding}
+                icon={<Plus className="w-4 h-4" />}
+              >
+                {t('common:add', 'Add')} {t('common:documents', 'document')}
+              </Button>
+              {documentsLoading ? (
+                <p className="text-sm text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
+              ) : documents.length === 0 ? (
+                <p className="text-sm text-[var(--color-text-muted)]">{t('student:noDocumentsYet', 'No documents yet.')}</p>
+              ) : (
+                <ul className="divide-y divide-[var(--color-border)]">
+                  {documents.map((doc) => (
+                    <li key={doc.id} className="py-2 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 shrink-0 text-[var(--color-text-muted)]" />
+                        <span className="font-medium truncate">{doc.name || doc.type.replace(/_/g, ' ')}</span>
+                        {doc.type === 'language_certificate' && (doc.certificateType || doc.score) ? (
+                          <span className="text-xs text-[var(--color-text-muted)] shrink-0">
+                            {[doc.certificateType, doc.score].filter(Boolean).join(' — ')}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          className="text-sm text-primary-accent hover:underline"
+                          onClick={() => setPreviewDocument(doc)}
+                        >
+                          {t('common:view', 'View')}
+                        </button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500"
+                          onClick={() => handleDeleteCounsellorDocument(doc.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
         </div>
       </Modal>
@@ -1397,6 +1653,19 @@ export function StudentProfilePage() {
           {t('common:unsavedChanges', 'You have unsaved changes. Close without saving?')}
         </p>
       </Modal>
+
+      <DocumentPreviewModal
+        open={!!previewDocument}
+        onClose={() => setPreviewDocument(null)}
+        title={previewDocument?.name ?? previewDocument?.type ?? 'Document'}
+        document={previewDocument ? {
+          fileUrl: previewDocument.fileUrl,
+          canvasJson: previewDocument.canvasJson,
+          pageFormat: previewDocument.pageFormat,
+          width: previewDocument.width,
+          height: previewDocument.height,
+        } : null}
+      />
     </div>
   )
 }

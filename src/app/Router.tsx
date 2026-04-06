@@ -75,6 +75,7 @@ const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRe
 const CounsellorStudentInterests = lazy(() => import('@/pages/school/CounsellorStudentInterests').then((m) => ({ default: m.CounsellorStudentInterests })))
 const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
 const CounsellorStudentProfile = lazy(() => import('@/pages/school/CounsellorStudentProfile').then((m) => ({ default: m.CounsellorStudentProfile })))
+const CounsellorStudentDocuments = lazy(() => import('@/pages/school/CounsellorStudentDocuments').then((m) => ({ default: m.CounsellorStudentDocuments })))
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
@@ -210,7 +211,8 @@ export function Router() {
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="universities" element={<ExploreUniversities />} />
           <Route path="universities/:id" element={<UniversityDetail />} />
-          <Route path="applications" element={<StudentApplications />} />
+          <Route path="applications" element={<Navigate to="/student/interests" replace />} />
+          <Route path="interests" element={<StudentApplications />} />
           <Route path="documents" element={<StudentDocuments />} />
           <Route path="schools" element={<StudentSchools />} />
           <Route path="school-invitations" element={<Navigate to="/student/schools" replace />} />
@@ -274,6 +276,7 @@ export function Router() {
           <Route path="my-students" element={<CounsellorStudents />} />
           <Route path="student-interests" element={<CounsellorStudentInterests />} />
           <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
+          <Route path="students/:studentId/documents" element={<CounsellorStudentDocuments />} />
           <Route path="join-requests" element={<CounsellorJoinRequests />} />
         </Route>
       </Route>

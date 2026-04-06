@@ -36,12 +36,19 @@ export async function getProfile(): Promise<UniversityProfile> {
     name: data.name ?? data.universityName ?? '',
     logo: data.logo ?? data.logoUrl,
     logoUrl: data.logoUrl ?? data.logo,
+    coverImage: (data as UniversityProfileResponse & { coverImage?: string; coverImageUrl?: string }).coverImage
+      ?? (data as UniversityProfileResponse & { coverImageUrl?: string }).coverImageUrl,
+    coverImageUrl: (data as UniversityProfileResponse & { coverImageUrl?: string; coverImage?: string }).coverImageUrl
+      ?? (data as UniversityProfileResponse & { coverImage?: string }).coverImage,
     slogan: data.slogan ?? data.tagline,
     foundedYear: data.foundedYear ?? data.establishedYear,
     facultyCodes: (data as unknown as { facultyCodes?: string[] }).facultyCodes ?? [],
     facultyItems: (data as unknown as { facultyItems?: Record<string, string[]> }).facultyItems ?? undefined,
     targetStudentCountries: (data as unknown as { targetStudentCountries?: string[] }).targetStudentCountries ?? [],
     minLanguageLevel: data.minLanguageLevel ?? undefined,
+    ieltsMinBand: (data as { ieltsMinBand?: number }).ieltsMinBand,
+    gpaMinMode: (data as { gpaMinMode?: 'scale' | 'percent' }).gpaMinMode,
+    gpaMinValue: (data as { gpaMinValue?: number }).gpaMinValue,
     tuitionPrice: data.tuitionPrice ?? undefined,
   }
 }
@@ -55,12 +62,25 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
   if (patch.country != null) body.country = patch.country
   if (patch.city != null) body.city = patch.city
   if (patch.description != null) body.description = patch.description
+  if (patch.rating != null) body.rating = patch.rating
   const logoUrl = (patch as { logoUrl?: string }).logoUrl ?? patch.logo
   if (logoUrl != null) body.logoUrl = logoUrl
+  const coverImageUrl = (patch as { coverImageUrl?: string; coverImage?: string }).coverImageUrl
+    ?? (patch as { coverImage?: string }).coverImage
+  if (coverImageUrl != null) body.coverImageUrl = coverImageUrl
   if (patch.facultyCodes != null) body.facultyCodes = patch.facultyCodes
   if (patch.facultyItems != null) body.facultyItems = patch.facultyItems
   if (patch.targetStudentCountries != null) body.targetStudentCountries = patch.targetStudentCountries
   if (patch.minLanguageLevel != null) body.minLanguageLevel = patch.minLanguageLevel
+  if ((patch as { ieltsMinBand?: number | null }).ieltsMinBand !== undefined) {
+    body.ieltsMinBand = (patch as { ieltsMinBand?: number | null }).ieltsMinBand
+  }
+  if ((patch as { gpaMinMode?: string }).gpaMinMode !== undefined) {
+    body.gpaMinMode = (patch as { gpaMinMode?: string }).gpaMinMode || null
+  }
+  if ((patch as { gpaMinValue?: number | null }).gpaMinValue !== undefined) {
+    body.gpaMinValue = (patch as { gpaMinValue?: number | null }).gpaMinValue
+  }
   if (patch.tuitionPrice != null) body.tuitionPrice = patch.tuitionPrice
   const { data } = await api.put<UniversityProfileResponse | null>('/university/profile', body)
   const raw = data ?? {}
@@ -70,6 +90,10 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
     name: (raw as UniversityProfileResponse).name ?? (raw as UniversityProfileResponse).universityName ?? '',
     logo: (raw as UniversityProfileResponse).logo ?? (raw as UniversityProfileResponse).logoUrl,
     logoUrl: (raw as UniversityProfileResponse).logoUrl ?? (raw as UniversityProfileResponse).logo,
+    coverImage: (raw as UniversityProfileResponse & { coverImage?: string; coverImageUrl?: string }).coverImage
+      ?? (raw as UniversityProfileResponse & { coverImageUrl?: string }).coverImageUrl,
+    coverImageUrl: (raw as UniversityProfileResponse & { coverImageUrl?: string; coverImage?: string }).coverImageUrl
+      ?? (raw as UniversityProfileResponse & { coverImage?: string }).coverImage,
     slogan: (raw as UniversityProfileResponse).slogan ?? (raw as UniversityProfileResponse).tagline,
     foundedYear: (raw as UniversityProfileResponse).foundedYear ?? (raw as UniversityProfileResponse).establishedYear,
   } as UniversityProfile

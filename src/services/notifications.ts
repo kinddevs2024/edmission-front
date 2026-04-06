@@ -81,7 +81,7 @@ export function buildNotificationLink(
     case 'interest':
       return '/university/pipeline'
     case 'status_update':
-      return '/student/applications'
+      return '/student/interests'
     case 'school_invitation':
       // Страница, где студент видит приглашения от школ и может принять/отклонить
       return '/student/school-invitations'

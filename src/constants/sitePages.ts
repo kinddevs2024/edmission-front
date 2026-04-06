@@ -11,7 +11,7 @@ export const SITE_PAGES: SitePageItem[] = [
   { path: '/student/dashboard', labelKey: 'student:navHome', terms: ['dashboard', 'home', 'главная', 'boshqaruv'] },
   { path: '/student/profile', labelKey: 'student:navProfile', terms: ['profile', 'профиль', 'profil'] },
   { path: '/student/universities', labelKey: 'student:exploreUniversities', terms: ['universities', 'explore', 'университеты', 'universitetlar'] },
-  { path: '/student/applications', labelKey: 'student:myApplications', terms: ['applications', 'заявки', 'applicatsiyalar'] },
+  { path: '/student/interests', labelKey: 'student:myApplications', terms: ['interests', 'интересы', 'qiziqishlar'] },
   { path: '/student/offers', labelKey: 'student:allOffers', terms: ['offers', 'офферы', 'takliflar'] },
   { path: '/student/chat', labelKey: 'common:chat', terms: ['chat', 'чат', 'suhbat'] },
   { path: '/student/documents', labelKey: 'student:navDocuments', terms: ['documents', 'документы', 'hujjatlar'] },

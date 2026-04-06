@@ -1,6 +1,5 @@
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { getImageUrl } from '@/services/upload'
 import { useDominantColor } from '@/hooks/useDominantColor'
 import { useUIStore } from '@/store/uiStore'
@@ -34,10 +33,19 @@ export function UniversityCard({
     country,
     city,
     description,
+    rating,
     hasScholarship,
+    scholarships,
     minLanguageLevel,
     tuitionPrice,
   } = university
+
+  const scholarshipCoverageMax = Array.isArray(scholarships)
+    ? scholarships.reduce((max, s) => {
+        const p = typeof s?.coveragePercent === 'number' ? s.coveragePercent : 0
+        return Math.max(max, p)
+      }, 0)
+    : 0
 
   const logoUrl = logo ? getImageUrl(logo) : null
   const dominantColor = useDominantColor(logoUrl)
@@ -88,21 +96,40 @@ export function UniversityCard({
         </div>
         {null}
       </div>
+      <div className="mb-3 grid grid-cols-1 gap-2 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-bg)]/50 px-3 py-2.5 text-xs sm:grid-cols-3">
+        <div>
+          <p className="font-medium text-[var(--color-text)]">{t('student:compareRating', 'Rating')}</p>
+          <p className="mt-0.5 text-[var(--color-text-muted)] tabular-nums">
+            {rating != null && Number.isFinite(rating) ? `${Number(rating).toFixed(1)} ★` : '—'}
+          </p>
+        </div>
+        <div>
+          <p className="font-medium text-[var(--color-text)]">{t('student:cardTuitionLabel', 'Tuition')}</p>
+          <p className="mt-0.5 text-[var(--color-text-muted)]">
+            {tuitionPrice != null ? (tuitionPrice === 0 ? t('student:cardTuitionFree', 'Tuition-free') : `$${tuitionPrice.toLocaleString()}/yr`) : '—'}
+          </p>
+        </div>
+        <div>
+          <p className="font-medium text-[var(--color-text)]">{t('student:compareScholarship', 'Scholarship')}</p>
+          <p className="mt-0.5 text-[var(--color-text-muted)]">
+            {hasScholarship
+              ? scholarshipCoverageMax > 0
+                ? t('student:cardScholarshipUpTo', 'Up to {{pct}}%', { pct: Math.round(scholarshipCoverageMax) })
+                : t('student:cardScholarshipAvailable', 'Available')
+              : '—'}
+          </p>
+        </div>
+      </div>
+
       {description ? (
-        <p className="mb-4 flex-1 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>
+        <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>
       ) : null}
 
-      {showRequirements && (minLanguageLevel || tuitionPrice != null) ? (
-        <p className="mb-3 text-xs text-[var(--color-text-muted)]">
-          {[
-            minLanguageLevel,
-            tuitionPrice != null ? (tuitionPrice === 0 ? t('common:free', 'Free') : `$${tuitionPrice.toLocaleString()}/yr`) : null,
-          ].filter(Boolean).join(' · ')}
-        </p>
+      {showRequirements && minLanguageLevel ? (
+        <p className="mb-2 text-xs text-[var(--color-text-muted)]">{minLanguageLevel}</p>
       ) : null}
 
       <div className="mt-auto flex flex-wrap gap-2 pt-1">
-        {hasScholarship ? <Badge variant="success">{t('student:compareScholarship', 'Scholarship')}</Badge> : null}
         <div className="ml-auto flex gap-2">
           {onInterest ? (
             <Button

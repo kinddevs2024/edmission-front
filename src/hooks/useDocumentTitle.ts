@@ -27,6 +27,7 @@ const PATH_TITLES: Record<string, string> = {
   '/student/profile': 'student:navProfile',
   '/student/universities': 'student:navUniversities',
   '/student/applications': 'student:navApplications',
+  '/student/interests': 'student:navApplications',
   '/student/documents': 'common:documents',
   '/student/schools': 'admin:linkToSchool',
   '/student/offers': 'common:myOffers',

@@ -44,7 +44,9 @@ export function MainLayout() {
       | 'finished_school'
       | string
       | undefined
-    const showMySchools = educationStatus === 'in_school' || educationStatus === 'finished_school'
+    const counsellorLinked = Boolean((user?.studentProfile as { counsellorUserId?: string } | undefined)?.counsellorUserId)
+    const showMySchools =
+      (educationStatus === 'in_school' || educationStatus === 'finished_school') && !counsellorLinked
 
     if (role === 'student') {
       return {
@@ -56,13 +58,12 @@ export function MainLayout() {
         ...(showMySchools
           ? [{ to: '/student/schools', label: t('student:navMySchool', 'My school'), icon: 'Building2' as const }]
           : []),
-        { to: '/student/applications', label: t('student:navApplications', 'Applications'), icon: 'FileCheck' },
+        { to: '/student/interests', label: t('student:navApplications', 'My interests'), icon: 'Heart' },
         { to: '/student/documents', label: t('student:navDocuments', 'Documents'), icon: 'FileText' },
         { to: '/student/offers', label: t('student:navOffers', 'Offers'), icon: 'Gift' },
         { to: '/student/compare', label: t('student:navCompare', 'Compare'), icon: 'GitCompare' },
         { to: '/student/chat', label: t('student:navChat', 'Chat'), icon: 'MessageCircle' },
         { to: '/notifications', label: t('student:navNotifications', 'Notifications'), icon: 'Bell' },
-        { to: '/payment', label: t('student:navSubscription', 'Subscription'), icon: 'CreditCard' },
         ],
         navBottomItems: [
         { to: '/support', label: t('student:navSupport', 'Support'), icon: 'HelpCircle' },
@@ -84,7 +85,6 @@ export function MainLayout() {
         { to: '/university/analytics', label: t('university:navAnalytics', 'Analytics'), icon: 'BarChart3' },
         { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
         { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
-        { to: '/payment', label: t('university:navSubscription', 'Subscription'), icon: 'CreditCard' },
         { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
         ],
         navBottomItems: [
@@ -143,7 +143,7 @@ export function MainLayout() {
     if (role === 'student') {
       return [
         { to: '/student/dashboard', label: t('student:navHome', 'Home'), icon: 'LayoutDashboard' },
-        { to: '/student/applications', label: t('student:navApplications', 'Applications'), icon: 'FileCheck' },
+        { to: '/student/interests', label: t('student:navApplications', 'My interests'), icon: 'Heart' },
         { to: '/student/universities', label: t('student:navExplore', 'Explore'), icon: 'GraduationCap' },
         { to: '/student/chat', label: t('student:navChat', 'Chat'), icon: 'MessageCircle' },
         { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },

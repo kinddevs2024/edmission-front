@@ -41,7 +41,6 @@ export function UniversityLayout() {
             { to: '/university/analytics', label: t('navAnalytics', 'Analytics'), icon: 'BarChart3' },
             { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
             { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
-            { to: '/payment', label: t('navSubscription', 'Subscription'), icon: 'CreditCard' },
             { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
           ],
     [t, isSelect, isPending]
@@ -87,8 +86,10 @@ export function UniversityLayout() {
       <RoleOnboardingController role="university" />
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex min-h-0 min-w-0 flex-1 flex-col pb-mobile-nav transition-[margin-left] duration-200 lg:pt-16',
-        isFixedHeightPage ? 'h-full max-h-full overflow-hidden' : 'h-full',
+        'flex min-h-0 min-w-0 flex-1 flex-col transition-[margin-left] duration-200',
+        isFixedHeightPage
+          ? 'h-[100dvh] max-h-[100dvh] overflow-hidden pb-0 lg:h-[100dvh] lg:max-h-[100dvh] lg:pt-16'
+          : 'h-full pb-mobile-nav lg:pt-16',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(

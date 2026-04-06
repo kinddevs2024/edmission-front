@@ -9,7 +9,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { getApplications } from '@/services/student'
 import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_COLORS } from '@/utils/constants'
-import { MessageCircle, Gift } from 'lucide-react'
+import { MessageCircle, Gift, Building2 } from 'lucide-react'
 import { formatDate } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 import type { Application, ApplicationStatus } from '@/types/student'
@@ -48,7 +48,7 @@ export function StudentApplications() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('student:navApplications')} icon="FileCheck" />
+      <PageTitle title={t('student:navApplications', 'My interests')} icon="Heart" />
 
       <Card className="animate-card-enter">
         <div className="flex flex-wrap gap-4 mb-4">
@@ -59,14 +59,14 @@ export function StudentApplications() {
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
           />
         </div>
-        <CardTitle className="mb-2">{t('common:applications')}</CardTitle>
+        <CardTitle className="mb-2">{t('student:myApplications', 'My interests')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={5} cols={5} />
         ) : applications.length === 0 ? (
           <EmptyState
             icon={<MessageCircle className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
-            title={t('student:noApplications', 'No applications yet')}
-            description={t('student:noApplicationsDesc', 'Explore universities and show interest to start applying.')}
+            title={t('student:noApplications', 'No interests yet')}
+            description={t('student:noApplicationsDesc', 'Explore universities and mark interests to start your process.')}
             actionLabel={t('student:exploreUniversities', 'Explore universities')}
             actionTo="/student/universities"
           />
@@ -94,6 +94,14 @@ export function StudentApplications() {
                     <TableTd>{formatDate(a.createdAt)}</TableTd>
                     <TableTd>{formatDate(a.updatedAt)}</TableTd>
                     <TableTd>
+                      <Button
+                        to={`/student/universities/${encodeURIComponent(a.universityId)}`}
+                        variant="ghost"
+                        size="sm"
+                        icon={<Building2 size={16} />}
+                      >
+                        {t('common:details', 'Details')}
+                      </Button>
                       {['chat_opened', 'offer_sent', 'under_review'].includes(a.status) && (
                         <Button to={`/student/chat?universityId=${encodeURIComponent(a.universityId)}`} variant="ghost" size="sm" icon={<MessageCircle size={16} />}>{t('student:navChat')}</Button>
                       )}
