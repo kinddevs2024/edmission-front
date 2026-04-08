@@ -10,6 +10,11 @@ export interface LoginPayload {
   password: string
 }
 
+export interface LoginByPhonePayload {
+  phone: string
+  password: string
+}
+
 export interface RegisterPayload {
   email: string
   password: string
@@ -22,6 +27,32 @@ export interface RegisterPayload {
 export type RegisterResult =
   | { needsVerification: true; email: string }
   | LoginResponse
+
+export interface PhoneRegisterStartPayload {
+  firstName: string
+  lastName: string
+  phone: string
+  password: string
+  role: 'student' | 'university'
+  acceptTerms: boolean
+}
+
+export interface PhoneRegisterStartResult {
+  registrationId: string
+  phone: string
+  verification: {
+    method: 'telegram'
+    code: string
+    expiresAt: string
+    deepLink: string
+  }
+}
+
+export interface PhoneRegisterStatusResult {
+  verifiedViaTelegram: boolean
+  verifiedAt: string | null
+  expiresAt: string | null
+}
 
 export async function loginWithGoogle(payload: {
   idToken: string
@@ -93,6 +124,16 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data
 }
 
+export async function loginByPhone(payload: LoginByPhonePayload): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/login-phone', payload)
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
 export async function register(payload: RegisterPayload): Promise<RegisterResult> {
   const body: Record<string, unknown> = {
     email: payload.email,
@@ -111,6 +152,24 @@ export async function register(payload: RegisterPayload): Promise<RegisterResult
   useAuthStore.getState().setAuth(loginData.user, loginData.accessToken)
   saveAuth(loginData.user, loginData.accessToken, loginData.refreshToken ?? null)
   return loginData
+}
+
+export async function startPhoneRegistration(payload: PhoneRegisterStartPayload): Promise<PhoneRegisterStartResult> {
+  const { data } = await api.post<PhoneRegisterStartResult>('/auth/register-phone/start', payload)
+  return data
+}
+
+export async function getPhoneRegistrationStatus(registrationId: string): Promise<PhoneRegisterStatusResult> {
+  const { data } = await api.get<PhoneRegisterStatusResult>(`/auth/register-phone/${registrationId}/status`)
+  return data
+}
+
+export async function completePhoneRegistration(registrationId: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/register-phone/complete', { registrationId })
+  useAIChatStore.getState().resetSession()
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
 }
 
 export async function verifyEmailByCode(email: string, code: string): Promise<LoginResponse> {

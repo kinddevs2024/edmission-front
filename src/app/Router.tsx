@@ -13,7 +13,9 @@ import { SchoolLayout } from '@/layouts/SchoolLayout'
 import { SiteVisitTracker } from '@/components/analytics/SiteVisitTracker'
 
 const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
+const LoginPhone = lazy(() => import('@/pages/auth/LoginPhone').then((m) => ({ default: m.LoginPhone })))
 const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ default: m.Register })))
+const RegisterPhone = lazy(() => import('@/pages/auth/RegisterPhone').then((m) => ({ default: m.RegisterPhone })))
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword').then((m) => ({ default: m.ForgotPassword })))
 const VerifyEmail = lazy(() => import('@/pages/auth/VerifyEmail').then((m) => ({ default: m.VerifyEmail })))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword').then((m) => ({ default: m.ResetPassword })))
@@ -175,8 +177,10 @@ export function Router() {
       <Route path="/maintenance" element={<Maintenance />} />
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path="/login-phone" element={<PublicOnlyRoute><LoginPhone /></PublicOnlyRoute>} />
         <Route path="/sing-in" element={<Navigate to="/login" replace />} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+        <Route path="/register-phone" element={<PublicOnlyRoute><RegisterPhone /></PublicOnlyRoute>} />
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />

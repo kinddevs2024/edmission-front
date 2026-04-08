@@ -102,6 +102,9 @@ export function Login() {
           <Button type="submit" className="w-full" loading={loading} disabled={loading}>
             Sign in
           </Button>
+          <Link to="/login-phone" className="text-sm text-center text-primary-accent hover:underline">
+            Войти по номеру телефона
+          </Link>
           <div className="flex items-center justify-between gap-3">
             <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">
               {t('auth:forgotPassword')}
