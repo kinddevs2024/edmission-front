@@ -84,12 +84,20 @@ export function LandingHeader() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [closeMenu, location.pathname, menuOpen])
 
-  /** MainLayout keeps the page in an overflow-auto flex child, not window — scroll that ancestor. */
+  /** MainLayout may keep content in an overflow-auto flex child. Use it only if it can actually scroll. */
   const getScrollParent = (node: HTMLElement): Element | Window => {
     let parent = node.parentElement
     while (parent && parent !== document.documentElement) {
-      const { overflowY } = getComputedStyle(parent)
-      if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') {
+      const { overflow, overflowY } = getComputedStyle(parent)
+      const hasScrollableStyle =
+        overflowY === 'auto' ||
+        overflowY === 'scroll' ||
+        overflowY === 'overlay' ||
+        overflow === 'auto' ||
+        overflow === 'scroll' ||
+        overflow === 'overlay'
+      const canScrollVertically = parent.scrollHeight > parent.clientHeight + 1
+      if (hasScrollableStyle && canScrollVertically) {
         return parent
       }
       parent = parent.parentElement

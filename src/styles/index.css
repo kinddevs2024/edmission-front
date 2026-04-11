@@ -405,7 +405,7 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
 }
 
 .trusted-logos-marquee {
-  animation: trusted-logos-scroll 110s linear infinite;
+  animation: trusted-logos-scroll 130s linear infinite;
 }
 
 @keyframes faculty-label-marquee {
