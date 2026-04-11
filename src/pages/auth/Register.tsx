@@ -232,9 +232,11 @@ export function Register() {
       <div className="mb-4 flex flex-col items-center gap-2 text-center">
         <BrandMark className="h-14 w-14" />
         <CardTitle>sing-up to Edmission</CardTitle>
+        {false && (
         <Link to="/register-phone" className="text-xs text-primary-accent underline hover:no-underline">
           Регистрация по номеру телефона
         </Link>
+        )}
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
