@@ -41,6 +41,7 @@ export interface TrustedUniversityLogo {
   id: string
   name: string
   logoUrl: string
+  logo?: string
 }
 
 export interface TrustedUniversityLogoPage {
@@ -62,10 +63,25 @@ function normalizeTrustedUniversityLogoPage(
   limit: number,
   offset: number
 ): TrustedUniversityLogoPage {
-  if (Array.isArray(data)) {
+  const normalizeItem = (raw: Partial<TrustedUniversityLogo> | null | undefined): TrustedUniversityLogo | null => {
+    if (!raw) return null
+    const logoUrl = String(raw.logoUrl ?? raw.logo ?? '').trim()
+    if (!logoUrl) return null
     return {
-      items: data,
-      total: data.length,
+      id: String(raw.id ?? '').trim(),
+      name: String(raw.name ?? '').trim() || 'Partner University',
+      logoUrl,
+      logo: logoUrl,
+    }
+  }
+
+  if (Array.isArray(data)) {
+    const items = data
+      .map((item) => normalizeItem(item))
+      .filter((item): item is TrustedUniversityLogo => item !== null)
+    return {
+      items,
+      total: items.length,
       limit,
       offset,
       nextOffset: null,
@@ -73,7 +89,9 @@ function normalizeTrustedUniversityLogoPage(
     }
   }
 
-  const items = Array.isArray(data?.items) ? data.items : []
+  const items = (Array.isArray(data?.items) ? data.items : [])
+    .map((item) => normalizeItem(item))
+    .filter((item): item is TrustedUniversityLogo => item !== null)
   const total = typeof data?.total === 'number' && Number.isFinite(data.total) ? data.total : items.length
   const nextOffset =
     typeof data?.nextOffset === 'number' && Number.isFinite(data.nextOffset)
