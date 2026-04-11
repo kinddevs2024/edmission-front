@@ -1,17 +1,18 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
-  plugins: [react()],
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+export default defineConfig({  plugins: [react()],
   /** Avoid stale pre-bundle after adding deps (504 Outdated Optimize Dep). */
   optimizeDeps: {
     include: ['react-easy-crop'],
   },
   build: {
+    /** Do not ship source maps to browsers in production builds (reduces exposed attack surface). */
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
