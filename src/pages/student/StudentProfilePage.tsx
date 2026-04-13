@@ -136,6 +136,78 @@ const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof Lo
   { id: 'works', titleKey: 'stepWorks', icon: FolderOpen },
 ]
 
+const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Record<SectionId, string>> = {
+  en: {
+    personal: 'Personal details',
+    privacy: 'Profile privacy',
+    location: 'Location',
+    education: 'Education',
+    documents: 'Documents',
+    about: 'About me',
+    skills: 'Skills',
+    faculties: 'Faculties of interest',
+    experience: 'Work experience',
+    works: 'Portfolio and extracurriculars',
+  },
+  ru: {
+    personal: 'Личные данные',
+    privacy: 'Приватность профиля',
+    location: 'Местоположение',
+    education: 'Образование',
+    documents: 'Документы',
+    about: 'О себе',
+    skills: 'Навыки',
+    faculties: 'Факультеты / направления',
+    experience: 'Опыт и активность',
+    works: 'Портфолио и внеклассная активность',
+  },
+  uz: {
+    personal: "Shaxsiy ma'lumotlar",
+    privacy: 'Profil maxfiyligi',
+    location: 'Manzil',
+    education: "Ta'lim",
+    documents: 'Hujjatlar',
+    about: "O'zim haqimda",
+    skills: "Ko'nikmalar",
+    faculties: "Fanlar / yo'nalishlar",
+    experience: 'Ish tajribasi',
+    works: 'Portfolio va extracurricularlar',
+  },
+}
+
+const PROFILE_SECTION_QUERY_PARAM = 'profileSection'
+
+function isSectionId(value: string | null): value is SectionId {
+  if (!value) return false
+  return SECTIONS.some((section) => section.id === value)
+}
+
+function readSectionFromSearch(search: string): SectionId | null {
+  const params = new URLSearchParams(search)
+  const raw = params.get(PROFILE_SECTION_QUERY_PARAM)
+  return isSectionId(raw) ? raw : null
+}
+
+function buildProfileSectionUrl(section: SectionId | null): string {
+  const url = new URL(window.location.href)
+  if (section) {
+    url.searchParams.set(PROFILE_SECTION_QUERY_PARAM, section)
+  } else {
+    url.searchParams.delete(PROFILE_SECTION_QUERY_PARAM)
+  }
+  return `${url.pathname}${url.search}${url.hash}`
+}
+
+function normalizeBrokenTranslation(value: string, fallback: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return fallback
+  const compact = trimmed.replace(/\s+/g, '')
+  if (!compact) return fallback
+  const brokenChars = [...compact].filter((ch) => ch === '?' || ch === '�').length
+  if (brokenChars / compact.length >= 0.35) return fallback
+  return trimmed
+}
+
 const COUNSELLOR_DOC_TYPES = [
   { value: 'transcript', label: 'Transcript' },
   { value: 'diploma', label: 'Diploma' },
@@ -324,7 +396,7 @@ type StudentProfilePageProps = {
 
 export function StudentProfilePage({ studentUserId, counsellorMode = false }: StudentProfilePageProps = {}) {
   const navigate = useNavigate()
-  const { t } = useTranslation('student', { useSuspense: false })
+  const { t, i18n } = useTranslation('student', { useSuspense: false })
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -420,6 +492,30 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     () => (counsellorMode ? SECTIONS : SECTIONS.filter((section) => section.id !== 'documents')),
     [counsellorMode]
   )
+  const getSectionTitle = (section: { id: SectionId; titleKey: string }) => {
+    const langCode = (i18n.resolvedLanguage ?? i18n.language ?? 'en').slice(0, 2) as 'en' | 'ru' | 'uz'
+    const langPack = SECTION_TITLE_FALLBACKS[langCode] ?? SECTION_TITLE_FALLBACKS.en
+    const fallback = langPack[section.id]
+    return normalizeBrokenTranslation(t(section.titleKey, fallback), fallback)
+  }
+  const visibleSectionIds = useMemo(() => new Set(displayedSections.map((section) => section.id)), [displayedSections])
+  const openSectionWithHistory = (section: SectionId) => {
+    if (typeof window !== 'undefined') {
+      const nextUrl = buildProfileSectionUrl(section)
+      window.history.pushState({ ...(window.history.state ?? {}), profileSection: section }, '', nextUrl)
+    }
+    setOpenSection(section)
+  }
+  const closeSectionWithHistory = () => {
+    if (typeof window !== 'undefined') {
+      const currentSection = readSectionFromSearch(window.location.search)
+      if (currentSection) {
+        window.history.back()
+        return
+      }
+    }
+    setOpenSection(null)
+  }
   const countrySelectOptions = useMemo(() => {
     const fallback = COUNTRY_CODE_OPTIONS.map((item) => item.label)
     const source = preferredCountryOptions.length > 0 ? preferredCountryOptions : fallback
@@ -447,6 +543,25 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       setEducationWizardStep(1)
     }
   }, [openSection])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const syncSectionFromUrl = () => {
+      const sectionFromUrl = readSectionFromSearch(window.location.search)
+      if (sectionFromUrl && !visibleSectionIds.has(sectionFromUrl)) {
+        const cleanUrl = buildProfileSectionUrl(null)
+        window.history.replaceState(window.history.state, '', cleanUrl)
+        setOpenSection(null)
+        return
+      }
+      setOpenSection(sectionFromUrl)
+    }
+
+    syncSectionFromUrl()
+    window.addEventListener('popstate', syncSectionFromUrl)
+    return () => window.removeEventListener('popstate', syncSectionFromUrl)
+  }, [visibleSectionIds])
 
   useEffect(() => {
     if (!needsDegreeGoal && educationWizardStep > 3) {
@@ -721,7 +836,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
           // ignore storage errors
         }
       }
-      setOpenSection(null)
+      closeSectionWithHistory()
       notifySuccess(t('common:saved', 'Saved'))
     } catch (e) {
       setError(getApiError(e).message)
@@ -767,7 +882,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
 
   const forceCloseSection = () => {
     if (profile) reset(mapProfileToFormData(profile))
-    setOpenSection(null)
+    closeSectionWithHistory()
   }
   const closeSection = () => {
     if (hasUnsavedChanges && !saving) {
@@ -891,7 +1006,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                   return
                 }
                 if (profile) reset(mapProfileToFormData(profile))
-                setOpenSection(sec.id)
+                openSectionWithHistory(sec.id)
               }}
               className={cn(
                 'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
@@ -947,7 +1062,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
               </div>
               <div className="flex items-center justify-center gap-1.5 text-[var(--color-text)] w-full min-h-[2rem]">
                 <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[var(--color-text-muted)]" />
-                <span className="text-sm sm:text-base font-medium text-center line-clamp-2">{t(sec.titleKey)}</span>
+                <span className="text-sm sm:text-base font-medium text-center line-clamp-2">{getSectionTitle(sec)}</span>
               </div>
             </button>
           )
@@ -959,7 +1074,13 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       <Modal
         open={!!openSection}
         onClose={closeSection}
-        title={openSection ? t(displayedSections.find((s) => s.id === openSection)?.titleKey ?? 'common:details') : ''}
+        title={openSection
+          ? (() => {
+              const section = displayedSections.find((s) => s.id === openSection)
+              if (!section) return t('common:details')
+              return getSectionTitle(section)
+            })()
+          : ''}
         footer={openSection ? (
           openSection === 'documents' ? (
             <Button type="button" variant="secondary" onClick={closeSection}>

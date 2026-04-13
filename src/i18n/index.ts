@@ -96,6 +96,7 @@ const LOCALE_PATCHES: Record<string, Record<string, Record<string, string>>> = {
 /** Namespaces needed for first paint (common nav + school sidebar + documents UI). Load rest in background. */
 const CRITICAL_NS: readonly string[] = ['common', 'auth', 'landing', 'student', 'school', 'documents']
 const OTHER_NS = namespaces.filter((n) => !CRITICAL_NS.includes(n))
+const LOCALE_CACHE_VERSION = '2026-04-13-ru-fix'
 
 function getLocalesBaseUrl(): string {
   if (typeof window === 'undefined') return ''
@@ -111,7 +112,8 @@ async function loadNamespaces(lng: string, nsList: readonly string[]): Promise<R
   await Promise.all(
     nsList.map(async (ns) => {
       try {
-        const url = baseUrl ? `${baseUrl}/${lng}/${ns}.json` : `/locales/${lng}/${ns}.json`
+        const urlBase = baseUrl ? `${baseUrl}/${lng}/${ns}.json` : `/locales/${lng}/${ns}.json`
+        const url = `${urlBase}?v=${encodeURIComponent(LOCALE_CACHE_VERSION)}`
         const r = await fetch(url, { cache: 'no-cache' })
         const data = r.ok ? await r.json() : null
         const loaded = data && typeof data === 'object' && Object.keys(data).length > 0 ? data : {}

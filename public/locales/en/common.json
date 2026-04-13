@@ -91,13 +91,30 @@
   "aiWelcome": "Where should we start?",
   "aiSuggestedIntro": "Ask me about universities, applications, or scholarships.",
   "aiSuggestedLabel": "Suggested questions:",
-  "aiSuggestedQuestions": ["How to choose a university?", "What documents are needed for admission?", "How does the scholarship process work?", "Where do I enter my GPA?", "Help me fill out my profile", "Find universities for me"],
+  "aiSuggestedQuestions": [
+    "How to choose a university?",
+    "What documents are needed for admission?",
+    "How does the scholarship process work?",
+    "Where do I enter my GPA?",
+    "Help me fill out my profile",
+    "Find universities for me"
+  ],
   "aiTypeQuestionBelow": "Type your question in the input below and press Send.",
   "aiThinking": "Thinking",
   "aiComposing": "Generating reply…",
   "aiWorking": "Assistant is working on your reply",
   "aiPlaceholder": "Type your question...",
-  "aiPlaceholders": ["What would you like to ask today?", "What's on your mind?", "What would you like to know?", "How can I help?", "What's your question?", "What are you interested in?", "Type your question…", "Where shall we start?", "What would you like to discuss?"],
+  "aiPlaceholders": [
+    "What would you like to ask today?",
+    "What's on your mind?",
+    "What would you like to know?",
+    "How can I help?",
+    "What's your question?",
+    "What are you interested in?",
+    "Type your question…",
+    "Where shall we start?",
+    "What would you like to discuss?"
+  ],
   "aiPlaceholderSelection": "Ask about the selected text…",
   "aiErrorDefault": "Something went wrong. Try again.",
   "aiPlaceholderFollowUp": "Ask a follow-up about the selected text...",
@@ -219,5 +236,11 @@
   "maintenance": {
     "title": "Site under maintenance",
     "description": "We are performing scheduled maintenance. Please try again later."
-  }
+  },
+  "add": "Add",
+  "saved": "Saved",
+  "unsavedChangesTitle": "Unsaved changes",
+  "stay": "Stay",
+  "discardChanges": "Discard changes",
+  "unsavedChanges": "You have unsaved changes. Close without saving?"
 }

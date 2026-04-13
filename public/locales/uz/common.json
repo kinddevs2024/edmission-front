@@ -91,13 +91,30 @@
   "aiWelcome": "Qayerdan boshlaymiz?",
   "aiSuggestedIntro": "Universitetlar, arizalar yoki stipendiyalar haqida so'rang.",
   "aiSuggestedLabel": "Savol namunalari:",
-  "aiSuggestedQuestions": ["Universitetni qanday tanlash mumkin?", "Qabul qilish uchun qanday hujjatlar kerak?", "Stipendiya jarayoni qanday ishlaydi?", "GPA qayerda ko'rsatiladi?", "Profilni to'ldirishda yordam bering", "Menga universitetlarni topib bering"],
+  "aiSuggestedQuestions": [
+    "Universitetni qanday tanlash mumkin?",
+    "Qabul qilish uchun qanday hujjatlar kerak?",
+    "Stipendiya jarayoni qanday ishlaydi?",
+    "GPA qayerda ko'rsatiladi?",
+    "Profilni to'ldirishda yordam bering",
+    "Menga universitetlarni topib bering"
+  ],
   "aiTypeQuestionBelow": "Savolingizni pastdagi maydonga yozing va Yuborish tugmasini bosing.",
   "aiThinking": "O'ylab ko'rish",
   "aiComposing": "Javob tayyorlanmoqda…",
   "aiWorking": "Yordamchi javobni tayyorlamoqda",
   "aiPlaceholder": "Savolingizni yozing...",
-  "aiPlaceholders": ["Bugun nima so'ramoqchisiz?", "Nima haqida o'ylaysiz?", "Nimani bilmoqchisiz?", "Qanday yordam bera olaman?", "Savolingiz nima?", "Nima sizni qiziqtiradi?", "Savolingizni yozing…", "Qayerdan boshlaymiz?", "Nima haqida suhbatlashmoqchisiz?"],
+  "aiPlaceholders": [
+    "Bugun nima so'ramoqchisiz?",
+    "Nima haqida o'ylaysiz?",
+    "Nimani bilmoqchisiz?",
+    "Qanday yordam bera olaman?",
+    "Savolingiz nima?",
+    "Nima sizni qiziqtiradi?",
+    "Savolingizni yozing…",
+    "Qayerdan boshlaymiz?",
+    "Nima haqida suhbatlashmoqchisiz?"
+  ],
   "aiPlaceholderSelection": "Tanlangan matn haqida so'rang…",
   "aiErrorDefault": "Nimadir xato ketdi. Qaytadan urinib ko'ring.",
   "aiPlaceholderFollowUp": "Tanlangan matn haqida savol bering...",
@@ -110,7 +127,6 @@
   "universities": "Universitetlar",
   "subscription": "Obuna",
   "support": "Qo'llab-quvvatlash",
-  "notifications": "Bildirishnomalar",
   "myOffers": "Mening takliflarim",
   "exploreUniversities": "Universitetlar katalogi",
   "noUniversitiesFound": "Universitetlar topilmadi",
@@ -220,5 +236,11 @@
   "maintenance": {
     "title": "Sayt texnik xizmat rejimida",
     "description": "Reja asosidagi ishlar olib borilmoqda. Keyinroq urinib ko'ring."
-  }
+  },
+  "add": "Qo'shish",
+  "saved": "Saqlandi",
+  "unsavedChangesTitle": "Saqlanmagan o'zgarishlar",
+  "stay": "Qolish",
+  "discardChanges": "O'zgarishlarni bekor qilish",
+  "unsavedChanges": "Saqlanmagan o'zgarishlar bor. Saqlamasdan yopilsinmi?"
 }

@@ -13,6 +13,18 @@ export const api = axios.create({
   withCredentials: true,
 })
 
+function isAuthEndpoint(url: string | undefined, endpoint: string): boolean {
+  return (url ?? '').toLowerCase().includes(endpoint)
+}
+
+function forceLogout(): void {
+  clearAuth()
+  useAuthStore.getState().logout()
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login'
+  }
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
   if (token) {
@@ -28,7 +40,14 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as typeof error.config & { _retry?: boolean }
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isRefreshRequest = isAuthEndpoint(originalRequest?.url, '/auth/refresh')
+    const isLogoutRequest = isAuthEndpoint(originalRequest?.url, '/auth/logout')
+    if (error.response?.status === 401) {
+      if (!originalRequest || isRefreshRequest || isLogoutRequest || originalRequest._retry) {
+        forceLogout()
+        return Promise.reject(error)
+      }
+
       const refreshToken = getStoredRefreshToken()
       if (refreshToken) {
         originalRequest._retry = true
@@ -42,9 +61,8 @@ api.interceptors.response.use(
           /* fall through to clear and redirect */
         }
       }
-      clearAuth()
-      useAuthStore.getState().logout()
-      window.location.href = '/login'
+      forceLogout()
+      return Promise.reject(error)
     }
     if (error.response?.status === 503) {
       const data = error.response.data as { code?: string }
