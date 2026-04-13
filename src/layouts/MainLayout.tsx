@@ -93,29 +93,37 @@ export function MainLayout() {
         ],
       }
     }
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') {
+      const isFullAdmin = role === 'admin'
       return {
-        navItems: [
-          { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
-          { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
-          { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
-          { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
-          { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
-          { to: '/admin/faculties', label: t('admin:faculties', 'Faculties'), icon: 'GraduationCap' },
-          { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
-          { to: '/admin/investors', label: t('admin:investors', 'Investors'), icon: 'Building2' },
-          { to: '/admin/landing-certificates', label: t('admin:landingCertificates', 'Landing Certificates'), icon: 'Award' },
-          { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
-          { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
-          { to: '/admin/chats', label: t('admin:chats', 'Chats'), icon: 'MessageCircle' },
-          { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
-          { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
-          { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
-          { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' },
-        ],
+        navItems: isFullAdmin
+          ? [
+              { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+              { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
+              { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
+              { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
+              { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
+              { to: '/admin/faculties', label: t('admin:faculties', 'Faculties'), icon: 'GraduationCap' },
+              { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
+              { to: '/admin/investors', label: t('admin:investors', 'Investors'), icon: 'Building2' },
+              { to: '/admin/landing-certificates', label: t('admin:landingCertificates', 'Landing Certificates'), icon: 'Award' },
+              { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
+              { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
+              { to: '/admin/chats', label: t('admin:chats', 'Chats'), icon: 'MessageCircle' },
+              { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
+              { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
+              { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
+              { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' },
+            ]
+          : [
+              { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+              { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
+              { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
+              { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' },
+            ],
         navBottomItems: [
           { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
-          { to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' },
+          ...(isFullAdmin ? [{ to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' as const }] : []),
         ],
       }
     }
@@ -157,11 +165,12 @@ export function MainLayout() {
         { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
       ]
     }
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') {
+      const isFullAdmin = role === 'admin'
       return [
         { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
-        { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
         { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
+        ...(isFullAdmin ? [{ to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' as const }] : [{ to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' as const }]),
         { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
         { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
       ]

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -40,14 +40,54 @@ const COUNTRY_OPTIONS = [
 export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
   const { role } = useAuth()
-  const isCounsellor = role === 'school_counsellor'
-  const ROLE_OPTIONS = [
-    { value: '', label: t('admin:allRoles') },
-    { value: 'student', label: t('auth:student') },
-    { value: 'university', label: t('auth:university') },
-    { value: 'admin', label: t('common:admin') },
-    { value: 'school_counsellor', label: t('admin:schoolCounsellor', 'School counsellor') },
-  ]
+  const isAdmin = role === 'admin'
+  const isManager = role === 'manager'
+  const isCoordinator = role === 'counsellor_coordinator'
+  const canManageUsers = isAdmin || isManager || isCoordinator
+
+  const roleLabels = useMemo(() => ({
+    student: t('auth:student'),
+    university: t('auth:university'),
+    admin: t('common:admin'),
+    manager: t('admin:managerRole', 'Manager'),
+    counsellor_coordinator: t('admin:counsellorCoordinator', 'Counsellor coordinator'),
+    school_counsellor: t('admin:schoolCounsellor', 'School counsellor'),
+  }), [t])
+
+  const assignableRoles = useMemo<Role[]>(() => {
+    if (isAdmin) return ['student', 'university', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+    if (isManager) return ['counsellor_coordinator', 'school_counsellor']
+    if (isCoordinator) return ['school_counsellor']
+    return []
+  }, [isAdmin, isCoordinator, isManager])
+
+  const canManageUserRole = (targetRole: string) => {
+    if (isAdmin) return true
+    if (isManager) return targetRole === 'counsellor_coordinator' || targetRole === 'school_counsellor'
+    if (isCoordinator) return targetRole === 'school_counsellor'
+    return false
+  }
+
+  const ROLE_OPTIONS = useMemo(() => {
+    const scoped =
+      isAdmin
+        ? ['student', 'university', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+        : isManager
+          ? ['counsellor_coordinator', 'school_counsellor']
+          : isCoordinator
+            ? ['school_counsellor']
+            : ['school_counsellor']
+    return [
+      { value: '', label: t('admin:allRoles') },
+      ...scoped.map((r) => ({ value: r, label: roleLabels[r as keyof typeof roleLabels] })),
+    ]
+  }, [isAdmin, isCoordinator, isManager, roleLabels, t])
+
+  const assignableRoleOptions = useMemo(
+    () => assignableRoles.map((r) => ({ value: r, label: roleLabels[r] })),
+    [assignableRoles, roleLabels]
+  )
+
   const STATUS_OPTIONS = [
     { value: '', label: t('admin:allStatuses') },
     { value: 'active', label: t('admin:active') },
@@ -93,6 +133,11 @@ export function UserManagement() {
   const [editUserName, setEditUserName] = useState('')
   const [editUserSaving, setEditUserSaving] = useState(false)
   const limit = 20
+
+  useEffect(() => {
+    if (assignableRoles.length === 0) return
+    if (!assignableRoles.includes(createRole)) setCreateRole(assignableRoles[0])
+  }, [assignableRoles, createRole])
 
   useEffect(() => {
     setLoading(true)
@@ -156,6 +201,7 @@ export function UserManagement() {
   }
 
   const openEditUser = (user: AdminUser) => {
+    if (!canManageUserRole(user.role)) return
     setEditUserTarget(user)
     setEditUserRole((user.role as Role) || 'student')
     setEditUserName(user.name ?? '')
@@ -251,7 +297,7 @@ export function UserManagement() {
       <PageTitle title={t('admin:users')} icon="Users" />
 
       <Card>
-        {!isCounsellor && (
+        {canManageUsers && assignableRoleOptions.length > 0 && (
           <div className="flex justify-end mb-3">
             <Button onClick={() => setCreateOpen(true)}>{t('common:create')}</Button>
           </div>
@@ -293,7 +339,7 @@ export function UserManagement() {
                   <TableRow key={u.id}>
                     <TableTd>{u.email}</TableTd>
                     <TableTd>{u.name ?? '—'}</TableTd>
-                    <TableTd>{u.role}</TableTd>
+                    <TableTd>{roleLabels[u.role as keyof typeof roleLabels] ?? u.role}</TableTd>
                     <TableTd>{formatDate(u.createdAt)}</TableTd>
                     <TableTd>
                       <span className={u.status === 'active' ? 'text-[#22C55E]' : 'text-red-500'}>
@@ -301,7 +347,7 @@ export function UserManagement() {
                       </span>
                     </TableTd>
                     <TableTd>
-                      {isCounsellor ? (
+                      {!canManageUserRole(u.role) ? (
                         <span className="text-[var(--color-text-muted)]">—</span>
                       ) : (
                         <div className="flex gap-2 flex-wrap">
@@ -353,7 +399,7 @@ export function UserManagement() {
                     setCreateOpen(false)
                     setCreateEmail('')
                     setCreateName('')
-                    setCreateRole('student')
+                    setCreateRole(assignableRoles[0] ?? 'student')
                   })
                   .catch(toastApiError)
                   .finally(() => setCreateSubmitting(false))
@@ -369,12 +415,7 @@ export function UserManagement() {
         <div className="space-y-3">
           <Select
             label={t('common:role')}
-            options={[
-              { value: 'student', label: t('auth:student') },
-              { value: 'university', label: t('auth:university') },
-              { value: 'admin', label: t('common:admin') },
-              { value: 'school_counsellor', label: t('admin:schoolCounsellor', 'School counsellor') },
-            ]}
+            options={assignableRoleOptions}
             value={createRole}
             onChange={(e) => setCreateRole(e.target.value as Role)}
           />
@@ -403,18 +444,13 @@ export function UserManagement() {
               <p className="text-sm text-[var(--color-text-muted)]">{t('admin:userEmail', 'User')}: {editUserTarget.email}</p>
               <Select
                 label={t('common:role')}
-                options={[
-                  { value: 'student', label: t('auth:student') },
-                  { value: 'university', label: t('auth:university') },
-                  { value: 'admin', label: t('common:admin') },
-                  { value: 'school_counsellor', label: t('admin:schoolCounsellor', 'School counsellor') },
-                ]}
+                options={assignableRoleOptions}
                 value={editUserRole}
                 onChange={(e) => setEditUserRole(e.target.value as Role)}
               />
               <Input label={t('common:name')} value={editUserName} onChange={(e) => setEditUserName(e.target.value)} />
               <p className="text-xs text-[var(--color-text-muted)]">
-                {t('admin:changeRoleHint', 'Assigning School counsellor: user will get read-only access to the admin panel.')}
+                {t('admin:changeRoleHint', 'Assign and manage accounts based on your role scope.')}
               </p>
             </>
           )}

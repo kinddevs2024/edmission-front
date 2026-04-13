@@ -98,9 +98,13 @@ function PageFallback() {
   )
 }
 
+function isAdminPanelRole(role: Role | null): boolean {
+  return role === 'admin' || role === 'manager' || role === 'counsellor_coordinator'
+}
+
 function AIPageOrRedirect() {
   const { role } = useAuth()
-  if (role === 'admin') return <Navigate to="/admin/ai" replace />
+  if (isAdminPanelRole(role)) return <Navigate to="/admin/ai" replace />
   return <AIChatPage />
 }
 
@@ -116,7 +120,13 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
     return <Navigate to="/set-password" replace />
   }
   if (role && !allowedRoles.includes(role)) {
-    const redirect = role === 'student' ? '/student/dashboard' : role === 'university' ? '/university/dashboard' : role === 'school_counsellor' ? '/school/dashboard' : '/admin'
+    const redirect = role === 'student'
+      ? '/student/dashboard'
+      : role === 'university'
+        ? '/university/dashboard'
+        : role === 'school_counsellor'
+          ? '/school/dashboard'
+          : '/admin'
     return <Navigate to={redirect} replace />
   }
   return <>{children}</>
@@ -131,7 +141,7 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   else if (role === 'university') {
     if (!user?.universityProfile) redirect = '/university/select'
     else redirect = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
-  } else if (role === 'admin') redirect = '/admin'
+  } else if (isAdminPanelRole(role)) redirect = '/admin'
   else if (role === 'school_counsellor') redirect = '/school/dashboard'
   else redirect = '/admin'
   return <Navigate to={redirect} replace />
@@ -146,7 +156,7 @@ function LandingOrRedirect() {
   else if (role === 'university') {
     if (!user?.universityProfile) to = '/university/select'
     else to = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
-  } else if (role === 'admin') to = '/admin'
+  } else if (isAdminPanelRole(role)) to = '/admin'
   else if (role === 'school_counsellor') to = '/school/dashboard'
   else to = '/admin'
   return <Navigate to={to} replace />
@@ -182,7 +192,7 @@ export function Router() {
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
-        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><SetPassword /></ProtectedRoute>} />
+        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
         <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
         <Route path="/auth/yandex/callback" element={<YandexCallback />} />
       </Route>
@@ -191,17 +201,17 @@ export function Router() {
         <Route index element={<LandingOrRedirect />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="cookies" element={<Cookies />} />
-        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><Profile /></ProtectedRoute>} />
-        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><NotificationsPage /></ProtectedRoute>} />
+        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
+        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
         <Route
           path="search"
           element={
-            <ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}>
+            <ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
               <SearchPage />
             </ProtectedRoute>
           }
         />
-        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor']}><AIPageOrRedirect /></ProtectedRoute>} />
+        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />
         <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentCancel /></ProtectedRoute>} />
@@ -247,7 +257,7 @@ export function Router() {
           <Route path="ai" element={<AIChatPage />} />
         </Route>
 
-        <Route path="admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
+        <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'counsellor_coordinator']}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="analytics" element={<AdminAnalytics />} />

@@ -5,6 +5,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { BackLink } from '@/components/ui/BackLink'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { AccountShareMenu } from '@/components/ui/AccountShareMenu'
 import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { getStudentProfile, type FullStudentProfile } from '@/services/university'
 import { getApiError } from '@/services/api'
@@ -13,6 +14,8 @@ import { formatDate } from '@/utils/format'
 import { MessageCircle, FileText, ExternalLink, Lock, Percent } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
+import { notifyError, notifySuccess } from '@/utils/notify'
+import { buildStudentShareLink, shareAccountLink } from '@/utils/shareAccount'
 
 export function UniversityStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
@@ -72,13 +75,30 @@ export function UniversityStudentProfile() {
     ? t('university:privateStudentPageTitle', 'Private student profile')
     : getStudentDisplayName(profile, t('university:studentLabel'))
 
+  const handleShareStudent = async () => {
+    const shareUrl = buildStudentShareLink(profile.id)
+    const result = await shareAccountLink({
+      title: name || t('university:studentLabel', 'Student'),
+      url: shareUrl,
+    })
+    if (result === 'copied') {
+      notifySuccess(t('common:shareLinkCopied', 'Share link copied'))
+      return
+    }
+    if (result === 'shared' || result === 'cancelled') return
+    notifyError(t('common:shareFailed', 'Unable to share account right now.'))
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <BackLink onClick={() => navigate(-1)}>{t('common:back')}</BackLink>
-        <Button to={`/university/chat?studentId=${encodeURIComponent(profile.id)}`} size="sm" icon={<MessageCircle size={16} />}>
-          {t('university:navChat')}
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <BackLink onClick={() => navigate(-1)}>{t('common:back')}</BackLink>
+          <Button to={`/university/chat?studentId=${encodeURIComponent(profile.id)}`} size="sm" icon={<MessageCircle size={16} />}>
+            {t('university:navChat')}
+          </Button>
+        </div>
+        <AccountShareMenu onShare={handleShareStudent} />
       </div>
 
       <PageTitle title={name} icon="User" />

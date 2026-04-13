@@ -1,4 +1,10 @@
-export type Role = 'student' | 'university' | 'admin' | 'school_counsellor'
+export type Role =
+  | 'student'
+  | 'university'
+  | 'admin'
+  | 'school_counsellor'
+  | 'counsellor_coordinator'
+  | 'manager'
 
 export interface SubscriptionSummary {
   plan: string

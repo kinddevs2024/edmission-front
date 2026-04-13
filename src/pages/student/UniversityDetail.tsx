@@ -5,6 +5,7 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { BackLink } from '@/components/ui/BackLink'
 import { Badge } from '@/components/ui/Badge'
+import { AccountShareMenu } from '@/components/ui/AccountShareMenu'
 import { MatchScore } from '@/components/student/MatchScore'
 import { api } from '@/services/api'
 import { showInterest, getApplications, getInterestLimit } from '@/services/student'
@@ -15,9 +16,10 @@ import { MessageCircle } from 'lucide-react'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getPublicUniversityFlyers } from '@/services/university'
 import type { UniversityProfile, Program, Scholarship, Faculty, UniversityFlyer } from '@/types/university'
-import { notifySuccess } from '@/utils/notify'
+import { notifyError, notifySuccess } from '@/utils/notify'
 import { getMyDocuments } from '@/services/studentDocuments'
 import { getEffectiveIeltsMinBand } from '@/utils/admissionRequirements'
+import { buildUniversityShareLink, shareAccountLink } from '@/utils/shareAccount'
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
   const { t, i18n } = useTranslation(['common', 'student', 'university'])
@@ -145,6 +147,23 @@ export function UniversityDetail() {
       .catch(toastApiError)
   }
 
+  const handleShareUniversity = async () => {
+    const shareId = String(uni?.id ?? id ?? '').trim()
+    if (!shareId) return
+    const shareUrl = buildUniversityShareLink(shareId)
+    const result = await shareAccountLink({
+      title: uni?.name || t('university:profileTitle', 'University profile'),
+      text: uni?.description || uni?.country || '',
+      url: shareUrl,
+    })
+    if (result === 'copied') {
+      notifySuccess(t('common:shareLinkCopied', 'Share link copied'))
+      return
+    }
+    if (result === 'shared' || result === 'cancelled') return
+    notifyError(t('common:shareFailed', 'Unable to share account right now.'))
+  }
+
   if (loading && !uni) {
     return (
       <div className="space-y-4">
@@ -203,9 +222,12 @@ export function UniversityDetail() {
               )}
             </div>
           </div>
-          {matchScore != null && (
-            <MatchScore score={matchScore} breakdown={matchBreakdown ?? undefined} variant="circle" size="md" />
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {matchScore != null && (
+              <MatchScore score={matchScore} breakdown={matchBreakdown ?? undefined} variant="circle" size="md" />
+            )}
+            <AccountShareMenu onShare={handleShareUniversity} />
+          </div>
         </div>
       </div>
 

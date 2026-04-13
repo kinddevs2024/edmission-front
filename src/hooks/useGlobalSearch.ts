@@ -84,7 +84,7 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
       setValue('')
       setResult(null)
       if (role === 'university') navigate(`/university/students/${id}/profile`)
-      else if (role === 'admin') navigate(`/admin/users`)
+      else if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') navigate(`/admin/users`)
       else if (role === 'school_counsellor') navigate(`/school/students/${id}/profile`)
     },
     [afterNavigate, navigate, role]

@@ -57,7 +57,7 @@ export interface AdminUniversityProfile {
 }
 
 export interface CreateAdminUserPayload {
-  role: 'student' | 'university' | 'admin' | 'school_counsellor'
+  role: 'student' | 'university' | 'admin' | 'school_counsellor' | 'counsellor_coordinator' | 'manager'
   email: string
   password?: string
   name?: string
@@ -258,7 +258,7 @@ export async function getUsers(params?: PaginationParams & { status?: string; ro
 
 export interface UpdateUserPayload {
   name?: string
-  role?: 'student' | 'university' | 'admin' | 'school_counsellor'
+  role?: 'student' | 'university' | 'admin' | 'school_counsellor' | 'counsellor_coordinator' | 'manager'
   emailVerified?: boolean
   suspended?: boolean
 }

@@ -45,7 +45,11 @@ export function buildNotificationLink(
   _metadata?: Record<string, unknown>,
   role?: Role | null
 ): string | undefined {
-  const isAdmin = role === 'admin' || role === 'school_counsellor'
+  const isAdmin =
+    role === 'admin'
+    || role === 'school_counsellor'
+    || role === 'manager'
+    || role === 'counsellor_coordinator'
   if (isAdmin) {
     switch (type) {
       case 'message':
