@@ -83,7 +83,7 @@ export function StudentLayout() {
           </Suspense>
         </div>
       </div>
-      <BottomNav items={bottomNavItems} />
+      {!isFixedHeightPage ? <BottomNav items={bottomNavItems} /> : null}
     </div>
   )
 }

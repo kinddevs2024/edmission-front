@@ -20,6 +20,7 @@ const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword').then((m) =
 const SetPassword = lazy(() => import('@/pages/auth/SetPassword').then((m) => ({ default: m.SetPassword })))
 const ChooseLanguage = lazy(() => import('@/pages/auth/ChooseLanguage').then((m) => ({ default: m.ChooseLanguage })))
 const YandexCallback = lazy(() => import('@/pages/auth/YandexCallback').then((m) => ({ default: m.YandexCallback })))
+const GoogleMobileCallback = lazy(() => import('@/pages/auth/GoogleMobileCallback').then((m) => ({ default: m.GoogleMobileCallback })))
 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
@@ -195,6 +196,7 @@ export function Router() {
         <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
         <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
         <Route path="/auth/yandex/callback" element={<YandexCallback />} />
+        <Route path="/auth/google/mobile" element={<GoogleMobileCallback />} />
       </Route>
 
       <Route path="/" element={<MainLayout />}>
