@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -7,38 +8,18 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, updateUser, suspendUser, unsuspendUser, deleteUser, resetUserPassword, getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
+import { createUser, getUsers, updateUser, suspendUser, unsuspendUser, deleteUser, resetUserPassword } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
-import { Textarea } from '@/components/ui/Textarea'
-import { FileUpload } from '@/components/ui/FileUpload'
-import { ChipSelect } from '@/components/ui/ChipSelect'
-import { Checkbox } from '@/components/ui/Checkbox'
-import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
 
-const COUNTRY_CODE_OPTIONS = [
-  { code: 'UZ', label: 'Uzbekistan' },
-  { code: 'KZ', label: 'Kazakhstan' },
-  { code: 'TJ', label: 'Tajikistan' },
-  { code: 'KG', label: 'Kyrgyzstan' },
-  { code: 'TM', label: 'Turkmenistan' },
-  { code: 'TR', label: 'Turkey' },
-  { code: 'AE', label: 'UAE' },
-  { code: 'CN', label: 'China' },
-] as const
-
-const COUNTRY_OPTIONS = [
-  { value: '', label: 'Select country' },
-  ...COUNTRY_CODE_OPTIONS.map((c) => ({ value: c.label, label: c.label })),
-]
-
 export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
+  const navigate = useNavigate()
   const { role } = useAuth()
   const isAdmin = role === 'admin'
   const isManager = role === 'manager'
@@ -110,24 +91,6 @@ export function UserManagement() {
   const [resetTarget, setResetTarget] = useState<AdminUser | null>(null)
   const [resetPassword, setResetPassword] = useState('')
   const [resetSubmitting, setResetSubmitting] = useState(false)
-  const [editUniTarget, setEditUniTarget] = useState<AdminUser | null>(null)
-  const [editUniLoading, setEditUniLoading] = useState(false)
-  const [editUniSaving, setEditUniSaving] = useState(false)
-  const [editUniError, setEditUniError] = useState('')
-  const [uniName, setUniName] = useState('')
-  const [uniTagline, setUniTagline] = useState('')
-  const [uniEstablishedYear, setUniEstablishedYear] = useState('')
-  const [uniStudentCount, setUniStudentCount] = useState('')
-  const [uniCountry, setUniCountry] = useState('')
-  const [uniCity, setUniCity] = useState('')
-  const [uniDescription, setUniDescription] = useState('')
-  const [uniLogoUrl, setUniLogoUrl] = useState('')
-  const [uniFacultyCodes, setUniFacultyCodes] = useState<string[]>([])
-  const [uniFacultyItems, setUniFacultyItems] = useState<Record<string, string[]>>({})
-  const [uniOpenFacultyId, setUniOpenFacultyId] = useState<string | null>(null)
-  const [uniTargetCountries, setUniTargetCountries] = useState<string[]>([])
-  const [uniMinRequirements, setUniMinRequirements] = useState('')
-  const [uniTuitionPrice, setUniTuitionPrice] = useState('')
   const [editUserTarget, setEditUserTarget] = useState<AdminUser | null>(null)
   const [editUserRole, setEditUserRole] = useState<Role>('student')
   const [editUserName, setEditUserName] = useState('')
@@ -219,79 +182,6 @@ export function UserManagement() {
       .finally(() => setEditUserSaving(false))
   }
 
-  const openUniversityEditor = (user: AdminUser) => {
-    setEditUniTarget(user)
-    setEditUniError('')
-    setEditUniLoading(true)
-    getUniversityProfileByUser(user.id)
-      .then((p) => {
-        setUniName(p.universityName ?? '')
-        setUniTagline(p.tagline ?? '')
-        setUniEstablishedYear(p.establishedYear != null ? String(p.establishedYear) : '')
-        setUniStudentCount(p.studentCount != null ? String(p.studentCount) : '')
-        setUniCountry(p.country ?? '')
-        setUniCity(p.city ?? '')
-        setUniDescription(p.description ?? '')
-        setUniLogoUrl(p.logoUrl ?? '')
-        setUniFacultyCodes(p.facultyCodes ?? [])
-        setUniFacultyItems((p as { facultyItems?: Record<string, string[]> }).facultyItems ?? {})
-        setUniTargetCountries(p.targetStudentCountries ?? [])
-        setUniMinRequirements(p.minLanguageLevel ?? '')
-        setUniTuitionPrice(p.tuitionPrice != null ? String(p.tuitionPrice) : '')
-      })
-      .catch((e) => {
-        toastApiError(e)
-        setEditUniError(t('common:error', 'Error'))
-      })
-      .finally(() => setEditUniLoading(false))
-  }
-
-  const closeUniversityEditor = () => {
-    if (editUniSaving) return
-    setEditUniTarget(null)
-    setEditUniError('')
-    setUniName('')
-    setUniTagline('')
-    setUniEstablishedYear('')
-    setUniStudentCount('')
-    setUniCountry('')
-    setUniCity('')
-    setUniDescription('')
-    setUniLogoUrl('')
-    setUniFacultyCodes([])
-    setUniFacultyItems({})
-    setUniOpenFacultyId(null)
-    setUniTargetCountries([])
-    setUniMinRequirements('')
-    setUniTuitionPrice('')
-  }
-
-  const handleUniversitySave = () => {
-    if (!editUniTarget || !uniName.trim()) return
-    setEditUniSaving(true)
-    setEditUniError('')
-    updateUniversityProfileByUser(editUniTarget.id, {
-      universityName: uniName.trim(),
-      tagline: uniTagline.trim() || undefined,
-      establishedYear: uniEstablishedYear.trim() ? Number(uniEstablishedYear) : undefined,
-      studentCount: uniStudentCount.trim() ? Number(uniStudentCount) : undefined,
-      country: uniCountry || undefined,
-      city: uniCity.trim() || undefined,
-      description: uniDescription.trim() || undefined,
-      logoUrl: uniLogoUrl.trim() || undefined,
-      facultyCodes: uniFacultyCodes,
-      facultyItems: Object.keys(uniFacultyItems).length ? uniFacultyItems : undefined,
-      targetStudentCountries: uniTargetCountries,
-      minLanguageLevel: uniMinRequirements.trim() || undefined,
-      tuitionPrice: uniTuitionPrice.trim() ? Number(uniTuitionPrice) : undefined,
-    })
-      .then(() => {
-        closeUniversityEditor()
-      })
-      .catch((e) => { toastApiError(e); setEditUniError(t('common:error', 'Error')) })
-      .finally(() => setEditUniSaving(false))
-  }
-
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:users')} icon="Users" />
@@ -359,9 +249,26 @@ export function UserManagement() {
                           ) : (
                             <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
                           )}
-                          {u.role === 'university' && (
-                            <Button variant="secondary" size="sm" onClick={() => openUniversityEditor(u)} disabled={!!actionUserId}>
-                              {t('admin:editUniversityProfile', 'Edit profile')}
+                          {isAdmin && u.role === 'student' && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              type="button"
+                              disabled={!!actionUserId}
+                              onClick={() => navigate(`/admin/users/${u.id}/student-profile`)}
+                            >
+                              {t('admin:editProfile', 'Edit profile')}
+                            </Button>
+                          )}
+                          {isAdmin && u.role === 'university' && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              type="button"
+                              disabled={!!actionUserId}
+                              onClick={() => navigate(`/admin/users/${u.id}/university-profile`)}
+                            >
+                              {t('admin:editProfile', 'Edit profile')}
                             </Button>
                           )}
                           <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
@@ -455,153 +362,6 @@ export function UserManagement() {
             </>
           )}
         </div>
-      </Modal>
-
-      <Modal
-        open={!!editUniTarget}
-        onClose={closeUniversityEditor}
-        title={t('admin:editUniversityProfile', 'Edit university profile')}
-        footer={
-          <>
-            <Button variant="secondary" onClick={closeUniversityEditor} disabled={editUniSaving}>{t('common:cancel')}</Button>
-            <Button onClick={handleUniversitySave} disabled={editUniSaving || !uniName.trim()} loading={editUniSaving}>
-              {t('common:save')}
-            </Button>
-          </>
-        }
-      >
-        {editUniLoading ? (
-          <p className="text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
-        ) : (
-          <div className="space-y-3">
-            {editUniError && <p className="text-sm text-red-500">{editUniError}</p>}
-            <Input label={t('university:universityName', 'University name')} value={uniName} onChange={(e) => setUniName(e.target.value)} />
-            <Input label={t('university:slogan', 'Slogan')} value={uniTagline} onChange={(e) => setUniTagline(e.target.value)} />
-            <Input label={t('university:foundedYear', 'Founded year')} type="number" value={uniEstablishedYear} onChange={(e) => setUniEstablishedYear(e.target.value)} />
-            <Input label={t('university:studentCount', 'Student count')} type="number" value={uniStudentCount} onChange={(e) => setUniStudentCount(e.target.value)} />
-            <Select
-              label={t('university:country', 'Country')}
-              options={COUNTRY_OPTIONS}
-              value={uniCountry}
-              onChange={(e) => setUniCountry(e.target.value)}
-            />
-            <Input label={t('university:city', 'City')} value={uniCity} onChange={(e) => setUniCity(e.target.value)} />
-            <FileUpload
-              label={t('university:logo', 'Logo')}
-              value={uniLogoUrl}
-              onChange={setUniLogoUrl}
-              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
-              hint={t('university:uploadLogoOrUrl', 'Upload from device or paste a direct logo URL below')}
-            />
-            <Input label={t('university:logoUrl', 'Logo URL')} value={uniLogoUrl} onChange={(e) => setUniLogoUrl(e.target.value)} placeholder="https://... or /api/uploads/..." />
-            <Input
-              label={t('university:minRequirements', 'Minimum requirements')}
-              value={uniMinRequirements}
-              onChange={(e) => setUniMinRequirements(e.target.value)}
-              placeholder="e.g. IELTS 6.5, TOEFL 90, programming skills, GPA 3.0"
-            />
-            <Input
-              label={t('university:tuitionPrice', 'Tuition price')}
-              type="number"
-              value={uniTuitionPrice}
-              onChange={(e) => setUniTuitionPrice(e.target.value)}
-              placeholder="Annual cost in main currency"
-            />
-            <Textarea
-              label={t('university:description', 'Description')}
-              rows={4}
-              value={uniDescription}
-              onChange={(e) => setUniDescription(e.target.value)}
-            />
-            <div>
-              <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
-                {t('university:facultiesListTitle', 'Faculties')}
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)] mb-2">{t('university:facultiesHint', 'Select faculties. Expand to customize items.')}</p>
-              <div className="grid gap-2 sm:grid-cols-2 max-h-48 overflow-y-auto">
-                {FIELD_OF_STUDY.map((cat) => {
-                  const selected = uniFacultyCodes.includes(cat.id)
-                  const open = uniOpenFacultyId === cat.id
-                  const items = uniFacultyItems[cat.id] ?? cat.items
-                  return (
-                    <div
-                      key={cat.id}
-                      className={`rounded-lg border-2 p-2 transition-all ${selected ? 'border-primary-accent' : 'border-[var(--color-border)]'}`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <Checkbox
-                          checked={selected}
-                          onChange={(e) => {
-                            const next = e.target.checked
-                              ? [...uniFacultyCodes, cat.id].slice(0, 50)
-                              : uniFacultyCodes.filter((x) => x !== cat.id)
-                            setUniFacultyCodes(next)
-                            if (!e.target.checked) {
-                              const { [cat.id]: _, ...rest } = uniFacultyItems
-                              setUniFacultyItems(rest)
-                            }
-                          }}
-                          label={<span className="text-sm truncate">{t(cat.titleKey)}</span>}
-                          className="flex-1 min-w-0"
-                        />
-                        {selected && (
-                          <button
-                            type="button"
-                            onClick={() => setUniOpenFacultyId(open ? null : cat.id)}
-                            className="p-1 rounded text-[var(--color-text-muted)] hover:bg-[var(--color-border)]"
-                            aria-expanded={open}
-                          >
-                            <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                      {open && selected && (
-                        <div className="mt-2 pt-2 border-t border-[var(--color-border)] space-y-1 max-h-32 overflow-y-auto">
-                          {cat.items.map((it) => {
-                            const inc = items.includes(it)
-                            return (
-                              <Checkbox
-                                key={it}
-                                checked={inc}
-                                onChange={() => {
-                                  const list = uniFacultyItems[cat.id] ?? cat.items
-                                  const next = inc ? list.filter((x) => x !== it) : [...list, it]
-                                  setUniFacultyItems({ ...uniFacultyItems, [cat.id]: next })
-                                }}
-                                label={<span className={inc ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>{it}</span>}
-                                className="text-xs"
-                              />
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
-                {t('university:targetStudentCountries', 'Preferred student countries')}
-              </p>
-              <ChipSelect
-                options={COUNTRY_CODE_OPTIONS.map((c) => c.label)}
-                value={uniTargetCountries.map((code) => COUNTRY_CODE_OPTIONS.find((c) => c.code === code)?.label ?? code)}
-                onChange={(labels) => {
-                  const codes = labels
-                    .map((label) => COUNTRY_CODE_OPTIONS.find((c) => c.label === label)?.code)
-                    .filter((v): v is NonNullable<typeof v> => Boolean(v))
-                    .map((v) => String(v))
-                  setUniTargetCountries(codes)
-                }}
-                max={10}
-                placeholder={t('university:targetStudentCountriesPlaceholder', 'Select countries')}
-              />
-            </div>
-          </div>
-        )}
       </Modal>
 
       <Modal

@@ -55,6 +55,8 @@ const UniversityFlyerEditorPage = lazy(() => import('@/pages/university/Universi
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })))
 const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics').then((m) => ({ default: m.AdminAnalytics })))
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
+const AdminStudentProfile = lazy(() => import('@/pages/admin/AdminStudentProfile').then((m) => ({ default: m.AdminStudentProfile })))
+const AdminUniversityProfile = lazy(() => import('@/pages/admin/AdminUniversityProfile').then((m) => ({ default: m.AdminUniversityProfile })))
 const Verification = lazy(() => import('@/pages/admin/Verification').then((m) => ({ default: m.Verification })))
 const AdminDocuments = lazy(() => import('@/pages/admin/AdminDocuments').then((m) => ({ default: m.AdminDocuments })))
 const AdminScholarships = lazy(() => import('@/pages/admin/AdminScholarships').then((m) => ({ default: m.AdminScholarships })))
@@ -264,6 +266,8 @@ export function Router() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="users" element={<UserManagement />} />
+          <Route path="users/:userId/student-profile" element={<AdminStudentProfile />} />
+          <Route path="users/:userId/university-profile" element={<AdminUniversityProfile />} />
           <Route path="verification" element={<Verification />} />
           <Route path="universities" element={<AdminUniversities />} />
           <Route path="faculties" element={<AdminFaculties />} />

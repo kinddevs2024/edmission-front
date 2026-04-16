@@ -14,7 +14,9 @@ import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { useTranslation } from 'react-i18next'
 import { getProfile, updateProfile } from '@/services/university'
+import { getUniversityProfileByUser, updateUniversityProfileByUser } from '@/services/admin'
 import { getApiError, getProfile as refreshAuthUser } from '@/services/auth'
+import { notifySuccess } from '@/utils/notify'
 import { getImageUrl } from '@/services/upload'
 import type { UniversityProfile } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
@@ -58,7 +60,12 @@ const COUNTRY_CODE_OPTIONS = [
   { code: 'CN', label: 'China' },
 ] as const
 
-export function UniversityProfilePage() {
+type UniversityProfilePageProps = {
+  /** Admin: edit this university account’s profile (same form as /university/profile). */
+  adminEditUserId?: string
+}
+
+export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePageProps = {}) {
   const { t } = useTranslation(['university', 'common'])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -80,68 +87,142 @@ export function UniversityProfilePage() {
   useEffect(() => setLogoPreviewError(false), [logoValue])
 
   useEffect(() => {
-    getProfile()
-      .then((data) => {
-        setProfile(data)
-        reset({
-          name: data.name ?? '',
-          slogan: data.slogan ?? '',
-          foundedYear: data.foundedYear ?? undefined,
-          studentCount: data.studentCount ?? undefined,
-          rating: data.rating ?? undefined,
-          country: data.country ?? '',
-          city: data.city ?? '',
-          description: data.description ?? '',
-          logo: data.logo ?? '',
-          coverImage: (data as { coverImage?: string; coverImageUrl?: string }).coverImage
-            ?? (data as { coverImageUrl?: string }).coverImageUrl
-            ?? '',
-          facultyCodes: data.facultyCodes ?? [],
-          facultyItems: data.facultyItems ?? {},
-          targetStudentCountries: data.targetStudentCountries ?? [],
-          minLanguageLevel: data.minLanguageLevel ?? '',
-          ieltsMinBand: (data as { ieltsMinBand?: number }).ieltsMinBand ?? undefined,
-          gpaMinMode: ((data as { gpaMinMode?: string }).gpaMinMode as 'scale' | 'percent' | '') ?? '',
-          gpaMinValue: (data as { gpaMinValue?: number }).gpaMinValue ?? undefined,
-          tuitionPrice: data.tuitionPrice ?? undefined,
+    const load = adminEditUserId
+      ? getUniversityProfileByUser(adminEditUserId).then((p) => {
+          reset({
+            name: p.universityName ?? '',
+            slogan: p.tagline ?? '',
+            foundedYear: p.establishedYear ?? undefined,
+            studentCount: p.studentCount ?? undefined,
+            rating: p.rating ?? undefined,
+            country: p.country ?? '',
+            city: p.city ?? '',
+            description: p.description ?? '',
+            logo: p.logoUrl ?? '',
+            coverImage: p.coverImageUrl ?? '',
+            facultyCodes: p.facultyCodes ?? [],
+            facultyItems: p.facultyItems ?? {},
+            targetStudentCountries: p.targetStudentCountries ?? [],
+            minLanguageLevel: p.minLanguageLevel ?? '',
+            ieltsMinBand: p.ieltsMinBand ?? undefined,
+            gpaMinMode: (p.gpaMinMode === 'scale' || p.gpaMinMode === 'percent' ? p.gpaMinMode : '') as '' | 'scale' | 'percent',
+            gpaMinValue: p.gpaMinValue ?? undefined,
+            tuitionPrice: p.tuitionPrice ?? undefined,
+          })
+          setProfile(null)
         })
-      })
-      .catch((e) => setError(getApiError(e).message))
-      .finally(() => setLoading(false))
-  }, [reset])
+      : getProfile()
+          .then((data) => {
+            setProfile(data)
+            reset({
+              name: data.name ?? '',
+              slogan: data.slogan ?? '',
+              foundedYear: data.foundedYear ?? undefined,
+              studentCount: data.studentCount ?? undefined,
+              rating: data.rating ?? undefined,
+              country: data.country ?? '',
+              city: data.city ?? '',
+              description: data.description ?? '',
+              logo: data.logo ?? '',
+              coverImage: (data as { coverImage?: string; coverImageUrl?: string }).coverImage
+                ?? (data as { coverImageUrl?: string }).coverImageUrl
+                ?? '',
+              facultyCodes: data.facultyCodes ?? [],
+              facultyItems: data.facultyItems ?? {},
+              targetStudentCountries: data.targetStudentCountries ?? [],
+              minLanguageLevel: data.minLanguageLevel ?? '',
+              ieltsMinBand: (data as { ieltsMinBand?: number }).ieltsMinBand ?? undefined,
+              gpaMinMode: ((data as { gpaMinMode?: string }).gpaMinMode as 'scale' | 'percent' | '') ?? '',
+              gpaMinValue: (data as { gpaMinValue?: number }).gpaMinValue ?? undefined,
+              tuitionPrice: data.tuitionPrice ?? undefined,
+            })
+          })
+    load.catch((e) => setError(getApiError(e).message)).finally(() => setLoading(false))
+  }, [adminEditUserId, reset])
 
   const onSubmit = async (data: FormData) => {
     setError('')
     setSaving(true)
     try {
-      const updated = await updateProfile({
-        name: data.name,
-        slogan: data.slogan || undefined,
-        foundedYear: data.foundedYear ?? undefined,
-        studentCount: data.studentCount ?? undefined,
-        rating: data.rating ?? undefined,
-        country: data.country || undefined,
-        city: data.city || undefined,
-        description: data.description || undefined,
-        logo: data.logo || undefined,
-        coverImage: data.coverImage || undefined,
-        facultyCodes: data.facultyCodes ?? [],
-        facultyItems: data.facultyItems ?? undefined,
-        targetStudentCountries: data.targetStudentCountries ?? [],
-        minLanguageLevel: data.minLanguageLevel || undefined,
-        ieltsMinBand: data.ieltsMinBand != null && Number.isFinite(data.ieltsMinBand) ? data.ieltsMinBand : undefined,
-        gpaMinMode:
-          data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent' ? data.gpaMinMode : undefined,
-        gpaMinValue:
-          data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent'
-            ? data.gpaMinValue != null && Number.isFinite(data.gpaMinValue)
-              ? data.gpaMinValue
-              : undefined
-            : undefined,
-        tuitionPrice: data.tuitionPrice ?? undefined,
-      })
-      setProfile(updated)
-      await refreshAuthUser().catch(() => {})
+      if (adminEditUserId) {
+        await updateUniversityProfileByUser(adminEditUserId, {
+          universityName: data.name.trim(),
+          tagline: data.slogan?.trim() || undefined,
+          establishedYear: data.foundedYear ?? undefined,
+          studentCount: data.studentCount ?? undefined,
+          rating: data.rating ?? undefined,
+          country: data.country || undefined,
+          city: data.city?.trim() || undefined,
+          description: data.description?.trim() || undefined,
+          logoUrl: data.logo?.trim() || undefined,
+          coverImageUrl: data.coverImage?.trim() || undefined,
+          facultyCodes: data.facultyCodes ?? [],
+          facultyItems: Object.keys(data.facultyItems ?? {}).length ? data.facultyItems : undefined,
+          targetStudentCountries: data.targetStudentCountries ?? [],
+          minLanguageLevel: data.minLanguageLevel?.trim() || undefined,
+          ieltsMinBand: data.ieltsMinBand != null && Number.isFinite(data.ieltsMinBand) ? data.ieltsMinBand : null,
+          gpaMinMode:
+            data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent' ? data.gpaMinMode : null,
+          gpaMinValue:
+            data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent'
+              ? data.gpaMinValue != null && Number.isFinite(data.gpaMinValue)
+                ? data.gpaMinValue
+                : null
+              : null,
+          tuitionPrice: data.tuitionPrice ?? undefined,
+        })
+        const p = await getUniversityProfileByUser(adminEditUserId)
+        reset({
+          name: p.universityName ?? '',
+          slogan: p.tagline ?? '',
+          foundedYear: p.establishedYear ?? undefined,
+          studentCount: p.studentCount ?? undefined,
+          rating: p.rating ?? undefined,
+          country: p.country ?? '',
+          city: p.city ?? '',
+          description: p.description ?? '',
+          logo: p.logoUrl ?? '',
+          coverImage: p.coverImageUrl ?? '',
+          facultyCodes: p.facultyCodes ?? [],
+          facultyItems: p.facultyItems ?? {},
+          targetStudentCountries: p.targetStudentCountries ?? [],
+          minLanguageLevel: p.minLanguageLevel ?? '',
+          ieltsMinBand: p.ieltsMinBand ?? undefined,
+          gpaMinMode: (p.gpaMinMode === 'scale' || p.gpaMinMode === 'percent' ? p.gpaMinMode : '') as '' | 'scale' | 'percent',
+          gpaMinValue: p.gpaMinValue ?? undefined,
+          tuitionPrice: p.tuitionPrice ?? undefined,
+        })
+        notifySuccess(t('common:saved', 'Saved'))
+      } else {
+        const updated = await updateProfile({
+          name: data.name,
+          slogan: data.slogan || undefined,
+          foundedYear: data.foundedYear ?? undefined,
+          studentCount: data.studentCount ?? undefined,
+          rating: data.rating ?? undefined,
+          country: data.country || undefined,
+          city: data.city || undefined,
+          description: data.description || undefined,
+          logo: data.logo || undefined,
+          coverImage: data.coverImage || undefined,
+          facultyCodes: data.facultyCodes ?? [],
+          facultyItems: data.facultyItems ?? undefined,
+          targetStudentCountries: data.targetStudentCountries ?? [],
+          minLanguageLevel: data.minLanguageLevel || undefined,
+          ieltsMinBand: data.ieltsMinBand != null && Number.isFinite(data.ieltsMinBand) ? data.ieltsMinBand : undefined,
+          gpaMinMode:
+            data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent' ? data.gpaMinMode : undefined,
+          gpaMinValue:
+            data.gpaMinMode === 'scale' || data.gpaMinMode === 'percent'
+              ? data.gpaMinValue != null && Number.isFinite(data.gpaMinValue)
+                ? data.gpaMinValue
+                : undefined
+              : undefined,
+          tuitionPrice: data.tuitionPrice ?? undefined,
+        })
+        setProfile(updated)
+        await refreshAuthUser().catch(() => {})
+      }
     } catch (e) {
       setError(getApiError(e).message)
     } finally {

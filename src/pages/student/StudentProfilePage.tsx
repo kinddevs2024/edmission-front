@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,6 +22,13 @@ import {
   updateMyStudent,
   type CounsellorStudentDocument,
 } from '@/services/counsellor'
+import {
+  getStudentProfileByUser,
+  updateStudentProfileByUser,
+  getStudentDocumentsByUser,
+  addStudentDocumentByUser,
+  deleteStudentDocumentByUser,
+} from '@/services/admin'
 import { getProfileCriteria } from '@/services/options'
 import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
@@ -436,9 +443,11 @@ const COUNTRY_CODE_OPTIONS = [
 type StudentProfilePageProps = {
   studentUserId?: string
   counsellorMode?: boolean
+  /** Admin editing any student — same UI as school counsellor. */
+  adminMode?: boolean
 }
 
-export function StudentProfilePage({ studentUserId, counsellorMode = false }: StudentProfilePageProps = {}) {
+export function StudentProfilePage({ studentUserId, counsellorMode = false, adminMode = false }: StudentProfilePageProps = {}) {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation('student', { useSuspense: false })
   const { user } = useAuth()
@@ -469,10 +478,15 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   const [showUnsavedModal, setShowUnsavedModal] = useState(false)
   /** School counsellor: visibility is edited here (students use /profile → Account). */
   const [counsellorVisibility, setCounsellorVisibility] = useState<'private' | 'public'>('private')
+  const isExternalStudent = Boolean(studentUserId && (counsellorMode || adminMode))
+  const isCounsellorStudent = Boolean(counsellorMode && studentUserId)
+  const isAdminStudent = Boolean(adminMode && studentUserId)
+
   const profileDraftStorageKey = useMemo(() => {
+    if (adminMode && studentUserId) return `admin-student-profile-draft:${studentUserId}`
     if (counsellorMode && studentUserId) return `counsellor-student-profile-draft:${studentUserId}`
     return user?.id ? `student-profile-draft:${user.id}` : null
-  }, [counsellorMode, studentUserId, user?.id])
+  }, [adminMode, counsellorMode, studentUserId, user?.id])
 
   const { register, reset, control, watch, setValue, getValues, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -537,8 +551,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
   const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
   const displayedSections = useMemo(
-    () => (counsellorMode ? SECTIONS : SECTIONS.filter((section) => section.id !== 'documents')),
-    [counsellorMode]
+    () => (isExternalStudent ? SECTIONS : SECTIONS.filter((section) => section.id !== 'documents')),
+    [isExternalStudent]
   )
   const getSectionTitle = (section: { id: SectionId; titleKey: string }) => {
     const langCode = (i18n.resolvedLanguage ?? i18n.language ?? 'en').slice(0, 2) as 'en' | 'ru' | 'uz'
@@ -617,11 +631,13 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     }
   }, [needsDegreeGoal, educationWizardStep])
 
-  const loadCounsellorDocuments = async () => {
-    if (!counsellorMode || !studentUserId) return
+  const loadManagedStudentDocuments = useCallback(async () => {
+    if (!isExternalStudent || !studentUserId) return
     setDocumentsLoading(true)
     try {
-      const docs = await getCounsellorStudentDocuments(studentUserId)
+      const docs = isAdminStudent
+        ? (await getStudentDocumentsByUser(studentUserId!)) as unknown as CounsellorStudentDocument[]
+        : await getCounsellorStudentDocuments(studentUserId!)
       setDocuments(docs)
       setLanguageCertificates(
         docs
@@ -634,7 +650,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     } finally {
       setDocumentsLoading(false)
     }
-  }
+  }, [isAdminStudent, isExternalStudent, studentUserId])
 
   useEffect(() => {
     if (educationStatus !== 'in_school') return
@@ -646,7 +662,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   }, [educationStatus, getValues, setValue])
 
   useEffect(() => {
-    if (counsellorMode) {
+    if (counsellorMode || adminMode) {
       setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label))
       return
     }
@@ -655,12 +671,12 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
         setPreferredCountryOptions(countries)
       })
       .catch(() => setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label)))
-  }, [counsellorMode])
+  }, [counsellorMode, adminMode])
 
   useEffect(() => {
     if (openSection !== 'education') return
-    if (counsellorMode && studentUserId) {
-      loadCounsellorDocuments()
+    if (isExternalStudent && studentUserId) {
+      void loadManagedStudentDocuments()
       return
     }
     getMyDocuments()
@@ -668,12 +684,12 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
         setLanguageCertificates(docs.filter((doc) => doc.type === 'language_certificate'))
       })
       .catch(() => setLanguageCertificates([]))
-  }, [openSection, counsellorMode, studentUserId])
+  }, [openSection, isExternalStudent, studentUserId, loadManagedStudentDocuments])
 
   useEffect(() => {
-    if (openSection !== 'documents' || !counsellorMode || !studentUserId) return
-    loadCounsellorDocuments()
-  }, [openSection, counsellorMode, studentUserId])
+    if (openSection !== 'documents' || !isExternalStudent || !studentUserId) return
+    void loadManagedStudentDocuments()
+  }, [openSection, isExternalStudent, studentUserId, loadManagedStudentDocuments])
 
   useEffect(() => {
     const target = profile?.portfolioCompletionPercent ?? 0
@@ -684,9 +700,11 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   useEffect(() => {
     const load = async () => {
       try {
-        const data = counsellorMode && studentUserId
-          ? await (getCounsellorStudentProfile(studentUserId) as Promise<StudentProfileData>)
-          : await getOwnStudentProfile()
+        const data = isAdminStudent
+          ? (await getStudentProfileByUser(studentUserId!)) as StudentProfileData
+          : isCounsellorStudent
+            ? await (getCounsellorStudentProfile(studentUserId!) as Promise<StudentProfileData>)
+            : await getOwnStudentProfile()
         setProfile(data)
         const initialValues = mapProfileToFormData(data)
         reset(mergeProfileWithDraft(initialValues, profileDraftStorageKey))
@@ -697,7 +715,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       }
     }
     load()
-  }, [profileDraftStorageKey, reset, counsellorMode, studentUserId])
+  }, [profileDraftStorageKey, reset, isAdminStudent, isCounsellorStudent, studentUserId])
 
   useEffect(() => {
     if (!profile) return
@@ -887,7 +905,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
           : undefined,
       budgetCurrency: data.budgetCurrency || undefined,
     }
-    if (counsellorMode) {
+    if (isExternalStudent) {
       return { ...base, profileVisibility: counsellorVisibility }
     }
     return base
@@ -898,14 +916,18 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     setSaving(true)
     try {
       const data = getValues()
-      if (counsellorMode && studentUserId) {
-        await updateMyStudent(studentUserId, buildPayload(data))
+      if (isAdminStudent) {
+        await updateStudentProfileByUser(studentUserId!, buildPayload(data))
+      } else if (isCounsellorStudent) {
+        await updateMyStudent(studentUserId!, buildPayload(data))
       } else {
         await updateOwnStudentProfile(buildPayload(data))
       }
-      const fullProfile = counsellorMode && studentUserId
-        ? await (getCounsellorStudentProfile(studentUserId) as Promise<StudentProfileData>)
-        : await getOwnStudentProfile()
+      const fullProfile = isAdminStudent
+        ? (await getStudentProfileByUser(studentUserId!)) as StudentProfileData
+        : isCounsellorStudent
+          ? await (getCounsellorStudentProfile(studentUserId!) as Promise<StudentProfileData>)
+          : await getOwnStudentProfile()
       setProfile(fullProfile)
       reset(mapProfileToFormData(fullProfile))
       if (profileDraftStorageKey) {
@@ -924,24 +946,29 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     }
   }
 
-  const verified = counsellorMode ? null : user?.studentProfile?.verifiedAt
+  const verified = isExternalStudent ? null : user?.studentProfile?.verifiedAt
   const minimalChecklist = getMinimalChecklist(profile, t)
   const minimalChecklistDone = minimalChecklist.filter((item) => item.done).length
-  const handleAddCounsellorDocument = async () => {
-    if (!counsellorMode || !studentUserId || !docFileUrl.trim()) return
+  const handleAddManagedStudentDocument = async () => {
+    if (!isExternalStudent || !studentUserId || !docFileUrl.trim()) return
     setDocAdding(true)
     try {
-      await addStudentDocument(studentUserId, {
+      const payload = {
         type: docType,
         fileUrl: docFileUrl.trim(),
         name: docName.trim() || undefined,
         certificateType: docType === 'language_certificate' ? docCertificateType : undefined,
         score: docType === 'language_certificate' ? docScore.trim() || undefined : undefined,
-      })
+      }
+      if (isAdminStudent) {
+        await addStudentDocumentByUser(studentUserId!, payload)
+      } else {
+        await addStudentDocument(studentUserId!, payload)
+      }
       setDocName('')
       setDocScore('')
       setDocFileUrl('')
-      await loadCounsellorDocuments()
+      await loadManagedStudentDocuments()
     } catch (e) {
       setError(getApiError(e).message)
     } finally {
@@ -949,11 +976,15 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     }
   }
 
-  const handleDeleteCounsellorDocument = async (docId: string) => {
-    if (!counsellorMode || !studentUserId) return
+  const handleDeleteManagedStudentDocument = async (docId: string) => {
+    if (!isExternalStudent || !studentUserId) return
     try {
-      await deleteStudentDocument(studentUserId, docId)
-      await loadCounsellorDocuments()
+      if (isAdminStudent) {
+        await deleteStudentDocumentByUser(studentUserId!, docId)
+      } else {
+        await deleteStudentDocument(studentUserId!, docId)
+      }
+      await loadManagedStudentDocuments()
     } catch (e) {
       setError(getApiError(e).message)
     }
@@ -1068,7 +1099,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
         </Card>
       )}
 
-      {counsellorMode && profile && studentUserId && (
+      {isExternalStudent && profile && studentUserId && (
         <Card className="p-4 sm:p-5 border border-[var(--color-border)]">
           <div className="flex items-center gap-2 mb-2">
             <Lock className="w-5 h-5 text-[var(--color-text-muted)] shrink-0" aria-hidden />
@@ -1079,16 +1110,21 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
             <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
               <input
                 type="radio"
-                name="counsellor-profile-visibility"
+                name="external-profile-visibility"
                 value="private"
                 className="mt-1"
                 checked={counsellorVisibility === 'private'}
                 onChange={() => {
                   if (counsellorVisibility === 'private') return
                   setCounsellorVisibility('private')
-                  updateMyStudent(studentUserId, { profileVisibility: 'private' })
+                  const req = isAdminStudent
+                    ? updateStudentProfileByUser(studentUserId!, { profileVisibility: 'private' })
+                    : updateMyStudent(studentUserId!, { profileVisibility: 'private' })
+                  req
                     .then(async () => {
-                      const full = (await getCounsellorStudentProfile(studentUserId)) as StudentProfileData
+                      const full = (isAdminStudent
+                        ? (await getStudentProfileByUser(studentUserId!)) as StudentProfileData
+                        : (await getCounsellorStudentProfile(studentUserId!)) as StudentProfileData)
                       setProfile(full)
                       notifySuccess(t('common:saved', 'Saved'))
                     })
@@ -1106,16 +1142,21 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
             <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
               <input
                 type="radio"
-                name="counsellor-profile-visibility"
+                name="external-profile-visibility"
                 value="public"
                 className="mt-1"
                 checked={counsellorVisibility === 'public'}
                 onChange={() => {
                   if (counsellorVisibility === 'public') return
                   setCounsellorVisibility('public')
-                  updateMyStudent(studentUserId, { profileVisibility: 'public' })
+                  const req = isAdminStudent
+                    ? updateStudentProfileByUser(studentUserId!, { profileVisibility: 'public' })
+                    : updateMyStudent(studentUserId!, { profileVisibility: 'public' })
+                  req
                     .then(async () => {
-                      const full = (await getCounsellorStudentProfile(studentUserId)) as StudentProfileData
+                      const full = (isAdminStudent
+                        ? (await getStudentProfileByUser(studentUserId!)) as StudentProfileData
+                        : (await getCounsellorStudentProfile(studentUserId!)) as StudentProfileData)
                       setProfile(full)
                       notifySuccess(t('common:saved', 'Saved'))
                     })
@@ -1146,7 +1187,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
               key={sec.id}
               type="button"
               onClick={() => {
-                if (isDocuments && counsellorMode && studentUserId) {
+                if (isDocuments && isCounsellorStudent) {
                   navigate(`/school/students/${studentUserId}/documents`)
                   return
                 }
@@ -1362,7 +1403,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                     </div>
                   )}
 
-                  {!counsellorMode ? (
+                  {!isExternalStudent ? (
                     <div className="flex items-center justify-between gap-3 p-3 mt-4 rounded-xl border border-[var(--color-primary-accent)]/30 bg-[var(--color-primary-accent)]/5">
                       <span className="text-sm text-[var(--color-text)]">{t('linkToSchoolHint')}</span>
                       <Link to="/student/schools" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-[var(--color-primary-accent)] font-medium hover:underline">
@@ -1402,7 +1443,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                       <p className="text-sm text-[var(--color-text-muted)]">
                         {t('student:certificateUploadHint', 'Confirm your language level with a certificate.')}
                       </p>
-                      {!counsellorMode ? (
+                      {!isExternalStudent ? (
                         <Link to="/student/documents" className="inline-flex items-center rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] hover:border-[var(--color-primary-accent)] hover:text-[var(--color-primary-accent)]">
                           {t('student:uploadCertificate', 'Загрузить сертификат')}
                         </Link>
@@ -1767,7 +1808,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
             </>
           )}
 
-          {openSection === 'documents' && counsellorMode && (
+          {openSection === 'documents' && isExternalStudent && (
             <div className="space-y-4">
               <p className="text-sm text-[var(--color-text-muted)]">
                 {t('student:documentsHint', 'Add transcripts, diplomas, language certificates, passport, etc.')}
@@ -1826,7 +1867,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
               <Button
                 type="button"
                 size="sm"
-                onClick={handleAddCounsellorDocument}
+                onClick={handleAddManagedStudentDocument}
                 disabled={docAdding || !docFileUrl.trim()}
                 loading={docAdding}
                 icon={<Plus className="w-4 h-4" />}
@@ -1863,7 +1904,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                           variant="ghost"
                           size="sm"
                           className="text-red-500"
-                          onClick={() => handleDeleteCounsellorDocument(doc.id)}
+                          onClick={() => handleDeleteManagedStudentDocument(doc.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

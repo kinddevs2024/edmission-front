@@ -54,6 +54,11 @@ export interface AdminUniversityProfile {
   targetStudentCountries?: string[]
   minLanguageLevel?: string
   tuitionPrice?: number
+  rating?: number
+  coverImageUrl?: string
+  ieltsMinBand?: number
+  gpaMinMode?: 'scale' | 'percent' | null
+  gpaMinValue?: number | null
 }
 
 export interface CreateAdminUserPayload {
@@ -295,6 +300,7 @@ export async function resetUserPassword(userId: string, password: string): Promi
 export async function getUniversityProfileByUser(userId: string): Promise<AdminUniversityProfile> {
   const { data } = await api.get<Record<string, unknown>>(`/admin/users/${userId}/university-profile`)
   const raw = data ?? {}
+  const gpaMode = raw.gpaMinMode != null ? String(raw.gpaMinMode) : ''
   return {
     id: String(raw.id ?? raw._id ?? ''),
     userId: String(raw.userId ?? ''),
@@ -313,6 +319,11 @@ export async function getUniversityProfileByUser(userId: string): Promise<AdminU
     targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
     minLanguageLevel: raw.minLanguageLevel != null ? String(raw.minLanguageLevel) : undefined,
     tuitionPrice: raw.tuitionPrice != null ? Number(raw.tuitionPrice) : undefined,
+    rating: raw.rating != null ? Number(raw.rating) : undefined,
+    coverImageUrl: raw.coverImageUrl != null ? String(raw.coverImageUrl) : undefined,
+    ieltsMinBand: raw.ieltsMinBand != null ? Number(raw.ieltsMinBand) : undefined,
+    gpaMinMode: gpaMode === 'scale' || gpaMode === 'percent' ? gpaMode : raw.gpaMinMode === null ? null : undefined,
+    gpaMinValue: raw.gpaMinValue != null ? Number(raw.gpaMinValue) : raw.gpaMinValue === null ? null : undefined,
   }
 }
 
@@ -327,15 +338,21 @@ export async function updateUniversityProfileByUser(
     city?: string
     description?: string
     logoUrl?: string
+    coverImageUrl?: string
     facultyCodes?: string[]
     facultyItems?: Record<string, string[]>
     targetStudentCountries?: string[]
     minLanguageLevel?: string
     tuitionPrice?: number
+    rating?: number
+    ieltsMinBand?: number | null
+    gpaMinMode?: 'scale' | 'percent' | null
+    gpaMinValue?: number | null
   }
 ): Promise<AdminUniversityProfile> {
   const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/university-profile`, payload)
   const raw = data ?? {}
+  const gpaMode = raw.gpaMinMode != null ? String(raw.gpaMinMode) : ''
   return {
     id: String(raw.id ?? raw._id ?? ''),
     userId: String(raw.userId ?? ''),
@@ -348,10 +365,58 @@ export async function updateUniversityProfileByUser(
     description: raw.description != null ? String(raw.description) : undefined,
     logoUrl: raw.logoUrl != null ? String(raw.logoUrl) : undefined,
     facultyCodes: Array.isArray(raw.facultyCodes) ? raw.facultyCodes.map((x) => String(x)) : [],
+    facultyItems: raw.facultyItems && typeof raw.facultyItems === 'object' && !Array.isArray(raw.facultyItems)
+      ? raw.facultyItems as Record<string, string[]>
+      : undefined,
     targetStudentCountries: Array.isArray(raw.targetStudentCountries) ? raw.targetStudentCountries.map((x) => String(x)) : [],
     minLanguageLevel: raw.minLanguageLevel != null ? String(raw.minLanguageLevel) : undefined,
     tuitionPrice: raw.tuitionPrice != null ? Number(raw.tuitionPrice) : undefined,
+    rating: raw.rating != null ? Number(raw.rating) : undefined,
+    coverImageUrl: raw.coverImageUrl != null ? String(raw.coverImageUrl) : undefined,
+    ieltsMinBand: raw.ieltsMinBand != null ? Number(raw.ieltsMinBand) : undefined,
+    gpaMinMode: gpaMode === 'scale' || gpaMode === 'percent' ? gpaMode : raw.gpaMinMode === null ? null : undefined,
+    gpaMinValue: raw.gpaMinValue != null ? Number(raw.gpaMinValue) : raw.gpaMinValue === null ? null : undefined,
   }
+}
+
+export async function getStudentProfileByUser(userId: string): Promise<Record<string, unknown>> {
+  const { data } = await api.get<Record<string, unknown>>(`/admin/users/${userId}/student-profile`)
+  return data ?? {}
+}
+
+export async function updateStudentProfileByUser(userId: string, patch: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/student-profile`, patch)
+  return data ?? {}
+}
+
+export async function getStudentDocumentsByUser(studentUserId: string): Promise<Array<Record<string, unknown>>> {
+  const { data } = await api.get<Array<Record<string, unknown>>>(`/admin/users/${studentUserId}/student-documents`)
+  return data ?? []
+}
+
+export async function addStudentDocumentByUser(
+  studentUserId: string,
+  payload: {
+    type: string
+    source?: 'upload' | 'editor'
+    fileUrl?: string
+    name?: string
+    certificateType?: string
+    score?: string
+    previewImageUrl?: string
+    canvasJson?: string
+    pageFormat?: DocumentPageFormat
+    width?: number
+    height?: number
+    editorVersion?: string
+  }
+): Promise<Record<string, unknown>> {
+  const { data } = await api.post<Record<string, unknown>>(`/admin/users/${studentUserId}/student-documents`, payload)
+  return data ?? {}
+}
+
+export async function deleteStudentDocumentByUser(studentUserId: string, documentId: string): Promise<void> {
+  await api.delete(`/admin/users/${studentUserId}/student-documents/${documentId}`)
 }
 
 export interface AdminOffer {
