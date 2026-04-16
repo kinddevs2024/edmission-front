@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { uploadFile } from '@/services/upload'
 import { useDocumentEditorStore } from '@/store/documentEditorStore'
 import { DocumentCanvasStage } from './DocumentCanvasStage'
-import { MERGE_TAG_GROUPS, createSamplePayload, resolveScene, stringifyScene } from '@/utils/documentScene'
+import { MERGE_TAG_GROUPS, coerceCanvasString, createSamplePayload, resolveScene, stringifyScene } from '@/utils/documentScene'
 import type { DocumentTemplate, EditableSceneDocument, EditorDocumentType } from '@/types/documentModule'
 import { toastApiError } from '@/utils/toastError'
 
@@ -341,7 +341,7 @@ export function DocumentEditor({
                         className="rounded-full border border-[var(--color-border)] px-2 py-1 text-xs text-[var(--color-text-muted)] hover:border-primary-accent hover:text-primary-accent"
                         onClick={() => {
                           if (selectedElement?.type !== 'text') return
-                          updateElement(selectedElement.id, { content: `${selectedElement.content ?? ''}${selectedElement.content ? ' ' : ''}${tag}` }, true)
+                          updateElement(selectedElement.id, { content: `${coerceCanvasString(selectedElement.content)}${coerceCanvasString(selectedElement.content) ? ' ' : ''}${tag}` }, true)
                         }}
                       >
                         {tag}
@@ -459,7 +459,7 @@ export function DocumentEditor({
               {selectedElement.type === 'text' ? (
                 <Textarea
                   label="Text content"
-                  value={selectedElement.content ?? ''}
+                  value={coerceCanvasString(selectedElement.content)}
                   onChange={(event) => updateElement(selectedElement.id, { content: event.target.value }, true)}
                   rows={4}
                 />

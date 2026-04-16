@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { DocumentPageFormat, DocumentScene, DocumentSceneElement, DocumentTemplate, EditableSceneDocument, EditorDocumentType } from '@/types/documentModule'
-import { clampElementToPage, createBlankScene, stringifyScene } from '@/utils/documentScene'
+import { clampElementToPage, createBlankScene, parseScene, stringifyScene } from '@/utils/documentScene'
 
 type HistorySnapshot = string
 
@@ -73,7 +73,7 @@ export const useDocumentEditorStore = create<DocumentEditorState>((set, get) => 
     get().loadSceneDocument(template, previewData),
   loadSceneDocument: (document, previewData = {}) =>
     set(() => ({
-      scene: JSON.parse(document.canvasJson) as DocumentScene,
+      scene: parseScene(document.canvasJson, document.pageFormat ?? 'A4_PORTRAIT', document.width, document.height),
       selectedElementId: null,
       stageZoom: 0.72,
       stagePosition: { x: 0, y: 0 },
@@ -244,7 +244,12 @@ export const useDocumentEditorStore = create<DocumentEditorState>((set, get) => 
       const nextHistory = state.history.slice(0, -1)
       return {
         ...state,
-        scene: JSON.parse(nextHistory[nextHistory.length - 1]) as DocumentScene,
+        scene: parseScene(
+          nextHistory[nextHistory.length - 1],
+          state.metadata.pageFormat,
+          state.metadata.width,
+          state.metadata.height
+        ),
         history: nextHistory,
         future: nextFuture,
       }
@@ -255,7 +260,7 @@ export const useDocumentEditorStore = create<DocumentEditorState>((set, get) => 
       const next = state.future[0]
       return {
         ...state,
-        scene: JSON.parse(next) as DocumentScene,
+        scene: parseScene(next, state.metadata.pageFormat, state.metadata.width, state.metadata.height),
         history: [...state.history, next],
         future: state.future.slice(1),
       }

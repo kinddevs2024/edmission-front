@@ -115,11 +115,73 @@ export function stringifyScene(scene: DocumentScene) {
   return JSON.stringify(scene)
 }
 
-export function resolveTemplateText(value: string | undefined, payload: Record<string, unknown>) {
-  if (typeof value !== 'string') return value
-  return value.replace(/{{\s*([^}]+)\s*}}/g, (_match, rawPath: string) => {
+/**
+ * Canvas JSON sometimes carries non-strings (e.g. Mongo BSON Binary serialized as `{ buffer: ... }`).
+ * Those must never reach Konva `text` or React DOM — they trigger "Objects are not valid as a React child".
+ */
+export function coerceCanvasString(value: unknown): string {
+  if (value == null) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value !== 'object') return ''
+
+  const v = value as Record<string, unknown>
+
+  if (v.type === 'Buffer' && Array.isArray(v.data)) {
+    try {
+      const bytes = Uint8Array.from(v.data as number[])
+      return new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+    } catch {
+      return ''
+    }
+  }
+
+  if (v.$binary && typeof v.$binary === 'object' && v.$binary !== null) {
+    const base64 = (v.$binary as { base64?: string }).base64
+    if (typeof base64 === 'string') {
+      try {
+        const binary = atob(base64)
+        const bytes = new Uint8Array(binary.length)
+        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+      } catch {
+        return ''
+      }
+    }
+  }
+
+  if ('buffer' in v && v.buffer != null) {
+    const b = v.buffer
+    try {
+      if (b instanceof ArrayBuffer) {
+        return new TextDecoder('utf-8', { fatal: false }).decode(new Uint8Array(b))
+      }
+      if (typeof b === 'object' && b !== null && Array.isArray((b as { data?: unknown }).data)) {
+        const bytes = Uint8Array.from((b as { data: number[] }).data)
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes)
+      }
+    } catch {
+      return ''
+    }
+  }
+
+  return ''
+}
+
+export function resolveTemplateText(value: unknown, payload: Record<string, unknown>): string {
+  const str =
+    value === undefined || value === null
+      ? ''
+      : typeof value === 'string'
+        ? value
+        : coerceCanvasString(value)
+  return str.replace(/{{\s*([^}]+)\s*}}/g, (_match, rawPath: string) => {
     const found = getPathValue(payload, rawPath.trim())
-    return found == null ? '' : String(found)
+    if (found == null) return ''
+    if (typeof found === 'string' || typeof found === 'number' || typeof found === 'boolean') {
+      return String(found)
+    }
+    return coerceCanvasString(found)
   })
 }
 
@@ -208,6 +270,13 @@ function getPathValue(obj: Record<string, unknown>, path: string): unknown {
   }, obj)
 }
 
+function normalizeTextField(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value === 'string') return value
+  const coerced = coerceCanvasString(value)
+  return coerced === '' ? undefined : coerced
+}
+
 function normalizeElement(element: Partial<DocumentSceneElement>) {
   if (!element.type || !element.id) return null
   return {
@@ -221,8 +290,8 @@ function normalizeElement(element: Partial<DocumentSceneElement>) {
     locked: Boolean(element.locked),
     layer: typeof element.layer === 'number' ? element.layer : 0,
     opacity: typeof element.opacity === 'number' ? element.opacity : 1,
-    content: element.content,
-    src: element.src,
+    content: normalizeTextField(element.content),
+    src: normalizeTextField(element.src),
     fill: element.fill ?? '#0f172a',
     stroke: element.stroke ?? '#cbd5e1',
     strokeWidth: typeof element.strokeWidth === 'number' ? element.strokeWidth : 1,

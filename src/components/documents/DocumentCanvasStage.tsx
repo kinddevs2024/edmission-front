@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Text, Line, Image as KonvaImage, Transformer } from
 import type Konva from 'konva'
 import { getImageUrl } from '@/services/upload'
 import type { DocumentScene, DocumentSceneElement } from '@/types/documentModule'
-import { clampElementToPage, snapValue } from '@/utils/documentScene'
+import { clampElementToPage, coerceCanvasString, snapValue } from '@/utils/documentScene'
 
 interface DocumentCanvasStageProps {
   scene: DocumentScene
@@ -256,7 +256,7 @@ function CanvasElement({
         {...commonProps}
         width={element.width}
         height={element.height}
-        text={element.content ?? 'Text'}
+        text={coerceCanvasString(element.content) || 'Text'}
         fill={element.fill ?? '#0f172a'}
         fontSize={element.fontSize ?? 24}
         fontFamily={element.fontFamily ?? 'Georgia'}
