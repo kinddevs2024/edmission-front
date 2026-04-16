@@ -23,6 +23,8 @@ export function navigateAfterLogin(navigate: NavigateFunction, user: User, opts?
     const up = user.universityProfile
     if (!up?.id) navigate('/university/select', { replace: rep })
     else navigate(up.verified ? '/university/dashboard' : '/university/pending', { replace: rep })
+  } else if (user.role === 'university_multi_manager') {
+    navigate('/university-multi-manager', { replace: rep })
   } else if (user.role === 'school_counsellor') navigate('/school/dashboard', { replace: rep })
   else navigate('/admin', { replace: rep })
 }

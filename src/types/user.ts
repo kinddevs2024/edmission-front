@@ -1,6 +1,7 @@
 export type Role =
   | 'student'
   | 'university'
+  | 'university_multi_manager'
   | 'admin'
   | 'school_counsellor'
   | 'counsellor_coordinator'
@@ -58,6 +59,10 @@ export interface User {
     counsellorUserId?: string
   }
   universityProfile?: { id: string; verified?: boolean; universityName?: string; logoUrl?: string }
+  /** When role is `university_multi_manager`: universities this user may open in delegated mode (after admin approval). */
+  managedUniversities?: Array<{ userId: string; universityName: string; logoUrl?: string; verified: boolean }>
+  /** Admin must approve before delegated university APIs work. */
+  universityMultiManagerApproved?: boolean
   totpEnabled?: boolean
 }
 

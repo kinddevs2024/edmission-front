@@ -14,6 +14,7 @@ import {
 } from '@/services/chat'
 import { useSocket } from '@/hooks/useSocket'
 import { useAuthStore } from '@/store/authStore'
+import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
 import { useNotificationStore } from '@/store/notificationStore'
 import { ChatList } from './ChatList'
 import { MessageThread } from './MessageThread'
@@ -41,8 +42,18 @@ function getMessagePreview(message: Message): Chat['lastMessage'] {
 export function ChatView() {
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
-  const currentUserId = useAuthStore((s) => s.user?.id)
-  const role = useAuthStore((s) => s.user?.role) as 'student' | 'university' | undefined
+  const authUser = useAuthStore((s) => s.user)
+  const currentUserId =
+    authUser?.role === 'university_multi_manager'
+      ? (getActAsUniversityUserId() ?? '')
+      : (authUser?.id ?? '')
+  const role = ((): 'student' | 'university' | undefined => {
+    const r = authUser?.role
+    if (r === 'student') return 'student'
+    if (r === 'university') return 'university'
+    if (r === 'university_multi_manager' && getActAsUniversityUserId()) return 'university'
+    return undefined
+  })()
   const [chats, setChats] = useState<Chat[]>([])
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])

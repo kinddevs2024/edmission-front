@@ -8,11 +8,12 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, updateUser, suspendUser, unsuspendUser, deleteUser, resetUserPassword } from '@/services/admin'
+import { createUser, getUsers, getAdminUser, updateUser, suspendUser, unsuspendUser, deleteUser, resetUserPassword } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
@@ -29,6 +30,7 @@ export function UserManagement() {
   const roleLabels = useMemo(() => ({
     student: t('auth:student'),
     university: t('auth:university'),
+    university_multi_manager: t('admin:universityMultiManagerRole', 'Multi-university manager'),
     admin: t('common:admin'),
     manager: t('admin:managerRole', 'Manager'),
     counsellor_coordinator: t('admin:counsellorCoordinator', 'Counsellor coordinator'),
@@ -36,7 +38,7 @@ export function UserManagement() {
   }), [t])
 
   const assignableRoles = useMemo<Role[]>(() => {
-    if (isAdmin) return ['student', 'university', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+    if (isAdmin) return ['student', 'university', 'university_multi_manager', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
     if (isManager) return ['counsellor_coordinator', 'school_counsellor']
     if (isCoordinator) return ['school_counsellor']
     return []
@@ -52,7 +54,7 @@ export function UserManagement() {
   const ROLE_OPTIONS = useMemo(() => {
     const scoped =
       isAdmin
-        ? ['student', 'university', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+        ? ['student', 'university', 'university_multi_manager', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
         : isManager
           ? ['counsellor_coordinator', 'school_counsellor']
           : isCoordinator
@@ -95,6 +97,8 @@ export function UserManagement() {
   const [editUserRole, setEditUserRole] = useState<Role>('student')
   const [editUserName, setEditUserName] = useState('')
   const [editUserSaving, setEditUserSaving] = useState(false)
+  const [editManagerUniversityIdsText, setEditManagerUniversityIdsText] = useState('')
+  const [editManagerApproved, setEditManagerApproved] = useState(false)
   const limit = 20
 
   useEffect(() => {
@@ -168,12 +172,33 @@ export function UserManagement() {
     setEditUserTarget(user)
     setEditUserRole((user.role as Role) || 'student')
     setEditUserName(user.name ?? '')
+    setEditManagerUniversityIdsText('')
+    setEditManagerApproved(false)
+    if (isAdmin) {
+      getAdminUser(user.id)
+        .then((raw) => {
+          if (String(raw.role ?? '') !== 'university_multi_manager') return
+          const ids = (raw.managedUniversityUserIds as unknown[] | undefined) ?? []
+          setEditManagerUniversityIdsText(ids.map((x) => String(x)).filter(Boolean).join('\n'))
+          setEditManagerApproved(Boolean(raw.universityMultiManagerApproved))
+        })
+        .catch(() => {})
+    }
   }
 
   const handleEditUserSave = () => {
     if (!editUserTarget) return
     setEditUserSaving(true)
-    updateUser(editUserTarget.id, { role: editUserRole, name: editUserName.trim() || undefined })
+    const payload: Parameters<typeof updateUser>[1] = { role: editUserRole, name: editUserName.trim() || undefined }
+    if (isAdmin && editUserRole === 'university_multi_manager') {
+      const ids = editManagerUniversityIdsText
+        .split(/[\n,;\s]+/)
+        .map((x) => x.trim())
+        .filter(Boolean)
+      payload.managedUniversityUserIds = [...new Set(ids)]
+      payload.universityMultiManagerApproved = editManagerApproved
+    }
+    updateUser(editUserTarget.id, payload)
       .then((updated) => {
         setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
         setEditUserTarget(null)
@@ -356,6 +381,24 @@ export function UserManagement() {
                 onChange={(e) => setEditUserRole(e.target.value as Role)}
               />
               <Input label={t('common:name')} value={editUserName} onChange={(e) => setEditUserName(e.target.value)} />
+              {isAdmin && editUserRole === 'university_multi_manager' ? (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-[var(--color-text)]">
+                    {t('admin:managedUniversityUserIds', 'Managed university account IDs (one User id per line)')}
+                  </label>
+                  <textarea
+                    className="w-full min-h-[100px] rounded-input border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm"
+                    value={editManagerUniversityIdsText}
+                    onChange={(e) => setEditManagerUniversityIdsText(e.target.value)}
+                    spellCheck={false}
+                  />
+                  <Checkbox
+                    checked={editManagerApproved}
+                    onChange={(e) => setEditManagerApproved(e.target.checked)}
+                    label={t('admin:universityMultiManagerApproved', 'Approved to impersonate assigned universities')}
+                  />
+                </div>
+              ) : null}
               <p className="text-xs text-[var(--color-text-muted)]">
                 {t('admin:changeRoleHint', 'Assign and manage accounts based on your role scope.')}
               </p>

@@ -65,7 +65,12 @@ export function buildNotificationLink(
         return '/admin/dashboard'
     }
   }
-  const chatPath = role === 'student' ? '/student/chat' : role === 'university' ? '/university/chat' : '/student/chat'
+  const chatPath =
+    role === 'student'
+      ? '/student/chat'
+      : role === 'university' || role === 'university_multi_manager'
+        ? '/university/chat'
+        : '/student/chat'
   switch (type) {
     case 'message':
       return referenceId ? `${chatPath}?chatId=${referenceId}` : chatPath

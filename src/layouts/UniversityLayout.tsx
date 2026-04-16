@@ -1,4 +1,4 @@
-import { Outlet, useLocation, Navigate } from 'react-router-dom'
+import { Outlet, useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo } from 'react'
@@ -10,11 +10,16 @@ import { BottomNav } from '@/components/layout/BottomNav'
 import { RoleOnboardingController } from '@/components/onboarding/RoleOnboardingController'
 import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
+import { getActAsUniversityUserId, clearActAsUniversityUserId } from '@/constants/actAsUniversity'
+import { Button } from '@/components/ui/Button'
 
 export function UniversityLayout() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { t } = useTranslation('university')
   const location = useLocation()
+  const actingUniversityUserId = typeof sessionStorage !== 'undefined' ? getActAsUniversityUserId() : null
+  const isDelegatedSession = user?.role === 'university_multi_manager' && Boolean(actingUniversityUserId)
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
   const isFixedHeightPage = location.pathname === '/university/ai'
@@ -81,9 +86,13 @@ export function UniversityLayout() {
     if (!user.universityProfile.verified) return <Navigate to="/university/pending" replace />
   }
 
+  if (user?.role === 'university_multi_manager' && !isSelect && !isPending && !actingUniversityUserId) {
+    return <Navigate to="/university-multi-manager" replace />
+  }
+
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-1">
-      <RoleOnboardingController role="university" />
+      {(user?.role === 'university' || isDelegatedSession) ? <RoleOnboardingController role="university" /> : null}
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
         'flex min-h-0 min-w-0 flex-1 flex-col transition-[margin-left] duration-200',
@@ -96,6 +105,23 @@ export function UniversityLayout() {
           'max-w-content mx-auto flex w-full flex-col px-2 animate-page-enter sm:px-4',
           isFixedHeightPage ? 'h-full min-h-0 flex-1 overflow-hidden' : 'min-h-0 flex-1'
         )}>
+          {isDelegatedSession ? (
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">
+              <span className="text-[var(--color-text)]">
+                {t('university:delegatedSessionBanner', 'You are working on behalf of a linked university account.')}
+              </span>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  clearActAsUniversityUserId()
+                  navigate('/university-multi-manager')
+                }}
+              >
+                {t('university:exitDelegatedSession', 'Back to university list')}
+              </Button>
+            </div>
+          ) : null}
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

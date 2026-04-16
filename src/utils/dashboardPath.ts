@@ -11,6 +11,7 @@ export function getDashboardPath(user?: Pick<User, 'role' | 'universityProfile'>
     if (!user.universityProfile) return '/university/select'
     return user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
   }
+  if (user.role === 'university_multi_manager') return '/university-multi-manager'
 
   return '/'
 }

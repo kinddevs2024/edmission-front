@@ -71,6 +71,19 @@ export function MainLayout() {
         ],
       }
     }
+    if (role === 'university_multi_manager') {
+      return {
+        navItems: [
+          { to: '/university-multi-manager', label: t('university:multiManagerTitle', 'Your universities'), icon: 'Building2' },
+          { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
+          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
+        ],
+        navBottomItems: [
+          { to: '/support', label: 'Support', icon: 'HelpCircle' },
+          { to: '/profile', label: t('university:navProfile', 'Profile'), icon: 'Settings' },
+        ],
+      }
+    }
     if (role === 'university') {
       return {
         navItems: [
@@ -155,6 +168,13 @@ export function MainLayout() {
         { to: '/student/universities', label: t('student:navExplore', 'Explore'), icon: 'GraduationCap' },
         { to: '/student/chat', label: t('student:navChat', 'Chat'), icon: 'MessageCircle' },
         { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },
+      ]
+    }
+    if (role === 'university_multi_manager') {
+      return [
+        { to: '/university-multi-manager', label: t('university:multiManagerTitle', 'Universities'), icon: 'Building2' },
+        { to: '/profile', label: t('university:navProfile', 'Profile'), icon: 'Settings' },
+        { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
       ]
     }
     if (role === 'university') {

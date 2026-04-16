@@ -63,6 +63,8 @@ export function SetPassword() {
         const up = nextUser.universityProfile
         if (!up?.id) navigate('/university/select', { replace: true })
         else navigate(up.verified ? '/university/dashboard' : '/university/pending', { replace: true })
+      } else if (nextUser.role === 'university_multi_manager') {
+        navigate('/university-multi-manager', { replace: true })
       } else if (nextUser.role === 'school_counsellor') navigate('/school/dashboard', { replace: true })
       else navigate('/admin', { replace: true })
     } catch (err) {

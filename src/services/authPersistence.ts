@@ -1,4 +1,5 @@
 import type { User } from '@/types/user'
+import { clearActAsUniversityUserId } from '@/constants/actAsUniversity'
 
 const KEY_USER = 'auth_user'
 const KEY_ACCESS = 'auth_accessToken'
@@ -58,6 +59,7 @@ export function isAuthExpired(lastActivityAt: number): boolean {
 
 export function clearAuth(): void {
   try {
+    clearActAsUniversityUserId()
     localStorage.removeItem(KEY_USER)
     localStorage.removeItem(KEY_ACCESS)
     localStorage.removeItem(KEY_REFRESH)

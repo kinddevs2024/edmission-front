@@ -1,6 +1,7 @@
 import axios, { type AxiosError } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
+import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
 
 // Локально (dev): запросы сразу на бэкенд (порт 4000), без прокси. На проде — тот же домен /api (проксирует nginx).
 const baseURL =
@@ -27,8 +28,15 @@ function forceLogout(): void {
 
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
+  const user = useAuthStore.getState().user
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  if (user?.role === 'university_multi_manager' && config.headers) {
+    const actAs = getActAsUniversityUserId()
+    if (actAs) {
+      ;(config.headers as Record<string, string>)['X-Act-As-University'] = actAs
+    }
   }
   if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
     delete config.headers['Content-Type']
