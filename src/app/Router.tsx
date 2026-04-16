@@ -57,6 +57,9 @@ const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics').then((m
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
 const AdminStudentProfile = lazy(() => import('@/pages/admin/AdminStudentProfile').then((m) => ({ default: m.AdminStudentProfile })))
 const AdminUniversityProfile = lazy(() => import('@/pages/admin/AdminUniversityProfile').then((m) => ({ default: m.AdminUniversityProfile })))
+const AdminUniversityDocumentsLayout = lazy(() =>
+  import('@/pages/admin/AdminUniversityDocumentsLayout').then((m) => ({ default: m.AdminUniversityDocumentsLayout }))
+)
 const Verification = lazy(() => import('@/pages/admin/Verification').then((m) => ({ default: m.Verification })))
 const AdminDocuments = lazy(() => import('@/pages/admin/AdminDocuments').then((m) => ({ default: m.AdminDocuments })))
 const AdminScholarships = lazy(() => import('@/pages/admin/AdminScholarships').then((m) => ({ default: m.AdminScholarships })))
@@ -268,6 +271,11 @@ export function Router() {
           <Route path="users" element={<UserManagement />} />
           <Route path="users/:userId/student-profile" element={<AdminStudentProfile />} />
           <Route path="users/:userId/university-profile" element={<AdminUniversityProfile />} />
+          <Route path="users/:userId/university-documents" element={<AdminUniversityDocumentsLayout />}>
+            <Route index element={<UniversityDocuments />} />
+            <Route path="templates/new" element={<DocumentTemplateEditorPage />} />
+            <Route path="templates/:id/edit" element={<DocumentTemplateEditorPage />} />
+          </Route>
           <Route path="verification" element={<Verification />} />
           <Route path="universities" element={<AdminUniversities />} />
           <Route path="faculties" element={<AdminFaculties />} />

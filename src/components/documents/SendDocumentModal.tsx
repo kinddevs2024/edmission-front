@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { TemplateCard } from './TemplateCard'
 import { DocumentCanvasStage } from './DocumentCanvasStage'
 import { DocumentSummaryPanel } from './DocumentSummaryPanel'
+import { adminUniversityGetDocumentTemplates, adminUniversityRenderDocumentTemplatePreview, adminUniversitySendIssuedDocument } from '@/services/admin'
 import { getDocumentTemplates, renderDocumentTemplatePreview, sendIssuedDocument } from '@/services/documents'
 import { parseScene } from '@/utils/documentScene'
 import { toastApiError } from '@/utils/toastError'
@@ -48,6 +49,7 @@ export function SendDocumentModal({
   studentId,
   chatId,
   studentName,
+  actingUniversityUserId,
   onClose,
   onSent,
 }: {
@@ -55,6 +57,8 @@ export function SendDocumentModal({
   studentId: string
   chatId?: string
   studentName?: string
+  /** When set, list/preview/send use admin proxy for this university account. */
+  actingUniversityUserId?: string
   onClose: () => void
   onSent?: (document: UniversityDocumentSummary) => void
 }) {
@@ -71,7 +75,10 @@ export function SendDocumentModal({
   useEffect(() => {
     if (!open) return
     setLoadingTemplates(true)
-    getDocumentTemplates({ type })
+    const req = actingUniversityUserId
+      ? adminUniversityGetDocumentTemplates(actingUniversityUserId, { type })
+      : getDocumentTemplates({ type })
+    req
       .then((data) => {
         setTemplates(data)
         setSelectedTemplateId((current) => current && data.some((item) => item.id === current) ? current : (data[0]?.id ?? null))
@@ -81,7 +88,7 @@ export function SendDocumentModal({
         setTemplates([])
       })
       .finally(() => setLoadingTemplates(false))
-  }, [open, type])
+  }, [open, type, actingUniversityUserId])
 
   useEffect(() => {
     if (!open) return
@@ -100,12 +107,20 @@ export function SendDocumentModal({
   const handlePreview = () => {
     if (!selectedTemplateId) return
     setPreviewLoading(true)
-    renderDocumentTemplatePreview(selectedTemplateId, {
-      studentId,
-      acceptDeadline: form.acceptDeadline || undefined,
-      universityMessage: form.universityMessage || undefined,
-      documentData: buildDocumentData(form),
-    })
+    const previewReq = actingUniversityUserId
+      ? adminUniversityRenderDocumentTemplatePreview(actingUniversityUserId, selectedTemplateId, {
+          studentId,
+          acceptDeadline: form.acceptDeadline || undefined,
+          universityMessage: form.universityMessage || undefined,
+          documentData: buildDocumentData(form),
+        })
+      : renderDocumentTemplatePreview(selectedTemplateId, {
+          studentId,
+          acceptDeadline: form.acceptDeadline || undefined,
+          universityMessage: form.universityMessage || undefined,
+          documentData: buildDocumentData(form),
+        })
+    previewReq
       .then((data) => setPreviewData(data))
       .catch(toastApiError)
       .finally(() => setPreviewLoading(false))
@@ -114,16 +129,28 @@ export function SendDocumentModal({
   const handleSend = () => {
     if (!selectedTemplateId) return
     setSending(true)
-    sendIssuedDocument({
-      studentId,
-      chatId,
-      templateId: selectedTemplateId,
-      type,
-      acceptDeadline: form.acceptDeadline || undefined,
-      universityMessage: form.universityMessage || undefined,
-      title: selectedTemplate?.name,
-      documentData: buildDocumentData(form),
-    })
+    const sendReq = actingUniversityUserId
+      ? adminUniversitySendIssuedDocument(actingUniversityUserId, {
+          studentId,
+          chatId,
+          templateId: selectedTemplateId,
+          type,
+          acceptDeadline: form.acceptDeadline || undefined,
+          universityMessage: form.universityMessage || undefined,
+          title: selectedTemplate?.name,
+          documentData: buildDocumentData(form),
+        })
+      : sendIssuedDocument({
+          studentId,
+          chatId,
+          templateId: selectedTemplateId,
+          type,
+          acceptDeadline: form.acceptDeadline || undefined,
+          universityMessage: form.universityMessage || undefined,
+          title: selectedTemplate?.name,
+          documentData: buildDocumentData(form),
+        })
+    sendReq
       .then((document) => {
         onSent?.(document)
         onClose()

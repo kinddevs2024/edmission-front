@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom'
+import type { AdminUniversityDocumentsOutletContext } from '@/pages/admin/AdminUniversityDocumentsLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
@@ -9,12 +10,31 @@ import { DocumentSummaryPanel } from '@/components/documents/DocumentSummaryPane
 import { DocumentStatusBadge } from '@/components/documents/DocumentStatusBadge'
 import { TemplateCard } from '@/components/documents/TemplateCard'
 import { Modal } from '@/components/ui/Modal'
-import { createDocumentTemplate, deleteIssuedDocument, duplicateDocumentTemplate, getIssuedDocument, getDocumentTemplates, listIssuedDocuments, revokeIssuedDocument, updateDocumentTemplate } from '@/services/documents'
+import {
+  adminUniversityCreateDocumentTemplate,
+  adminUniversityDeleteIssuedDocument,
+  adminUniversityDuplicateDocumentTemplate,
+  adminUniversityGetDocumentTemplates,
+  adminUniversityGetIssuedDocument,
+  adminUniversityListIssuedDocuments,
+  adminUniversityRevokeIssuedDocument,
+  adminUniversityUpdateDocumentTemplate,
+} from '@/services/admin'
+import {
+  createDocumentTemplate,
+  deleteIssuedDocument,
+  duplicateDocumentTemplate,
+  getIssuedDocument,
+  getDocumentTemplates,
+  listIssuedDocuments,
+  revokeIssuedDocument,
+  updateDocumentTemplate,
+} from '@/services/documents'
 import { uploadFile } from '@/services/upload'
 import { useDocumentEditorStore } from '@/store/documentEditorStore'
 import { createBlankScene, parseScene, stringifyScene } from '@/utils/documentScene'
 import { toastApiError } from '@/utils/toastError'
-import type { DocumentPageFormat, DocumentTemplate, UniversityDocumentSummary } from '@/types/documentModule'
+import type { DocumentPageFormat, DocumentTemplate, DocumentType, UniversityDocumentSummary } from '@/types/documentModule'
 import { UploadCloud } from 'lucide-react'
 
 type DocumentsTab = 'templates' | 'sent' | 'drafts' | 'settings'
@@ -22,6 +42,8 @@ type DocumentsTab = 'templates' | 'sent' | 'drafts' | 'settings'
 export function UniversityDocuments() {
   const { t } = useTranslation(['documents', 'common'])
   const navigate = useNavigate()
+  const outlet = useOutletContext<AdminUniversityDocumentsOutletContext | null>()
+  const adminUniversityUserId = outlet?.adminUniversityUserId
   const [searchParams, setSearchParams] = useSearchParams()
   const [tab, setTab] = useState<DocumentsTab>('templates')
   const [templates, setTemplates] = useState<DocumentTemplate[]>([])
@@ -40,29 +62,39 @@ export function UniversityDocuments() {
   const setEditorMeta = useDocumentEditorStore((state) => state.setMetadata)
   const addEditorElement = useDocumentEditorStore((state) => state.addElement)
 
-  const loadTemplates = () =>
-    getDocumentTemplates({
+  const loadTemplates = useCallback(() => {
+    const params = {
       type: typeFilter === 'all' ? undefined : typeFilter,
       status: statusFilter === 'all' ? undefined : statusFilter,
-    })
+    }
+    const req = adminUniversityUserId
+      ? adminUniversityGetDocumentTemplates(adminUniversityUserId, params)
+      : getDocumentTemplates(params)
+    return req
       .then(setTemplates)
       .catch((error) => {
         toastApiError(error)
         setTemplates([])
       })
+  }, [adminUniversityUserId, typeFilter, statusFilter])
 
-  const loadDocuments = () =>
-    listIssuedDocuments(typeFilter === 'all' ? undefined : { type: typeFilter })
+  const loadDocuments = useCallback(() => {
+    const params = typeFilter === 'all' ? undefined : { type: typeFilter }
+    const req = adminUniversityUserId
+      ? adminUniversityListIssuedDocuments(adminUniversityUserId, params)
+      : listIssuedDocuments(params)
+    return req
       .then(setDocuments)
       .catch((error) => {
         toastApiError(error)
         setDocuments([])
       })
+  }, [adminUniversityUserId, typeFilter])
 
   useEffect(() => {
     setLoading(true)
     Promise.all([loadTemplates(), loadDocuments()]).finally(() => setLoading(false))
-  }, [typeFilter, statusFilter])
+  }, [loadTemplates, loadDocuments])
 
   useEffect(() => {
     const documentId = searchParams.get('documentId')
@@ -87,24 +119,51 @@ export function UniversityDocuments() {
     : null
   const detailZoom = detailScene ? (detailScene.page.width > detailScene.page.height ? 0.19 : 0.24) : 0.24
 
-  const openDocumentDetail = (id: string) => {
-    setDetailLoading(true)
-    getIssuedDocument(id)
-      .then(setSelectedDocument)
-      .catch(toastApiError)
-      .finally(() => setDetailLoading(false))
-  }
+  const openDocumentDetail = useCallback(
+    (id: string) => {
+      setDetailLoading(true)
+      const req = adminUniversityUserId
+        ? adminUniversityGetIssuedDocument(adminUniversityUserId, id)
+        : getIssuedDocument(id)
+      req
+        .then(setSelectedDocument)
+        .catch(toastApiError)
+        .finally(() => setDetailLoading(false))
+    },
+    [adminUniversityUserId]
+  )
 
   const handleArchive = (template: DocumentTemplate) => {
-    updateDocumentTemplate(template.id, { status: 'archived' })
-      .then(() => loadTemplates())
-      .catch(toastApiError)
+    const req = adminUniversityUserId
+      ? adminUniversityUpdateDocumentTemplate(adminUniversityUserId, template.id, { status: 'archived' })
+      : updateDocumentTemplate(template.id, { status: 'archived' })
+    req.then(() => loadTemplates()).catch(toastApiError)
   }
 
   const handleSetDefault = (template: DocumentTemplate) => {
-    updateDocumentTemplate(template.id, { isDefault: true, status: 'active' })
-      .then(() => loadTemplates())
-      .catch(toastApiError)
+    const req = adminUniversityUserId
+      ? adminUniversityUpdateDocumentTemplate(adminUniversityUserId, template.id, { isDefault: true, status: 'active' })
+      : updateDocumentTemplate(template.id, { isDefault: true, status: 'active' })
+    req.then(() => loadTemplates()).catch(toastApiError)
+  }
+
+  const goNewTemplate = () => {
+    navigate(adminUniversityUserId ? 'templates/new' : '/university/documents/templates/new')
+  }
+
+  const goEditTemplate = (templateId: string) => {
+    navigate(
+      adminUniversityUserId
+        ? `templates/${templateId}/edit`
+        : `/university/documents/templates/${templateId}/edit`
+    )
+  }
+
+  const duplicateTemplate = (templateId: string) => {
+    const req = adminUniversityUserId
+      ? adminUniversityDuplicateDocumentTemplate(adminUniversityUserId, templateId)
+      : duplicateDocumentTemplate(templateId)
+    return req.then(() => loadTemplates())
   }
 
   const handleUploadTemplateBackground = async () => {
@@ -150,7 +209,7 @@ export function UniversityDocuments() {
         URL.revokeObjectURL(templateUploadPreview)
         setTemplateUploadPreview('')
       }
-      navigate('/university/documents/templates/new')
+      goNewTemplate()
     } catch (error) {
       toastApiError(error)
     } finally {
@@ -178,10 +237,14 @@ export function UniversityDocuments() {
           layer: -1,
         })
       }
-      await createDocumentTemplate({
+      const docType: DocumentType = typeFilter === 'scholarship' ? 'scholarship' : 'offer'
+      const assetType = (templateUploadFile.type === 'application/pdf' ? 'pdf_background' : 'background') as
+        | 'pdf_background'
+        | 'background'
+      const payload = {
         name: templateUploadFile.name.replace(/\.[^.]+$/, '') || 'Template',
-        type: typeFilter === 'scholarship' ? 'scholarship' : 'offer',
-        status: 'draft',
+        type: docType,
+        status: 'draft' as const,
         pageFormat: scene.page.format,
         width: scene.page.width,
         height: scene.page.height,
@@ -189,7 +252,7 @@ export function UniversityDocuments() {
         canvasJson: stringifyScene(scene),
         assets: [
           {
-            type: templateUploadFile.type === 'application/pdf' ? 'pdf_background' : 'background',
+            type: assetType,
             fileUrl,
             fileName: templateUploadFile.name,
             mimeType: templateUploadFile.type || 'application/octet-stream',
@@ -197,7 +260,12 @@ export function UniversityDocuments() {
             height: scene.page.height,
           },
         ],
-      })
+      }
+      if (adminUniversityUserId) {
+        await adminUniversityCreateDocumentTemplate(adminUniversityUserId, payload)
+      } else {
+        await createDocumentTemplate(payload)
+      }
       setUploadModalOpen(false)
       setTemplateUploadFile(null)
       if (templateUploadPreview) {
@@ -223,6 +291,11 @@ export function UniversityDocuments() {
     <>
     <div className="space-y-4">
       <PageTitle title={t('documents:universityDocuments.pageTitle', 'Documents')} icon="FileText" />
+      {adminUniversityUserId ? (
+        <p className="text-sm text-amber-700 dark:text-amber-300 rounded-input border border-amber-500/40 bg-amber-500/10 px-3 py-2">
+          {t('documents:universityDocuments.adminActingBanner', 'You are managing document templates and sent offers for this university account.')}
+        </p>
+      ) : null}
 
       <Card className="flex flex-wrap items-center justify-between gap-3 border border-[var(--color-border)]">
         <div className="flex flex-wrap gap-2">
@@ -252,7 +325,7 @@ export function UniversityDocuments() {
               <Button variant="secondary" onClick={() => setUploadModalOpen(true)}>
                 {t('documents:universityDocuments.uploadDocument', 'Upload document')}
               </Button>
-              <Button onClick={() => navigate('/university/documents/templates/new')}>{t('documents:universityDocuments.createTemplate', 'Create template')}</Button>
+              <Button onClick={goNewTemplate}>{t('documents:universityDocuments.createTemplate', 'Create template')}</Button>
             </div>
           </div>
 
@@ -268,11 +341,11 @@ export function UniversityDocuments() {
                 <TemplateCard
                   key={template.id}
                   template={template}
-                  onEdit={() => navigate(`/university/documents/templates/${template.id}/edit`)}
-                  onDuplicate={() => duplicateDocumentTemplate(template.id).then(loadTemplates).catch(toastApiError)}
+                  onEdit={() => goEditTemplate(template.id)}
+                  onDuplicate={() => duplicateTemplate(template.id).catch(toastApiError)}
                   onArchive={() => handleArchive(template)}
                   onSetDefault={() => handleSetDefault(template)}
-                  onSelect={() => navigate(`/university/documents/templates/${template.id}/edit`)}
+                  onSelect={() => goEditTemplate(template.id)}
                 />
               ))}
             </div>
@@ -336,7 +409,20 @@ export function UniversityDocuments() {
                   </div>
                 ) : null}
                 {['sent', 'viewed', 'postponed'].includes(selectedDocument.status) ? (
-                  <Button variant="danger" onClick={() => revokeIssuedDocument(selectedDocument.id).then((doc) => { setSelectedDocument(doc); loadDocuments() }).catch(toastApiError)}>
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      const req = adminUniversityUserId
+                        ? adminUniversityRevokeIssuedDocument(adminUniversityUserId, selectedDocument.id)
+                        : revokeIssuedDocument(selectedDocument.id)
+                      req
+                        .then((doc) => {
+                          setSelectedDocument(doc)
+                          loadDocuments()
+                        })
+                        .catch(toastApiError)
+                    }}
+                  >
                     {t('documents:universityDocuments.revokeDocument', 'Revoke document')}
                   </Button>
                 ) : null}
@@ -344,7 +430,10 @@ export function UniversityDocuments() {
                   variant="secondary"
                   onClick={() => {
                     if (!window.confirm(t('documents:universityDocuments.deleteConfirm', { title: selectedDocument.title ?? t('documents:common.document', 'Document'), defaultValue: 'Delete "{{title}}" from Documents?' }))) return
-                    deleteIssuedDocument(selectedDocument.id)
+                    const del = adminUniversityUserId
+                      ? adminUniversityDeleteIssuedDocument(adminUniversityUserId, selectedDocument.id)
+                      : deleteIssuedDocument(selectedDocument.id)
+                    del
                       .then(() => {
                         setSelectedDocument(null)
                         loadDocuments()
@@ -373,8 +462,8 @@ export function UniversityDocuments() {
               <TemplateCard
                 key={template.id}
                 template={template}
-                onEdit={() => navigate(`/university/documents/templates/${template.id}/edit`)}
-                onDuplicate={() => duplicateDocumentTemplate(template.id).then(loadTemplates).catch(toastApiError)}
+                onEdit={() => goEditTemplate(template.id)}
+                onDuplicate={() => duplicateTemplate(template.id).catch(toastApiError)}
                 onArchive={() => handleArchive(template)}
                 onSetDefault={() => handleSetDefault(template)}
               />

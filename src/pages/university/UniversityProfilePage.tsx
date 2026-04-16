@@ -20,6 +20,8 @@ import { notifySuccess } from '@/utils/notify'
 import { getImageUrl } from '@/services/upload'
 import type { UniversityProfile } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { useAuth } from '@/hooks/useAuth'
+import { AdminUniversityOfferModal } from '@/components/admin/AdminUniversityOfferModal'
 
 const uploadedLogoSchema = z.string().trim().refine(
   (value) => value === '' || /^https?:\/\//.test(value) || value.startsWith('/'),
@@ -66,7 +68,9 @@ type UniversityProfilePageProps = {
 }
 
 export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePageProps = {}) {
-  const { t } = useTranslation(['university', 'common'])
+  const { t } = useTranslation(['university', 'common', 'admin'])
+  const { role } = useAuth()
+  const [offerModalOpen, setOfferModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -245,6 +249,21 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
       <div data-onboarding="university-profile-overview">
         <PageTitle title={t('university:profileTitle')} icon="User" />
       </div>
+      {adminEditUserId && role === 'admin' ? (
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" to={`/admin/users/${adminEditUserId}/university-documents`}>
+            {t('admin:universityDocumentsAndTemplates', 'Documents & templates')}
+          </Button>
+          <Button type="button" onClick={() => setOfferModalOpen(true)}>
+            {t('admin:sendOfferAsUniversity', 'Send offer as this university')}
+          </Button>
+          <AdminUniversityOfferModal
+            open={offerModalOpen}
+            onClose={() => setOfferModalOpen(false)}
+            universityUserId={adminEditUserId}
+          />
+        </div>
+      ) : null}
       <p className="text-[var(--color-text-muted)]">{t('university:profileIntro')}</p>
 
       <div className="flex flex-wrap items-center gap-4" data-onboarding="university-profile-logo-preview">

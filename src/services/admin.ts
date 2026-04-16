@@ -1,6 +1,11 @@
 import { api } from './api'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
-import type { DocumentPageFormat } from '@/types/documentModule'
+import type {
+  DocumentPageFormat,
+  DocumentTemplate,
+  RenderedTemplatePreview,
+  UniversityDocumentSummary,
+} from '@/types/documentModule'
 import type { GlobalFaculty } from '@/types/university'
 
 /** Backend GET /admin/dashboard returns this shape */
@@ -239,7 +244,7 @@ export async function getAdminStats(): Promise<AdminStats> {
 }
 
 /** Backend returns users with `suspended` (boolean); we normalize to `status` for UI. */
-export async function getUsers(params?: PaginationParams & { status?: string; role?: string }): Promise<PaginatedResponse<AdminUser>> {
+export async function getUsers(params?: PaginationParams & { status?: string; role?: string; search?: string }): Promise<PaginatedResponse<AdminUser>> {
   const res = await api.get<{ data?: Array<Record<string, unknown>>; total?: number; page?: number; limit?: number; totalPages?: number }>('/admin/users', { params })
   const rawList = res.data?.data ?? []
   const data: AdminUser[] = rawList.map((raw) => {
@@ -462,6 +467,10 @@ export interface AdminChat {
   universityId: string
   universityName?: string
   studentName?: string
+  /** StudentProfile document id (for offers / documents). */
+  studentProfileId?: string
+  /** University account User id (for admin proxy APIs). */
+  universityUserId?: string
   createdAt?: string
   updatedAt?: string
 }
@@ -486,6 +495,141 @@ export interface AdminChatMessage {
 
 export async function getChatMessages(chatId: string, params?: { limit?: number }) {
   const { data } = await api.get<{ chat: AdminChat; messages: AdminChatMessage[] }>(`/admin/chats/${chatId}/messages`, { params })
+  return data
+}
+
+function adminUniversityAccountBase(universityUserId: string) {
+  return `/admin/university-accounts/${universityUserId}`
+}
+
+export async function adminUniversityGetDocumentTemplates(
+  universityUserId: string,
+  params?: { type?: 'offer' | 'scholarship'; status?: 'draft' | 'active' | 'archived' }
+): Promise<DocumentTemplate[]> {
+  const { data } = await api.get<DocumentTemplate[]>(`${adminUniversityAccountBase(universityUserId)}/document-templates`, { params })
+  return data ?? []
+}
+
+export async function adminUniversityGetDocumentTemplate(universityUserId: string, templateId: string): Promise<DocumentTemplate> {
+  const { data } = await api.get<DocumentTemplate>(`${adminUniversityAccountBase(universityUserId)}/document-templates/${templateId}`)
+  return data!
+}
+
+export async function adminUniversityCreateDocumentTemplate(
+  universityUserId: string,
+  payload: Partial<DocumentTemplate> & { type: 'offer' | 'scholarship'; name: string }
+): Promise<DocumentTemplate> {
+  const { data } = await api.post<DocumentTemplate>(`${adminUniversityAccountBase(universityUserId)}/document-templates`, payload)
+  return data!
+}
+
+export async function adminUniversityUpdateDocumentTemplate(
+  universityUserId: string,
+  templateId: string,
+  payload: Partial<DocumentTemplate>
+): Promise<DocumentTemplate> {
+  const { data } = await api.patch<DocumentTemplate>(
+    `${adminUniversityAccountBase(universityUserId)}/document-templates/${templateId}`,
+    payload
+  )
+  return data!
+}
+
+export async function adminUniversityDeleteDocumentTemplate(universityUserId: string, templateId: string): Promise<void> {
+  await api.delete(`${adminUniversityAccountBase(universityUserId)}/document-templates/${templateId}`)
+}
+
+export async function adminUniversityDuplicateDocumentTemplate(universityUserId: string, templateId: string): Promise<DocumentTemplate> {
+  const { data } = await api.post<DocumentTemplate>(
+    `${adminUniversityAccountBase(universityUserId)}/document-templates/${templateId}/duplicate`
+  )
+  return data!
+}
+
+export async function adminUniversityRenderDocumentTemplatePreview(
+  universityUserId: string,
+  templateId: string,
+  payload?: { studentId?: string; acceptDeadline?: string; universityMessage?: string; documentData?: Record<string, unknown> }
+): Promise<RenderedTemplatePreview> {
+  const { data } = await api.post<RenderedTemplatePreview>(
+    `${adminUniversityAccountBase(universityUserId)}/document-templates/${templateId}/render-preview`,
+    payload ?? {}
+  )
+  return data!
+}
+
+export async function adminUniversityListIssuedDocuments(
+  universityUserId: string,
+  params?: { type?: 'offer' | 'scholarship'; status?: UniversityDocumentSummary['status'] }
+): Promise<UniversityDocumentSummary[]> {
+  const { data } = await api.get<UniversityDocumentSummary[]>(`${adminUniversityAccountBase(universityUserId)}/issued-documents`, { params })
+  return data ?? []
+}
+
+export async function adminUniversitySendIssuedDocument(
+  universityUserId: string,
+  payload: {
+    studentId: string
+    chatId?: string
+    templateId: string
+    type: 'offer' | 'scholarship'
+    acceptDeadline?: string
+    universityMessage?: string
+    title?: string
+    documentData?: Record<string, unknown>
+  }
+): Promise<UniversityDocumentSummary> {
+  const { data } = await api.post<UniversityDocumentSummary>(
+    `${adminUniversityAccountBase(universityUserId)}/issued-documents/send`,
+    payload
+  )
+  return data!
+}
+
+export async function adminUniversityGetIssuedDocument(universityUserId: string, documentId: string): Promise<UniversityDocumentSummary> {
+  const { data } = await api.get<UniversityDocumentSummary>(
+    `${adminUniversityAccountBase(universityUserId)}/issued-documents/${documentId}`
+  )
+  return data!
+}
+
+export async function adminUniversityRevokeIssuedDocument(universityUserId: string, documentId: string): Promise<UniversityDocumentSummary> {
+  const { data } = await api.post<UniversityDocumentSummary>(
+    `${adminUniversityAccountBase(universityUserId)}/issued-documents/${documentId}/revoke`
+  )
+  return data!
+}
+
+export async function adminUniversityDeleteIssuedDocument(universityUserId: string, documentId: string): Promise<void> {
+  await api.delete(`${adminUniversityAccountBase(universityUserId)}/issued-documents/${documentId}`)
+}
+
+export async function adminUniversityGetScholarshipsForAccount(universityUserId: string): Promise<Array<Record<string, unknown> & { id?: string }>> {
+  const { data } = await api.get<Array<Record<string, unknown> & { id?: string }>>(
+    `${adminUniversityAccountBase(universityUserId)}/scholarships`
+  )
+  return data ?? []
+}
+
+export async function adminUniversityListOfferTemplates(universityUserId: string): Promise<Array<Record<string, unknown> & { id?: string }>> {
+  const { data } = await api.get<Array<Record<string, unknown> & { id?: string }>>(
+    `${adminUniversityAccountBase(universityUserId)}/offer-templates`
+  )
+  return data ?? []
+}
+
+export async function adminUniversityCreateOffer(
+  universityUserId: string,
+  payload: {
+    studentId: string
+    scholarshipId?: string
+    coveragePercent: number
+    deadline?: string
+    certificateTemplateId?: string
+    certificateData?: Record<string, string>
+  }
+): Promise<unknown> {
+  const { data } = await api.post(`${adminUniversityAccountBase(universityUserId)}/offers`, payload)
   return data
 }
 

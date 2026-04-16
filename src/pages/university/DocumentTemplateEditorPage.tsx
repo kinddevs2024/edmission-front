@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
+import type { AdminUniversityDocumentsOutletContext } from '@/pages/admin/AdminUniversityDocumentsLayout'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
 import { DocumentEditor } from '@/components/documents/DocumentEditor'
+import { adminUniversityCreateDocumentTemplate, adminUniversityGetDocumentTemplate, adminUniversityUpdateDocumentTemplate } from '@/services/admin'
 import { createDocumentTemplate, getDocumentTemplate, updateDocumentTemplate } from '@/services/documents'
 import { useDocumentEditorStore } from '@/store/documentEditorStore'
 import { DOCUMENT_PAGE_FORMATS } from '@/utils/documentScene'
@@ -14,6 +16,8 @@ import type { DocumentPageFormat, DocumentType } from '@/types/documentModule'
 
 export function DocumentTemplateEditorPage() {
   const navigate = useNavigate()
+  const outlet = useOutletContext<AdminUniversityDocumentsOutletContext | null>()
+  const adminUniversityUserId = outlet?.adminUniversityUserId
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const reset = useDocumentEditorStore((state) => state.reset)
@@ -33,14 +37,17 @@ export function DocumentTemplateEditorPage() {
       return
     }
     setLoading(true)
-    getDocumentTemplate(id)
+    const req = adminUniversityUserId
+      ? adminUniversityGetDocumentTemplate(adminUniversityUserId, id)
+      : getDocumentTemplate(id)
+    req
       .then((template) => loadTemplate(template))
       .catch((error) => {
         toastApiError(error)
-        navigate('/university/documents')
+        navigate(adminUniversityUserId ? `/admin/users/${adminUniversityUserId}/university-documents` : '/university/documents')
       })
       .finally(() => setLoading(false))
-  }, [id, loadTemplate, navigate, reset, searchParams])
+  }, [id, loadTemplate, navigate, reset, searchParams, adminUniversityUserId])
 
   if (loading) {
     return (
@@ -84,7 +91,18 @@ export function DocumentTemplateEditorPage() {
         </Card>
       ) : (
         <div className="flex justify-end">
-          <Button variant="secondary" onClick={() => navigate('/university/documents')}>Back to Documents</Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              navigate(
+                adminUniversityUserId
+                  ? `/admin/users/${adminUniversityUserId}/university-documents`
+                  : '/university/documents'
+              )
+            }
+          >
+            Back to Documents
+          </Button>
         </div>
       )}
 
@@ -98,11 +116,21 @@ export function DocumentTemplateEditorPage() {
               type: payload.type as DocumentType,
             }
             if (id) {
-              await updateDocumentTemplate(id, templatePayload)
+              if (adminUniversityUserId) {
+                await adminUniversityUpdateDocumentTemplate(adminUniversityUserId, id, templatePayload)
+              } else {
+                await updateDocumentTemplate(id, templatePayload)
+              }
+            } else if (adminUniversityUserId) {
+              await adminUniversityCreateDocumentTemplate(adminUniversityUserId, templatePayload as { type: DocumentType; name: string })
             } else {
               await createDocumentTemplate(templatePayload as { type: DocumentType; name: string })
             }
-            navigate('/university/documents')
+            navigate(
+              adminUniversityUserId
+                ? `/admin/users/${adminUniversityUserId}/university-documents`
+                : '/university/documents'
+            )
           } catch (error) {
             toastApiError(error)
           } finally {
