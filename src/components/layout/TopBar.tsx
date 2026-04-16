@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { logout as logoutApi } from '@/services/auth'
 import { useSocket } from '@/hooks/useSocket'
@@ -129,6 +130,7 @@ export function TopBar() {
   const hideOnMobileSearch = pathname === '/search'
   const besideSidebar = desktopTopBarBesideSidebar(pathname)
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed)
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar)
 
   return (
     <>
@@ -146,9 +148,22 @@ export function TopBar() {
       <div
         className={cn(
           'hidden min-h-0 w-full flex-1 items-center gap-2 md:flex lg:min-h-0',
-          besideSidebar ? 'justify-end' : 'justify-between'
+          besideSidebar ? 'justify-between' : 'justify-between'
         )}
       >
+        {besideSidebar ? (
+          <div className="flex shrink-0 items-center">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-muted)] transition-colors hover:border-primary-accent/40 hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen className="h-4.5 w-4.5" /> : <PanelLeftClose className="h-4.5 w-4.5" />}
+            </button>
+          </div>
+        ) : null}
         {!besideSidebar && (
           <div className="flex min-w-0 items-center gap-2 sm:gap-4">
             <Link

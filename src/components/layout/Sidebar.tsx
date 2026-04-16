@@ -33,7 +33,8 @@ function NavLinkItem({
       {...(onboardingId ? { 'data-onboarding': onboardingId } : {})}
       className={({ isActive }) =>
         cn(
-          'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200',
+          'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors duration-200',
+          collapsed && 'justify-center px-2',
           isActive ? 'text-primary-accent' : 'text-dark-muted hover:bg-white/5 hover:text-white'
         )
       }
@@ -75,20 +76,22 @@ export function Sidebar({
         collapsed ? 'w-[72px]' : 'w-sidebar'
       )}
     >
-      <Link
-        to={dashboardPath}
-        className={cn(
-          'box-border flex h-16 min-h-16 shrink-0 items-center gap-2 border-b border-white/10 px-4 transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-accent/70',
-          collapsed ? 'justify-center' : 'justify-start'
-        )}
-        aria-label="Edmission"
-      >
-        {collapsed ? (
-          <BrandMark className="h-9 w-9 shrink-0 rounded-lg overflow-hidden" />
-        ) : (
-          <BrandLogo mode="dark" imageClassName="h-8 w-auto" />
-        )}
-      </Link>
+      <div className="flex h-16 min-h-16 shrink-0 items-center border-b border-white/10">
+        <Link
+          to={dashboardPath}
+          className={cn(
+            'box-border flex h-full flex-1 items-center gap-2 px-4 transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-accent/70',
+            collapsed ? 'justify-center' : 'justify-start'
+          )}
+          aria-label="Edmission"
+        >
+          {collapsed ? (
+            <BrandMark className="h-9 w-9 shrink-0 rounded-lg overflow-hidden" />
+          ) : (
+            <BrandLogo mode="dark" imageClassName="h-8 w-auto" />
+          )}
+        </Link>
+      </div>
       <nav className="flex min-h-0 flex-1 flex-col p-3">
         <div className="flex-1 overflow-y-auto space-y-0.5">
           {items.map((item) => (

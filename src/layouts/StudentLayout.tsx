@@ -23,7 +23,7 @@ export function StudentLayout() {
   const showMySchools =
     (educationStatus === 'in_school' || educationStatus === 'finished_school') && !counsellorLinked
 
-  const isFixedHeightPage = location.pathname === '/student/ai' || location.pathname === '/student/chat'
+  const isFixedHeightPage = location.pathname === '/student/ai'
 
   const { bottomNavItems, sidebarItems, sidebarBottomItems, mobileMenuItems } = useMemo(
     () =>
@@ -59,7 +59,7 @@ export function StudentLayout() {
           </Suspense>
         </div>
       </div>
-      {!isFixedHeightPage ? <BottomNav items={bottomNavItems} /> : null}
+      <BottomNav items={bottomNavItems} />
     </div>
   )
 }

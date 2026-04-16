@@ -14,7 +14,7 @@ import type { UniversityListItem } from '@/types/university'
 import type { Application, Offer } from '@/types/student'
 import { toastApiError } from '@/utils/toastError'
 import { cn } from '@/utils/cn'
-import { Building2, Bell, CheckCircle, Circle, Gift, GraduationCap, UserCircle } from 'lucide-react'
+import { ArrowRight, Bell, Building2, CheckCircle, Circle, FileText, Gift, GraduationCap, SearchCheck, UserCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { trackStudentFunnel } from '@/analytics/studentFunnel'
 import { useAuth } from '@/hooks/useAuth'
@@ -39,6 +39,41 @@ function DashboardStatWatermark({ icon: Icon }: { icon: LucideIcon }) {
       strokeWidth={1.15}
       aria-hidden
     />
+  )
+}
+
+function DashboardActionCard({
+  icon: Icon,
+  title,
+  description,
+  to,
+}: {
+  icon: LucideIcon
+  title: string
+  description: string
+  to: string
+}) {
+  return (
+    <Link
+      to={to}
+      className="group rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-primary-accent/40 hover:shadow-[var(--shadow-card-hover)]"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-accent/12 text-primary-accent">
+            <Icon className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-[var(--color-text)]">{title}</p>
+            <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">{description}</p>
+          </div>
+        </div>
+        <ArrowRight
+          className="mt-1 h-4 w-4 shrink-0 text-[var(--color-text-muted)] transition-transform group-hover:translate-x-1 group-hover:text-primary-accent"
+          aria-hidden
+        />
+      </div>
+    </Link>
   )
 }
 
@@ -240,6 +275,8 @@ export function StudentDashboard() {
   const showAppsSection = activeApplications.length > 0
   const showOffersSection = offers.length > 0
   const showAppsOffersGrid = showAppsSection || showOffersSection
+  const completedOnboardingSteps = onboardingSteps.filter((step) => step.done).length
+  const setupProgressPercent = onboardingSteps.length ? Math.round((completedOnboardingSteps / onboardingSteps.length) * 100) : 0
 
   const primaryCtaTo = '/student/universities'
   const primaryLabel = minimalComplete
@@ -251,10 +288,16 @@ export function StudentDashboard() {
       <StudentMacroOnboarding open={macroOpen} onClose={() => setMacroOpen(false)} />
 
       <section
-        className="relative overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-[var(--shadow-card)] sm:p-8"
+        className="relative overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(236,252,203,0.55))] p-5 shadow-[var(--shadow-card)] dark:bg-[linear-gradient(135deg,rgba(17,24,39,0.98),rgba(24,39,8,0.96))] sm:p-8"
         data-onboarding="student-home-mission"
       >
-        <div className="relative z-[1] max-w-2xl space-y-4">
+        <div
+          className={cn(
+            'relative z-[1] grid gap-5 lg:items-start',
+            onboardingDone ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.7fr)_minmax(18rem,0.95fr)]'
+          )}
+        >
+          <div className="max-w-2xl space-y-4">
           <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
           <p className="text-lg font-medium leading-snug text-[var(--color-text)]">
             {t('homeMissionTitle', 'Find universities that fit you — show interest in one tap.')}
@@ -285,12 +328,72 @@ export function StudentDashboard() {
           <p className="text-xs text-[var(--color-text-muted)]">
             {t('unlockBetterMatches', 'Stronger profile → better matches.')}
           </p>
+          <div className="flex flex-wrap gap-2 text-xs text-[var(--color-text-muted)]">
+            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/75 px-3 py-1">
+              {t('student:profileCompletion', 'Profile completion')}: {profilePercent}%
+            </span>
+            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/75 px-3 py-1">
+              {t('student:activeApplications', 'Active interests')}: {activeApplications.length}
+            </span>
+            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/75 px-3 py-1">
+              {t('student:offers', 'Offers')}: {offers.length}
+            </span>
+          </div>
+        </div>
+        {!onboardingDone ? (
+          <div className="rounded-[28px] border border-white/60 bg-[var(--color-card)]/88 p-5 shadow-[0_24px_60px_-36px_rgba(15,23,42,0.45)] backdrop-blur">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              {t('student:dashboardFocus', 'Focus now')}
+            </p>
+            <p className="mt-2 text-lg font-semibold text-[var(--color-text)]">
+              {t('student:dashboardFocusSetup', 'Finish the basics to unlock stronger matches')}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
+              {t('student:dashboardFocusSetupHint', 'Students move faster when profile, documents, and first interest are already prepared.')}
+            </p>
+            <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/90 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-text)]">{t('student:setupProgress', 'Setup progress')}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    {completedOnboardingSteps}/{onboardingSteps.length} {t('student:stepsDone', 'steps done')}
+                  </p>
+                </div>
+                <span className="text-2xl font-semibold text-primary-accent">{setupProgressPercent}%</span>
+              </div>
+              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[var(--color-border)]">
+                <div className="h-full rounded-full bg-primary-accent transition-[width] duration-500" style={{ width: `${setupProgressPercent}%` }} />
+              </div>
+            </div>
+          </div>
+        ) : null}
         </div>
         <div
           className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary-accent/10 blur-2xl"
           aria-hidden
         />
       </section>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <DashboardActionCard
+          icon={UserCircle}
+          title={t('student:dashboardActionProfileTitle', 'Complete your profile')}
+          description={t('student:dashboardActionProfileHint', 'Add details once so recommendations and university replies are more accurate.')}
+          to="/student/profile"
+        />
+        <DashboardActionCard
+          icon={SearchCheck}
+          title={t('student:dashboardActionExploreTitle', 'Explore universities')}
+          description={t('student:dashboardActionExploreHint', 'Use filters, compare options, and save your next shortlist quickly.')}
+          to="/student/universities"
+        />
+        <DashboardActionCard
+          icon={FileText}
+          title={t('student:dashboardActionDocsTitle', 'Keep documents ready')}
+          description={t('student:dashboardActionDocsHint', 'Upload key files early so you can respond without delays when a university asks.')}
+          to="/student/documents"
+        />
+      </div>
 
       <Link
         to="/student/profile"
@@ -430,7 +533,19 @@ export function StudentDashboard() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">{t('recommendedUniversities')}</h2>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('recommendedUniversities')}</h2>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              {minimalComplete
+                ? t('student:dashboardRecommendationsHint', 'Start with these picks, then use Explore to compare details and filters.')
+                : t('student:dashboardRecommendationsLocked', 'Finish the minimum profile to unlock tailored recommendations.')}
+            </p>
+          </div>
+          <Button to="/student/universities" variant="secondary" size="sm">
+            {t('homePrimaryCtaExplore', 'Explore universities')}
+          </Button>
+        </div>
         {loadingRecs ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <CardSkeleton />

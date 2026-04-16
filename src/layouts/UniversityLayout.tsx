@@ -17,7 +17,7 @@ export function UniversityLayout() {
   const location = useLocation()
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
-  const isFixedHeightPage = location.pathname === '/university/ai' || location.pathname === '/university/chat'
+  const isFixedHeightPage = location.pathname === '/university/ai'
 
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
