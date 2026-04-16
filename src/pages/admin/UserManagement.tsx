@@ -99,6 +99,8 @@ export function UserManagement() {
   const [editUserSaving, setEditUserSaving] = useState(false)
   const [editManagerUniversityIdsText, setEditManagerUniversityIdsText] = useState('')
   const [editManagerApproved, setEditManagerApproved] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
   const limit = 20
 
   useEffect(() => {
@@ -107,12 +109,26 @@ export function UserManagement() {
   }, [assignableRoles, createRole])
 
   useEffect(() => {
+    const id = window.setTimeout(() => {
+      const next = searchInput.trim()
+      setAppliedSearch((prev) => {
+        if (prev !== next) {
+          setPage(1)
+        }
+        return next
+      })
+    }, 400)
+    return () => window.clearTimeout(id)
+  }, [searchInput])
+
+  useEffect(() => {
     setLoading(true)
     getUsers({
       page,
       limit,
       role: roleFilter || undefined,
       status: statusFilter || undefined,
+      search: appliedSearch || undefined,
     })
       .then((res) => {
         setUsers(res.data ?? [])
@@ -124,7 +140,7 @@ export function UserManagement() {
         setTotal(0)
       })
       .finally(() => setLoading(false))
-  }, [page, roleFilter, statusFilter])
+  }, [page, roleFilter, statusFilter, appliedSearch])
 
   const handleSuspend = (userId: string) => {
     setActionUserId(userId)
@@ -217,7 +233,18 @@ export function UserManagement() {
             <Button onClick={() => setCreateOpen(true)}>{t('common:create')}</Button>
           </div>
         )}
-        <div className="flex flex-wrap gap-4 mb-4">
+        <div className="flex flex-wrap gap-4 mb-4 items-end">
+          <div className="min-w-[220px] flex-1 max-w-md">
+            <Input
+              label={t('admin:userSearchLabel', 'Search')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t(
+                'admin:userSearchPlaceholder',
+                'Email, name, or student first/last name…'
+              )}
+            />
+          </div>
           <Select
             label={t('common:role')}
             options={ROLE_OPTIONS}
