@@ -228,9 +228,9 @@ export function UserManagement() {
       <PageTitle title={t('admin:users')} icon="Users" />
 
       <Card>
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-4">
-          <div className="flex min-w-0 flex-1 flex-wrap items-end gap-4">
-            <div className="min-w-[220px] max-w-md flex-1">
+        <div className="mb-4 flex flex-col gap-4">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="min-w-0 flex-1">
               <Input
                 label={t('admin:userSearchLabel', 'Search')}
                 value={searchInput}
@@ -241,6 +241,13 @@ export function UserManagement() {
                 )}
               />
             </div>
+            {canManageUsers && assignableRoleOptions.length > 0 && (
+              <Button className="shrink-0" onClick={() => setCreateOpen(true)}>
+                {t('common:create')}
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-end gap-4">
             <Select
               label={t('common:role')}
               options={ROLE_OPTIONS}
@@ -254,11 +261,6 @@ export function UserManagement() {
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
             />
           </div>
-          {canManageUsers && assignableRoleOptions.length > 0 && (
-            <Button className="shrink-0" onClick={() => setCreateOpen(true)}>
-              {t('common:create')}
-            </Button>
-          )}
         </div>
         <CardTitle className="mb-2">{t('admin:users')}</CardTitle>
         {loading ? (
