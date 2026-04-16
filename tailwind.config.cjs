@@ -1,6 +1,7 @@
 const withMT = require('@material-tailwind/react/utils/withMT')
 
 /** @type {import('tailwindcss').Config} */
+/** Prefer CSS variables in src/styles/index.css and shared UI in @/components/ui for new work; avoid new @material-tailwind/react usage. */
 module.exports = withMT({
   content: [
     './index.html',

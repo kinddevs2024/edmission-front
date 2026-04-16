@@ -57,6 +57,7 @@ export function Login() {
     try {
       const { user } = await loginWithGoogle({
         idToken: credential,
+        role: 'student',
         acceptTerms: true,
       })
       if (user.mustSetLocalPassword) {
@@ -121,6 +122,7 @@ export function Login() {
           {showYandexAuth && (
             <YandexSignInButton
               disabled={loading}
+              role="student"
               acceptTerms
               flow="login"
               onBusyChange={setLoading}

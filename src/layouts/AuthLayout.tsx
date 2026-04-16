@@ -1,11 +1,15 @@
 import { Outlet } from 'react-router-dom'
 import { Suspense } from 'react'
 import { useTheme } from '@/hooks/useTheme'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
 
 export function AuthLayout() {
   useTheme()
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-light dark:bg-primary-dark p-3 sm:p-4 safe-area-pb">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-surface-light dark:bg-primary-dark p-3 pt-14 sm:p-4 sm:pt-16 safe-area-pb">
+      <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
+        <LanguageMenu placement="bottom" />
+      </div>
       <div className="w-full max-w-md">
         <Suspense
           fallback={

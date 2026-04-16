@@ -24,7 +24,7 @@ export function BottomNav({ items }: { items: NavItem[] }) {
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
         aria-label="Main navigation"
       >
-        {items.map(({ to, label, icon }) => {
+        {items.map(({ to, label, icon, section: _s }) => {
           const onboardingId = to.startsWith('/student/')
             ? `nav-${to.replace(/^\/student\//, '').replace(/\//g, '-')}`
             : to.startsWith('/university/')

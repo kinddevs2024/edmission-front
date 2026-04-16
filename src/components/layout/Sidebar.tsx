@@ -11,6 +11,8 @@ export interface NavItem {
   to: string
   label: string
   icon?: string
+  /** Renders a section label above this item (use on the first item of a group). */
+  section?: string
 }
 
 function NavLinkItem({
@@ -18,6 +20,7 @@ function NavLinkItem({
   label,
   icon,
   collapsed,
+  section: _section,
 }: NavItem & { collapsed: boolean }) {
   const onboardingId = to.startsWith('/student/')
     ? `nav-${to.replace(/^\/student\//, '').replace(/\//g, '-')}`
@@ -89,7 +92,14 @@ export function Sidebar({
       <nav className="flex min-h-0 flex-1 flex-col p-3">
         <div className="flex-1 overflow-y-auto space-y-0.5">
           {items.map((item) => (
-            <NavLinkItem key={item.to} {...item} collapsed={collapsed} />
+            <div key={item.to}>
+              {item.section && !collapsed ? (
+                <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                  {item.section}
+                </p>
+              ) : null}
+              <NavLinkItem {...item} collapsed={collapsed} />
+            </div>
           ))}
         </div>
         {bottomItems.length > 0 && (

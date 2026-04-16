@@ -22,12 +22,13 @@ import { notifySuccess } from '@/utils/notify'
 import type { NotificationPreferences } from '@/types/user'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { updateStudentProfile } from '@/services/student'
+import { Lock } from 'lucide-react'
+import { getStudentProfile, updateStudentProfile } from '@/services/student'
 
 type ChangePasswordForm = { currentPassword: string; newPassword: string; confirmPassword: string }
 
 export function Profile() {
-  const { t } = useTranslation(['common', 'university', 'auth', 'errors'])
+  const { t } = useTranslation(['common', 'university', 'auth', 'errors', 'student'])
   const { user } = useAuth()
   const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar ?? '')
   const [universityLogoUrl, setUniversityLogoUrl] = useState('')
@@ -75,6 +76,17 @@ export function Profile() {
   const [facebook, setFacebook] = useState(user?.socialLinks?.facebook ?? '')
   const [whatsapp, setWhatsapp] = useState(user?.socialLinks?.whatsapp ?? '')
   const [accountSaving, setAccountSaving] = useState(false)
+  const [studentProfileVisibility, setStudentProfileVisibility] = useState<'private' | 'public' | null>(null)
+
+  useEffect(() => {
+    if (user?.role !== 'student') {
+      setStudentProfileVisibility(null)
+      return
+    }
+    getStudentProfile()
+      .then((p) => setStudentProfileVisibility(p.profileVisibility === 'public' ? 'public' : 'private'))
+      .catch(() => setStudentProfileVisibility('private'))
+  }, [user?.role])
 
   useEffect(() => {
     setName(user?.name ?? '')
@@ -272,6 +284,75 @@ export function Profile() {
           </Button>
         </div>
       </Card>
+
+      {user?.role === 'student' && studentProfileVisibility != null && (
+        <Card>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="w-5 h-5 text-[var(--color-text-muted)] shrink-0" aria-hidden />
+            {t('student:stepPrivacy', 'Profile privacy')}
+          </CardTitle>
+          <p className="text-sm font-medium text-[var(--color-text)] mt-3">{t('student:profileVisibilityTitle')}</p>
+          <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mt-1">{t('student:profileVisibilityHint')}</p>
+          <div className="mt-4 space-y-3">
+            <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
+              <input
+                type="radio"
+                name="account-student-visibility"
+                value="private"
+                className="mt-1"
+                checked={studentProfileVisibility === 'private'}
+                onChange={() => {
+                  if (studentProfileVisibility === 'private') return
+                  setStudentProfileVisibility('private')
+                  updateStudentProfile({ profileVisibility: 'private' })
+                    .then(() => {
+                      getProfile().catch(toastApiError)
+                      notifySuccess(t('common:saved', 'Saved'))
+                    })
+                    .catch((e) => {
+                      getStudentProfile()
+                        .then((p) => setStudentProfileVisibility(p.profileVisibility === 'public' ? 'public' : 'private'))
+                        .catch(() => {})
+                      toastApiError(e)
+                    })
+                }}
+              />
+              <span>
+                <span className="font-medium text-[var(--color-text)] block">{t('student:profileVisibilityPrivate')}</span>
+                <span className="text-sm text-[var(--color-text-muted)]">{t('student:profileVisibilityPrivateLong')}</span>
+              </span>
+            </label>
+            <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
+              <input
+                type="radio"
+                name="account-student-visibility"
+                value="public"
+                className="mt-1"
+                checked={studentProfileVisibility === 'public'}
+                onChange={() => {
+                  if (studentProfileVisibility === 'public') return
+                  setStudentProfileVisibility('public')
+                  updateStudentProfile({ profileVisibility: 'public' })
+                    .then(() => {
+                      getProfile().catch(toastApiError)
+                      notifySuccess(t('common:saved', 'Saved'))
+                    })
+                    .catch((e) => {
+                      getStudentProfile()
+                        .then((p) => setStudentProfileVisibility(p.profileVisibility === 'public' ? 'public' : 'private'))
+                        .catch(() => {})
+                      toastApiError(e)
+                    })
+                }}
+              />
+              <span>
+                <span className="font-medium text-[var(--color-text)] block">{t('student:profileVisibilityPublic')}</span>
+                <span className="text-sm text-[var(--color-text-muted)]">{t('student:profileVisibilityPublicLong')}</span>
+              </span>
+            </label>
+          </div>
+        </Card>
+      )}
 
       <Modal
         open={pwModalOpen && canChangePassword}

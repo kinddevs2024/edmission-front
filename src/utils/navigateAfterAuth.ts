@@ -1,7 +1,11 @@
 import type { NavigateFunction } from 'react-router-dom'
 import type { User } from '@/types/user'
 import { loadLanguage } from '@/i18n'
-import { isBrowserLanguageSupported, getBrowserPreferredLanguage, STORAGE_KEY } from '@/i18n/config'
+import {
+  getFirstSupportedNavigatorLanguage,
+  getSavedLanguageIfSupported,
+  STORAGE_KEY,
+} from '@/i18n/config'
 
 export function needsPasswordSetup(user: Pick<User, 'mustChangePassword' | 'mustSetLocalPassword'>): boolean {
   return Boolean(user.mustChangePassword || user.mustSetLocalPassword)
@@ -36,8 +40,10 @@ export async function navigateAfterRegistration(
     return
   }
   const nextUrl = user.role === 'student' ? '/student/dashboard' : '/university/select'
-  if (isBrowserLanguageSupported()) {
-    const lng = getBrowserPreferredLanguage()
+  const saved = getSavedLanguageIfSupported()
+  const inferred = getFirstSupportedNavigatorLanguage()
+  const lng = saved ?? inferred
+  if (lng) {
     await loadLanguage(lng)
     i18n.changeLanguage(lng)
     try {
@@ -46,7 +52,7 @@ export async function navigateAfterRegistration(
       /* ignore */
     }
     navigate(nextUrl, { replace: rep })
-  } else {
-    navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`, { replace: rep })
+    return
   }
+  navigate(`/choose-language?next=${encodeURIComponent(nextUrl)}`, { replace: rep })
 }

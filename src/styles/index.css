@@ -15,6 +15,7 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   display: none;
 }
 
+/* Design tokens: semantic colors + elevation. Prefer var(--*) in components; extend Tailwind via theme.extend when needed. */
 :root {
   --color-primary-dark: #0f172a;
   --color-primary-accent: #84cc16;
@@ -28,6 +29,9 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   --color-status-under-review: #3b82f6;
   --color-status-offer-sent: #84cc16;
   --color-status-rejected: #64748b;
+  --color-surface-elevated: #ffffff;
+  --radius-card: 16px;
+  --radius-input: 12px;
   /* Motion & depth */
   --duration-motion: 0.25s;
   --ease-out-smooth: cubic-bezier(0.22, 1, 0.36, 1);

@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_YANDEX_CLIENT_ID?: string
   /** Optional full URL for Passport SDK redirect (default `{origin}/suggest/token.html`) */
   readonly VITE_YANDEX_SUGGEST_REDIRECT_URI?: string
+  /** Optional Telegram bot URL for onboarding (e.g. https://t.me/your_bot) */
+  readonly VITE_TELEGRAM_BOT_URL?: string
 }
 
 interface ImportMeta {

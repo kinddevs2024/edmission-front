@@ -102,9 +102,13 @@ const schema = z.object({
   })).optional(),
   interestedFaculties: z.array(z.string()).optional(),
   preferredCountries: z.array(z.string()).optional(),
-  budgetAmount: z.preprocess((v) => (v === '' ? undefined : v), z.number().min(0).optional()),
+  budgetAmount: z.preprocess((v) => {
+    if (v === '' || v == null) return undefined
+    if (typeof v === 'number' && Number.isNaN(v)) return undefined
+    const n = Number(v)
+    return Number.isFinite(n) ? n : undefined
+  }, z.number().min(0).optional()),
   budgetCurrency: z.string().optional(),
-  profileVisibility: z.enum(['private', 'public']),
 })
 
 type FormData = z.infer<typeof schema>
@@ -121,11 +125,10 @@ function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormD
   }
 }
 
-type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'privacy' | 'documents'
+type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'documents'
 
-const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof Lock }[] = [
+const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof FileStack }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
-  { id: 'privacy', titleKey: 'stepPrivacy', icon: Lock },
   { id: 'location', titleKey: 'stepLocation', icon: MapPin },
   { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
   { id: 'documents', titleKey: 'common:documents', icon: FileStack },
@@ -139,7 +142,6 @@ const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof Lo
 const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Record<SectionId, string>> = {
   en: {
     personal: 'Personal details',
-    privacy: 'Profile privacy',
     location: 'Location',
     education: 'Education',
     documents: 'Documents',
@@ -151,7 +153,6 @@ const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Record<SectionId, stri
   },
   ru: {
     personal: 'Личные данные',
-    privacy: 'Приватность профиля',
     location: 'Местоположение',
     education: 'Образование',
     documents: 'Документы',
@@ -163,7 +164,6 @@ const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Record<SectionId, stri
   },
   uz: {
     personal: "Shaxsiy ma'lumotlar",
-    privacy: 'Profil maxfiyligi',
     location: 'Manzil',
     education: "Ta'lim",
     documents: 'Hujjatlar',
@@ -226,6 +226,41 @@ const COUNSELLOR_LANGUAGE_CERT_TYPES = [
   { value: 'other', label: 'Other' },
 ]
 
+function finiteBudgetAmount(n: unknown): number | undefined {
+  if (n == null) return undefined
+  if (typeof n === 'number' && Number.isNaN(n)) return undefined
+  const x = Number(n)
+  return Number.isFinite(x) ? x : undefined
+}
+
+/** Treat /api/uploads/… and full URL to same file as equal (dirty / Save). */
+function normalizeAvatarUrlForDirtyCheck(u: string | undefined | null): string {
+  const s = String(u ?? '').trim()
+  if (!s) return ''
+  try {
+    if (s.startsWith('http://') || s.startsWith('https://')) {
+      const url = new URL(s)
+      const path = url.pathname
+      return path.startsWith('/api') ? path.slice(4) : path
+    }
+  } catch {
+    /* ignore */
+  }
+  return s.startsWith('/api') ? s.slice(4) : s
+}
+
+function aboutSectionMatchesProfile(
+  values: { bio?: string; budgetAmount?: unknown; budgetCurrency?: string; avatarUrl?: string },
+  profile: StudentProfileData
+): boolean {
+  if (String(values.bio ?? '').trim() !== String(profile.bio ?? '').trim()) return false
+  if (normalizeAvatarUrlForDirtyCheck(values.avatarUrl) !== normalizeAvatarUrlForDirtyCheck(profile.avatarUrl)) return false
+  if (finiteBudgetAmount(values.budgetAmount) !== finiteBudgetAmount(profile.budgetAmount)) return false
+  const vc = String(values.budgetCurrency ?? 'USD').trim()
+  const pc = String(profile.budgetCurrency ?? 'USD').trim()
+  return vc === pc
+}
+
 function getSectionPercent(profile: StudentProfileData | null, sectionId: SectionId): number {
   if (!profile) return 0
   switch (sectionId) {
@@ -242,20 +277,31 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
       return Math.min(100, Math.round(((core / 2) + bonus) * 100))
     }
     case 'education': {
+      const schools = profile.schoolsAttended ?? []
+      const hasSchoolDetail = schools.some(
+        (s) =>
+          (s.institutionName != null && String(s.institutionName).trim() !== '') ||
+          (s.country != null && String(s.country).trim() !== '') ||
+          (s.educationLevel != null && String(s.educationLevel).trim() !== '') ||
+          (s.degreeName != null && String(s.degreeName).trim() !== '')
+      )
       const checks = [
-        profile.educationStatus,
-        profile.targetDegreeLevel,
-        (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') || Number.isFinite(profile.gpa),
-        (Array.isArray(profile.languages) && profile.languages.length > 0) || (profile.languageLevel != null && String(profile.languageLevel).trim() !== ''),
-        (profile.schoolName != null && String(profile.schoolName).trim() !== '') || (Array.isArray(profile.schoolsAttended) && profile.schoolsAttended.length > 0),
+        profile.educationStatus != null && String(profile.educationStatus).trim() !== '',
+        profile.targetDegreeLevel != null && String(profile.targetDegreeLevel).trim() !== '',
+        (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') || Number.isFinite(profile.gpa as number),
+        (Array.isArray(profile.languages) && profile.languages.length > 0) ||
+          (profile.languageLevel != null && String(profile.languageLevel).trim() !== ''),
+        (profile.schoolName != null && String(profile.schoolName).trim() !== '') || hasSchoolDetail,
       ]
       return Math.round((checks.filter(Boolean).length / 5) * 100)
     }
     case 'about': {
       const bio = profile.bio != null && String(profile.bio).trim() !== ''
-      const avatar = profile.avatarUrl != null && String(profile.avatarUrl).trim() !== ''
-      const budget = profile.budgetAmount != null && Number(profile.budgetAmount) >= 0
-      return Math.round(([bio, avatar, budget].filter(Boolean).length / 3) * 100)
+      const budget =
+        profile.budgetAmount != null &&
+        Number.isFinite(Number(profile.budgetAmount)) &&
+        Number(profile.budgetAmount) >= 0
+      return Math.round(([bio, budget].filter(Boolean).length / 2) * 100)
     }
     case 'skills': {
       const n = [
@@ -273,8 +319,6 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
       return Array.isArray(profile.experiences) && profile.experiences.length > 0 ? 100 : 0
     case 'works':
       return Array.isArray(profile.portfolioWorks) && profile.portfolioWorks.length > 0 ? 100 : 0
-    case 'privacy':
-      return 100
     default:
       return 0
   }
@@ -423,6 +467,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   const [docFileUrl, setDocFileUrl] = useState('')
   const [previewDocument, setPreviewDocument] = useState<CounsellorStudentDocument | null>(null)
   const [showUnsavedModal, setShowUnsavedModal] = useState(false)
+  /** School counsellor: visibility is edited here (students use /profile → Account). */
+  const [counsellorVisibility, setCounsellorVisibility] = useState<'private' | 'public'>('private')
   const profileDraftStorageKey = useMemo(() => {
     if (counsellorMode && studentUserId) return `counsellor-student-profile-draft:${studentUserId}`
     return user?.id ? `student-profile-draft:${user.id}` : null
@@ -443,7 +489,6 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       preferredCountries: [],
       budgetAmount: undefined,
       budgetCurrency: 'USD',
-      profileVisibility: 'private',
     },
   })
 
@@ -453,6 +498,9 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   const { fields: languageFields, append: appendLanguage, remove: removeLanguage } = useFieldArray({ control, name: 'languages' })
 
   const avatarUrl = watch('avatarUrl')
+  const aboutBioWatch = watch('bio')
+  const aboutBudgetWatch = watch('budgetAmount')
+  const aboutCurrencyWatch = watch('budgetCurrency')
   const educationStatus = watch('educationStatus')
   const targetDegreeLevel = watch('targetDegreeLevel')
   const educationStepOneDone = Boolean(educationStatus)
@@ -652,6 +700,11 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
   }, [profileDraftStorageKey, reset, counsellorMode, studentUserId])
 
   useEffect(() => {
+    if (!profile) return
+    setCounsellorVisibility(profile.profileVisibility === 'public' ? 'public' : 'private')
+  }, [profile?.id, profile?.profileVisibility])
+
+  useEffect(() => {
     if (!profileDraftStorageKey) return
     const subscription = watch((values) => {
       if (!isDirty) return
@@ -664,7 +717,24 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
     return () => subscription.unsubscribe()
   }, [isDirty, profileDraftStorageKey, watch])
 
-  const hasUnsavedChanges = Boolean(openSection && isDirty)
+  /**
+   * About me: do not use RHF isDirty alone — empty number inputs often become NaN vs undefined from API and look "dirty".
+   * Compare only bio, avatar (normalized URL), budget amount/currency to the loaded profile.
+   */
+  const hasUnsavedChanges = Boolean(
+    openSection &&
+      (openSection === 'about' && profile
+        ? !aboutSectionMatchesProfile(
+            {
+              bio: aboutBioWatch,
+              budgetAmount: aboutBudgetWatch,
+              budgetCurrency: aboutCurrencyWatch,
+              avatarUrl,
+            },
+            profile
+          )
+        : isDirty)
+  )
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -749,14 +819,13 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       })),
       interestedFaculties: data.interestedFaculties ?? [],
       preferredCountries: data.preferredCountries ?? [],
-      budgetAmount: data.budgetAmount,
+      budgetAmount: finiteBudgetAmount(data.budgetAmount),
       budgetCurrency: data.budgetCurrency ?? 'USD',
-      profileVisibility: data.profileVisibility === 'public' ? 'public' : 'private',
     }
   }
 
   function buildPayload(data: FormData) {
-    return {
+    const base = {
       firstName: data.firstName || undefined,
       lastName: data.lastName || undefined,
       birthDate: data.birthDate || undefined,
@@ -788,7 +857,11 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
         degreeName: s.degreeName || undefined,
       })),
       bio: data.bio || undefined,
-      avatarUrl: data.avatarUrl || undefined,
+      /** Always send string (possibly empty) so clearing the photo persists; omitting the key leaves the old URL. */
+      avatarUrl:
+        data.avatarUrl != null && String(data.avatarUrl).trim() !== ''
+          ? String(data.avatarUrl).trim()
+          : '',
       skills: data.skills ?? [],
       interests: data.interests ?? [],
       hobbies: data.hobbies ?? [],
@@ -808,10 +881,16 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       })),
       interestedFaculties: data.interestedFaculties ?? [],
       preferredCountries: data.preferredCountries ?? [],
-      budgetAmount: data.budgetAmount != null ? data.budgetAmount : undefined,
+      budgetAmount:
+        data.budgetAmount != null && Number.isFinite(Number(data.budgetAmount))
+          ? Number(data.budgetAmount)
+          : undefined,
       budgetCurrency: data.budgetCurrency || undefined,
-      profileVisibility: data.profileVisibility,
     }
+    if (counsellorMode) {
+      return { ...base, profileVisibility: counsellorVisibility }
+    }
+    return base
   }
 
   const handleModalSave = async () => {
@@ -911,10 +990,10 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
       <PageTitle title={t('portfolioTitle')} icon="User" />
       <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
         <Link
-          to="/profile"
+          to="?profileSection=about"
           className="block shrink-0 rounded-full transition-[box-shadow,transform] hover:scale-[1.02] hover:ring-2 hover:ring-primary-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
-          aria-label={t('common:profile')}
-          title={t('common:profile')}
+          aria-label={t('student:stepAbout', 'About me')}
+          title={t('student:openAboutForPhoto', 'About me — photo and bio')}
         >
           <img
             src={getStudentAvatarUrl(profile?.avatarUrl)}
@@ -985,6 +1064,72 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                 </span>
               </div>
             ))}
+          </div>
+        </Card>
+      )}
+
+      {counsellorMode && profile && studentUserId && (
+        <Card className="p-4 sm:p-5 border border-[var(--color-border)]">
+          <div className="flex items-center gap-2 mb-2">
+            <Lock className="w-5 h-5 text-[var(--color-text-muted)] shrink-0" aria-hidden />
+            <p className="text-base font-semibold text-[var(--color-text)]">{t('profileVisibilityTitle')}</p>
+          </div>
+          <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">{t('profileVisibilityHint')}</p>
+          <div className="space-y-3">
+            <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
+              <input
+                type="radio"
+                name="counsellor-profile-visibility"
+                value="private"
+                className="mt-1"
+                checked={counsellorVisibility === 'private'}
+                onChange={() => {
+                  if (counsellorVisibility === 'private') return
+                  setCounsellorVisibility('private')
+                  updateMyStudent(studentUserId, { profileVisibility: 'private' })
+                    .then(async () => {
+                      const full = (await getCounsellorStudentProfile(studentUserId)) as StudentProfileData
+                      setProfile(full)
+                      notifySuccess(t('common:saved', 'Saved'))
+                    })
+                    .catch((e) => {
+                      setCounsellorVisibility(profile.profileVisibility === 'public' ? 'public' : 'private')
+                      setError(getApiError(e).message)
+                    })
+                }}
+              />
+              <span>
+                <span className="font-medium text-[var(--color-text)] block">{t('profileVisibilityPrivate')}</span>
+                <span className="text-sm text-[var(--color-text-muted)]">{t('profileVisibilityPrivateLong')}</span>
+              </span>
+            </label>
+            <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
+              <input
+                type="radio"
+                name="counsellor-profile-visibility"
+                value="public"
+                className="mt-1"
+                checked={counsellorVisibility === 'public'}
+                onChange={() => {
+                  if (counsellorVisibility === 'public') return
+                  setCounsellorVisibility('public')
+                  updateMyStudent(studentUserId, { profileVisibility: 'public' })
+                    .then(async () => {
+                      const full = (await getCounsellorStudentProfile(studentUserId)) as StudentProfileData
+                      setProfile(full)
+                      notifySuccess(t('common:saved', 'Saved'))
+                    })
+                    .catch((e) => {
+                      setCounsellorVisibility(profile.profileVisibility === 'public' ? 'public' : 'private')
+                      setError(getApiError(e).message)
+                    })
+                }}
+              />
+              <span>
+                <span className="font-medium text-[var(--color-text)] block">{t('profileVisibilityPublic')}</span>
+                <span className="text-sm text-[var(--color-text-muted)]">{t('profileVisibilityPublicLong')}</span>
+              </span>
+            </label>
           </div>
         </Card>
       )}
@@ -1106,29 +1251,6 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                 <Input label={t('lastName')} error={errors.lastName?.message} {...register('lastName')} />
               </div>
               <Input label={t('birthDate')} type="date" error={errors.birthDate?.message} {...register('birthDate')} />
-            </>
-          )}
-
-          {openSection === 'privacy' && (
-            <>
-              <p className="text-sm font-medium text-[var(--color-text)]">{t('profileVisibilityTitle')}</p>
-              <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">{t('profileVisibilityHint')}</p>
-              <div className="space-y-4 mt-2">
-                <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
-                  <input type="radio" value="private" className="mt-1" {...register('profileVisibility')} />
-                  <span>
-                    <span className="font-medium text-[var(--color-text)] block">{t('profileVisibilityPrivate')}</span>
-                    <span className="text-sm text-[var(--color-text-muted)]">{t('profileVisibilityPrivateLong')}</span>
-                  </span>
-                </label>
-                <label className="flex gap-3 items-start cursor-pointer rounded-card border border-[var(--color-border)] p-3 has-[:checked]:border-primary-accent/50 has-[:checked]:bg-primary-accent/5">
-                  <input type="radio" value="public" className="mt-1" {...register('profileVisibility')} />
-                  <span>
-                    <span className="font-medium text-[var(--color-text)] block">{t('profileVisibilityPublic')}</span>
-                    <span className="text-sm text-[var(--color-text-muted)]">{t('profileVisibilityPublicLong')}</span>
-                  </span>
-                </label>
-              </div>
             </>
           )}
 
@@ -1468,7 +1590,14 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                     min={0}
                     step={100}
                     placeholder={t('student:budgetPlaceholder', 'e.g. 10000')}
-                    {...register('budgetAmount', { valueAsNumber: true })}
+                    {...register('budgetAmount', {
+                      setValueAs: (v) => {
+                        if (v === '' || v == null) return undefined
+                        if (typeof v === 'number' && Number.isNaN(v)) return undefined
+                        const n = Number(v)
+                        return Number.isFinite(n) ? n : undefined
+                      },
+                    })}
                   />
                 </div>
                 <div>
@@ -1481,7 +1610,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false }: St
                 value={avatarUrl}
                 onChange={(url) => {
                   if ((watch('avatarUrl') ?? '') === url) return
-                  setValue('avatarUrl', url, { shouldDirty: true, shouldValidate: true })
+                  setValue('avatarUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
                 }}
                 hint={t('uploadPhotoOrLink')}
               />

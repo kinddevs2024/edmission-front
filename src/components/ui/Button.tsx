@@ -1,4 +1,4 @@
-import { type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { type ButtonHTMLAttributes, type MouseEventHandler, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 
@@ -49,6 +49,7 @@ export function Button({
   loading = false,
   to,
   icon,
+  onClick,
   ...props
 }: ButtonProps) {
   const classes = cn(baseClasses, variantClasses[variant], sizeClasses[size], className)
@@ -61,10 +62,14 @@ export function Button({
     </>
   )
   if (to && !loading) {
-    return <Link to={to} className={classes}>{content}</Link>
+    return (
+      <Link to={to} className={classes} onClick={onClick as MouseEventHandler<HTMLAnchorElement> | undefined}>
+        {content}
+      </Link>
+    )
   }
   return (
-    <button type={props.type ?? 'button'} className={classes} disabled={isDisabled} {...props}>
+    <button type={props.type ?? 'button'} className={classes} disabled={isDisabled} onClick={onClick} {...props}>
       {content}
     </button>
   )

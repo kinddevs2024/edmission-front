@@ -56,9 +56,9 @@ export interface PhoneRegisterStatusResult {
 
 export async function loginWithGoogle(payload: {
   idToken: string
-  /** Omit on login page — role is taken from the account. Required when registering via Google. */
+  /** Defaults to student on the server if omitted and terms are accepted (new account). */
   role?: 'student' | 'university'
-  /** Set true when creating a new account (registration). */
+  /** Required for new OAuth accounts; login page sends true so first-time Google users are registered. */
   acceptTerms: boolean
 }): Promise<LoginResponse> {
   clearAuth()
@@ -218,8 +218,11 @@ export async function resetPassword(token: string, newPassword: string): Promise
 }
 
 /** Set new password (for user with temp password from school counsellor). Clears mustChangePassword. */
-export async function setPassword(newPassword: string): Promise<void> {
-  await api.post('/auth/set-password', { newPassword })
+export async function setPassword(newPassword: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/set-password', { newPassword })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
 }
 
 export async function getProfile(): Promise<User> {
@@ -242,8 +245,11 @@ export async function updateProfile(patch: Partial<Pick<User, 'name' | 'phone' |
   return data
 }
 
-export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
-  await api.post('/auth/change-password', { currentPassword, newPassword })
+export async function changePassword(currentPassword: string, newPassword: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/change-password', { currentPassword, newPassword })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
 }
 
 export { getApiError }

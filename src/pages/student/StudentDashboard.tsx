@@ -1,19 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { CardSkeleton } from '@/components/ui/Skeleton'
 import { getApplications, getOffers, getRecommendations, getCompareUniversities, getStudentProfile } from '@/services/student'
 import { getMyDocuments } from '@/services/studentDocuments'
+import { getNotifications } from '@/services/notifications'
 import type { UniversityListItem } from '@/types/university'
 import type { Application, Offer } from '@/types/student'
 import { toastApiError } from '@/utils/toastError'
 import { cn } from '@/utils/cn'
-import { Building2, CheckCircle, Circle, Gift, GraduationCap, UserCircle } from 'lucide-react'
+import { Building2, Bell, CheckCircle, Circle, Gift, GraduationCap, UserCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { trackStudentFunnel } from '@/analytics/studentFunnel'
+import { useAuth } from '@/hooks/useAuth'
+import {
+  StudentMacroOnboarding,
+  hasCompletedMacroOnboarding,
+  markMacroOnboardingDone,
+  resetMacroOnboardingForReplay,
+} from '@/components/onboarding/StudentMacroOnboarding'
+import { useStudentOnboardingFlowStore } from '@/store/studentOnboardingFlowStore'
+import { shouldShowWelcomeMacroOnboarding } from '@/utils/studentOnboardingEligibility'
 
 const DASHBOARD_RECOMMENDATIONS = 3
 
@@ -74,6 +86,7 @@ function mergeUniversityListsForDashboard(
 
 export function StudentDashboard() {
   const { t } = useTranslation(['student', 'common'])
+  const { role } = useAuth()
   const [profilePercent, setProfilePercent] = useState(0)
   const [minimalComplete, setMinimalComplete] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
@@ -81,6 +94,40 @@ export function StudentDashboard() {
   const [recommendations, setRecommendations] = useState<UniversityListItem[]>([])
   const [loadingRecs, setLoadingRecs] = useState(true)
   const [docCount, setDocCount] = useState(0)
+  const [macroOpen, setMacroOpen] = useState(false)
+  const [digest, setDigest] = useState<{ id: string; title: string; link?: string }[]>([])
+  const recTracked = useRef(false)
+
+  useEffect(() => {
+    trackStudentFunnel('student_home_view')
+  }, [])
+
+  useEffect(() => {
+    if (hasCompletedMacroOnboarding()) {
+      useStudentOnboardingFlowStore.getState().setMacroOnboardingDone()
+      return
+    }
+    let cancelled = false
+    let timer: number | undefined
+    shouldShowWelcomeMacroOnboarding()
+      .then((showWelcome) => {
+        if (cancelled) return
+        if (!showWelcome) {
+          markMacroOnboardingDone()
+          useStudentOnboardingFlowStore.getState().setMacroOnboardingDone()
+          return
+        }
+        timer = window.setTimeout(() => setMacroOpen(true), 400)
+      })
+      .catch(() => {
+        if (cancelled) return
+        timer = window.setTimeout(() => setMacroOpen(true), 400)
+      })
+    return () => {
+      cancelled = true
+      if (timer != null) window.clearTimeout(timer)
+    }
+  }, [])
 
   useEffect(() => {
     getApplications({ limit: 100 }).then((r) => setApplications(r.data ?? [])).catch(toastApiError)
@@ -95,12 +142,31 @@ export function StudentDashboard() {
   }, [])
 
   useEffect(() => {
+    getNotifications({ limit: 3 }, role ?? null)
+      .then((res) => {
+        const rows = (res.data ?? []).map((n) => ({
+          id: n.id,
+          title: (n.title || n.body || '').trim() || t('navNotifications', 'Notifications'),
+          link: n.link,
+        }))
+        setDigest(rows)
+      })
+      .catch(() => setDigest([]))
+  }, [role, t])
+
+  useEffect(() => {
     let cancelled = false
     setLoadingRecs(true)
-    const toId = (v: unknown) => (typeof v === 'string' ? v : (v && typeof v === 'object' && ('id' in v || '_id' in v) ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '') : ''))
+    const toId = (v: unknown) =>
+      typeof v === 'string'
+        ? v
+        : v && typeof v === 'object' && ('id' in v || '_id' in v)
+          ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '')
+          : ''
     const mapRecommendationToUniversity = (item: any): UniversityListItem | null => {
-      const source = (item?.university && typeof item.university === 'object') ? item.university : item
-      const id = recommendationRowToUniversityId(item) || toId(item?.universityId) || toId(source?._id) || toId(source?.id) || toId(item?.id)
+      const source = item?.university && typeof item.university === 'object' ? item.university : item
+      const id =
+        recommendationRowToUniversityId(item) || toId(item?.universityId) || toId(source?._id) || toId(source?.id) || toId(item?.id)
       const name = String(source?.name ?? source?.universityName ?? '').trim()
       if (!id || !name) return null
       return {
@@ -128,38 +194,176 @@ export function StudentDashboard() {
         if (cancelled || !result) return
         const list = mergeUniversityListsForDashboard(result.compare ?? [], result.fallback ?? [], DASHBOARD_RECOMMENDATIONS)
         if (!list.length) return
-        setRecommendations(list.map((u) => ({
-          ...u,
-          name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '',
-        })))
+        setRecommendations(
+          list.map((u) => ({
+            ...u,
+            name: u.name ?? (u as unknown as { universityName?: string }).universityName ?? '',
+          }))
+        )
       })
-      .catch((e) => { toastApiError(e); setRecommendations([]) })
-      .finally(() => { if (!cancelled) setLoadingRecs(false) })
-    return () => { cancelled = true }
+      .catch((e) => {
+        toastApiError(e)
+        setRecommendations([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingRecs(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
+
+  useEffect(() => {
+    if (recTracked.current) return
+    if (!loadingRecs && minimalComplete && recommendations.length > 0) {
+      recTracked.current = true
+      trackStudentFunnel('student_first_recommendations_shown', { count: recommendations.length })
+    }
+  }, [loadingRecs, minimalComplete, recommendations.length])
 
   const activeApplications = applications.filter((a) => !['rejected', 'accepted'].includes(a.status))
   const acceptedCount = applications.filter((a) => a.status === 'accepted').length
-  const onboardingSteps = [
-    { label: t('stepMinimalProfile'), to: '/student/profile', done: minimalComplete },
-    { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
-    { label: t('student:stepFirstApplication', 'Show interest to one university'), to: '/student/universities', done: applications.length > 0 },
-  ]
+  const onboardingSteps = useMemo(
+    () => [
+      { label: t('stepMinimalProfile'), to: '/student/profile', done: minimalComplete },
+      { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
+      {
+        label: t('student:stepFirstApplication', 'Show interest to one university'),
+        to: '/student/universities',
+        done: applications.length > 0,
+      },
+    ],
+    [t, minimalComplete, docCount, applications.length]
+  )
   const onboardingDone = onboardingSteps.every((s) => s.done)
+  const nextIncomplete = onboardingSteps.find((s) => !s.done)
   const showAppsSection = activeApplications.length > 0
   const showOffersSection = offers.length > 0
   const showAppsOffersGrid = showAppsSection || showOffersSection
 
+  const primaryCtaTo = '/student/universities'
+  const primaryLabel = minimalComplete
+    ? t('homePrimaryCtaExplore', 'Explore universities')
+    : t('homePrimaryCta', 'Get my recommendations')
+
   return (
     <div className="space-y-8 pb-page-bottom-cta">
-      <div data-onboarding="student-dashboard-overview">
-        <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
-      </div>
+      <StudentMacroOnboarding open={macroOpen} onClose={() => setMacroOpen(false)} />
 
-      {!onboardingDone && (
-        <Card className="border-primary-accent/30" data-onboarding="dashboard-get-started">
-          <CardTitle>{t('getStarted')}</CardTitle>
-          <p className="text-sm text-[var(--color-text-muted)] mt-1">{t('getStartedHint')}</p>
+      <section
+        className="relative overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-5 shadow-[var(--shadow-card)] sm:p-8"
+        data-onboarding="student-home-mission"
+      >
+        <div className="relative z-[1] max-w-2xl space-y-4">
+          <PageTitle title={t('studentDashboardTitle')} icon="LayoutDashboard" />
+          <p className="text-lg font-medium leading-snug text-[var(--color-text)]">
+            {t('homeMissionTitle', 'Find universities that fit you — show interest in one tap.')}
+          </p>
+          <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {t(
+              'homeMissionSubtitle',
+              'We use your profile to suggest matches. Complete the basics to unlock personalized picks.'
+            )}
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <Button
+              to={primaryCtaTo}
+              size="lg"
+              className="min-h-[48px] w-full sm:w-auto"
+              onClick={() => {
+                trackStudentFunnel('student_home_primary_cta', { target: primaryCtaTo })
+              }}
+            >
+              {primaryLabel}
+            </Button>
+            {nextIncomplete ? (
+              <Button to={nextIncomplete.to} variant="secondary" size="lg" className="min-h-[48px] w-full sm:w-auto">
+                {t('profileMeterNextStep', { defaultValue: 'Next: {{step}}', step: nextIncomplete.label })}
+              </Button>
+            ) : null}
+          </div>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            {t('unlockBetterMatches', 'Stronger profile → better matches.')}
+          </p>
+        </div>
+        <div
+          className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary-accent/10 blur-2xl"
+          aria-hidden
+        />
+      </section>
+
+      <Link
+        to="/student/profile"
+        className="block rounded-card border border-primary-accent/25 bg-[var(--color-card)] p-4 shadow-[var(--shadow-card)] transition-colors hover:border-primary-accent/50"
+        data-onboarding="dashboard-profile-meter"
+        onClick={() => trackStudentFunnel('student_profile_meter_click')}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-[var(--color-text)]">{t('profileCompletion')}</p>
+            <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+              {t('unlockBetterMatches', 'Stronger profile → better matches.')}
+            </p>
+          </div>
+          <span className="text-2xl font-semibold text-primary-accent">{profilePercent}%</span>
+        </div>
+        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[var(--color-border)]">
+          <div
+            className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
+            style={{ width: `${profilePercent}%` }}
+          />
+        </div>
+      </Link>
+
+      {digest.length > 0 ? (
+        <Card className="border-[var(--color-border)]">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary-accent shrink-0" aria-hidden />
+              {t('notificationDigestTitle', 'Recent updates')}
+            </CardTitle>
+            <Link to="/notifications" className="text-sm font-medium text-primary-accent hover:underline">
+              {t('viewAll', 'View all')}
+            </Link>
+          </div>
+          <ul className="mt-3 space-y-2" role="list">
+            {digest.map((n) => (
+              <li key={n.id}>
+                {n.link ? (
+                  <Link to={n.link} className="block rounded-input px-2 py-2.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-border)]/25 min-h-[44px]">
+                    {n.title}
+                  </Link>
+                ) : (
+                  <span className="block px-2 py-2.5 text-sm text-[var(--color-text-muted)]">{n.title}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
+      <Card className="border-primary-accent/30" data-onboarding="dashboard-get-started">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle>{onboardingDone ? t('onboardingAllSetTitle', 'You are on track') : t('getStarted')}</CardTitle>
+            <p className="text-sm text-[var(--color-text-muted)] mt-1">
+              {onboardingDone
+                ? t('onboardingAllSetHint', 'Use Home for your next step and Explore to find universities.')
+                : t('getStartedHint')}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              resetMacroOnboardingForReplay()
+              setMacroOpen(true)
+            }}
+            className="text-xs font-medium text-primary-accent hover:underline min-h-[44px] px-1"
+          >
+            {t('onboardingReplayIntro', 'Replay introduction')}
+          </button>
+        </div>
+        {!onboardingDone ? (
           <ul className="mt-3 space-y-2" role="list">
             {onboardingSteps.map((step) => (
               <li key={step.to} className="flex items-center gap-2">
@@ -168,57 +372,58 @@ export function StudentDashboard() {
                 ) : (
                   <Circle className="w-5 h-5 text-[var(--color-text-muted)] shrink-0" aria-hidden />
                 )}
-                <Link to={step.to} className="text-sm text-primary-accent hover:underline">
+                <Link to={step.to} className="text-sm text-primary-accent hover:underline min-h-[44px] inline-flex items-center">
                   {step.label}
                 </Link>
               </li>
             ))}
           </ul>
-        </Card>
-      )}
+        ) : null}
+      </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <Link to="/student/profile">
-          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter transition-colors" interactive>
+          <Card className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter transition-colors" interactive>
             <DashboardStatWatermark icon={UserCircle} />
             <div className="relative z-[1]">
-              <CardTitle>{t('profileCompletion')}</CardTitle>
-              <div className="mt-2">
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
-                  <div
-                    className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
-                    style={{ width: `${profilePercent}%` }}
-                  />
-                </div>
-                <p className="mt-1 text-2xl font-semibold text-primary-accent">{profilePercent}%</p>
-              </div>
+              <CardTitle className="text-sm">{t('profileCompletion')}</CardTitle>
+              <p className="mt-1 text-xl font-semibold text-primary-accent">{profilePercent}%</p>
             </div>
           </Card>
         </Link>
         <Link to="/student/interests">
-          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-1 transition-colors" interactive>
+          <Card
+            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-1 transition-colors"
+            interactive
+          >
             <DashboardStatWatermark icon={Building2} />
             <div className="relative z-[1]">
-              <CardTitle>{t('activeApplications', 'Active interests')}</CardTitle>
-              <p className="text-2xl font-semibold">{activeApplications.length}</p>
+              <CardTitle className="text-sm">{t('activeApplications', 'Active interests')}</CardTitle>
+              <p className="text-xl font-semibold">{activeApplications.length}</p>
             </div>
           </Card>
         </Link>
         <Link to="/student/offers">
-          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-2 transition-colors" interactive>
+          <Card
+            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-2 transition-colors"
+            interactive
+          >
             <DashboardStatWatermark icon={Gift} />
             <div className="relative z-[1]">
-              <CardTitle>{t('offers')}</CardTitle>
-              <p className="text-2xl font-semibold">{offers.length}</p>
+              <CardTitle className="text-sm">{t('offers')}</CardTitle>
+              <p className="text-xl font-semibold">{offers.length}</p>
             </div>
           </Card>
         </Link>
         <Link to="/student/interests">
-          <Card className="relative h-full cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-3 transition-colors" interactive>
+          <Card
+            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-3 transition-colors"
+            interactive
+          >
             <DashboardStatWatermark icon={GraduationCap} />
             <div className="relative z-[1]">
-              <CardTitle>{t('accepted')}</CardTitle>
-              <p className="text-2xl font-semibold">{acceptedCount}</p>
+              <CardTitle className="text-sm">{t('accepted')}</CardTitle>
+              <p className="text-xl font-semibold">{acceptedCount}</p>
             </div>
           </Card>
         </Link>
@@ -228,7 +433,9 @@ export function StudentDashboard() {
         <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">{t('recommendedUniversities')}</h2>
         {loadingRecs ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <CardSkeleton /><CardSkeleton /><CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
           </div>
         ) : minimalComplete && recommendations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -243,20 +450,28 @@ export function StudentDashboard() {
             ))}
           </div>
         ) : (
-          <p className="text-[var(--color-text-muted)]">
-            {minimalComplete
-              ? t('student:noUniversitiesFound', 'No universities found')
-              : t('completeProfileForRecs')}
-          </p>
+          <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
+            <EmptyState
+              title={minimalComplete ? t('student:noUniversitiesFound', 'No universities found') : t('emptyRecsTitle', 'No recommendations yet')}
+              description={
+                minimalComplete
+                  ? t('tryChangingFiltersOrSearch', 'Try changing filters or search to see more results.')
+                  : t('emptyRecsBody', 'Tell us a bit more about you to see universities picked for your profile.')
+              }
+              actionLabel={t('homePrimaryCtaExplore', 'Explore universities')}
+              actionTo="/student/universities"
+            />
+            {!minimalComplete ? (
+              <p className="px-4 pb-8 text-center text-sm text-[var(--color-text-muted)]">{t('completeProfileForRecs')}</p>
+            ) : null}
+          </div>
         )}
       </div>
 
       {showAppsOffersGrid ? (
         <div
           className={
-            showAppsSection && showOffersSection
-              ? 'grid grid-cols-1 lg:grid-cols-2 gap-6'
-              : 'grid grid-cols-1 gap-6'
+            showAppsSection && showOffersSection ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'grid grid-cols-1 gap-6'
           }
         >
           {showAppsSection ? (
@@ -267,15 +482,17 @@ export function StudentDashboard() {
                   {activeApplications.slice(0, 5).map((a) => (
                     <li
                       key={a.id}
-                      className="grid grid-cols-[minmax(0,1fr)_104px_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
+                      className="grid grid-cols-[minmax(0,1fr)_104px_52px] items-center gap-x-4 rounded-2xl px-1 py-1 min-h-[44px]"
                     >
                       <span className="truncate pr-2">{a.universityName ?? a.universityId}</span>
                       <span className="justify-self-start text-sm text-[var(--color-text-muted)]">{a.status}</span>
-                      <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
+                      <span className="justify-self-end text-sm text-primary-accent">{t('view')}</span>
                     </li>
                   ))}
                 </ul>
-                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allApplications', 'All interests')}</span>
+                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
+                  {t('allApplications', 'All interests')}
+                </span>
               </Card>
             </Link>
           ) : null}
@@ -287,24 +504,29 @@ export function StudentDashboard() {
                   {offers.slice(0, 3).map((o) => (
                     <li
                       key={o.id}
-                      className="grid grid-cols-[minmax(0,1fr)_52px] items-center gap-x-4 rounded-2xl px-1 py-1"
+                      className="grid grid-cols-[minmax(0,1fr)_52px] items-center gap-x-4 rounded-2xl px-1 py-1 min-h-[44px]"
                     >
                       <span className="truncate pr-2">{o.universityName ?? o.universityId}</span>
-                      <button type="button" className="justify-self-end text-sm text-primary-accent hover:underline">{t('view')}</button>
+                      <span className="justify-self-end text-sm text-primary-accent">{t('view')}</span>
                     </li>
                   ))}
                 </ul>
-                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">{t('allOffers')}</span>
+                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
+                  {t('allOffers')}
+                </span>
               </Card>
             </Link>
           ) : null}
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        <Button to="/student/universities">{t('exploreUniversities')}</Button>
-        <Button to="/student/interests" variant="secondary">{t('myApplications', 'My interests')}</Button>
-        <Button to="/student/chat" variant="ghost">{t('chats')}</Button>
+      <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-6">
+        <Button to="/student/chat" variant="secondary">
+          {t('chats')}
+        </Button>
+        <Button to="/student/ai" variant="ghost">
+          {t('navEdmissionAi', 'Edmission AI')}
+        </Button>
       </div>
     </div>
   )

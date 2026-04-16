@@ -103,25 +103,31 @@ export function MobileNavDrawer() {
               className="flex-1 overflow-y-auto p-2"
               style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))' }}
             >
-              {navItems.map(({ to, label, icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center gap-3 px-3 py-3 rounded-input text-sm transition-colors text-left',
-                      isActive
-                        ? 'bg-primary-accent/15 text-primary-accent font-medium'
-                        : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
-                    )
-                  }
-                >
-                  <span className="shrink-0 w-5 h-5 flex items-center justify-center">
-                    {getNavIcon(icon, 'size-5')}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">{label}</span>
-                </NavLink>
+              {navItems.map((item) => (
+                <div key={item.to}>
+                  {item.section ? (
+                    <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                      {item.section}
+                    </p>
+                  ) : null}
+                  <NavLink
+                    to={item.to}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-input text-sm transition-colors text-left touch-manipulation',
+                        isActive
+                          ? 'bg-primary-accent/15 text-primary-accent font-medium'
+                          : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
+                      )
+                    }
+                  >
+                    <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                      {getNavIcon(item.icon, 'size-5')}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  </NavLink>
+                </div>
               ))}
             </nav>
             <div

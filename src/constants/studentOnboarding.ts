@@ -1,0 +1,1 @@
+export const MACRO_ONBOARDING_STORAGE_KEY = 'edmission_student_macro_onboarding_v1'

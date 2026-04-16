@@ -33,6 +33,46 @@ export function isBrowserLanguageSupported(): boolean {
   return code === 'en' || code === 'ru' || code === 'uz'
 }
 
+/** Language explicitly saved by the user (landing, auth, or onboarding). */
+export function getSavedLanguageIfSupported(): SupportedLng | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (!saved) return null
+    const code = saved.split('-')[0].toLowerCase()
+    if (supportedLngs.includes(code as SupportedLng)) return code as SupportedLng
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+/**
+ * First language in the user's browser/OS preference list that we support (en, ru, uz).
+ * Mirrors Chrome's language list (similar idea to account locale lists): e.g. ['de-DE','en-US'] → 'en'.
+ */
+export function getFirstSupportedNavigatorLanguage(): SupportedLng | null {
+  if (typeof navigator === 'undefined') return null
+  const list =
+    navigator.languages && navigator.languages.length > 0
+      ? [...navigator.languages]
+      : [navigator.language].filter(Boolean)
+  for (const raw of list) {
+    const code = String(raw).split('-')[0].toLowerCase()
+    if (code === 'en' || code === 'ru' || code === 'uz') return code as SupportedLng
+  }
+  return null
+}
+
+/**
+ * Show explicit language UI only when we cannot infer en/ru/uz from storage or from the browser list.
+ * Avoids a second picker after the user already chose on the landing or when e.g. English is a secondary browser language.
+ */
+export function needsExplicitLanguageChoice(): boolean {
+  if (getSavedLanguageIfSupported()) return false
+  return getFirstSupportedNavigatorLanguage() === null
+}
+
 /** Returns browser-preferred language if supported; otherwise fallback. */
 export function getBrowserPreferredLanguage(): SupportedLng {
   const code = getBrowserLanguageCode()

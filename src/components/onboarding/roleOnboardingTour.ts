@@ -222,55 +222,36 @@ function getStudentTourSteps(t: TourT): RouteAwareTourStep[] {
   return [
     {
       route: '/student/dashboard',
-      target: '[data-onboarding="student-dashboard-overview"]',
-      title: t('tutorial.slide2Title', 'Dashboard'),
-      description: t('tutorial.slide2Body', 'Dashboard shows your progress and recommendations.'),
+      target: '[data-onboarding="student-home-mission"]',
+      title: t('tourStep1Title', 'Start here'),
+      description: t(
+        'tourStep1Body',
+        'This is your home: one main action (explore or improve your profile) and your progress at a glance.'
+      ),
       side: 'bottom',
       align: 'start',
     },
     {
       route: '/student/dashboard',
-      target: '[data-onboarding="nav-profile"]',
-      title: t('tutorial.slide1Title', 'Your profile'),
-      description: t('tutorial.slide1Body', 'Complete your profile so universities can understand your background.'),
-      side: 'right',
-      align: 'center',
-      interactive: true,
-      advanceOnPathname: '/student/profile',
-    },
-    {
-      route: '/student/profile',
-      target: '[data-onboarding="student-profile-overview"]',
-      title: t('tutorial.slide1Title', 'Your profile'),
-      description: t('tutorial.slide1Body', 'This page is where you complete your personal data, education, and portfolio.'),
+      target: '[data-onboarding="dashboard-profile-meter"]',
+      title: t('tourStep2Title', 'Profile strength'),
+      description: t(
+        'tourStep2Body',
+        'A complete profile unlocks better matches. Tap the meter anytime to continue where you left off.'
+      ),
       side: 'bottom',
       align: 'start',
     },
     {
-      route: '/student/profile',
-      target: '[data-onboarding="nav-universities"]',
-      title: t('tutorial.slide4Title', 'Explore universities'),
-      description: t('tutorial.slide4Body', 'Open the catalog to search universities and find relevant matches.'),
-      side: 'right',
-      align: 'center',
-      interactive: true,
-      advanceOnPathname: '/student/universities',
-    },
-    {
-      route: '/student/universities',
-      target: '[data-onboarding="student-universities-overview"]',
-      title: t('tutorial.slide4Title', 'Explore universities'),
-      description: t('tutorial.slide4Body', 'Use filters, open profiles, and show interest in universities that fit you.'),
-      side: 'bottom',
+      route: '/student/dashboard',
+      target: '[data-onboarding="dashboard-get-started"]',
+      title: t('tourStep3Title', 'Your checklist'),
+      description: t(
+        'tourStep3Body',
+        'Follow these steps once — then use Home and Explore for everything else. You can replay the intro from here.'
+      ),
+      side: 'top',
       align: 'start',
-    },
-    {
-      route: '/student/universities',
-      target: '[data-onboarding="floating-ai"]',
-      title: t('tutorial.slide5Title', 'Edmission AI'),
-      description: t('tutorial.slide5Body', 'Use AI when you need help with profile completion, university search, or admissions questions.'),
-      side: 'left',
-      align: 'end',
       interactive: true,
     },
   ]
