@@ -1,11 +1,17 @@
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const appVersion = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf-8')) as { version: string }
 
-export default defineConfig({  plugins: [react()],
+export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion.version),
+  },
+  plugins: [react()],
   /** Avoid stale pre-bundle after adding deps (504 Outdated Optimize Dep). */
   optimizeDeps: {
     include: ['react-easy-crop'],

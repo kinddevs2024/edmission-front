@@ -1,7 +1,7 @@
 {
   "name": "edmission-front",
   "private": true,
-  "version": "0.0.1",
+  "version": "2.3.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
