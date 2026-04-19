@@ -52,11 +52,16 @@ interface PipelineStudent {
   updatedAt: string
 }
 
-function mapPipelineItem(item: PipelineItem): PipelineStudent {
+function mapPipelineItem(item: PipelineItem, t: (key: string, defaultValue?: string) => string): PipelineStudent {
   const student = item.student
   return {
     id: pickStudentProfileId(item),
-    name: getStudentDisplayName(student, 'Student'),
+    name: getStudentDisplayName(
+      student,
+      student?.profileVisibility === 'private'
+        ? t('university:privateStudentCardName', 'Private student')
+        : t('university:studentLabel', 'Student')
+    ),
     email: getStudentContactEmail(student),
     applicationId: item.id,
     stage: STATUS_TO_STAGE[item.status] ?? 'interested',
@@ -77,12 +82,12 @@ export function Pipeline() {
 
   const loadPipeline = useCallback(() => {
     getPipeline()
-      .then((items) => setStudents(items.map(mapPipelineItem)))
+      .then((items) => setStudents(items.map((item) => mapPipelineItem(item, t))))
       .catch((error) => {
         toastApiError(error)
         setStudents([])
       })
-  }, [])
+  }, [t])
 
   useEffect(() => {
     loadPipeline()

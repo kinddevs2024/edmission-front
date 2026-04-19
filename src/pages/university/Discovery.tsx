@@ -538,7 +538,12 @@ export function Discovery() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {list.map((item, index) => {
               const student = item.student
-              const name = getStudentDisplayName(student, t('university:studentLabel'))
+              const name = getStudentDisplayName(
+                student,
+                student?.profileVisibility === 'private'
+                  ? t('university:privateStudentCardName', 'Private student')
+                  : t('university:studentLabel')
+              )
               const email = getStudentContactEmail(student)
               const languages = student.languages?.slice(0, 2).map((entry) => `${entry.language}${entry.level ? ` (${entry.level})` : ''}`).join(', ')
               const degreeLabel = formatDegree(student.targetDegreeLevel)

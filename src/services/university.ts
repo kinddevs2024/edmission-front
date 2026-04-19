@@ -182,7 +182,7 @@ export interface UniversityDashboardData {
     id: string
     matchScore?: number
     studentProfileId?: string
-    student?: { _id?: string; firstName?: string; lastName?: string; name?: string; gpa?: number; country?: string; userEmail?: string }
+    student?: { _id?: string; firstName?: string; lastName?: string; name?: string; gpa?: number; country?: string; userEmail?: string; profileVisibility?: 'private' | 'public' }
   }[]
 }
 
@@ -196,7 +196,7 @@ export interface PipelineItem {
   /** StudentProfile _id — use for /students/:id/profile (avoids Interest id and bad _id serialization). */
   studentProfileId?: string
   status: string
-  student?: { _id?: unknown; firstName?: string; lastName?: string; name?: string; country?: string; gpa?: number; userEmail?: string }
+  student?: { _id?: unknown; firstName?: string; lastName?: string; name?: string; country?: string; gpa?: number; userEmail?: string; profileVisibility?: 'private' | 'public' }
   updatedAt?: string
 }
 

@@ -4,9 +4,13 @@ type StudentDisplayShape = {
   name?: string | null
   email?: string | null
   userEmail?: string | null
+  /** When private, universities must not see contact fields or identifying account name. */
+  profileVisibility?: 'private' | 'public' | string | null
 }
 
 export function getStudentContactEmail(student: StudentDisplayShape | null | undefined): string | undefined {
+  if (student?.profileVisibility === 'private') return undefined
+
   const directEmail = typeof student?.email === 'string' ? student.email.trim() : ''
   if (directEmail) return directEmail
 
@@ -16,6 +20,9 @@ export function getStudentContactEmail(student: StudentDisplayShape | null | und
 
 export function getStudentDisplayName(student: StudentDisplayShape | null | undefined, fallback = 'Student'): string {
   if (!student) return fallback
+  if (student.profileVisibility === 'private') {
+    return fallback
+  }
 
   const fullName = [student.firstName, student.lastName]
     .map((value) => (typeof value === 'string' ? value.trim() : ''))

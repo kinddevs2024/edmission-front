@@ -183,7 +183,12 @@ export function UniversityDashboard() {
             <ul className="mt-2 space-y-2">
               {topRecs.slice(0, 5).map((r) => {
                 const st = r.student
-                const name = getStudentDisplayName(st, 'Student')
+                const name = getStudentDisplayName(
+                  st,
+                  st?.profileVisibility === 'private'
+                    ? t('university:privateStudentCardName', 'Private student')
+                    : t('university:studentLabel', 'Student')
+                )
                 const studentId = pickStudentProfileId({ studentProfileId: r.studentProfileId, student: st })
                 const canOpenProfile = Boolean(studentId)
                 return (
