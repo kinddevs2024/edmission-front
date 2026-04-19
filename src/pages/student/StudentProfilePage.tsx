@@ -292,10 +292,19 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
           (s.educationLevel != null && String(s.educationLevel).trim() !== '') ||
           (s.degreeName != null && String(s.degreeName).trim() !== '')
       )
+      const status = profile.educationStatus != null ? String(profile.educationStatus).trim() : ''
+      const needsTargetDegree = status === 'in_university' || status === 'finished_university'
+      const gpaNum = Number(profile.gpa)
+      const hasGradeOrGpa =
+        (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') ||
+        Number.isFinite(gpaNum) ||
+        schools.some((s) => s.educationLevel != null && String(s.educationLevel).trim() !== '')
       const checks = [
-        profile.educationStatus != null && String(profile.educationStatus).trim() !== '',
-        profile.targetDegreeLevel != null && String(profile.targetDegreeLevel).trim() !== '',
-        (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') || Number.isFinite(profile.gpa as number),
+        status !== '',
+        needsTargetDegree
+          ? profile.targetDegreeLevel != null && String(profile.targetDegreeLevel).trim() !== ''
+          : true,
+        hasGradeOrGpa,
         (Array.isArray(profile.languages) && profile.languages.length > 0) ||
           (profile.languageLevel != null && String(profile.languageLevel).trim() !== ''),
         (profile.schoolName != null && String(profile.schoolName).trim() !== '') || hasSchoolDetail,
@@ -311,11 +320,9 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
       return Math.round(([bio, budget].filter(Boolean).length / 2) * 100)
     }
     case 'skills': {
-      const n = [
-        Array.isArray(profile.skills) && profile.skills.length > 0,
-        Array.isArray(profile.interests) && profile.interests.length > 0,
-        Array.isArray(profile.hobbies) && profile.hobbies.length > 0,
-      ].filter(Boolean).length
+      const hasItems = (arr: unknown) =>
+        Array.isArray(arr) && arr.some((x) => x != null && String(x).trim() !== '')
+      const n = [hasItems(profile.skills), hasItems(profile.interests), hasItems(profile.hobbies)].filter(Boolean).length
       return Math.round((n / 3) * 100)
     }
     case 'faculties': {
@@ -1663,16 +1670,53 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
               {!criteria ? (
                 <p className="text-[var(--color-text-muted)]">Loading options...</p>
               ) : (
-                <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] p-4">
-                  <p className="text-sm font-medium text-[var(--color-text)]">{t('skillsPlaceholder')}</p>
-                  <ChipSelect
-                    options={criteria.skills}
-                    value={watch('skills') ?? []}
-                    onChange={(v) => setValue('skills', v, { shouldDirty: true })}
-                    max={50}
-                    placeholder={t('skillsPlaceholder')}
-                    className="mt-3"
-                  />
+                <div className="space-y-5">
+                  <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+                    <p className="text-sm font-medium text-[var(--color-text)]">
+                      {t('skillsSectionTitle', 'Skills')}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">{t('skillsPlaceholder')}</p>
+                    <ChipSelect
+                      options={criteria.skills}
+                      value={watch('skills') ?? []}
+                      onChange={(v) => setValue('skills', v, { shouldDirty: true })}
+                      max={50}
+                      placeholder={t('skillsPlaceholder')}
+                      className="mt-3"
+                    />
+                  </div>
+                  <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+                    <p className="text-sm font-medium text-[var(--color-text)]">
+                      {t('interestsSectionTitle', 'Interests')}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      {t('interestsSectionHint', 'Subjects and areas you care about — helps match programs and activities.')}
+                    </p>
+                    <ChipSelect
+                      options={criteria.interests}
+                      value={watch('interests') ?? []}
+                      onChange={(v) => setValue('interests', v, { shouldDirty: true })}
+                      max={50}
+                      placeholder={t('interestsPlaceholder', 'Select interests')}
+                      className="mt-3"
+                    />
+                  </div>
+                  <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+                    <p className="text-sm font-medium text-[var(--color-text)]">
+                      {t('hobbiesSectionTitle', 'Hobbies')}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      {t('hobbiesSectionHint', 'Activities outside class — optional but improves your profile.')}
+                    </p>
+                    <ChipSelect
+                      options={criteria.hobbies}
+                      value={watch('hobbies') ?? []}
+                      onChange={(v) => setValue('hobbies', v, { shouldDirty: true })}
+                      max={50}
+                      placeholder={t('hobbiesPlaceholder', 'Select hobbies')}
+                      className="mt-3"
+                    />
+                  </div>
                 </div>
               )}
             </>
@@ -1742,6 +1786,9 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
 
           {openSection === 'experience' && (
             <>
+              <p className="mb-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                {t('experienceOptionalHint', 'Optional — add internships, jobs, or volunteering if you have any.')}
+              </p>
               <div className="space-y-4">
                 {experienceFields.map((field, i) => (
                   <Card key={field.id} className="p-4 space-y-3 border border-[var(--color-border)]">
@@ -1774,6 +1821,9 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
 
           {openSection === 'works' && (
             <>
+              <p className="mb-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                {t('worksOptionalHint', 'Optional — projects, awards, clubs, or links that show what you do outside class.')}
+              </p>
               <div className="space-y-4">
                 {workFields.map((field, i) => (
                   <Card key={field.id} className="p-4 space-y-3 border border-[var(--color-border)]">

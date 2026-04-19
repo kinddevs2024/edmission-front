@@ -42,7 +42,7 @@ const TARGET_DEGREE_OPTIONS = [
 const EDUCATION_STATUS_OPTIONS = [
   { value: '', label: 'Any education status' },
   { value: 'in_school', label: 'In school' },
-  { value: 'finished_school', label: 'Finished school' },
+  { value: 'finished_school', label: 'School Student' },
   { value: 'in_university', label: 'In university' },
   { value: 'finished_university', label: 'Finished university' },
 ]
