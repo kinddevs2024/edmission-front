@@ -13,6 +13,7 @@ import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { cn } from '@/utils/cn'
 import { ContentFallback } from '@/components/layout/ContentFallback'
 import { useAutoReadNotifications } from '@/hooks/useAutoReadNotifications'
+import { buildStudentNavigation } from '@/navigation/studentNav'
 
 const SIDEBAR_PATHS = ['/profile', '/notifications', '/ai', '/payment', '/payment/success', '/payment/cancel', '/support']
 
@@ -49,27 +50,11 @@ export function MainLayout() {
       (educationStatus === 'in_school' || educationStatus === 'finished_school') && !counsellorLinked
 
     if (role === 'student') {
-      return {
-        navItems: [
-        { to: '/student/dashboard', label: t('student:dashboard', 'Dashboard'), icon: 'LayoutDashboard' },
-        { to: '/student/ai', label: t('student:navEdmissionAi', 'Edmission AI'), icon: 'Bot' },
-        { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },
-        { to: '/student/universities', label: t('student:navUniversities', 'Universities'), icon: 'GraduationCap' },
-        ...(showMySchools
-          ? [{ to: '/student/schools', label: t('student:navMySchool', 'My school'), icon: 'Building2' as const }]
-          : []),
-        { to: '/student/interests', label: t('student:navApplications', 'My interests'), icon: 'Heart' },
-        { to: '/student/documents', label: t('student:navDocuments', 'Documents'), icon: 'FileText' },
-        { to: '/student/offers', label: t('student:navOffers', 'Offers'), icon: 'Gift' },
-        { to: '/student/compare', label: t('student:navCompare', 'Compare'), icon: 'GitCompare' },
-        { to: '/student/chat', label: t('student:navChat', 'Chat'), icon: 'MessageCircle' },
-        { to: '/notifications', label: t('student:navNotifications', 'Notifications'), icon: 'Bell' },
-        ],
-        navBottomItems: [
-        { to: '/support', label: t('student:navSupport', 'Support'), icon: 'HelpCircle' },
-          { to: '/profile', label: t('student:navProfile', 'Profile'), icon: 'Settings' },
-        ],
-      }
+      const built = buildStudentNavigation(
+        (key, defaultValue) => t(`student:${key}`, { defaultValue: defaultValue ?? key }),
+        { showMySchools }
+      )
+      return { navItems: built.sidebarItems, navBottomItems: built.sidebarBottomItems }
     }
     if (role === 'university_multi_manager') {
       return {
@@ -162,13 +147,14 @@ export function MainLayout() {
 
   const bottomNavItems = useMemo(() => {
     if (role === 'student') {
-      return [
-        { to: '/student/dashboard', label: t('student:navHome', 'Home'), icon: 'LayoutDashboard' },
-        { to: '/student/interests', label: t('student:navApplications', 'My interests'), icon: 'Heart' },
-        { to: '/student/universities', label: t('student:navExplore', 'Explore'), icon: 'GraduationCap' },
-        { to: '/student/chat', label: t('student:navChat', 'Chat'), icon: 'MessageCircle' },
-        { to: '/student/profile', label: t('student:navProfile', 'Profile'), icon: 'User' },
-      ]
+      const showMySchools =
+        (user?.studentProfile?.educationStatus === 'in_school' ||
+          user?.studentProfile?.educationStatus === 'finished_school') &&
+        !Boolean((user?.studentProfile as { counsellorUserId?: string } | undefined)?.counsellorUserId)
+      return buildStudentNavigation(
+        (key, defaultValue) => t(`student:${key}`, { defaultValue: defaultValue ?? key }),
+        { showMySchools }
+      ).bottomNavItems
     }
     if (role === 'university_multi_manager') {
       return [
@@ -204,7 +190,7 @@ export function MainLayout() {
       ]
     }
     return []
-  }, [role, t, tSchool])
+  }, [role, t, tSchool, user?.studentProfile])
 
   // Only own mobile nav when /profile, /notifications, /ai, etc. For role layouts (student/*, …)
   // never clear here — their useEffect would lose the race and navItems stay null (hamburger hidden).

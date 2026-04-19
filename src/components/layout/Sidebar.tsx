@@ -92,8 +92,8 @@ export function Sidebar({
           )}
         </Link>
       </div>
-      <nav className="flex min-h-0 flex-1 flex-col p-3">
-        <div className="flex-1 overflow-y-auto space-y-0.5">
+      <nav className="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain space-y-0.5">
           {items.map((item) => (
             <div key={item.to}>
               {item.section && !collapsed ? (

@@ -17,6 +17,8 @@ interface FileUploadProps {
   variant?: 'default' | 'avatar'
   /** Use public upload (no auth) - for registration flow */
   publicUpload?: boolean
+  /** Only the file input + crop modal (e.g. trigger from another control via `inputRef`) */
+  headless?: boolean
 }
 
 export function FileUpload({
@@ -29,6 +31,7 @@ export function FileUpload({
   className,
   variant = 'default',
   publicUpload = false,
+  headless = false,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -107,6 +110,34 @@ export function FileUpload({
     if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|rar|7z)(\?|#|$)/i.test(lower)) return false
     return true
   })()
+
+  if (headless && isAvatar) {
+    return (
+      <>
+        <AvatarCropModal
+          open={cropOpen}
+          imageSrc={cropSrc}
+          onClose={closeCrop}
+          onConfirm={handleCropConfirm}
+          busy={uploading}
+        />
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          onChange={handleFile}
+          className="sr-only"
+          disabled={uploading || cropOpen}
+          aria-label={label ?? 'Upload avatar'}
+        />
+        {error ? (
+          <p role="alert" className="sr-only">
+            {error}
+          </p>
+        ) : null}
+      </>
+    )
+  }
 
   return (
     <div className={cn('space-y-2', className)}>

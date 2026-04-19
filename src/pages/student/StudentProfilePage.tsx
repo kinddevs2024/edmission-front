@@ -40,6 +40,7 @@ import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { notifySuccess } from '@/utils/notify'
+import { dedupeNormalizedCountries, mergeCountryOptionLabels, normalizeCountryLabel } from '@/utils/countryLabels'
 
 const schema = z.object({
   firstName: z.string().optional(),
@@ -134,16 +135,17 @@ function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormD
 
 type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'documents'
 
+/** Same order for self-edit and admin/counsellor edit; `documents` is last so staff tools do not reorder the core portfolio flow. */
 const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof FileStack }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
   { id: 'location', titleKey: 'stepLocation', icon: MapPin },
   { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
-  { id: 'documents', titleKey: 'common:documents', icon: FileStack },
   { id: 'about', titleKey: 'stepAbout', icon: FileText },
   { id: 'skills', titleKey: 'stepSkills', icon: Sparkles },
   { id: 'faculties', titleKey: 'stepFaculties', icon: BookOpen },
   { id: 'experience', titleKey: 'stepExperience', icon: Briefcase },
   { id: 'works', titleKey: 'stepWorks', icon: FolderOpen },
+  { id: 'documents', titleKey: 'common:documents', icon: FileStack },
 ]
 
 const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Record<SectionId, string>> = {
@@ -447,6 +449,8 @@ const COUNTRY_CODE_OPTIONS = [
   { code: 'CN', label: 'China' },
 ] as const
 
+const COUNTRY_FALLBACK_LABELS = COUNTRY_CODE_OPTIONS.map((item) => item.label)
+
 type StudentProfilePageProps = {
   studentUserId?: string
   counsellorMode?: boolean
@@ -471,7 +475,9 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   const [displayPercent, setDisplayPercent] = useState(0)
   const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
   const [educationWizardStep, setEducationWizardStep] = useState(1)
-  const [preferredCountryOptions, setPreferredCountryOptions] = useState<string[]>([])
+  const [preferredCountryOptions, setPreferredCountryOptions] = useState<string[]>(() =>
+    mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, [])
+  )
   const [languageCertificates, setLanguageCertificates] = useState<StudentDocumentItem[]>([])
   const [documents, setDocuments] = useState<CounsellorStudentDocument[]>([])
   const [documentsLoading, setDocumentsLoading] = useState(false)
@@ -519,6 +525,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   const { fields: languageFields, append: appendLanguage, remove: removeLanguage } = useFieldArray({ control, name: 'languages' })
 
   const avatarUrl = watch('avatarUrl')
+  const headerAvatarInputRef = useRef<HTMLInputElement>(null)
   const aboutBioWatch = watch('bio')
   const aboutBudgetWatch = watch('budgetAmount')
   const aboutCurrencyWatch = watch('budgetCurrency')
@@ -586,12 +593,36 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     setOpenSection(null)
   }
   const countrySelectOptions = useMemo(() => {
-    const fallback = COUNTRY_CODE_OPTIONS.map((item) => item.label)
-    const source = preferredCountryOptions.length > 0 ? preferredCountryOptions : fallback
-    const currentCountry = String(watch('country') ?? '').trim()
-    const values = Array.from(new Set([...source, ...(currentCountry ? [currentCountry] : [])]))
-    return values.map((value) => ({ value, label: value }))
+    const set = new Map<string, string>()
+    for (const x of preferredCountryOptions) {
+      const n = normalizeCountryLabel(x)
+      if (n) set.set(n.toLowerCase(), n)
+    }
+    const current = normalizeCountryLabel(watch('country'))
+    if (current) set.set(current.toLowerCase(), current)
+    return [...set.values()].sort((a, b) => a.localeCompare(b, 'en')).map((v) => ({ value: v, label: v }))
   }, [preferredCountryOptions, watch('country')])
+
+  const schoolsAttendedForCountryOptions = watch('schoolsAttended')
+  const schoolCountrySelectOptions = useMemo(() => {
+    const set = new Map<string, string>()
+    for (const x of preferredCountryOptions) {
+      const n = normalizeCountryLabel(x)
+      if (n) set.set(n.toLowerCase(), n)
+    }
+    for (const row of schoolsAttendedForCountryOptions ?? []) {
+      const n = normalizeCountryLabel(row?.country)
+      if (n) set.set(n.toLowerCase(), n)
+    }
+    const opts = [...set.values()].sort((a, b) => a.localeCompare(b, 'en')).map((v) => ({ value: v, label: v }))
+    return [{ value: '', label: '—' }, ...opts]
+  }, [preferredCountryOptions, schoolsAttendedForCountryOptions])
+
+  const preferredCountriesWatch = watch('preferredCountries')
+  const chipCountryOptions = useMemo(
+    () => mergeCountryOptionLabels(preferredCountryOptions, preferredCountriesWatch ?? []),
+    [preferredCountryOptions, preferredCountriesWatch]
+  )
   const attendedInstitutionTypeOptions = educationStatus === 'in_school'
     ? [{ value: 'school', label: t('institutionTypeSchool') }]
     : institutionTypeOptions
@@ -669,16 +700,18 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   }, [educationStatus, getValues, setValue])
 
   useEffect(() => {
-    if (counsellorMode || adminMode) {
-      setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label))
-      return
-    }
+    let cancelled = false
     getStudentUniversityCountries()
       .then((countries) => {
-        setPreferredCountryOptions(countries)
+        if (!cancelled) setPreferredCountryOptions(mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, countries))
       })
-      .catch(() => setPreferredCountryOptions(COUNTRY_CODE_OPTIONS.map((item) => item.label)))
-  }, [counsellorMode, adminMode])
+      .catch(() => {
+        if (!cancelled) setPreferredCountryOptions(mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, []))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (openSection !== 'education') return
@@ -793,7 +826,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
       firstName: data.firstName ?? '',
       lastName: data.lastName ?? '',
       birthDate: toDateInputValue(data.birthDate),
-      country: data.country ?? '',
+      country: normalizeCountryLabel(data.country) || '',
       city: data.city ?? '',
       gradeLevel: data.gradeLevel ?? '',
       gpa: data.gpa ?? undefined,
@@ -808,7 +841,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
       highestEducationLevel: data.highestEducationLevel ?? '',
       targetDegreeLevel: data.targetDegreeLevel ?? undefined,
       schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
-        country: s.country ?? '',
+        country: normalizeCountryLabel(s.country) || '',
         institutionName: s.institutionName ?? '',
         institutionType: s.institutionType ?? undefined,
         educationLevel: s.educationLevel ?? '',
@@ -843,7 +876,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
         linkUrl: w.linkUrl ?? '',
       })),
       interestedFaculties: data.interestedFaculties ?? [],
-      preferredCountries: data.preferredCountries ?? [],
+      preferredCountries: dedupeNormalizedCountries(data.preferredCountries ?? []),
       budgetAmount: finiteBudgetAmount(data.budgetAmount),
       budgetCurrency: data.budgetCurrency ?? 'USD',
     }
@@ -854,7 +887,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
       firstName: data.firstName || undefined,
       lastName: data.lastName || undefined,
       birthDate: data.birthDate || undefined,
-      country: data.country || undefined,
+      country: normalizeCountryLabel(data.country) || undefined,
       city: data.city || undefined,
       gradeLevel: data.gradeLevel || undefined,
       gpa: Number.isFinite(data.gpa) ? data.gpa : undefined,
@@ -869,7 +902,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
       highestEducationLevel: data.highestEducationLevel || undefined,
       targetDegreeLevel: data.targetDegreeLevel || undefined,
       schoolsAttended: (data.schoolsAttended ?? []).map((s) => ({
-        country: s.country || undefined,
+        country: normalizeCountryLabel(s.country) || undefined,
         institutionType: s.institutionType || undefined,
         institutionName: s.institutionName || undefined,
         educationLevel: s.educationLevel || undefined,
@@ -905,7 +938,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
         linkUrl: w.linkUrl || undefined,
       })),
       interestedFaculties: data.interestedFaculties ?? [],
-      preferredCountries: data.preferredCountries ?? [],
+      preferredCountries: dedupeNormalizedCountries(data.preferredCountries ?? []),
       budgetAmount:
         data.budgetAmount != null && Number.isFinite(Number(data.budgetAmount))
           ? Number(data.budgetAmount)
@@ -918,32 +951,51 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     return base
   }
 
+  async function persistCurrentProfile(data: FormData) {
+    if (isAdminStudent) {
+      await updateStudentProfileByUser(studentUserId!, buildPayload(data))
+    } else if (isCounsellorStudent) {
+      await updateMyStudent(studentUserId!, buildPayload(data))
+    } else {
+      await updateOwnStudentProfile(buildPayload(data))
+    }
+    const fullProfile = isAdminStudent
+      ? (await getStudentProfileByUser(studentUserId!)) as StudentProfileData
+      : isCounsellorStudent
+        ? await (getCounsellorStudentProfile(studentUserId!) as Promise<StudentProfileData>)
+        : await getOwnStudentProfile()
+    setProfile(fullProfile)
+    reset(mapProfileToFormData(fullProfile))
+    if (profileDraftStorageKey) {
+      try {
+        localStorage.removeItem(profileDraftStorageKey)
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }
+
+  async function onAvatarFileUrlChange(url: string) {
+    if ((watch('avatarUrl') ?? '') === url) return
+    setValue('avatarUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+    if (openSection === 'about') return
+    setError('')
+    setSaving(true)
+    try {
+      await persistCurrentProfile(getValues())
+      notifySuccess(t('common:saved', 'Saved'))
+    } catch (e) {
+      setError(getApiError(e).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleModalSave = async () => {
     setError('')
     setSaving(true)
     try {
-      const data = getValues()
-      if (isAdminStudent) {
-        await updateStudentProfileByUser(studentUserId!, buildPayload(data))
-      } else if (isCounsellorStudent) {
-        await updateMyStudent(studentUserId!, buildPayload(data))
-      } else {
-        await updateOwnStudentProfile(buildPayload(data))
-      }
-      const fullProfile = isAdminStudent
-        ? (await getStudentProfileByUser(studentUserId!)) as StudentProfileData
-        : isCounsellorStudent
-          ? await (getCounsellorStudentProfile(studentUserId!) as Promise<StudentProfileData>)
-          : await getOwnStudentProfile()
-      setProfile(fullProfile)
-      reset(mapProfileToFormData(fullProfile))
-      if (profileDraftStorageKey) {
-        try {
-          localStorage.removeItem(profileDraftStorageKey)
-        } catch {
-          // ignore storage errors
-        }
-      }
+      await persistCurrentProfile(getValues())
       closeSectionWithHistory()
       notifySuccess(t('common:saved', 'Saved'))
     } catch (e) {
@@ -1027,18 +1079,28 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     <div className="w-full space-y-5 min-h-0 pb-page-bottom-cta">
       <PageTitle title={t('portfolioTitle')} icon="User" />
       <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
-        <Link
-          to="?profileSection=about"
-          className="block shrink-0 rounded-full transition-[box-shadow,transform] hover:scale-[1.02] hover:ring-2 hover:ring-primary-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
-          aria-label={t('student:stepAbout', 'About me')}
-          title={t('student:openAboutForPhoto', 'About me — photo and bio')}
+        <FileUpload
+          headless
+          variant="avatar"
+          value={avatarUrl}
+          onChange={onAvatarFileUrlChange}
+          inputRef={headerAvatarInputRef}
+          label={t('student:changeAvatar', 'Change profile photo')}
+        />
+        <button
+          type="button"
+          className="block shrink-0 cursor-pointer rounded-full transition-[box-shadow,transform] hover:scale-[1.02] hover:ring-2 hover:ring-primary-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] disabled:opacity-50 disabled:pointer-events-none"
+          aria-label={t('student:changeAvatar', 'Change profile photo')}
+          title={t('student:changeAvatar', 'Change profile photo')}
+          disabled={saving}
+          onClick={() => headerAvatarInputRef.current?.click()}
         >
           <img
-            src={getStudentAvatarUrl(profile?.avatarUrl)}
+            src={getStudentAvatarUrl(avatarUrl)}
             alt=""
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[var(--color-border)] bg-[var(--color-border)]"
           />
-        </Link>
+        </button>
         <div className="min-w-0 flex-1">
           <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
             {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || t('portfolioTitle')}
@@ -1305,13 +1367,13 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
           {openSection === 'location' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select label={t('country')} error={errors.country?.message} options={countrySelectOptions} placeholder={t('student:preferredCountriesPlaceholder', 'Select countries')} {...register('country')} />
+                <Select label={t('country')} error={errors.country?.message} options={countrySelectOptions} placeholder={t('student:countryResidencePlaceholder', 'Select your country')} {...register('country')} />
                 <Input label={t('city')} error={errors.city?.message} {...register('city')} placeholder={t('city')} />
               </div>
               <div className="mt-4 space-y-3">
                 <div>
                   <div className="mb-1 flex items-center gap-2">
-                    <p className="block text-sm font-medium text-[var(--color-text)]">{t('student:preferredCountriesPlaceholder', 'Select countries')}</p>
+                    <p className="block text-sm font-medium text-[var(--color-text)]">{t('student:preferredStudyCountriesHeading', 'Preferred study countries')}</p>
                     <span className="group relative inline-flex items-center">
                       <span
                         className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-amber-500 text-[10px] font-bold leading-none text-amber-500"
@@ -1325,11 +1387,11 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                     </span>
                   </div>
                   <ChipSelect
-                    options={preferredCountryOptions.length > 0 ? preferredCountryOptions : COUNTRY_CODE_OPTIONS.map((c) => c.label)}
+                    options={chipCountryOptions}
                     value={watch('preferredCountries') ?? []}
-                    onChange={(countries) => setValue('preferredCountries', countries, { shouldDirty: true })}
+                    onChange={(countries) => setValue('preferredCountries', dedupeNormalizedCountries(countries), { shouldDirty: true })}
                     max={8}
-                    placeholder={t('student:preferredCountriesPlaceholder', 'Select countries')}
+                    placeholder={t('student:preferredCountriesChipPlaceholder', 'Tap countries to add them')}
                   />
                 </div>
               </div>
@@ -1602,7 +1664,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                       <Button type="button" variant="ghost" size="sm" onClick={() => removeSchool(i)} aria-label="Remove"><Trash2 className="w-4 h-4" /></Button>
                     </div>
                     <Select label={t('institutionTypeLabel')} options={attendedInstitutionTypeOptions} placeholder="—" {...register(`schoolsAttended.${i}.institutionType`)} />
-                    <Input label={t('country')} {...register(`schoolsAttended.${i}.country`)} placeholder="e.g. Uzbekistan" />
+                    <Select label={t('country')} options={schoolCountrySelectOptions} placeholder="—" {...register(`schoolsAttended.${i}.country`)} />
                     <Input label={t('schoolName')} {...register(`schoolsAttended.${i}.institutionName`)} placeholder={t('schoolName')} />
                     <Input label={t('gradeLevel')} {...register(`schoolsAttended.${i}.educationLevel`)} placeholder={t('gradePlaceholder')} />
                     <Input label={t('primaryLanguageOfInstruction', 'Primary language of instruction')} {...register(`schoolsAttended.${i}.primaryLanguage`)} placeholder="e.g. Uzbek" />
@@ -1656,10 +1718,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                 label={t('avatarUrl')}
                 variant="avatar"
                 value={avatarUrl}
-                onChange={(url) => {
-                  if ((watch('avatarUrl') ?? '') === url) return
-                  setValue('avatarUrl', url, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
-                }}
+                onChange={onAvatarFileUrlChange}
                 hint={t('uploadPhotoOrLink')}
               />
             </>
