@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Building2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,6 +22,8 @@ import type { UniversityProfile } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { useAuth } from '@/hooks/useAuth'
 import { AdminUniversityOfferModal } from '@/components/admin/AdminUniversityOfferModal'
+import { mergeCountryOptionLabels, normalizeCountryLabel } from '@/utils/countryLabels'
+import { getWorldCountryLabelsSorted } from '@/utils/worldCountries'
 
 const uploadedLogoSchema = z.string().trim().refine(
   (value) => value === '' || /^https?:\/\//.test(value) || value.startsWith('/'),
@@ -87,6 +89,12 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
   })
   const logoValue = watch('logo') ?? ''
   const nameValue = watch('name') ?? ''
+  const countryWatch = watch('country')
+  const universityCountrySelectOptions = useMemo(() => {
+    const world = getWorldCountryLabelsSorted()
+    const cur = normalizeCountryLabel(countryWatch)
+    return mergeCountryOptionLabels(world, cur ? [cur] : []).map((v) => ({ value: v, label: v }))
+  }, [countryWatch])
   const [logoPreviewError, setLogoPreviewError] = useState(false)
   useEffect(() => setLogoPreviewError(false), [logoValue])
 
@@ -155,7 +163,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
           establishedYear: data.foundedYear ?? undefined,
           studentCount: data.studentCount ?? undefined,
           rating: data.rating ?? undefined,
-          country: data.country || undefined,
+          country: normalizeCountryLabel(data.country) || undefined,
           city: data.city?.trim() || undefined,
           description: data.description?.trim() || undefined,
           logoUrl: data.logo?.trim() || undefined,
@@ -204,7 +212,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
           foundedYear: data.foundedYear ?? undefined,
           studentCount: data.studentCount ?? undefined,
           rating: data.rating ?? undefined,
-          country: data.country || undefined,
+          country: normalizeCountryLabel(data.country) || undefined,
           city: data.city || undefined,
           description: data.description || undefined,
           logo: data.logo || undefined,
@@ -319,7 +327,12 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
           <Card>
             <CardTitle>{t('university:sectionLocation')}</CardTitle>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <Input label={t('university:country')} {...register('country')} />
+              <Select
+                label={t('university:country')}
+                options={universityCountrySelectOptions}
+                placeholder={t('university:countryPlaceholder', 'Select country')}
+                {...register('country')}
+              />
               <Input label={t('university:city')} {...register('city')} />
               <Input
                 label={t('university:rating', 'Rating')}

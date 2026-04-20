@@ -62,11 +62,6 @@ export function UniversityDashboard() {
     <div className="space-y-6 pb-page-bottom-cta">
       <div className="flex flex-wrap items-center gap-2" data-onboarding="university-dashboard-overview">
         <PageTitle title={t('university:dashboard', 'Dashboard')} icon="LayoutDashboard" />
-        {dashboard?.verified && (
-          <Badge variant="success" className="inline-flex items-center gap-1">
-            <ShieldCheck size={14} /> Verified
-          </Badge>
-        )}
       </div>
 
       <section className="grid gap-4 rounded-card border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(224,242,254,0.82))] p-5 shadow-[var(--shadow-card)] dark:bg-[linear-gradient(135deg,rgba(17,24,39,0.98),rgba(8,47,73,0.94))] lg:grid-cols-[minmax(0,1.6fr)_minmax(18rem,0.95fr)] lg:items-start sm:p-7">

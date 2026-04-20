@@ -12,7 +12,8 @@ import { FileUpload } from '@/components/ui/FileUpload'
 import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
-import { getStudentProfile as getOwnStudentProfile, getStudentUniversityCountries, updateStudentProfile as updateOwnStudentProfile, type StudentProfileData, type StudentExperience, type StudentPortfolioWork } from '@/services/student'
+import { getStudentProfile as getOwnStudentProfile, updateStudentProfile as updateOwnStudentProfile, type StudentProfileData, type StudentExperience, type StudentPortfolioWork } from '@/services/student'
+import { getUniversityHubCountries } from '@/services/options'
 import { getMyDocuments, type StudentDocumentItem } from '@/services/studentDocuments'
 import {
   getStudentProfile as getCounsellorStudentProfile,
@@ -475,9 +476,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   const [displayPercent, setDisplayPercent] = useState(0)
   const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
   const [educationWizardStep, setEducationWizardStep] = useState(1)
-  const [preferredCountryOptions, setPreferredCountryOptions] = useState<string[]>(() =>
-    mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, [])
-  )
+  /** Distinct countries where the platform has ≥1 university (catalog or verified profile). Preferred study chips only. */
+  const [countriesWithUniversities, setCountriesWithUniversities] = useState<string[]>([])
   const [languageCertificates, setLanguageCertificates] = useState<StudentDocumentItem[]>([])
   const [documents, setDocuments] = useState<CounsellorStudentDocument[]>([])
   const [documentsLoading, setDocumentsLoading] = useState(false)
@@ -592,21 +592,26 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     }
     setOpenSection(null)
   }
+  const residenceCountrySource = useMemo(
+    () => mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, countriesWithUniversities),
+    [countriesWithUniversities]
+  )
+
   const countrySelectOptions = useMemo(() => {
     const set = new Map<string, string>()
-    for (const x of preferredCountryOptions) {
+    for (const x of residenceCountrySource) {
       const n = normalizeCountryLabel(x)
       if (n) set.set(n.toLowerCase(), n)
     }
     const current = normalizeCountryLabel(watch('country'))
     if (current) set.set(current.toLowerCase(), current)
     return [...set.values()].sort((a, b) => a.localeCompare(b, 'en')).map((v) => ({ value: v, label: v }))
-  }, [preferredCountryOptions, watch('country')])
+  }, [residenceCountrySource, watch('country')])
 
   const schoolsAttendedForCountryOptions = watch('schoolsAttended')
   const schoolCountrySelectOptions = useMemo(() => {
     const set = new Map<string, string>()
-    for (const x of preferredCountryOptions) {
+    for (const x of residenceCountrySource) {
       const n = normalizeCountryLabel(x)
       if (n) set.set(n.toLowerCase(), n)
     }
@@ -616,13 +621,10 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     }
     const opts = [...set.values()].sort((a, b) => a.localeCompare(b, 'en')).map((v) => ({ value: v, label: v }))
     return [{ value: '', label: '—' }, ...opts]
-  }, [preferredCountryOptions, schoolsAttendedForCountryOptions])
+  }, [residenceCountrySource, schoolsAttendedForCountryOptions])
 
   const preferredCountriesWatch = watch('preferredCountries')
-  const chipCountryOptions = useMemo(
-    () => mergeCountryOptionLabels(preferredCountryOptions, preferredCountriesWatch ?? []),
-    [preferredCountryOptions, preferredCountriesWatch]
-  )
+  const chipCountryOptions = useMemo(() => [...countriesWithUniversities], [countriesWithUniversities])
   const attendedInstitutionTypeOptions = educationStatus === 'in_school'
     ? [{ value: 'school', label: t('institutionTypeSchool') }]
     : institutionTypeOptions
@@ -701,17 +703,29 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
 
   useEffect(() => {
     let cancelled = false
-    getStudentUniversityCountries()
+    getUniversityHubCountries()
       .then((countries) => {
-        if (!cancelled) setPreferredCountryOptions(mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, countries))
+        if (!cancelled) setCountriesWithUniversities(mergeCountryOptionLabels([], countries))
       })
       .catch(() => {
-        if (!cancelled) setPreferredCountryOptions(mergeCountryOptionLabels(COUNTRY_FALLBACK_LABELS, []))
+        if (!cancelled) setCountriesWithUniversities([])
       })
     return () => {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (countriesWithUniversities.length === 0) return
+    const allowed = new Set(countriesWithUniversities.map((c) => normalizeCountryLabel(c).toLowerCase()))
+    const prefs = preferredCountriesWatch ?? []
+    const normalizedPrefs = dedupeNormalizedCountries(prefs)
+    const next = normalizedPrefs.filter((p) => allowed.has(normalizeCountryLabel(p).toLowerCase()))
+    const prefKey = normalizedPrefs.map((p) => normalizeCountryLabel(p).toLowerCase()).sort().join('|')
+    const nextKey = next.map((p) => normalizeCountryLabel(p).toLowerCase()).sort().join('|')
+    if (prefKey === nextKey) return
+    setValue('preferredCountries', next, { shouldDirty: true })
+  }, [countriesWithUniversities, preferredCountriesWatch, setValue])
 
   useEffect(() => {
     if (openSection !== 'education') return
@@ -1386,6 +1400,14 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                       </span>
                     </span>
                   </div>
+                  {countriesWithUniversities.length === 0 ? (
+                    <p className="mb-2 text-sm text-[var(--color-text-muted)]">
+                      {t(
+                        'student:preferredCountriesNoUniversitiesYet',
+                        'No countries with universities in the catalog yet. When a university registers and sets its country, that country will appear here for you to choose.'
+                      )}
+                    </p>
+                  ) : null}
                   <ChipSelect
                     options={chipCountryOptions}
                     value={watch('preferredCountries') ?? []}

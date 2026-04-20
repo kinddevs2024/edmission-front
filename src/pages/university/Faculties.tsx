@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { getFaculties, getGlobalFaculties, getProfile, createFaculty, updateFaculty, deleteFaculty, updateProfile } from '@/services/university'
 import type { Faculty, GlobalFaculty } from '@/types/university'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { toastApiError } from '@/utils/toastError'
+import { cn } from '@/utils/cn'
 import { Pencil, Trash2, Plus, ChevronDown } from 'lucide-react'
 
 type FacultyCatalogCategory = {
@@ -234,7 +236,10 @@ export function Faculties() {
                     >
                       <ChevronDown
                         size={18}
-                        className={`shrink-0 text-[var(--color-text-muted)] transition-transform ${open ? 'rotate-180' : ''}`}
+                        className={cn(
+                          'shrink-0 text-[var(--color-text-muted)] transition-transform duration-300 ease-out motion-reduce:transition-none',
+                          open && 'rotate-180'
+                        )}
                       />
                       <span className="font-medium truncate">{getCategoryLabel(cat)}</span>
                       <span className="text-xs text-[var(--color-text-muted)] shrink-0">
@@ -253,63 +258,77 @@ export function Faculties() {
                       </Button>
                     </div>
                   </div>
-                  {open && (
-                    <div className="mt-2 pl-6 space-y-1.5 max-h-64 overflow-y-auto">
-                      <p className="text-xs text-[var(--color-text-muted)]">
-                        {t('university:customizeItemsHint', 'Check programs you offer. Uncheck to hide. Add custom items below.')}
-                      </p>
-                      {[...cat.items, ...(items.filter((x) => !cat.items.includes(x)))].map((it) => {
-                        const included = items.includes(it)
-                        return (
-                          <div key={it} className="flex items-center gap-2 group">
-                            <Checkbox
-                              checked={included}
-                              onChange={() => handleToggleItem(catId, it, included)}
-                              disabled={savingProfile}
-                              label={
-                                <span className={included ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>
-                                  {it}
-                                </span>
+                  <div
+                    className={cn(
+                      'grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none',
+                      open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    )}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <div
+                        className={cn(
+                          'mt-2 pl-6 space-y-1.5 max-h-64 overflow-y-auto transition-opacity duration-200 ease-out motion-reduce:transition-none',
+                          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        )}
+                        aria-hidden={!open}
+                      >
+                        <p className="text-xs text-[var(--color-text-muted)]">
+                          {t('university:customizeItemsHint', 'Check programs you offer. Uncheck to hide. Add custom items below.')}
+                        </p>
+                        {[...cat.items, ...(items.filter((x) => !cat.items.includes(x)))].map((it) => {
+                          const included = items.includes(it)
+                          return (
+                            <div key={it} className="flex items-center gap-2 group">
+                              <Checkbox
+                                checked={included}
+                                onChange={() => handleToggleItem(catId, it, included)}
+                                disabled={savingProfile || !open}
+                                label={
+                                  <span className={included ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}>
+                                    {it}
+                                  </span>
+                                }
+                                className="flex-1 min-w-0"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveItem(catId, it)}
+                                disabled={savingProfile || !open}
+                                className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded text-[var(--color-text-muted)] hover:bg-red-500/20 hover:text-red-500"
+                                title={t('common:delete')}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          )
+                        })}
+                        <div className="flex gap-2 pt-2 border-t border-[var(--color-border)]">
+                          <Input
+                            placeholder={t('university:addCustomItem', 'Add custom program...')}
+                            className="flex-1 text-sm"
+                            value={addItemInput[catId] ?? ''}
+                            onChange={(e) => setAddItemInput((prev) => ({ ...prev, [catId]: e.target.value }))}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleAddCustomItem(catId)
                               }
-                              className="flex-1 min-w-0"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveItem(catId, it)}
-                              disabled={savingProfile}
-                              className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded text-[var(--color-text-muted)] hover:bg-red-500/20 hover:text-red-500"
-                              title={t('common:delete')}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        )
-                      })}
-                      <div className="flex gap-2 pt-2 border-t border-[var(--color-border)]">
-                        <Input
-                          placeholder={t('university:addCustomItem', 'Add custom program...')}
-                          className="flex-1 text-sm"
-                          value={addItemInput[catId] ?? ''}
-                          onChange={(e) => setAddItemInput((prev) => ({ ...prev, [catId]: e.target.value }))}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              handleAddCustomItem(catId)
-                            }
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleAddCustomItem(catId)}
-                          disabled={savingProfile || !(addItemInput[catId]?.trim())}
-                          icon={<Plus size={14} />}
-                        >
-                          {t('university:add', 'Add')}
-                        </Button>
+                            }}
+                            disabled={!open}
+                          />
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleAddCustomItem(catId)}
+                            disabled={savingProfile || !(addItemInput[catId]?.trim()) || !open}
+                            icon={<Plus size={14} />}
+                          >
+                            {t('university:add', 'Add')}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </li>
               )
             })}
@@ -418,13 +437,18 @@ export function Faculties() {
         open={!!modal}
         onClose={() => setModal(null)}
         title={modal?.mode === 'edit' ? t('university:editFaculty') : t('university:addFaculty')}
+        panelClassName="max-w-xl"
+        footerClassName="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3"
         footer={
           modal ? (
             <>
-              <Button variant="secondary" onClick={() => setModal(null)}>
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setModal(null)}>
                 {t('common:cancel')}
               </Button>
               <Button
+                type="button"
+                variant="primary"
+                className="w-full sm:w-auto min-h-[44px]"
                 onClick={handleSubmit}
                 disabled={submitting || !name.trim()}
                 loading={submitting}
@@ -435,54 +459,62 @@ export function Faculties() {
           ) : undefined
         }
       >
-        <div className="space-y-3">
+        <div className="space-y-5">
           <Input
             label={t('university:facultyName')}
             placeholder={t('university:facultyNamePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <Input
+          <Textarea
             label={t('university:facultyDescription')}
             placeholder={t('university:facultyDescriptionPlaceholder')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            resize={false}
           />
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-medium text-[var(--color-text)]">
-                  {t('university:facultyProgramsLabel', 'Programs / directions')}
-                </p>
-                <p className="text-xs text-[var(--color-text-muted)]">
-                  {t('university:facultyProgramsHint', 'Add each program separately so you can edit or remove it later.')}
-                </p>
-              </div>
-              <Button size="sm" variant="secondary" onClick={handleAddCustomProgram} icon={<Plus size={14} />}>
-                {t('university:addProgram', 'Add program')}
-              </Button>
+          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)]/80 p-4 dark:bg-[var(--color-bg-muted)]/30">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-[var(--color-text)]">
+                {t('university:facultyProgramsLabel', 'Programs / directions')}
+              </p>
+              <p className="text-xs leading-relaxed text-[var(--color-text-muted)]">
+                {t('university:facultyProgramsHint', 'Add each program separately so you can edit or remove it later.')}
+              </p>
             </div>
-            <div className="space-y-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="mt-3 w-full sm:w-auto"
+              onClick={handleAddCustomProgram}
+              icon={<Plus size={16} />}
+            >
+              {t('university:addProgram', 'Add program')}
+            </Button>
+            <ul className="mt-4 space-y-2">
               {customItems.map((item, index) => (
-                <div key={`${modal?.faculty?.id ?? 'new'}-${index}`} className="flex items-start gap-2">
+                <li key={`${modal?.faculty?.id ?? 'new'}-${index}`} className="flex items-center gap-2">
                   <Input
                     value={item}
                     onChange={(e) => handleCustomItemChange(index, e.target.value)}
                     placeholder={t('university:facultyProgramsPlaceholder', 'Program name')}
-                    className="flex-1"
+                    className="min-w-0 flex-1"
+                    aria-label={t('university:facultyProgramsPlaceholder', 'Program name')}
                   />
                   <Button
                     type="button"
-                    variant="danger"
+                    variant="ghost"
                     size="sm"
+                    className="h-[44px] w-11 shrink-0 text-[var(--color-text-muted)] hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400"
                     onClick={() => handleRemoveCustomProgram(index)}
-                    icon={<Trash2 size={14} />}
-                  >
-                    {t('common:delete')}
-                  </Button>
-                </div>
+                    icon={<Trash2 size={18} />}
+                    aria-label={t('common:delete')}
+                  />
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </Modal>

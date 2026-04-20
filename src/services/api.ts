@@ -18,9 +18,13 @@ function isAuthEndpoint(url: string | undefined, endpoint: string): boolean {
   return (url ?? '').toLowerCase().includes(endpoint)
 }
 
-function forceLogout(): void {
+function clearAuthSessionOnly(): void {
   clearAuth()
   useAuthStore.getState().logout()
+}
+
+function forceLogout(): void {
+  clearAuthSessionOnly()
   if (window.location.pathname !== '/login') {
     window.location.href = '/login'
   }
@@ -51,7 +55,12 @@ api.interceptors.response.use(
     const isRefreshRequest = isAuthEndpoint(originalRequest?.url, '/auth/refresh')
     const isLogoutRequest = isAuthEndpoint(originalRequest?.url, '/auth/logout')
     if (error.response?.status === 401) {
-      if (!originalRequest || isRefreshRequest || isLogoutRequest || originalRequest._retry) {
+      /** `POST /auth/logout` is followed by `logout()` in auth.ts, which navigates. Avoid a second redirect here (e.g. /login then /) which flashes the login page. */
+      if (isLogoutRequest) {
+        clearAuthSessionOnly()
+        return Promise.reject(error)
+      }
+      if (!originalRequest || isRefreshRequest || originalRequest._retry) {
         forceLogout()
         return Promise.reject(error)
       }

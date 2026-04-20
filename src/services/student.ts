@@ -1,4 +1,5 @@
 import { api } from './api'
+import { getUniversityHubCountries } from '@/services/options'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { Application, Offer, Recommendation } from '@/types/student'
 import type { UniversityListItem } from '@/types/university'
@@ -84,8 +85,7 @@ export async function getStudentProfile(): Promise<StudentProfileData> {
 }
 
 export async function getStudentUniversityCountries(): Promise<string[]> {
-  const { data } = await api.get<{ data?: string[] }>('/student/university-countries')
-  return data?.data ?? []
+  return getUniversityHubCountries()
 }
 
 export async function updateStudentProfile(patch: Partial<StudentProfileData>): Promise<StudentProfileData> {

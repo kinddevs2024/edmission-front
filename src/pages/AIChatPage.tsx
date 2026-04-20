@@ -54,7 +54,7 @@ export function AIChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null)
   const [, setAIStatus] = useState<AIStatus | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     getAIStatus()
@@ -63,7 +63,11 @@ export function AIChatPage() {
   }, [])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = messagesScrollRef.current
+    if (!el) return
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+    })
   }, [messages, loading])
 
   const handleSend = useCallback(
@@ -225,9 +229,9 @@ export function AIChatPage() {
   }, [setSelectionAsk])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-[400px] overflow-hidden">
+    <div className="flex min-h-[400px] flex-col overflow-hidden h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] sm:h-[calc(100dvh-5.5rem)] sm:max-h-[calc(100dvh-5.5rem)]">
 
-      <div className="flex-1 flex flex-col min-h-0 border border-[var(--color-border)] rounded-card bg-[var(--color-card)] overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
         {messages.length === 0 && !loading && !streamingAssistantId ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -297,7 +301,8 @@ export function AIChatPage() {
           </motion.div>
         ) : (
           <div
-            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
+            ref={messagesScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4"
             onMouseUp={handleSelectText}
             onTouchEnd={handleSelectText}
           >
@@ -375,7 +380,6 @@ export function AIChatPage() {
                 </p>
               </div>
             )}
-            <div ref={bottomRef} />
           </div>
         )}
 

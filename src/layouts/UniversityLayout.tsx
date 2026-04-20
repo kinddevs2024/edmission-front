@@ -35,17 +35,37 @@ export function UniversityLayout() {
             { to: '/university/pending', label: t('status', 'Status'), icon: 'Clock' },
           ]
         : [
-            { to: '/university/dashboard', label: t('dashboard', 'Dashboard'), icon: 'LayoutDashboard' },
+            {
+              to: '/university/dashboard',
+              label: t('dashboard', 'Dashboard'),
+              icon: 'LayoutDashboard',
+              section: t('navSectionMain', 'Main'),
+            },
             { to: '/university/profile', label: t('navProfile', 'Profile'), icon: 'User' },
-            { to: '/university/students', label: t('navDiscovery', 'Discovery'), icon: 'Users' },
+            {
+              to: '/university/students',
+              label: t('navDiscovery', 'Discovery'),
+              icon: 'Users',
+              section: t('navSectionRecruitment', 'Recruitment'),
+            },
             { to: '/university/pipeline', label: t('navPipeline', 'Pipeline'), icon: 'GitBranch' },
-            { to: '/university/documents', label: 'Documents', icon: 'FileText' },
+            { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
+            {
+              to: '/university/documents',
+              label: 'Documents',
+              icon: 'FileText',
+              section: t('navSectionCatalog', 'Programs & catalog'),
+            },
             { to: '/university/flyers', label: t('navFlyers', 'Flyers'), icon: 'Image' },
             { to: '/university/scholarships', label: t('navScholarships', 'Scholarships'), icon: 'Wallet' },
             { to: '/university/faculties', label: t('navFaculties', 'Faculties'), icon: 'Building2' },
             { to: '/university/analytics', label: t('navAnalytics', 'Analytics'), icon: 'BarChart3' },
-            { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
-            { to: '/notifications', label: t('navNotifications', 'Notifications'), icon: 'Bell' },
+            {
+              to: '/notifications',
+              label: t('navNotifications', 'Notifications'),
+              icon: 'Bell',
+              section: t('navSectionMore', 'More'),
+            },
             { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
           ],
     [t, isSelect, isPending]
