@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { login, loginWithGoogle } from '@/services/auth'
+import { login, loginWithGoogle, startTelegramAuth } from '@/services/auth'
 import { useAuthStore } from '@/store/authStore'
 import { navigateAfterLogin } from '@/utils/navigateAfterAuth'
 import { showOAuthPasswordReminder } from '@/utils/oauthPasswordToast'
@@ -76,6 +76,28 @@ export function Login() {
     }
   }
 
+  const handleTelegramLogin = async () => {
+    setSubmitError('')
+    setLoading(true)
+    const popup = window.open('', '_blank', 'noopener,noreferrer')
+    try {
+      const data = await startTelegramAuth()
+      const authPath = `/auth/telegram?sessionId=${encodeURIComponent(data.sessionId)}&deepLink=${encodeURIComponent(data.deepLink)}`
+      navigate(authPath)
+      if (popup && !popup.closed) {
+        popup.location.href = data.deepLink
+      } else {
+        window.open(data.deepLink, '_blank', 'noopener,noreferrer')
+      }
+    } catch (err) {
+      if (popup && !popup.closed) popup.close()
+      const key = getApiErrorKey(err)
+      setSubmitError(t(`errors:${key}`))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Card className="p-6">
       <div className="mb-4 flex flex-col items-center gap-2 text-center">
@@ -102,6 +124,15 @@ export function Login() {
         <div className="flex flex-col gap-2">
           <Button type="submit" className="w-full" loading={loading} disabled={loading}>
             Sign in
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => void handleTelegramLogin()}
+            disabled={loading}
+          >
+            Login via Telegram
           </Button>
           <div className="flex items-center justify-between gap-3">
             <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">

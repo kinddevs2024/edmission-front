@@ -54,6 +54,17 @@ export interface PhoneRegisterStatusResult {
   expiresAt: string | null
 }
 
+export interface TelegramAuthStartResult {
+  sessionId: string
+  deepLink: string
+  expiresAt: string
+}
+
+export interface TelegramAuthVerifyPayload {
+  sessionId: string
+  code: string
+}
+
 export async function loginWithGoogle(payload: {
   idToken: string
   /** Defaults to student on the server if omitted and terms are accepted (new account). */
@@ -119,6 +130,21 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   useAuthStore.getState().logout()
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/login', payload)
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
+export async function startTelegramAuth(): Promise<TelegramAuthStartResult> {
+  const { data } = await api.post<TelegramAuthStartResult>('/auth/telegram/start')
+  return data
+}
+
+export async function verifyTelegramAuth(payload: TelegramAuthVerifyPayload): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/telegram/verify', payload)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
