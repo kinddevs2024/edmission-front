@@ -24,6 +24,7 @@ export function StudentLayout() {
     (educationStatus === 'in_school' || educationStatus === 'finished_school') && !counsellorLinked
 
   const isFixedHeightPage = location.pathname === '/student/ai'
+  const isChatPage = location.pathname === '/student/chat'
 
   const { bottomNavItems, sidebarItems, sidebarBottomItems, mobileMenuItems } = useMemo(
     () =>
@@ -50,10 +51,15 @@ export function StudentLayout() {
           : 'h-full pb-mobile-nav lg:pt-16',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
-        <div className={cn(
-          'max-w-content mx-auto flex w-full flex-col px-2 animate-page-enter sm:px-4',
-          isFixedHeightPage ? 'h-full min-h-0 flex-1 overflow-hidden' : 'min-h-0 flex-1'
-        )}>
+        <div
+          className={cn(
+            'mx-auto flex w-full flex-col animate-page-enter',
+            isChatPage
+              ? 'h-full min-h-0 flex-1 max-w-none overflow-hidden px-0 sm:px-0'
+              : 'max-w-content px-2 sm:px-4',
+            isFixedHeightPage ? 'h-full min-h-0 flex-1 overflow-hidden' : 'min-h-0 flex-1'
+          )}
+        >
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

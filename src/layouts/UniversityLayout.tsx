@@ -23,6 +23,7 @@ export function UniversityLayout() {
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
   const isFixedHeightPage = location.pathname === '/university/ai'
+  const isChatPage = location.pathname === '/university/chat'
 
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
@@ -121,10 +122,15 @@ export function UniversityLayout() {
           : 'h-full pb-mobile-nav lg:pt-16',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
-        <div className={cn(
-          'max-w-content mx-auto flex w-full flex-col px-2 animate-page-enter sm:px-4',
-          isFixedHeightPage ? 'h-full min-h-0 flex-1 overflow-hidden' : 'min-h-0 flex-1'
-        )}>
+        <div
+          className={cn(
+            'mx-auto flex w-full flex-col animate-page-enter',
+            isChatPage
+              ? 'h-full min-h-0 flex-1 max-w-none overflow-hidden px-0 sm:px-0'
+              : 'max-w-content px-2 sm:px-4',
+            isFixedHeightPage ? 'h-full min-h-0 flex-1 overflow-hidden' : 'min-h-0 flex-1'
+          )}
+        >
           {isDelegatedSession ? (
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-input border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">
               <span className="text-[var(--color-text)]">
