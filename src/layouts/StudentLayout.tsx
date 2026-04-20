@@ -23,8 +23,8 @@ export function StudentLayout() {
   const showMySchools =
     (educationStatus === 'in_school' || educationStatus === 'finished_school') && !counsellorLinked
 
-  const isFixedHeightPage = location.pathname === '/student/ai'
   const isChatPage = location.pathname === '/student/chat'
+  const isFixedHeightPage = location.pathname === '/student/ai' || isChatPage
 
   const { bottomNavItems, sidebarItems, sidebarBottomItems, mobileMenuItems } = useMemo(
     () =>

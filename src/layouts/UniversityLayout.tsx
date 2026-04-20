@@ -22,8 +22,8 @@ export function UniversityLayout() {
   const isDelegatedSession = user?.role === 'university_multi_manager' && Boolean(actingUniversityUserId)
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
-  const isFixedHeightPage = location.pathname === '/university/ai'
   const isChatPage = location.pathname === '/university/chat'
+  const isFixedHeightPage = location.pathname === '/university/ai' || isChatPage
 
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
