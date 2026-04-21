@@ -4,12 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Building2, GraduationCap, UserRoundCheck } from "lucide-react";
 import {
   register as registerApi,
   verifyEmailByCode,
   resendVerificationCode,
   loginWithGoogle,
-  startTelegramAuth,
 } from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 import { getApiError } from "@/services/api";
@@ -23,14 +23,23 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { BrandMark } from "@/components/layout/BrandLogo";
 
+type RegisterRole = "student" | "university" | "school_counsellor";
+type SocialAuthRole = "student" | "university";
+
+function toSocialAuthRole(role: RegisterRole): SocialAuthRole {
+  return role === "university" ? "university" : "student";
+}
+
 export function Register() {
   const { t, i18n } = useTranslation(["common", "auth", "errors"]);
   const navigate = useNavigate();
+  const [selectedRole, setSelectedRole] = useState<RegisterRole>("student");
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [step, setStep] = useState<"form" | "code">("form");
+  const [step, setStep] = useState<"form" | "role" | "code">("form");
   const [pendingEmail, setPendingEmail] = useState("");
+  const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
   const [codeError, setCodeError] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
@@ -57,7 +66,7 @@ export function Register() {
               t("auth:passwordNumber", "At least one number"),
             ),
           confirmPassword: z.string(),
-          role: z.literal("student"),
+          role: z.enum(["student", "university", "school_counsellor"]),
           acceptTerms: z.boolean().refine((v) => v === true, {
             message: t("auth:acceptTermsRequired"),
           }),
@@ -74,6 +83,7 @@ export function Register() {
     register,
     handleSubmit,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -96,7 +106,7 @@ export function Register() {
     try {
       const data = await loginWithGoogle({
         idToken: credential,
-        role: getValues("role"),
+        role: toSocialAuthRole(getValues("role")),
         acceptTerms: true,
       });
       if (data.user.mustSetLocalPassword) {
@@ -123,34 +133,6 @@ export function Register() {
     }
   };
 
-  const handleTelegramRegister = async () => {
-    setSubmitError("");
-    setLoading(true);
-    const popup = window.open("", "_blank", "noopener,noreferrer");
-    if (popup && !popup.closed) {
-      popup.document.write(
-        '<!doctype html><html><head><title>Opening Telegram</title></head><body style="font-family:system-ui;padding:16px">Opening Telegram...</body></html>',
-      );
-      popup.document.close();
-    }
-    try {
-      const data = await startTelegramAuth({ role: getValues("role") });
-      const authPath = `/auth/telegram?sessionId=${encodeURIComponent(data.sessionId)}&deepLink=${encodeURIComponent(data.deepLink)}&role=${encodeURIComponent(getValues("role"))}`;
-      navigate(authPath);
-      if (popup && !popup.closed) {
-        popup.location.href = data.deepLink;
-      } else {
-        window.open(data.deepLink, "_blank", "noopener,noreferrer");
-      }
-    } catch (err) {
-      if (popup && !popup.closed) popup.close();
-      const key = getApiErrorKey(err);
-      setSubmitError(t(`errors:${key}`));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const onResend = async () => {
     if (resendCooldown > 0 || resendLoading) return;
     setResendLoading(true);
@@ -167,13 +149,20 @@ export function Register() {
   };
 
   const onSubmit = async (data: FormData) => {
+    setPendingFormData(data);
+    setSelectedRole(data.role);
+    setStep("role");
+  };
+
+  const onSubmitAfterRole = async () => {
+    if (!pendingFormData) return;
     setSubmitError("");
     setLoading(true);
     try {
       const result = await registerApi({
-        email: data.email,
-        password: data.password,
-        role: data.role,
+        email: pendingFormData.email,
+        password: pendingFormData.password,
+        role: selectedRole,
         acceptTerms: true,
       });
       if ("needsVerification" in result && result.needsVerification) {
@@ -276,6 +265,77 @@ export function Register() {
     );
   }
 
+  if (step === "role") {
+    return (
+      <Card className="p-6">
+        <div className="mb-4 flex flex-col items-center gap-2 text-center">
+          <BrandMark className="h-14 w-14" />
+          <CardTitle>{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            {t("auth:chooseRole", "Choose who you are registering as")}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedRole("student")}
+            className={
+              selectedRole === "student"
+                ? "rounded-card flex items-center gap-3 border-2 border-primary-accent px-3 py-2 text-left"
+                : "rounded-card flex items-center gap-3 border border-[var(--color-border)] px-3 py-2 text-left"
+            }
+          >
+            <GraduationCap className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
+            {t("auth:roleStudent", "Student")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedRole("university")}
+            className={
+              selectedRole === "university"
+                ? "rounded-card flex items-center gap-3 border-2 border-primary-accent px-3 py-2 text-left"
+                : "rounded-card flex items-center gap-3 border border-[var(--color-border)] px-3 py-2 text-left"
+            }
+          >
+            <Building2 className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
+            {t("auth:roleUniversity", "University")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedRole("school_counsellor")}
+            className={
+              selectedRole === "school_counsellor"
+                ? "rounded-card flex items-center gap-3 border-2 border-primary-accent px-3 py-2 text-left"
+                : "rounded-card flex items-center gap-3 border border-[var(--color-border)] px-3 py-2 text-left"
+            }
+          >
+            <UserRoundCheck className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
+            {t("auth:roleCounsellor", "Counsellor")}
+          </button>
+        </div>
+        <Button
+          type="button"
+          className="mt-4 w-full"
+          loading={loading}
+          disabled={loading}
+          onClick={() => {
+            setValue("role", selectedRole, { shouldValidate: true });
+            void onSubmitAfterRole();
+          }}
+        >
+          {t("common:register", "Register")}
+        </Button>
+        <button
+          type="button"
+          onClick={() => setStep("form")}
+          className="mt-3 block w-full text-center text-sm text-[var(--color-text-muted)] hover:underline"
+        >
+          ← {t("common:back")}
+        </button>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6">
       <div className="mb-4 flex flex-col items-center gap-2 text-center">
@@ -323,7 +383,7 @@ export function Register() {
           showPasswordToggle
           {...register("confirmPassword")}
         />
-        <input type="hidden" value="student" {...register("role")} />
+        <input type="hidden" {...register("role")} />
         <div className="flex items-start gap-2">
           <Checkbox
             {...register("acceptTerms")}
@@ -360,31 +420,32 @@ export function Register() {
         </Link>
       </form>
 
-      <div className="mt-6 space-y-4">
-        <AuthSocialButtons
-          mode="register"
-          loading={loading}
-          role="student"
-          yandexAcceptTerms
-          setLoading={setLoading}
-          setSubmitError={setSubmitError}
-          onGoogleCredential={handleGoogleCredential}
-          onYandexSuccess={async () => {
-            setSubmitError("");
-            const user = useAuthStore.getState().user;
-            if (user) {
-              if (user.mustSetLocalPassword) {
-                showOAuthPasswordReminder(
-                  t("auth:oauthPasswordToastTitle"),
-                  t("auth:oauthPasswordToastDesc"),
-                );
+      {(selectedRole === "student" || selectedRole === "university") && (
+        <div className="mt-6 space-y-4">
+          <AuthSocialButtons
+            mode="register"
+            loading={loading}
+            role={selectedRole}
+            yandexAcceptTerms
+            setLoading={setLoading}
+            setSubmitError={setSubmitError}
+            onGoogleCredential={handleGoogleCredential}
+            onYandexSuccess={async () => {
+              setSubmitError("");
+              const user = useAuthStore.getState().user;
+              if (user) {
+                if (user.mustSetLocalPassword) {
+                  showOAuthPasswordReminder(
+                    t("auth:oauthPasswordToastTitle"),
+                    t("auth:oauthPasswordToastDesc"),
+                  );
+                }
+                await navigateAfterRegistration(navigate, user, i18n);
               }
-              await navigateAfterRegistration(navigate, user, i18n);
-            }
-          }}
-          onTelegramClick={handleTelegramRegister}
-        />
-      </div>
+            }}
+          />
+        </div>
+      )}
     </Card>
   );
 }

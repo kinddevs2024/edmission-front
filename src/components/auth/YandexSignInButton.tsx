@@ -244,7 +244,14 @@ export function YandexSignInButton({
         className
       )}
     >
-      <div ref={containerRef} className="w-full flex justify-center [&_iframe]:max-w-full" />
+      <div
+        ref={containerRef}
+        className={cn(
+          'w-full flex items-center justify-center [&_iframe]:max-w-full',
+          compact &&
+            '[&_.yaPreloadingSuggestBlockContainer]:!m-0 [&_.yaPreloadingSuggestBlockContainer]:!flex [&_.yaPreloadingSuggestBlockContainer]:!h-11 [&_.yaPreloadingSuggestBlockContainer]:!w-11 [&_.yaPreloadingSuggestBlockContainer]:!items-center [&_.yaPreloadingSuggestBlockContainer]:!justify-center [&_.yaPersonalButton]:!h-11 [&_.yaPersonalButton]:!w-11 [&_.yaPersonalButton]:!min-h-[44px] [&_.yaPersonalButton]:!min-w-[44px] [&_.yaPersonalButtonLogo]:!h-5 [&_.yaPersonalButtonLogo]:!w-5'
+        )}
+      />
     </div>
   )
 }

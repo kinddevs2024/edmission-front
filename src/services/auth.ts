@@ -18,7 +18,7 @@ export interface LoginByPhonePayload {
 export interface RegisterPayload {
   email: string
   password: string
-  role: 'student' | 'university'
+  role: 'student' | 'university' | 'school_counsellor'
   acceptTerms: boolean
   name?: string
   avatarUrl?: string

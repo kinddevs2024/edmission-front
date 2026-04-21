@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { login, loginWithGoogle, startTelegramAuth } from "@/services/auth";
+import { login, loginWithGoogle } from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 import { navigateAfterLogin } from "@/utils/navigateAfterAuth";
 import { showOAuthPasswordReminder } from "@/utils/oauthPasswordToast";
@@ -74,34 +74,6 @@ export function Login() {
           ? t(`errors:${key}`)
           : apiErr.message || t("errors:default"),
       );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTelegramLogin = async () => {
-    setSubmitError("");
-    setLoading(true);
-    const popup = window.open("", "_blank", "noopener,noreferrer");
-    if (popup && !popup.closed) {
-      popup.document.write(
-        '<!doctype html><html><head><title>Opening Telegram</title></head><body style="font-family:system-ui;padding:16px">Opening Telegram...</body></html>',
-      );
-      popup.document.close();
-    }
-    try {
-      const data = await startTelegramAuth();
-      const authPath = `/auth/telegram?sessionId=${encodeURIComponent(data.sessionId)}&deepLink=${encodeURIComponent(data.deepLink)}`;
-      navigate(authPath);
-      if (popup && !popup.closed) {
-        popup.location.href = data.deepLink;
-      } else {
-        window.open(data.deepLink, "_blank", "noopener,noreferrer");
-      }
-    } catch (err) {
-      if (popup && !popup.closed) popup.close();
-      const key = getApiErrorKey(err);
-      setSubmitError(t(`errors:${key}`));
     } finally {
       setLoading(false);
     }
@@ -189,7 +161,6 @@ export function Login() {
               navigateAfterLogin(navigate, user);
             }
           }}
-          onTelegramClick={handleTelegramLogin}
         />
       </div>
     </Card>

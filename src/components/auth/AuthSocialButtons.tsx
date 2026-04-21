@@ -12,7 +12,6 @@ type AuthSocialButtonsProps = {
   setSubmitError: (message: string) => void;
   onGoogleCredential: (credential: string) => void | Promise<void>;
   onYandexSuccess: () => void | Promise<void>;
-  onTelegramClick: () => void | Promise<void>;
 };
 
 export function AuthSocialButtons({
@@ -25,7 +24,6 @@ export function AuthSocialButtons({
   setSubmitError,
   onGoogleCredential,
   onYandexSuccess,
-  onTelegramClick,
 }: AuthSocialButtonsProps) {
   const { t } = useTranslation(["auth", "errors"]);
   const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
@@ -36,6 +34,7 @@ export function AuthSocialButtons({
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Yandex_icon.svg/1280px-Yandex_icon.svg.png";
   const telegramLogo =
     "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/250px-Telegram_2019_Logo.svg.png";
+  const telegramBotUrl = "https://t.me/Edmission_bot";
 
   return (
     <div className="flex items-center justify-center gap-3 py-1 ml-10 mr-10">
@@ -74,11 +73,11 @@ export function AuthSocialButtons({
           onSuccess={() => void onYandexSuccess()}
         />
       )}
-      <button
-        type="button"
+      <a
+        href={telegramBotUrl}
+        target="_blank"
+        rel="noreferrer"
         className="inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 transition-[opacity,transform] duration-150 hover:opacity-95 active:scale-[0.99] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-        onClick={() => void onTelegramClick()}
-        disabled={loading}
         aria-label={t("auth:continueWithTelegram", "Continue with Telegram")}
         title={t("auth:continueWithTelegram", "Continue with Telegram")}
       >
@@ -89,7 +88,7 @@ export function AuthSocialButtons({
           loading="lazy"
           decoding="async"
         />
-      </button>
+      </a>
     </div>
   );
 }

@@ -156,7 +156,7 @@ export function TopBar() {
             <button
               type="button"
               onClick={toggleSidebar}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-muted)] transition-colors hover:border-primary-accent/40 hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-muted)] transition-colors hover:border-primary-accent/40 hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent lg:inline-flex"
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
