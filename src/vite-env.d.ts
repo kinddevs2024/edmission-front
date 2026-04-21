@@ -6,6 +6,8 @@ interface ImportMetaEnv {
   readonly VITE_GOOGLE_CLIENT_ID?: string
   /** Yandex OAuth app ID (same as YANDEX_CLIENT_ID on backend); redirect: `{origin}/auth/yandex/callback` */
   readonly VITE_YANDEX_CLIENT_ID?: string
+  /** Optional full URL for OAuth code redirect (default `{origin}/auth/yandex/callback`) */
+  readonly VITE_YANDEX_REDIRECT_URI?: string
   /** Optional full URL for Passport SDK redirect (default `{origin}/suggest/token.html`) */
   readonly VITE_YANDEX_SUGGEST_REDIRECT_URI?: string
   /** Optional Telegram bot URL for onboarding (e.g. https://t.me/your_bot) */

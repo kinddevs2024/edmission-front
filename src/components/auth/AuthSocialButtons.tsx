@@ -1,0 +1,95 @@
+import { useTranslation } from "react-i18next";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { YandexSignInButton } from "@/components/auth/YandexSignInButton";
+
+type AuthSocialButtonsProps = {
+  mode: "login" | "register";
+  loading: boolean;
+  role?: "student" | "university";
+  googleAutoPrompt?: boolean;
+  yandexAcceptTerms?: boolean;
+  setLoading: (value: boolean) => void;
+  setSubmitError: (message: string) => void;
+  onGoogleCredential: (credential: string) => void | Promise<void>;
+  onYandexSuccess: () => void | Promise<void>;
+  onTelegramClick: () => void | Promise<void>;
+};
+
+export function AuthSocialButtons({
+  mode,
+  loading,
+  role = "student",
+  googleAutoPrompt = false,
+  yandexAcceptTerms = true,
+  setLoading,
+  setSubmitError,
+  onGoogleCredential,
+  onYandexSuccess,
+  onTelegramClick,
+}: AuthSocialButtonsProps) {
+  const { t } = useTranslation(["auth", "errors"]);
+  const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
+  const showYandexAuth = Boolean(import.meta.env.VITE_YANDEX_CLIENT_ID?.trim());
+  const googleLogo =
+    "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Search_logo.width-500.format-webp.webp";
+  const yandexLogo =
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Yandex_icon.svg/1280px-Yandex_icon.svg.png";
+  const telegramLogo =
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/250px-Telegram_2019_Logo.svg.png";
+
+  return (
+    <div className="flex items-center justify-center gap-3 py-1 ml-10 mr-10">
+      {showGoogleAuth && (
+        <div
+          className={`relative inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 ${loading ? "opacity-50" : ""}`}
+          aria-hidden={loading ? "true" : undefined}
+        >
+          <img
+            src={googleLogo}
+            alt={t("auth:continueWithGoogle", "Continue with Google")}
+            className="pointer-events-none h-5 w-5 object-contain"
+            loading="lazy"
+            decoding="async"
+          />
+          <GoogleSignInButton
+            disabled={loading}
+            autoPrompt={googleAutoPrompt}
+            compact
+            className="absolute inset-0 h-11 w-11 min-w-[44px] rounded-full p-0 opacity-0"
+            onCredential={(c) => void onGoogleCredential(c)}
+          />
+        </div>
+      )}
+      {showYandexAuth && (
+        <YandexSignInButton
+          disabled={loading}
+          role={role}
+          acceptTerms={yandexAcceptTerms}
+          flow={mode}
+          logoUrl={yandexLogo}
+          compact
+          className="h-11 w-11 min-w-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0"
+          onBusyChange={setLoading}
+          onError={(msg) => setSubmitError(msg)}
+          onSuccess={() => void onYandexSuccess()}
+        />
+      )}
+      <button
+        type="button"
+        className="inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 transition-[opacity,transform] duration-150 hover:opacity-95 active:scale-[0.99] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={() => void onTelegramClick()}
+        disabled={loading}
+        aria-label={t("auth:continueWithTelegram", "Continue with Telegram")}
+        title={t("auth:continueWithTelegram", "Continue with Telegram")}
+      >
+        <img
+          src={telegramLogo}
+          alt={t("auth:continueWithTelegram", "Continue with Telegram")}
+          className="h-5 w-5 object-contain"
+          loading="lazy"
+          decoding="async"
+        />
+      </button>
+    </div>
+  );
+}

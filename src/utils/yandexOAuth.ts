@@ -15,6 +15,8 @@ export type YandexOAuthStatePayload = {
 }
 
 export function getYandexRedirectUri(): string {
+  const custom = import.meta.env.VITE_YANDEX_REDIRECT_URI?.trim()
+  if (custom) return custom
   return `${window.location.origin}${YANDEX_OAUTH_CALLBACK_PATH}`
 }
 

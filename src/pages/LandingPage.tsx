@@ -17,7 +17,7 @@ const LandingBelowFold = lazy(() =>
 
 export function LandingPage() {
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] pt-14 text-[var(--color-text)] safe-area-pb">
+    <main className="min-h-screen bg-[var(--color-bg)] pt-16 text-[var(--color-text)] safe-area-pb">
       <LandingHeader />
       <HeroSection />
       <TrustedSection />

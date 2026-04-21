@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
-import { Menu, UserRound, X } from 'lucide-react'
+import { Menu, Send, UserRound, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { BrandLogo } from '@/components/layout/BrandLogo'
 import { loadLanguage } from '@/i18n'
@@ -29,7 +29,7 @@ export function LandingHeader() {
   const [isClosing, setIsClosing] = useState(false)
   const [mobileLangOpen, setMobileLangOpen] = useState(false)
   const mobileLangRef = useRef<HTMLDivElement>(null)
-  const HEADER_OFFSET = 88
+  const HEADER_OFFSET = 96
   const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim())
   const showYandexAuth = Boolean(import.meta.env.VITE_YANDEX_CLIENT_ID?.trim())
   const currentLng = (i18n.language || 'en').split('-')[0].toLowerCase() as SupportedLng
@@ -176,7 +176,7 @@ export function LandingHeader() {
           : 'shadow-none'
       )}
     >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
         <Link
           to="/"
           onClick={handleLogoClick}
@@ -353,7 +353,7 @@ export function LandingHeader() {
                   <div className="pt-2 space-y-2">
                     {showGoogleAuth && (
                       <Link
-                        to="/register"
+                        to="/login"
                         onClick={closeMenu}
                         className="flex w-full items-center justify-center gap-2 rounded-input border border-[#dcdfe4] bg-white px-3 py-2.5 text-sm font-medium text-[#1f1f1f] hover:bg-[#f7f8fa] transition-colors"
                       >
@@ -368,7 +368,7 @@ export function LandingHeader() {
                     )}
                     {showYandexAuth && (
                       <Link
-                        to="/register"
+                        to="/login"
                         onClick={closeMenu}
                         className="flex w-full items-center justify-between rounded-input bg-black px-3 py-2 text-sm font-medium text-white hover:opacity-95 transition-opacity"
                       >
@@ -379,6 +379,16 @@ export function LandingHeader() {
                         </span>
                       </Link>
                     )}
+                    <Link
+                      to="/login"
+                      onClick={closeMenu}
+                      className="flex w-full items-center justify-center gap-2 rounded-input border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm font-medium text-sky-700 hover:bg-sky-100 transition-colors"
+                    >
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-white">
+                        <Send className="h-4 w-4" aria-hidden />
+                      </span>
+                      <span>{t('auth:continueWithTelegram', 'Continue with Telegram')}</span>
+                    </Link>
                   </div>
                 )}
               </nav>

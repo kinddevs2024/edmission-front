@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useUIStore } from '@/store/uiStore'
 
 declare global {
@@ -8,6 +9,7 @@ declare global {
         id: {
           initialize: (config: { client_id: string; callback: (response: { credential?: string }) => void }) => void
           renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void
+          prompt: () => void
         }
       }
     }
@@ -15,17 +17,27 @@ declare global {
 }
 
 const GOOGLE_SCRIPT_SRC = 'https://accounts.google.com/gsi/client'
+const GOOGLE_ONE_TAP_ALLOWED_PATHS = new Set(['/', '/login', '/register'])
 
 type GoogleSignInButtonProps = {
   disabled?: boolean
   onCredential: (credential: string) => void
   className?: string
+  autoPrompt?: boolean
+  compact?: boolean
 }
 
 /**
  * Renders Google Identity Services button. Requires `VITE_GOOGLE_CLIENT_ID` in env.
  */
-export function GoogleSignInButton({ disabled, onCredential, className }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({
+  disabled,
+  onCredential,
+  className,
+  autoPrompt = false,
+  compact = false,
+}: GoogleSignInButtonProps) {
+  const { pathname } = useLocation()
   const containerRef = useRef<HTMLDivElement>(null)
   const onCredentialRef = useRef(onCredential)
   onCredentialRef.current = onCredential
@@ -51,13 +63,17 @@ export function GoogleSignInButton({ disabled, onCredential, className }: Google
         },
       })
       window.google.accounts.id.renderButton(el, {
-        type: 'standard',
+        type: compact ? 'icon' : 'standard',
         theme: useDarkButton ? 'filled_black' : 'outline',
         size: 'large',
         text: 'continue_with',
-        width: 384,
-        shape: 'rectangular',
+        width: compact ? 44 : 384,
+        shape: compact ? 'circle' : 'rectangular',
       })
+      const canPromptOnThisPage = GOOGLE_ONE_TAP_ALLOWED_PATHS.has(pathname)
+      if (!disabled && autoPrompt && canPromptOnThisPage) {
+        window.google.accounts.id.prompt()
+      }
     }
 
     const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${GOOGLE_SCRIPT_SRC}"]`)
@@ -78,7 +94,7 @@ export function GoogleSignInButton({ disabled, onCredential, className }: Google
       cancelled = true
       if (containerRef.current) containerRef.current.innerHTML = ''
     }
-  }, [clientId, uiTheme])
+  }, [autoPrompt, clientId, disabled, pathname, uiTheme])
 
   if (!clientId) return null
 
@@ -88,8 +104,8 @@ export function GoogleSignInButton({ disabled, onCredential, className }: Google
         ref={containerRef}
         className={
           disabled
-            ? 'pointer-events-none opacity-50 flex justify-center [&_iframe]:pointer-events-none'
-            : 'flex justify-center'
+            ? 'pointer-events-none opacity-50 flex items-center justify-center [&_iframe]:pointer-events-none'
+            : 'flex items-center justify-center'
         }
       />
     </div>

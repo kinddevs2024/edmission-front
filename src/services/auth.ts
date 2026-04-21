@@ -65,6 +65,65 @@ export interface TelegramAuthVerifyPayload {
   code: string
 }
 
+export interface TelegramAuthVerifyLinkPayload {
+  sessionId: string
+  token: string
+}
+
+export interface TelegramAuthVerifyReadyPayload {
+  sessionId: string
+}
+
+const TELEGRAM_PENDING_AUTH_KEY = 'edmission.telegram.pending.auth'
+const TELEGRAM_SESSION_ID_REGEX = /^[a-f0-9]{32}$/i
+
+export type PendingTelegramAuth = {
+  sessionId: string
+  role?: 'student' | 'university'
+  startedAt: number
+}
+
+export function savePendingTelegramAuthSession(payload: { sessionId: string; role?: 'student' | 'university' }): void {
+  const sessionId = String(payload.sessionId ?? '').trim().toLowerCase()
+  if (!TELEGRAM_SESSION_ID_REGEX.test(sessionId)) return
+  const row: PendingTelegramAuth = {
+    sessionId,
+    ...(payload.role ? { role: payload.role } : {}),
+    startedAt: Date.now(),
+  }
+  try {
+    localStorage.setItem(TELEGRAM_PENDING_AUTH_KEY, JSON.stringify(row))
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getPendingTelegramAuthSession(): PendingTelegramAuth | null {
+  try {
+    const raw = localStorage.getItem(TELEGRAM_PENDING_AUTH_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { sessionId?: unknown; role?: unknown; startedAt?: unknown }
+    const sessionId = String(parsed.sessionId ?? '').trim().toLowerCase()
+    if (!TELEGRAM_SESSION_ID_REGEX.test(sessionId)) return null
+    const startedAt = Number(parsed.startedAt)
+    return {
+      sessionId,
+      ...(parsed.role === 'student' || parsed.role === 'university' ? { role: parsed.role } : {}),
+      startedAt: Number.isFinite(startedAt) && startedAt > 0 ? startedAt : Date.now(),
+    }
+  } catch {
+    return null
+  }
+}
+
+export function clearPendingTelegramAuthSession(): void {
+  try {
+    localStorage.removeItem(TELEGRAM_PENDING_AUTH_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function loginWithGoogle(payload: {
   idToken: string
   /** Defaults to student on the server if omitted and terms are accepted (new account). */
@@ -135,8 +194,8 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data
 }
 
-export async function startTelegramAuth(): Promise<TelegramAuthStartResult> {
-  const { data } = await api.post<TelegramAuthStartResult>('/auth/telegram/start')
+export async function startTelegramAuth(payload?: { role?: 'student' | 'university' }): Promise<TelegramAuthStartResult> {
+  const { data } = await api.post<TelegramAuthStartResult>('/auth/telegram/start', payload ?? {})
   return data
 }
 
@@ -145,6 +204,39 @@ export async function verifyTelegramAuth(payload: TelegramAuthVerifyPayload): Pr
   useAuthStore.getState().logout()
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/telegram/verify', payload)
+  clearPendingTelegramAuthSession()
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
+export async function verifyTelegramAuthLink(payload: TelegramAuthVerifyLinkPayload): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/telegram/verify-link', payload)
+  clearPendingTelegramAuthSession()
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
+export async function verifyTelegramAuthReady(payload: TelegramAuthVerifyReadyPayload): Promise<LoginResponse | null> {
+  const response = await api.post<LoginResponse | { ready: false }>(
+    '/auth/telegram/verify-ready',
+    payload,
+    { validateStatus: (status) => (status >= 200 && status < 300) || status === 202 }
+  )
+
+  if (response.status === 202 || ('ready' in response.data && response.data.ready === false)) {
+    return null
+  }
+
+  const data = response.data as LoginResponse
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  clearPendingTelegramAuthSession()
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
@@ -216,6 +308,7 @@ export async function logout(): Promise<void> {
   try {
     await api.post('/auth/logout', { refreshToken: refreshToken ?? undefined })
   } finally {
+    clearPendingTelegramAuthSession()
     clearAuth()
     queryClient.clear()
     useAuthStore.getState().logout()

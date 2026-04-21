@@ -20,6 +20,9 @@ export type YandexSignInButtonProps = {
   acceptTerms: boolean
   flow: YandexOAuthFlow
   className?: string
+  compact?: boolean
+  forceFallback?: boolean
+  logoUrl?: string
   onSuccess: () => void | Promise<void>
   onError: (message: string) => void
   onBusyChange?: (busy: boolean) => void
@@ -35,6 +38,9 @@ export function YandexSignInButton({
   acceptTerms,
   flow,
   className,
+  compact = false,
+  forceFallback = false,
+  logoUrl,
   onSuccess,
   onError,
   onBusyChange,
@@ -42,7 +48,7 @@ export function YandexSignInButton({
   const { t, i18n } = useTranslation(['auth', 'errors'])
   const uiTheme = useUIStore((s) => s.theme)
   const clientId = import.meta.env.VITE_YANDEX_CLIENT_ID?.trim()
-  const [fallbackMode, setFallbackMode] = useState(false)
+  const [fallbackMode, setFallbackMode] = useState(Boolean(forceFallback))
 
   const containerRef = useRef<HTMLDivElement>(null)
   const parentIdRef = useRef(`yandex-passport-btn-${Math.random().toString(36).slice(2, 12)}`)
@@ -60,6 +66,12 @@ export function YandexSignInButton({
   onSuccessRef.current = onSuccess
   onErrorRef.current = onError
   onBusyChangeRef.current = onBusyChange
+
+  useEffect(() => {
+    if (forceFallback) {
+      setFallbackMode(true)
+    }
+  }, [forceFallback])
 
   useEffect(() => {
     if (!clientId || disabled || fallbackMode) return
@@ -89,10 +101,10 @@ export function YandexSignInButton({
           {
             view: 'button',
             parentId,
-            buttonSize: 'm',
-            buttonView: 'main',
+            buttonSize: compact ? 's' : 'm',
+            buttonView: compact ? 'icon' : 'main',
             buttonTheme,
-            buttonBorderRadius: 0,
+            buttonBorderRadius: compact ? 22 : 0,
             buttonIcon,
           }
         )
@@ -183,25 +195,41 @@ export function YandexSignInButton({
         onClick={handleFallbackClick}
         disabled={disabled}
         className={cn(
-          'flex h-12 w-full max-w-[384px] mx-auto items-center rounded-[10px] bg-black px-2.5 py-2',
-          'shadow-[0_1px_2px_rgba(0,0,0,0.25)] ring-1 ring-black/80',
+          compact
+            ? 'mx-auto inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-0'
+            : 'mx-auto flex h-12 w-full max-w-[384px] items-center rounded-[10px] bg-black px-2.5 py-2',
+          compact ? '' : 'shadow-[0_1px_2px_rgba(0,0,0,0.25)] ring-1 ring-black/80',
           'transition-[opacity,transform] duration-150',
           disabled ? 'cursor-not-allowed opacity-50 pointer-events-none' : 'hover:opacity-95 active:scale-[0.99]',
           className
         )}
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FC3F1D]" aria-hidden>
-          <span className="text-[17px] font-bold leading-none text-white translate-y-px">Я</span>
-        </span>
-        <span className="min-w-0 flex-1 px-2 text-center text-[15px] font-medium leading-tight text-white">
-          {flowRef.current === 'register' ? t('registerWithYandexId') : t('signInWithYandexId')}
-        </span>
-        <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#404040]"
-          aria-hidden
-        >
-          <span className="h-4 w-4 rounded-full bg-white/95" />
-        </span>
+        {compact ? (
+          logoUrl ? (
+            <img src={logoUrl} alt="" className="h-5 w-5 object-contain" />
+          ) : (
+            <span className="text-[17px] font-bold leading-none text-[#FC3F1D] translate-y-px">�</span>
+          )
+        ) : (
+          <>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FC3F1D]" aria-hidden>
+              {logoUrl ? (
+                <img src={logoUrl} alt="" className="h-6 w-6 object-contain" />
+              ) : (
+                <span className="text-[17px] font-bold leading-none text-white translate-y-px">�</span>
+              )}
+            </span>
+            <span className="min-w-0 flex-1 px-2 text-center text-[15px] font-medium leading-tight text-white">
+              {flowRef.current === 'register' ? t('registerWithYandexId') : t('signInWithYandexId')}
+            </span>
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#404040]"
+              aria-hidden
+            >
+              <span className="h-4 w-4 rounded-full bg-white/95" />
+            </span>
+          </>
+        )}
       </button>
     )
   }
@@ -209,7 +237,9 @@ export function YandexSignInButton({
   return (
     <div
       className={cn(
-        'w-full max-w-[384px] mx-auto min-h-[44px] flex items-center justify-center',
+        compact
+          ? 'mx-auto h-11 w-11 min-h-[44px] min-w-[44px] flex items-center justify-center overflow-hidden rounded-full'
+          : 'mx-auto w-full max-w-[384px] min-h-[44px] flex items-center justify-center',
         disabled && 'pointer-events-none opacity-50',
         className
       )}
@@ -218,3 +248,5 @@ export function YandexSignInButton({
     </div>
   )
 }
+
+
