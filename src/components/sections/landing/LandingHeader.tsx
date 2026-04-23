@@ -152,6 +152,7 @@ export function LandingHeader() {
   }, [i18n])
 
   const menuItems = [
+    { id: 'explore', label: t('header.explore', 'Explore') },
     { id: 'how-it-works', label: t('header.howItWorks') },
     { id: 'about-us', label: t('header.aboutUs') },
     { id: 'student-testimonials', label: t('header.studentTestimonials') },

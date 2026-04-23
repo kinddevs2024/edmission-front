@@ -16,6 +16,7 @@ const PATH_TITLES: Record<string, string> = {
   '/choose-language': 'auth:chooseLanguage',
   '/privacy': 'common:privacy',
   '/cookies': 'cookies:title',
+  '/explore': 'landing:explore.title',
   '/profile': 'common:account',
   '/notifications': 'common:notifications',
   '/ai': 'common:edmissionAi',
@@ -26,6 +27,7 @@ const PATH_TITLES: Record<string, string> = {
   '/student/dashboard': 'student:dashboard',
   '/student/profile': 'student:navProfile',
   '/student/universities': 'student:navUniversities',
+  '/student/explore-more': 'student:homePrimaryCtaExplore',
   '/student/applications': 'student:navApplications',
   '/student/interests': 'student:navApplications',
   '/student/documents': 'common:documents',
@@ -67,7 +69,7 @@ const PATH_TITLES: Record<string, string> = {
 
 export function useDocumentTitle() {
   const { pathname } = useLocation()
-  const { t } = useTranslation(['common', 'student', 'university', 'admin', 'school', 'auth', 'cookies'])
+  const { t } = useTranslation(['common', 'student', 'university', 'admin', 'school', 'auth', 'cookies', 'landing'])
 
   useEffect(() => {
     const base = pathname.replace(/\/$/, '') || '/'

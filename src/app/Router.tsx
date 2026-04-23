@@ -26,6 +26,7 @@ const TelegramAuth = lazy(() => import('@/pages/auth/TelegramAuth').then((m) => 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
 const ExploreUniversities = lazy(() => import('@/pages/student/ExploreUniversities').then((m) => ({ default: m.ExploreUniversities })))
+const StudentExploreMore = lazy(() => import('@/pages/student/StudentExploreMore').then((m) => ({ default: m.StudentExploreMore })))
 const UniversityDetail = lazy(() => import('@/pages/student/UniversityDetail').then((m) => ({ default: m.UniversityDetail })))
 const StudentApplications = lazy(() => import('@/pages/student/StudentApplications').then((m) => ({ default: m.StudentApplications })))
 const StudentDocuments = lazy(() => import('@/pages/student/StudentDocuments').then((m) => ({ default: m.StudentDocuments })))
@@ -89,6 +90,7 @@ const CounsellorStudentDocuments = lazy(() => import('@/pages/school/CounsellorS
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
+const ExploreCatalogPage = lazy(() => import('@/pages/ExploreCatalogPage').then((m) => ({ default: m.ExploreCatalogPage })))
 const AIChatPage = lazy(() => import('@/pages/AIChatPage').then((m) => ({ default: m.AIChatPage })))
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage })))
 const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })))
@@ -217,6 +219,7 @@ export function Router() {
 
       <Route path="/" element={<MainLayout />}>
         <Route index element={<LandingOrRedirect />} />
+        <Route path="explore" element={<PublicOnlyRoute><ExploreCatalogPage /></PublicOnlyRoute>} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="cookies" element={<Cookies />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
@@ -240,6 +243,7 @@ export function Router() {
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="universities" element={<ExploreUniversities />} />
+          <Route path="explore-more" element={<StudentExploreMore />} />
           <Route path="universities/:id" element={<UniversityDetail />} />
           <Route path="applications" element={<Navigate to="/student/interests" replace />} />
           <Route path="interests" element={<StudentApplications />} />

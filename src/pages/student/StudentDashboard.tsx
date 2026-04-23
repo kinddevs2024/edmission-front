@@ -583,6 +583,25 @@ export function StudentDashboard() {
         )}
       </div>
 
+      <section className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              {t('student:dashboardExploreMiniTitle', 'Explore')}
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              {t(
+                'student:dashboardExploreMiniHint',
+                'Explore more universities from the full catalog without profile-based filters.'
+              )}
+            </p>
+          </div>
+          <Button to="/student/explore-more" variant="secondary">
+            {t('student:dashboardExploreMiniCta', 'Explore more')}
+          </Button>
+        </div>
+      </section>
+
       {showAppsOffersGrid ? (
         <div
           className={

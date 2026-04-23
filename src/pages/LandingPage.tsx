@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { HeroSection } from '@/components/sections/landing/HeroSection'
+import { ExploreSection } from '@/components/sections/landing/ExploreSection'
 import { TrustedSection } from '@/components/sections/landing/TrustedSection'
 import { HowItWorksSection } from '@/components/sections/landing/HowItWorksSection'
 import { AccreditationSection } from '@/components/sections/landing/AccreditationSection'
@@ -20,6 +21,7 @@ export function LandingPage() {
     <main className="min-h-screen bg-[var(--color-bg)] pt-16 text-[var(--color-text)] safe-area-pb">
       <LandingHeader />
       <HeroSection />
+      <ExploreSection />
       <TrustedSection />
       <HowItWorksSection />
       <AccreditationSection />

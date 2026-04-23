@@ -105,6 +105,16 @@
     "description": "Profil yarating va universitetlar va stipendiyalar bilan tanishing.",
     "button": "Hisob yaratish"
   },
+  "explore": {
+    "eyebrow": "Ko'rish",
+    "title": "Ko'proq universitetlarni ko'ring",
+    "description": "Profil filtrlarsiz to'liq universitet katalogini oching. Ro'yxat 8 tadan yuklanadi va keyin yana ko'rishni davom ettirasiz.",
+    "primaryCta": "Ko'proq ko'rish",
+    "secondaryCta": "Hisob yaratish",
+    "featureNoFilters": "Profil filtrlarsiz to'liq katalog",
+    "featurePaged": "Har sahifada 8 ta universitet",
+    "featureViewMore": "\"Ko'proq ko'rish\" tugmasi bilan davom etish"
+  },
   "faq": {
     "title": "Tez-tez so'raladigan savollar",
     "items": [
@@ -282,6 +292,7 @@
     "language": "Til",
     "login": "Kirish",
     "register": "Ro'yxatdan o'tish",
+    "explore": "Ko'rish",
     "howItWorks": "Qanday ishlaydi",
     "aboutUs": "Biz haqimizda",
     "studentTestimonials": "Talabalar fikrlari",

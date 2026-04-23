@@ -1,4 +1,6 @@
 import { api } from './api'
+import type { PaginatedResponse } from '@/types/api'
+import type { UniversityListItem } from '@/types/university'
 
 const VISITOR_ID_STORAGE_KEY = 'edmission_visitor_id'
 
@@ -56,6 +58,42 @@ export interface TrustedUniversityLogoPage {
 export async function getPublicStats(): Promise<PublicStats> {
   const { data } = await api.get<PublicStats>('/public/stats')
   return data ?? { universities: 0, students: 0, scholarships: 0 }
+}
+
+export interface PublicUniversitiesParams {
+  page?: number
+  limit?: number
+}
+
+function normalizePublicUniversityItem(
+  item: UniversityListItem & { universityName?: string; logoUrl?: string; foundedYear?: number; establishedYear?: number }
+): UniversityListItem {
+  return {
+    ...item,
+    name: item.name ?? item.universityName ?? '',
+    logo: item.logo ?? item.logoUrl,
+    foundedYear: item.foundedYear ?? item.establishedYear,
+  }
+}
+
+export async function getPublicUniversities(
+  params: PublicUniversitiesParams = {}
+): Promise<PaginatedResponse<UniversityListItem>> {
+  const query: Record<string, string> = {}
+  if (params.page != null) query.page = String(params.page)
+  if (params.limit != null) query.limit = String(params.limit)
+
+  const { data } = await api.get<
+    PaginatedResponse<UniversityListItem & { universityName?: string; logoUrl?: string; establishedYear?: number }>
+  >('/public/universities', { params: query })
+
+  if (!data) return { data: [], total: 0, page: 1, limit: params.limit ?? 8 }
+  return {
+    data: (data.data ?? []).map(normalizePublicUniversityItem),
+    total: data.total ?? 0,
+    page: data.page ?? 1,
+    limit: data.limit,
+  }
 }
 
 function normalizeTrustedUniversityLogoPage(

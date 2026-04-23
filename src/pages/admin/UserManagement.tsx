@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -49,6 +49,11 @@ export function UserManagement() {
     if (isManager) return targetRole === 'counsellor_coordinator' || targetRole === 'school_counsellor'
     if (isCoordinator) return targetRole === 'school_counsellor'
     return false
+  }
+
+  const canViewStudentProfile = (targetRole: string) => {
+    if (targetRole !== 'student') return false
+    return isAdmin || isManager || isCoordinator
   }
 
   const ROLE_OPTIONS = useMemo(() => {
@@ -293,19 +298,11 @@ export function UserManagement() {
                       </span>
                     </TableTd>
                     <TableTd>
-                      {!canManageUserRole(u.role) ? (
+                      {!canManageUserRole(u.role) && !canViewStudentProfile(u.role) ? (
                         <span className="text-[var(--color-text-muted)]">—</span>
                       ) : (
                         <div className="flex gap-2 flex-wrap">
-                          <Button variant="secondary" size="sm" onClick={() => openEditUser(u)} disabled={!!actionUserId}>
-                            {t('admin:changeRole', 'Change role')}
-                          </Button>
-                          {u.status === 'active' ? (
-                            <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
-                          ) : (
-                            <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
-                          )}
-                          {isAdmin && u.role === 'student' && (
+                          {canViewStudentProfile(u.role) && (
                             <Button
                               variant="secondary"
                               size="sm"
@@ -313,25 +310,37 @@ export function UserManagement() {
                               disabled={!!actionUserId}
                               onClick={() => navigate(`/admin/users/${u.id}/student-profile`)}
                             >
-                              {t('admin:editProfile', 'Edit profile')}
+                              {t('admin:viewProfile', 'View profile')}
                             </Button>
                           )}
-                          {isAdmin && u.role === 'university' && (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              type="button"
-                              disabled={!!actionUserId}
-                              onClick={() => navigate(`/admin/users/${u.id}/university-profile`)}
-                            >
-                              {t('admin:editProfile', 'Edit profile')}
-                            </Button>
-                          )}
-                          <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
-                            {t('admin:resetPassword', 'Reset password')}
-                          </Button>
-                          {u.role !== 'admin' && (
-                            <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
+                          {canManageUserRole(u.role) && (
+                            <>
+                              <Button variant="secondary" size="sm" onClick={() => openEditUser(u)} disabled={!!actionUserId}>
+                                {t('admin:changeRole', 'Change role')}
+                              </Button>
+                              {u.status === 'active' ? (
+                                <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
+                              ) : (
+                                <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
+                              )}
+                              {isAdmin && u.role === 'university' && (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  type="button"
+                                  disabled={!!actionUserId}
+                                  onClick={() => navigate(`/admin/users/${u.id}/university-profile`)}
+                                >
+                                  {t('admin:editProfile', 'Edit profile')}
+                                </Button>
+                              )}
+                              <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
+                                {t('admin:resetPassword', 'Reset password')}
+                              </Button>
+                              {u.role !== 'admin' && (
+                                <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
+                              )}
+                            </>
                           )}
                         </div>
                       )}
