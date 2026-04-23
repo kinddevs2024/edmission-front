@@ -675,6 +675,7 @@ export interface AdminCatalogUniversity {
   country?: string
   city?: string
   description?: string
+  rating?: number
   logoUrl?: string
   tagline?: string
   establishedYear?: number
@@ -801,6 +802,7 @@ export interface UniversitiesExcelUniversityPayload {
   country?: string
   city?: string
   description?: string
+  rating?: number
   logoUrl?: string
   facultyCodes?: string[]
   facultyItems?: Record<string, string[]>
