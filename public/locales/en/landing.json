@@ -1,8 +1,8 @@
 {
   "hero": {
     "eyebrow": "Academic Infrastructure Platform",
-    "title": "Let universities compete for you",
-    "valueLine": "Get matched with universities and scholarships in one place. No agencies, no hidden fees.",
+    "title": "Let universities find you",
+    "valueLine": "Get matched with universities and scholarships in one platform. Save time and money.",
     "subtitle": "Connecting Students and Universities Without Intermediaries",
     "description": "Edmission is a national digital platform that enables transparent admissions between students and universities through AI-powered matching and direct communication.",
     "primaryCta": "Create free account",
@@ -17,10 +17,19 @@
       "scholarship": "Scholarship"
     },
     "panels": {
-      "studentProfile": { "title": "Student Profile", "value": "Portfolio completion: 84%" },
-      "scholarship": { "title": "Scholarship Badge", "value": "Merit Scholarship - 60%" },
+      "studentProfile": {
+        "title": "Student Profile",
+        "value": "Portfolio completion: 84%"
+      },
+      "scholarship": {
+        "title": "Scholarship Badge",
+        "value": "Merit Scholarship - 60%"
+      },
       "match": { "title": "Match Engine", "value": "Transparent breakdown" },
-      "university": { "title": "University Card", "value": "Direct chat enabled" }
+      "university": {
+        "title": "University Card",
+        "value": "Direct chat enabled"
+      }
     }
   },
   "trusted": {
@@ -108,11 +117,26 @@
   "faq": {
     "title": "Frequently Asked Questions",
     "items": [
-      { "q": "What is Edmission?", "a": "Edmission is a direct admission platform that connects students and universities without agencies. You create a profile, get AI-powered university matches, and can receive scholarship offers directly from universities." },
-      { "q": "Is Edmission free for students?", "a": "Yes. Students can create an account, build a profile, explore universities, and receive recommendations and offers at no cost. There are no hidden fees." },
-      { "q": "How does the matching work?", "a": "Our system uses your grades, field of study, language, budget, and preferences to recommend universities and programs that fit. Each match includes a transparent score breakdown." },
-      { "q": "Which countries and universities are on Edmission?", "a": "We cooperate with over 50 Universities around the globe. You can explore available programs and countries once you sign up." },
-      { "q": "How do I get scholarship offers?", "a": "Universities on the platform allocate scholarships and send offers to matched students. Completing your profile and applying to programs increases your visibility to universities." }
+      {
+        "q": "What is Edmission?",
+        "a": "Edmission is a direct admission platform that connects students and universities without agencies. You create a profile, get AI-powered university matches, and can receive scholarship offers directly from universities."
+      },
+      {
+        "q": "Is Edmission free for students?",
+        "a": "Yes. Students can create an account, build a profile, explore universities, and receive recommendations and offers at no cost. There are no hidden fees."
+      },
+      {
+        "q": "How does the matching work?",
+        "a": "Our system uses your grades, field of study, language, budget, and preferences to recommend universities and programs that fit. Each match includes a transparent score breakdown."
+      },
+      {
+        "q": "Which countries and universities are on Edmission?",
+        "a": "We cooperate with over 50 Universities around the globe. You can explore available programs and countries once you sign up."
+      },
+      {
+        "q": "How do I get scholarship offers?",
+        "a": "Universities on the platform allocate scholarships and send offers to matched students. Completing your profile and applying to programs increases your visibility to universities."
+      }
     ]
   },
   "problem": {
@@ -138,10 +162,22 @@
     "eyebrow": "Platform Infrastructure",
     "title": "A Transparent Admission Ecosystem",
     "cards": [
-      { "title": "Direct Connection", "desc": "Students and universities communicate directly in a secure environment." },
-      { "title": "Transparent Matching", "desc": "Each recommendation includes explicit factor-level score breakdown." },
-      { "title": "Scholarship Allocation", "desc": "Universities allocate, track, and govern scholarship slots in one workflow." },
-      { "title": "Structured Admission Pipeline", "desc": "Progress flows through a clear pipeline from discovery to accepted offer." }
+      {
+        "title": "Direct Connection",
+        "desc": "Students and universities communicate directly in a secure environment."
+      },
+      {
+        "title": "Transparent Matching",
+        "desc": "Each recommendation includes explicit factor-level score breakdown."
+      },
+      {
+        "title": "Scholarship Allocation",
+        "desc": "Universities allocate, track, and govern scholarship slots in one workflow."
+      },
+      {
+        "title": "Structured Admission Pipeline",
+        "desc": "Progress flows through a clear pipeline from discovery to accepted offer."
+      }
     ]
   },
   "matching": {
@@ -163,10 +199,22 @@
     "title": "Core workflows in one integrated experience",
     "description": "Horizontally explore key product surfaces designed for modern admission operations.",
     "cards": [
-      { "title": "Student dashboard", "desc": "Profile completion, recommendations, active applications." },
-      { "title": "University discovery", "desc": "Filter-ready university feed with transparent match insights." },
-      { "title": "Application tracking", "desc": "Live statuses from interested to accepted." },
-      { "title": "Offer management", "desc": "Scholarship offer flow with deadline and response controls." }
+      {
+        "title": "Student dashboard",
+        "desc": "Profile completion, recommendations, active applications."
+      },
+      {
+        "title": "University discovery",
+        "desc": "Filter-ready university feed with transparent match insights."
+      },
+      {
+        "title": "Application tracking",
+        "desc": "Live statuses from interested to accepted."
+      },
+      {
+        "title": "Offer management",
+        "desc": "Scholarship offer flow with deadline and response controls."
+      }
     ]
   },
   "student": {
@@ -259,10 +307,30 @@
     "dataSecure": "Your data is secure.",
     "noHiddenFees": "No hidden fees. We don't sell your data.",
     "contact": "Contact",
-    "platform": { "title": "Platform", "0": "About", "1": "Infrastructure", "2": "AI Matching" },
-    "students": { "title": "Students", "0": "Explore Universities", "1": "Applications", "2": "Offers" },
-    "universities": { "title": "Universities", "0": "Discovery", "1": "Pipeline", "2": "Scholarships" },
-    "support": { "title": "Support", "0": "Security", "1": "Help Center", "2": "Contact" },
+    "platform": {
+      "title": "Platform",
+      "0": "About",
+      "1": "Infrastructure",
+      "2": "AI Matching"
+    },
+    "students": {
+      "title": "Students",
+      "0": "Explore Universities",
+      "1": "Applications",
+      "2": "Offers"
+    },
+    "universities": {
+      "title": "Universities",
+      "0": "Discovery",
+      "1": "Pipeline",
+      "2": "Scholarships"
+    },
+    "support": {
+      "title": "Support",
+      "0": "Security",
+      "1": "Help Center",
+      "2": "Contact"
+    },
     "security": {
       "title": "Security & Compliance",
       "compliance": "We operate in line with European data protection standards (GDPR) and best practices.",
