@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { getInterests, updateInterestStatus, type AdminInterest } from '@/services/admin'
+import { getInterests, openInterestChat, type AdminInterest } from '@/services/admin'
+import { useAuth } from '@/hooks/useAuth'
 import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
@@ -22,6 +24,9 @@ const STATUS_OPTIONS = [
 
 export function AdminInterests() {
   const { t } = useTranslation('admin')
+  const navigate = useNavigate()
+  const { role } = useAuth()
+  const canOpenChat = role === 'admin'
   const [items, setItems] = useState<AdminInterest[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -45,10 +50,20 @@ export function AdminInterests() {
       .finally(() => setLoading(false))
   }, [page, statusFilter])
 
-  const setStatus = (id: string, status: string) => {
-    setActionId(id)
-    updateInterestStatus(id, status)
-      .then(() => setItems((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x))))
+  const handleOpenChat = (item: AdminInterest) => {
+    if (!canOpenChat) return
+    const source = (item as { source?: string }).source
+    if (source === 'catalog') {
+      toastApiError(new Error('Catalog university interests cannot be opened in chat'))
+      return
+    }
+    setActionId(item.id)
+    openInterestChat(item.id)
+      .then((res) => {
+        const chatId = String(res.chatId ?? '').trim()
+        if (!chatId) throw new Error('Chat id is missing')
+        navigate(`/admin/chats?chatId=${encodeURIComponent(chatId)}`)
+      })
       .catch(toastApiError)
       .finally(() => setActionId(null))
   }
@@ -68,7 +83,7 @@ export function AdminInterests() {
         </div>
         <CardTitle>All interests</CardTitle>
         {loading ? (
-          <TableSkeleton rows={8} cols={6} />
+          <TableSkeleton rows={8} cols={7} />
         ) : (
           <>
             <Table>
@@ -78,30 +93,36 @@ export function AdminInterests() {
                   <TableTh>University</TableTh>
                   <TableTh>Source</TableTh>
                   <TableTh>Status</TableTh>
-                  <TableTh>Created</TableTh>
+                  <TableTh>Chat created</TableTh>
+                  <TableTh>Interest created</TableTh>
                   <TableTh>Actions</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {items.map((x) => (
                   <TableRow key={x.id}>
-                    <TableTd className="font-mono text-xs">{String(x.studentId)}</TableTd>
-                    <TableTd className="font-mono text-xs">{String(x.universityId)}</TableTd>
+                    <TableTd>{x.studentName?.trim() || String(x.studentId || '-')}</TableTd>
+                    <TableTd>{x.universityName?.trim() || String(x.universityId || '-')}</TableTd>
                     <TableTd>{(x as { source?: string }).source === 'catalog' ? t('admin:catalogUniversity', 'Catalog') : t('admin:verifiedUniversity', 'Verified')}</TableTd>
                     <TableTd>{x.status}</TableTd>
-                    <TableTd>{x.createdAt ? formatDateTime(x.createdAt) : '—'}</TableTd>
+                    <TableTd>{x.chatCreatedAt ? formatDateTime(x.chatCreatedAt) : '-'}</TableTd>
+                    <TableTd>{x.createdAt ? formatDateTime(x.createdAt) : '-'}</TableTd>
                     <TableTd>
-                      <div className="flex flex-wrap gap-2">
-                        <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === x.id} onClick={() => setStatus(x.id, 'under_review')}>
-                          Under review
+                      {canOpenChat ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={!!actionId || (x as { source?: string }).source === 'catalog'}
+                          loading={actionId === x.id}
+                          onClick={() => handleOpenChat(x)}
+                        >
+                          {(x as { source?: string }).source === 'catalog'
+                            ? t('admin:chatUnavailable', 'Chat unavailable')
+                            : t('admin:openChat', 'Open chat')}
                         </Button>
-                        <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === x.id} onClick={() => setStatus(x.id, 'chat_opened')}>
-                          Chat opened
-                        </Button>
-                        <Button size="sm" variant="danger" disabled={!!actionId} loading={actionId === x.id} onClick={() => setStatus(x.id, 'rejected')}>
-                          Reject
-                        </Button>
-                      </div>
+                      ) : (
+                        <span className="text-xs text-[var(--color-text-muted)]">{t('common:viewOnly', 'View only')}</span>
+                      )}
                     </TableTd>
                   </TableRow>
                 ))}
@@ -114,4 +135,5 @@ export function AdminInterests() {
     </div>
   )
 }
+
 

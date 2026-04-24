@@ -40,11 +40,25 @@ export function AdminChats() {
   const limit = 20
 
   const chatIdFromUrl = searchParams.get('chatId')
+  const canSendInCurrentChat = role === 'admin' && Boolean(modalChatId) && Boolean(offerContext?.universityUserId)
+
+  const toDisplayText = (value: unknown): string => {
+    if (value == null) return '—'
+    if (typeof value === 'string') return value.trim() ? value : '—'
+    if (typeof value === 'number') return String(value)
+    if (typeof value === 'object') {
+      const obj = value as { id?: unknown; _id?: unknown }
+      if (obj.id != null) return String(obj.id)
+      if (obj._id != null) return String(obj._id)
+    }
+    return String(value)
+  }
 
   const openMessages = useCallback((chatId: string) => {
     setModalChatId(chatId)
     setMessageText('')
     setMessages([])
+    setOfferContext(null)
     setMessagesLoading(true)
     getChatMessages(chatId, { limit: 100 })
       .then((res) => {
@@ -85,7 +99,9 @@ export function AdminChats() {
 
   useEffect(() => {
     if (!chatIdFromUrl) return
-    openMessages(chatIdFromUrl)
+    if (/^[a-fA-F0-9]{24}$/.test(chatIdFromUrl)) {
+      openMessages(chatIdFromUrl)
+    }
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev)
       p.delete('chatId')
@@ -93,28 +109,8 @@ export function AdminChats() {
     }, { replace: true })
   }, [chatIdFromUrl, openMessages, setSearchParams])
 
-  const openOfferFromRow = (chatId: string) => {
-    getChatMessages(chatId, { limit: 1 })
-      .then((res) => {
-        const ch = res.chat
-        const uni = (ch as { universityUserId?: string }).universityUserId
-        if (!uni) {
-          toastApiError(new Error('Chat has no university user id'))
-          return
-        }
-        setOfferContext({
-          universityUserId: uni,
-          studentProfileId: (ch as { studentProfileId?: string }).studentProfileId,
-          chatId,
-          studentLabel: (ch as { studentName?: string }).studentName,
-        })
-        setOfferModalOpen(true)
-      })
-      .catch(toastApiError)
-  }
-
   const handleSendMessage = () => {
-    if (!modalChatId || !messageText.trim() || sending) return
+    if (!canSendInCurrentChat || !modalChatId || !messageText.trim() || sending) return
     setSending(true)
     sendAdminChatMessage(modalChatId, messageText.trim())
       .then((newMsg) => {
@@ -150,14 +146,14 @@ export function AdminChats() {
         </div>
         <CardTitle>{t('admin:allChats', 'All chats')}</CardTitle>
         {loading ? (
-          <TableSkeleton rows={8} cols={5} />
+          <TableSkeleton rows={8} cols={4} />
         ) : (
           <>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>{t('admin:studentProfile', 'Student')}</TableTh>
-                  <TableTh>{t('admin:universityProfile', 'University')}</TableTh>
+                  <TableTh>{t('admin:participants', 'Who with whom')}</TableTh>
+                  <TableTh>{t('common:created', 'Created')}</TableTh>
                   <TableTh>{t('common:updated', 'Updated')}</TableTh>
                   <TableTh>{t('common:actions')}</TableTh>
                 </TableRow>
@@ -165,19 +161,17 @@ export function AdminChats() {
               <TableBody>
                 {items.map((c) => (
                   <TableRow key={c.id}>
-                    <TableTd>{(c as { studentName?: string }).studentName ?? c.studentId}</TableTd>
-                    <TableTd>{(c as { universityName?: string }).universityName ?? c.universityId}</TableTd>
-                    <TableTd>{c.updatedAt ? formatDateTime(c.updatedAt) : '—'}</TableTd>
+                    <TableTd>
+                      <div className="text-sm font-medium">{(c as { studentName?: string }).studentName?.trim() || toDisplayText(c.studentId)}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">{"<->"} {(c as { universityName?: string }).universityName?.trim() || toDisplayText(c.universityId)}</div>
+                    </TableTd>
+                    <TableTd>{c.createdAt ? formatDateTime(c.createdAt) : '-'}</TableTd>
+                    <TableTd>{c.updatedAt ? formatDateTime(c.updatedAt) : '-'}</TableTd>
                     <TableTd>
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="secondary" onClick={() => openMessages(c.id)}>
-                          {t('admin:viewMessages', 'View messages')}
+                          {t('admin:openChat', 'Open chat')}
                         </Button>
-                        {role === 'admin' ? (
-                          <Button size="sm" onClick={() => openOfferFromRow(c.id)}>
-                            {t('admin:sendOffer', 'Send offer')}
-                          </Button>
-                        ) : null}
                       </div>
                     </TableTd>
                   </TableRow>
@@ -191,32 +185,43 @@ export function AdminChats() {
 
       <Modal
         open={!!modalChatId}
-        onClose={() => setModalChatId(null)}
+        onClose={() => { setModalChatId(null); setOfferContext(null); setMessageText(''); setMessages([]) }}
         title={modalChatId ? t('admin:chatMessagesWithId', 'Chat messages') : t('admin:chatMessages', 'Chat messages')}
         footer={
           <div className="flex flex-col gap-2 w-full">
-            <div className="flex flex-col sm:flex-row gap-2 w-full">
-              <Input
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder={t('common:typeMessage', 'Type a message...')}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                className="flex-1 min-w-0"
-              />
-              <div className="flex flex-wrap gap-2 shrink-0">
-                <Button onClick={handleSendMessage} disabled={!messageText.trim() || sending} loading={sending}>
-                  {t('common:send', 'Send')}
-                </Button>
-                {role === 'admin' && offerContext?.universityUserId ? (
+            {canSendInCurrentChat ? (
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <Input
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder={t('common:typeMessage', 'Type a message...')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                  className="flex-1 min-w-0"
+                />
+                <div className="flex flex-wrap gap-2 shrink-0">
+                  <Button onClick={handleSendMessage} disabled={!messageText.trim() || sending} loading={sending}>
+                    {t('common:send', 'Send')}
+                  </Button>
                   <Button variant="secondary" onClick={() => setOfferModalOpen(true)}>
                     {t('admin:sendOffer', 'Send offer')}
                   </Button>
-                ) : null}
-                <Button variant="secondary" onClick={() => { setModalChatId(null); setOfferContext(null) }}>
+                  <Button variant="secondary" onClick={() => { setModalChatId(null); setOfferContext(null); setMessageText(''); setMessages([]) }}>
+                    {t('common:close')}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {role === 'admin'
+                    ? t('admin:chatReadonlyNoUniversity', 'Cannot send messages in this chat: university account is missing.')
+                    : t('common:viewOnly', 'View only')}
+                </p>
+                <Button variant="secondary" onClick={() => { setModalChatId(null); setOfferContext(null); setMessageText(''); setMessages([]) }}>
                   {t('common:close')}
                 </Button>
               </div>
-            </div>
+            )}
           </div>
         }
       >
@@ -252,3 +257,4 @@ export function AdminChats() {
     </div>
   )
 }
+

@@ -454,8 +454,12 @@ export interface AdminInterest {
   id: string
   studentId: string
   universityId: string
+  studentName?: string
+  universityName?: string
   status: string
   source?: 'profile' | 'catalog'
+  chatId?: string
+  chatCreatedAt?: string
   createdAt?: string
 }
 
@@ -466,6 +470,11 @@ export async function getInterests(params?: PaginationParams & { status?: string
 
 export async function updateInterestStatus(interestId: string, status: string): Promise<void> {
   await api.patch(`/admin/interests/${interestId}/status`, { status })
+}
+
+export async function openInterestChat(interestId: string): Promise<{ chatId: string; created: boolean }> {
+  const { data } = await api.post<{ chatId: string; created: boolean }>(`/admin/interests/${interestId}/open-chat`)
+  return data
 }
 
 export interface AdminChat {
