@@ -43,13 +43,50 @@ export function AdminChats() {
   const canSendInCurrentChat = role === 'admin' && Boolean(modalChatId) && Boolean(offerContext?.universityUserId)
 
   const toDisplayText = (value: unknown): string => {
-    if (value == null) return '—'
-    if (typeof value === 'string') return value.trim() ? value : '—'
-    if (typeof value === 'number') return String(value)
+    if (value == null) return '-'
+    if (typeof value === 'string') return value.trim() ? value : '-'
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value)
     if (typeof value === 'object') {
       const obj = value as { id?: unknown; _id?: unknown }
       if (obj.id != null) return String(obj.id)
       if (obj._id != null) return String(obj._id)
+    }
+    return String(value)
+  }
+
+  const toMessageText = (value: unknown): string => {
+    if (value == null) return ''
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value)
+    if (value instanceof Uint8Array) {
+      try {
+        return new TextDecoder().decode(value)
+      } catch {
+        return ''
+      }
+    }
+    if (typeof value === 'object') {
+      const obj = value as { text?: unknown; message?: unknown; buffer?: unknown; type?: unknown; data?: unknown }
+      const direct = obj.message ?? obj.text
+      if (typeof direct === 'string' || typeof direct === 'number' || typeof direct === 'boolean') return String(direct)
+      if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+        try {
+          return new TextDecoder().decode(new Uint8Array(obj.data.map((n) => Number(n))))
+        } catch {
+          return ''
+        }
+      }
+      if (Array.isArray(obj.buffer)) {
+        try {
+          return new TextDecoder().decode(new Uint8Array(obj.buffer.map((n) => Number(n))))
+        } catch {
+          return ''
+        }
+      }
+      try {
+        return JSON.stringify(value)
+      } catch {
+        return String(value)
+      }
     }
     return String(value)
   }
@@ -62,7 +99,14 @@ export function AdminChats() {
     setMessagesLoading(true)
     getChatMessages(chatId, { limit: 100 })
       .then((res) => {
-        setMessages(res.messages ?? [])
+        setMessages((res.messages ?? []).map((msg) => {
+          const raw = msg as AdminChatMessage & { text?: unknown; message?: unknown; senderId?: unknown }
+          return {
+            ...msg,
+            senderId: toDisplayText(raw.senderId ?? ''),
+            message: toMessageText(raw.message ?? raw.text),
+          }
+        }))
         const ch = res.chat
         const uni = (ch as { universityUserId?: string }).universityUserId
         const stud = (ch as { studentProfileId?: string }).studentProfileId
@@ -114,13 +158,13 @@ export function AdminChats() {
     setSending(true)
     sendAdminChatMessage(modalChatId, messageText.trim())
       .then((newMsg) => {
-        const msg = newMsg as AdminChatMessage & { text?: string }
+        const msg = newMsg as AdminChatMessage & { text?: unknown; senderId?: unknown }
         setMessages((prev) => [...prev, {
           id: msg.id ?? `m-${Date.now()}`,
           chatId: modalChatId,
           type: msg.type ?? 'text',
-          message: msg.message ?? msg.text ?? '',
-          senderId: msg.senderId ?? '',
+          message: toMessageText(msg.message ?? msg.text ?? ''),
+          senderId: toDisplayText(msg.senderId ?? ''),
           createdAt: msg.createdAt ?? new Date().toISOString(),
         }])
         setMessageText('')
@@ -163,7 +207,7 @@ export function AdminChats() {
                   <TableRow key={c.id}>
                     <TableTd>
                       <div className="text-sm font-medium">{(c as { studentName?: string }).studentName?.trim() || toDisplayText(c.studentId)}</div>
-                      <div className="text-xs text-[var(--color-text-muted)]">{"<->"} {(c as { universityName?: string }).universityName?.trim() || toDisplayText(c.universityId)}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">{'<->'} {(c as { universityName?: string }).universityName?.trim() || toDisplayText(c.universityId)}</div>
                     </TableTd>
                     <TableTd>{c.createdAt ? formatDateTime(c.createdAt) : '-'}</TableTd>
                     <TableTd>{c.updatedAt ? formatDateTime(c.updatedAt) : '-'}</TableTd>
@@ -234,10 +278,10 @@ export function AdminChats() {
             {messages.map((m) => (
               <li key={m.id} className="rounded-input border border-[var(--color-border)] p-3">
                 <div className="flex justify-between gap-2 text-xs text-[var(--color-text-muted)]">
-                  <span className="font-mono">{m.senderId}</span>
-                  <span>{formatDateTime(m.createdAt)}</span>
+                  <span className="font-mono">{toDisplayText(m.senderId)}</span>
+                  <span>{m.createdAt ? formatDateTime(m.createdAt) : '-'}</span>
                 </div>
-                <p className="text-sm mt-1 whitespace-pre-wrap">{m.message}</p>
+                <p className="text-sm mt-1 whitespace-pre-wrap">{toMessageText(m.message)}</p>
               </li>
             ))}
           </ul>
@@ -257,4 +301,3 @@ export function AdminChats() {
     </div>
   )
 }
-
