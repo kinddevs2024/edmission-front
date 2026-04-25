@@ -62,6 +62,7 @@ const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics').then((m
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement').then((m) => ({ default: m.UserManagement })))
 const AdminStudentProfile = lazy(() => import('@/pages/admin/AdminStudentProfile').then((m) => ({ default: m.AdminStudentProfile })))
 const AdminUniversityProfile = lazy(() => import('@/pages/admin/AdminUniversityProfile').then((m) => ({ default: m.AdminUniversityProfile })))
+const AdminCounsellorProfile = lazy(() => import('@/pages/admin/AdminCounsellorProfile').then((m) => ({ default: m.AdminCounsellorProfile })))
 const AdminUniversityDocumentsLayout = lazy(() =>
   import('@/pages/admin/AdminUniversityDocumentsLayout').then((m) => ({ default: m.AdminUniversityDocumentsLayout }))
 )
@@ -84,6 +85,8 @@ const CounsellorSchoolProfile = lazy(() => import('@/pages/admin/CounsellorSchoo
 const CounsellorStudents = lazy(() => import('@/pages/admin/CounsellorStudents').then((m) => ({ default: m.CounsellorStudents })))
 const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRequests').then((m) => ({ default: m.CounsellorJoinRequests })))
 const CounsellorStudentInterests = lazy(() => import('@/pages/school/CounsellorStudentInterests').then((m) => ({ default: m.CounsellorStudentInterests })))
+const CounsellorApplications = lazy(() => import('@/pages/school/CounsellorApplications').then((m) => ({ default: m.CounsellorApplications })))
+const CounsellorOffers = lazy(() => import('@/pages/school/CounsellorOffers').then((m) => ({ default: m.CounsellorOffers })))
 const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
 const CounsellorStudentProfile = lazy(() => import('@/pages/school/CounsellorStudentProfile').then((m) => ({ default: m.CounsellorStudentProfile })))
 const CounsellorStudentDocuments = lazy(() => import('@/pages/school/CounsellorStudentDocuments').then((m) => ({ default: m.CounsellorStudentDocuments })))
@@ -298,6 +301,7 @@ export function Router() {
           <Route path="users" element={<UserManagement />} />
           <Route path="users/:userId/student-profile" element={<AdminStudentProfile />} />
           <Route path="users/:userId/university-profile" element={<AdminUniversityProfile />} />
+          <Route path="users/:userId/counsellor-profile" element={<AdminCounsellorProfile />} />
           <Route path="users/:userId/university-documents" element={<AdminUniversityDocumentsLayout />}>
             <Route index element={<UniversityDocuments />} />
             <Route path="templates/new" element={<DocumentTemplateEditorPage />} />
@@ -328,6 +332,8 @@ export function Router() {
           <Route path="my-school" element={<CounsellorSchoolProfile />} />
           <Route path="my-students" element={<CounsellorStudents />} />
           <Route path="student-interests" element={<CounsellorStudentInterests />} />
+          <Route path="applications" element={<CounsellorApplications />} />
+          <Route path="offers" element={<CounsellorOffers />} />
           <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
           <Route path="students/:studentId/documents" element={<CounsellorStudentDocuments />} />
           <Route path="join-requests" element={<CounsellorJoinRequests />} />

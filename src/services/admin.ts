@@ -69,6 +69,22 @@ export interface AdminUniversityProfile {
   gpaMinValue?: number | null
 }
 
+export interface AdminCounsellorProfile {
+  id: string
+  userId: string
+  schoolName: string
+  schoolDescription: string
+  country: string
+  city: string
+  isPublic: boolean
+}
+
+export interface AdminCounsellorStudentsImportResult {
+  created: number
+  updated: number
+  errors: Array<{ row: number; name: string; message: string }>
+}
+
 export interface CreateAdminUserPayload {
   role: 'student' | 'university' | 'university_multi_manager' | 'admin' | 'school_counsellor' | 'counsellor_coordinator' | 'manager'
   email: string
@@ -361,6 +377,7 @@ export interface UsersExcelUserPayload {
   preferredCountries?: string[]
   interestedFaculties?: string[]
   counsellorUserId?: string
+  counsellorEmail?: string
   managedUniversityUserIds?: string[]
   universityMultiManagerApproved?: boolean
 }
@@ -498,6 +515,48 @@ export async function getStudentProfileByUser(userId: string): Promise<Record<st
 export async function updateStudentProfileByUser(userId: string, patch: Record<string, unknown>): Promise<Record<string, unknown>> {
   const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/student-profile`, patch)
   return data ?? {}
+}
+
+function normalizeCounsellorProfile(raw: Record<string, unknown>): AdminCounsellorProfile {
+  return {
+    id: String(raw.id ?? raw._id ?? ''),
+    userId: String(raw.userId ?? ''),
+    schoolName: String(raw.schoolName ?? ''),
+    schoolDescription: String(raw.schoolDescription ?? ''),
+    country: String(raw.country ?? ''),
+    city: String(raw.city ?? ''),
+    isPublic: raw.isPublic == null ? true : Boolean(raw.isPublic),
+  }
+}
+
+export async function getCounsellorProfileByUser(userId: string): Promise<AdminCounsellorProfile> {
+  const { data } = await api.get<Record<string, unknown>>(`/admin/users/${userId}/counsellor-profile`)
+  return normalizeCounsellorProfile(data ?? {})
+}
+
+export async function updateCounsellorProfileByUser(
+  userId: string,
+  payload: Pick<AdminCounsellorProfile, 'schoolName' | 'schoolDescription' | 'country' | 'city' | 'isPublic'>
+): Promise<AdminCounsellorProfile> {
+  const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/counsellor-profile`, payload)
+  return normalizeCounsellorProfile(data ?? {})
+}
+
+export async function downloadCounsellorStudentsExcelByUser(userId: string): Promise<void> {
+  const { data } = await api.get<Blob>(`/admin/users/${userId}/counsellor-students/export`, { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'counsellor_students.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function uploadCounsellorStudentsExcelByUser(userId: string, file: File): Promise<AdminCounsellorStudentsImportResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<AdminCounsellorStudentsImportResult>(`/admin/users/${userId}/counsellor-students/import`, formData)
+  return data!
 }
 
 export async function getStudentDocumentsByUser(studentUserId: string): Promise<Array<Record<string, unknown>>> {

@@ -21,6 +21,8 @@ export function SchoolLayout() {
       { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' as const },
       { to: '/school/student-interests', label: t('school:studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' as const },
+      { to: '/school/applications', label: t('school:applications', 'Applications'), icon: 'Heart' as const },
+      { to: '/school/offers', label: t('school:offers', 'Offers'), icon: 'Gift' as const },
       { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' as const },
       { to: '/notifications', label: t('school:notifications'), icon: 'Bell' as const },
     ],
@@ -40,6 +42,8 @@ export function SchoolLayout() {
       { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' as const },
       { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' as const },
+      { to: '/school/applications', label: t('school:applications', 'Applications'), icon: 'Heart' as const },
+      { to: '/school/offers', label: t('school:offers', 'Offers'), icon: 'Gift' as const },
       { to: '/school/join-requests', label: t('school:joinRequests'), icon: 'Users' as const },
     ],
     [t]

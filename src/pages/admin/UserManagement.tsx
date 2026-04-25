@@ -480,6 +480,17 @@ export function UserManagement() {
                                   {t('admin:editProfile', 'Edit profile')}
                                 </Button>
                               )}
+                              {canManageUserRole(u.role) && u.role === 'school_counsellor' && (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  type="button"
+                                  disabled={!!actionUserId}
+                                  onClick={() => navigate(`/admin/users/${u.id}/counsellor-profile`)}
+                                >
+                                  {t('admin:editProfile', 'Edit profile')}
+                                </Button>
+                              )}
                               <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
                                 {t('admin:resetPassword', 'Reset password')}
                               </Button>

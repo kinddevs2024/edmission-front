@@ -33,6 +33,53 @@ export interface CounsellorStudent {
   country: string
   city: string
   mustChangePassword?: boolean
+  temporaryPassword?: string
+}
+
+export interface CounsellorStudentsImportResult {
+  created: number
+  updated: number
+  errors: Array<{ row: number; name: string; message: string }>
+}
+
+export interface CounsellorApplication {
+  id: string
+  source: 'profile' | 'catalog'
+  studentProfileId: string
+  studentUserId: string
+  studentName: string
+  studentEmail: string
+  universityId: string
+  universityName?: string
+  status: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface CounsellorOffer {
+  id: string
+  type: 'offer' | 'scholarship'
+  status: string
+  title?: string
+  universityMessage?: string
+  sentAt?: string
+  viewedAt?: string
+  decisionAt?: string
+  postponeUntil?: string
+  expiresAt?: string
+  createdAt?: string
+  updatedAt?: string
+  studentProfileId: string
+  studentUserId: string
+  studentName: string
+  studentEmail: string
+  universityId: string
+  university?: {
+    name: string
+    logoUrl?: string
+    city?: string
+    country?: string
+  }
 }
 
 export interface CreateStudentResult {
@@ -67,6 +114,55 @@ export async function createStudent(body: { email: string; name?: string; firstN
 export async function listMyStudents(params?: { page?: number; limit?: number; search?: string }): Promise<{ data: CounsellorStudent[]; total: number; page: number; limit: number; totalPages: number }> {
   const { data } = await api.get('/counsellor/students', { params })
   return data
+}
+
+export async function listMyApplications(params?: { page?: number; limit?: number; status?: string; studentUserId?: string }): Promise<{
+  data: CounsellorApplication[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}> {
+  const { data } = await api.get('/counsellor/applications', { params })
+  return data
+}
+
+export async function listMyOffers(params?: { page?: number; limit?: number; status?: string; type?: string; studentUserId?: string }): Promise<{
+  data: CounsellorOffer[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}> {
+  const { data } = await api.get('/counsellor/offers', { params })
+  return data
+}
+
+export async function downloadCounsellorStudentsTemplate(): Promise<void> {
+  const { data } = await api.get<Blob>('/counsellor/students/template', { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'counsellor_students_template.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function downloadCounsellorStudentsExcel(): Promise<void> {
+  const { data } = await api.get<Blob>('/counsellor/students/export', { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'my_students.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function uploadCounsellorStudentsExcel(file: File): Promise<CounsellorStudentsImportResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<CounsellorStudentsImportResult>('/counsellor/students/import', formData)
+  return data!
 }
 
 export async function updateMyStudent(studentUserId: string, patch: Record<string, unknown>): Promise<unknown> {

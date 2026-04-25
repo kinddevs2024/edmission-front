@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -11,17 +12,21 @@ import {
   createStudent,
   updateMyStudent,
   deleteMyStudent,
-  generateTempPassword,
   searchStudentsForInvite,
   inviteStudent,
   listMyInvitations,
   cancelInvitation,
+  downloadCounsellorStudentsExcel,
+  downloadCounsellorStudentsTemplate,
+  uploadCounsellorStudentsExcel,
   type CounsellorStudent,
   type CreateStudentResult,
   type CounsellorInvitationItem,
+  type CounsellorStudentsImportResult,
 } from '@/services/counsellor'
 import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
+import { Download, Upload } from 'lucide-react'
 
 export function CounsellorStudents() {
   const { t } = useTranslation(['common', 'admin'])
@@ -45,10 +50,11 @@ export function CounsellorStudents() {
   const [editFirstName, setEditFirstName] = useState('')
   const [editLastName, setEditLastName] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<CounsellorStudent | null>(null)
-  const [passwordModal, setPasswordModal] = useState<{ student: CounsellorStudent; password: string } | null>(null)
-  const [passwordLoading, setPasswordLoading] = useState(false)
   const [pendingInvitations, setPendingInvitations] = useState<CounsellorInvitationItem[]>([])
   const [cancellingInvitationId, setCancellingInvitationId] = useState<string | null>(null)
+  const [importingExcel, setImportingExcel] = useState(false)
+  const [importResult, setImportResult] = useState<CounsellorStudentsImportResult | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const limit = 20
 
   const loadPendingInvitations = () => {
@@ -162,15 +168,6 @@ export function CounsellorStudents() {
       .finally(() => setSubmitting(false))
   }
 
-  const handleGetPassword = (s: CounsellorStudent) => {
-    if (!s.mustChangePassword) return
-    setPasswordLoading(true)
-    generateTempPassword(s.userId)
-      .then((res) => setPasswordModal({ student: s, password: res.temporaryPassword }))
-      .catch(toastApiError)
-      .finally(() => setPasswordLoading(false))
-  }
-
   const handleDelete = () => {
     if (!deleteTarget) return
     setSubmitting(true)
@@ -183,15 +180,61 @@ export function CounsellorStudents() {
       .finally(() => setSubmitting(false))
   }
 
+  const handleExcelSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setImportingExcel(true)
+    uploadCounsellorStudentsExcel(file)
+      .then((res) => {
+        setImportResult(res)
+        if (res.created > 0 || res.updated > 0) {
+          load()
+        }
+        toast.success(t('admin:studentsImportFinished', 'Import finished. Created: {{created}}, updated: {{updated}}.', {
+          created: res.created,
+          updated: res.updated,
+        }))
+      })
+      .catch(toastApiError)
+      .finally(() => setImportingExcel(false))
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / limit))
+  const showOneTimePasswordColumn = list.some((student) => Boolean(student.temporaryPassword))
 
   return (
     <div className="space-y-4">
       <PageTitle title={t('admin:myStudents', 'My students')} icon="Users">
-        <Button size="sm" variant="secondary" onClick={() => { setModal('invite'); setInviteSearch(''); setInviteResults([]) }}>
-          {t('admin:inviteStudent', 'Invite student')}
-        </Button>
-        <Button size="sm" onClick={openAdd}>{t('admin:addStudent', 'Add student')}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="secondary" onClick={() => downloadCounsellorStudentsExcel().catch(toastApiError)} icon={<Download size={16} />}>
+            {t('admin:downloadAllUsersData', 'Download all data')}
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => downloadCounsellorStudentsTemplate().catch(toastApiError)} icon={<Download size={16} />}>
+            {t('admin:downloadTemplate', 'Download template')}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            className="hidden"
+            onChange={handleExcelSelected}
+          />
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => fileInputRef.current?.click()}
+            loading={importingExcel}
+            disabled={importingExcel}
+            icon={<Upload size={16} />}
+          >
+            {t('admin:uploadExcel', 'Upload Excel')}
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => { setModal('invite'); setInviteSearch(''); setInviteResults([]) }}>
+            {t('admin:inviteStudent', 'Invite student')}
+          </Button>
+          <Button size="sm" onClick={openAdd}>{t('admin:addStudent', 'Add student')}</Button>
+        </div>
       </PageTitle>
 
       {pendingInvitations.length > 0 && (
@@ -253,6 +296,9 @@ export function CounsellorStudents() {
                   <tr className="border-b border-[var(--color-border)]">
                     <th className="text-left py-2 font-medium">Email</th>
                     <th className="text-left py-2 font-medium">{t('common:name')}</th>
+                    {showOneTimePasswordColumn && (
+                      <th className="text-left py-2 font-medium">{t('admin:oneTimePassword', 'One-time password')}</th>
+                    )}
                     <th className="text-right py-2 font-medium">{t('common:actions')}</th>
                   </tr>
                 </thead>
@@ -261,15 +307,19 @@ export function CounsellorStudents() {
                     <tr key={s.userId} className="border-b border-[var(--color-border)] last:border-0">
                       <td className="py-3">{s.email}</td>
                       <td className="py-3">{s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || '—'}</td>
+                      {showOneTimePasswordColumn && (
+                        <td className="py-3">
+                          {s.temporaryPassword ? (
+                            <span className="font-mono text-xs">{s.temporaryPassword}</span>
+                          ) : (
+                            <span className="text-[var(--color-text-muted)]">-</span>
+                          )}
+                        </td>
+                      )}
                       <td className="py-3 text-right space-x-1">
                         <Link to={`/school/students/${s.userId}/profile`}>
                           <Button size="sm" variant="ghost">{t('admin:editProfile', 'Edit profile')}</Button>
                         </Link>
-                        {s.mustChangePassword && (
-                          <Button size="sm" variant="ghost" onClick={() => handleGetPassword(s)} disabled={passwordLoading}>
-                            {t('admin:getPassword', 'Get password')}
-                          </Button>
-                        )}
                         <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>{t('common:edit')}</Button>
                         <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setDeleteTarget(s)}>{t('common:delete')}</Button>
                       </td>
@@ -351,26 +401,6 @@ export function CounsellorStudents() {
         )}
       </Modal>
 
-      {/* Temp password modal */}
-      <Modal
-        open={!!passwordModal}
-        onClose={() => setPasswordModal(null)}
-        title={t('admin:tempPasswordTitle', 'Temporary password')}
-        footer={<Button onClick={() => setPasswordModal(null)}>{t('common:close')}</Button>}
-      >
-        {passwordModal && (
-          <div className="space-y-3">
-            <p className="text-sm text-[var(--color-text-muted)]">
-              {t('admin:tempPasswordFor', 'Password for')} {passwordModal.student.email}
-            </p>
-            <div className="rounded-lg bg-[var(--color-border)] p-4">
-              <p className="font-mono text-lg break-all">{passwordModal.password}</p>
-              <p className="text-xs text-[var(--color-text-muted)] mt-2">{t('admin:tempPasswordHint', 'Student must change it on first login.')}</p>
-            </div>
-          </div>
-        )}
-      </Modal>
-
       {/* Invite existing student modal */}
       <Modal
         open={modal === 'invite'}
@@ -407,6 +437,39 @@ export function CounsellorStudents() {
             <p className="text-sm text-[var(--color-text-muted)]">{t('admin:noStudentsToInvite', 'No students found or they are already in your school.')}</p>
           )}
         </div>
+      </Modal>
+
+      {/* Excel import result */}
+      <Modal
+        open={!!importResult}
+        onClose={() => setImportResult(null)}
+        title={t('admin:excelImportResult', 'Excel import result')}
+        footer={<Button onClick={() => setImportResult(null)}>{t('common:close')}</Button>}
+      >
+        {importResult && (
+          <div className="space-y-3 text-sm">
+            <p>
+              {t('admin:studentsImportFinished', 'Import finished. Created: {{created}}, updated: {{updated}}.', {
+                created: importResult.created,
+                updated: importResult.updated,
+              })}
+            </p>
+            {importResult.errors.length > 0 && (
+              <div>
+                <p className="font-medium text-red-500 mb-2">
+                  {t('admin:importErrors', 'Errors')}: {importResult.errors.length}
+                </p>
+                <ul className="max-h-64 overflow-y-auto space-y-1 text-[var(--color-text-muted)]">
+                  {importResult.errors.slice(0, 20).map((error, index) => (
+                    <li key={`${error.row}-${index}`}>
+                      {t('admin:row', 'Row')} {error.row}: {error.name ? `${error.name} - ` : ''}{error.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
 
       {/* Delete confirm */}

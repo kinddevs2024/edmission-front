@@ -8,6 +8,8 @@ import { getCounsellorProfile, listMyStudents, listJoinRequests } from '@/servic
 import { toastApiError } from '@/utils/toastError'
 import { Users, UserPlus, Building2, Inbox, ChevronRight, Mail, BarChart3 } from 'lucide-react'
 
+const DASHBOARD_PREVIEW_LIMIT = 5
+
 export function SchoolDashboard() {
   const { t } = useTranslation('school')
   const navigate = useNavigate()
@@ -21,8 +23,8 @@ export function SchoolDashboard() {
   useEffect(() => {
     Promise.all([
       getCounsellorProfile(),
-      listMyStudents({ page: 1, limit: 5 }),
-      listJoinRequests({ status: 'pending', page: 1, limit: 5 }),
+      listMyStudents({ page: 1, limit: DASHBOARD_PREVIEW_LIMIT }),
+      listJoinRequests({ status: 'pending', page: 1, limit: DASHBOARD_PREVIEW_LIMIT }),
       listJoinRequests({ status: 'pending', page: 1, limit: 1 }),
     ])
       .then(([profile, studentsRes, requestsRes, pendingCountRes]) => {

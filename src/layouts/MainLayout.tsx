@@ -153,6 +153,8 @@ export function MainLayout() {
           { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
           { to: '/school/student-interests', label: tSchool('studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' },
+          { to: '/school/applications', label: tSchool('applications', 'Applications'), icon: 'Heart' },
+          { to: '/school/offers', label: tSchool('offers', 'Offers'), icon: 'Gift' },
           { to: '/school/join-requests', label: tSchool('joinRequests'), icon: 'Users' },
           { to: '/notifications', label: tSchool('notifications'), icon: 'Bell' },
         ],
@@ -206,6 +208,8 @@ export function MainLayout() {
         { to: '/school/dashboard', label: tSchool('dashboard'), icon: 'LayoutDashboard' },
         { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
         { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
+        { to: '/school/applications', label: tSchool('applications', 'Applications'), icon: 'Heart' },
+        { to: '/school/offers', label: tSchool('offers', 'Offers'), icon: 'Gift' },
         { to: '/school/join-requests', label: tSchool('joinRequests'), icon: 'Users' },
       ]
     }
