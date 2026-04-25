@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { YandexSignInButton } from "@/components/auth/YandexSignInButton";
+import { savePendingTelegramAuthSession, startTelegramAuth } from "@/services/auth";
 
 type AuthSocialButtonsProps = {
   mode: "login" | "register";
@@ -34,10 +35,24 @@ export function AuthSocialButtons({
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Yandex_icon.svg/1280px-Yandex_icon.svg.png";
   const telegramLogo =
     "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/250px-Telegram_2019_Logo.svg.png";
-  const telegramBotUrl = "https://t.me/Edmission_bot";
+  const handleTelegram = async () => {
+    if (loading) return;
+    setSubmitError("");
+    setLoading(true);
+    try {
+      const data = await startTelegramAuth({ role });
+      savePendingTelegramAuthSession({ sessionId: data.sessionId, role });
+      const params = new URLSearchParams({ sessionId: data.sessionId, deepLink: data.deepLink, role });
+      window.location.href = `/auth/telegram?${params.toString()}`;
+    } catch {
+      setSubmitError(t("errors:default"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center gap-3 py-1 ml-10 mr-10">
+    <div className="flex flex-wrap items-center justify-center gap-3 py-1">
       {showGoogleAuth && (
         <div
           className={`relative inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 ${loading ? "opacity-50" : ""}`}
@@ -73,10 +88,10 @@ export function AuthSocialButtons({
           onSuccess={() => void onYandexSuccess()}
         />
       )}
-      <a
-        href={telegramBotUrl}
-        target="_blank"
-        rel="noreferrer"
+      <button
+        type="button"
+        onClick={() => void handleTelegram()}
+        disabled={loading}
         className="inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 transition-[opacity,transform] duration-150 hover:opacity-95 active:scale-[0.99] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={t("auth:continueWithTelegram", "Continue with Telegram")}
         title={t("auth:continueWithTelegram", "Continue with Telegram")}
@@ -88,7 +103,7 @@ export function AuthSocialButtons({
           loading="lazy"
           decoding="async"
         />
-      </a>
+      </button>
     </div>
   );
 }

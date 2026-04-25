@@ -24,7 +24,7 @@ export function Login() {
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const schema = z.object({
-    email: z.string().email(t("auth:invalidEmail")),
+    email: z.string().min(1, t("auth:loginRequired", "Enter email or phone.")),
     password: z.string().min(1, t("auth:passwordRequired")),
   });
 
@@ -87,10 +87,10 @@ export function Login() {
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
-          label={t("auth:email")}
-          type="email"
-          autoComplete="email"
-          placeholder={t("auth:emailPlaceholder")}
+          label={t("auth:emailOrPhone", "Email or phone")}
+          type="text"
+          autoComplete="username"
+          placeholder={t("auth:emailOrPhonePlaceholder", "email@example.com or +998...")}
           error={errors.email?.message}
           {...register("email")}
         />
@@ -102,31 +102,18 @@ export function Login() {
           {...register("password")}
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-        <div className="flex flex-col gap-2">
-          <Button
-            type="submit"
-            className="w-full"
-            loading={loading}
-            disabled={loading}
-          >
-            {t("common:signIn", "Sign in")}
-          </Button>
-          <div className="flex items-center justify-between gap-3">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-primary-accent hover:underline"
-            >
-              {t("auth:forgotPassword")}
-            </Link>
-            <Link
-              to="/register"
-              className="text-xs text-[var(--color-text-muted)] hover:underline text-right"
-            >
-              {t("auth:noAccountShort", "No account?")} {t("common:register")}
-            </Link>
-          </div>
-        </div>
+        <Button type="submit" className="w-full" loading={loading} disabled={loading}>
+          {t("common:signIn", "Sign in")}
+        </Button>
       </form>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">
+          {t("auth:forgotPassword")}
+        </Link>
+        <Link to="/register" className="text-xs text-[var(--color-text-muted)] hover:underline text-right">
+          {t("auth:noAccountShort", "No account?")} {t("common:register")}
+        </Link>
+      </div>
 
       <div className="mt-6 space-y-4 ">
         <div className="relative py-2">

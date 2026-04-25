@@ -82,6 +82,26 @@ export function SetPassword() {
           ? t('auth:oauthSetPasswordPageHint')
           : t('auth:setPasswordHint')}
       </p>
+      {user?.mustChangePassword && user.temporaryPassword ? (
+        <div className="mb-4 rounded-card border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+          <p className="text-sm font-medium text-[var(--color-text)]">
+            {t('auth:updatePasswordRequired', 'Update your password')}
+          </p>
+          <div className="mt-2 grid gap-2 text-sm">
+            <div>
+              <span className="text-[var(--color-text-muted)]">{t('auth:generatedEmail', 'Generated email')}: </span>
+              <span className="font-mono break-all">{user.email}</span>
+            </div>
+            <div>
+              <span className="text-[var(--color-text-muted)]">{t('auth:temporaryPassword', 'Temporary password')}: </span>
+              <span className="font-mono break-all">{user.temporaryPassword}</span>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+            {t('auth:temporaryPasswordWillHide', 'This password is visible to administration only until you save a new password.')}
+          </p>
+        </div>
+      ) : null}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={t('auth:newPassword')}

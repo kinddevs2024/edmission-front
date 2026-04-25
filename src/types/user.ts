@@ -39,6 +39,14 @@ export interface User {
   name?: string
   phone?: string
   socialLinks?: SocialLinks
+  linkedProviders?: {
+    email?: boolean
+    phone?: boolean
+    google?: boolean
+    yandex?: boolean
+    telegram?: boolean
+  }
+  temporaryPassword?: string
   avatar?: string
   onboardingTutorialSeen?: { student?: boolean; university?: boolean }
   emailVerified?: boolean

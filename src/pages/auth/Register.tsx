@@ -1,15 +1,18 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Building2, GraduationCap, UserRoundCheck } from "lucide-react";
 import {
-  register as registerApi,
-  verifyEmailByCode,
-  resendVerificationCode,
+  completePhoneRegistration,
   loginWithGoogle,
+  register as registerApi,
+  resendVerificationCode,
+  startPhoneRegistration,
+  verifyEmailByCode,
 } from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 import { getApiError } from "@/services/api";
@@ -23,48 +26,76 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { BrandMark } from "@/components/layout/BrandLogo";
 
+type RegisterMethod = "email" | "phone";
 type RegisterRole = "student" | "university" | "school_counsellor";
 type SocialAuthRole = "student" | "university";
+type EmailFormData = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: RegisterRole;
+  acceptTerms: boolean;
+};
+type PhoneFormData = {
+  phone: string;
+  acceptTerms: boolean;
+};
 
 function toSocialAuthRole(role: RegisterRole): SocialAuthRole {
   return role === "university" ? "university" : "student";
 }
 
+const panelMotion = {
+  initial: { opacity: 0, y: 8, filter: "blur(2px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -8, filter: "blur(2px)" },
+  transition: { duration: 0.18, ease: "easeOut" },
+} as const;
+
 export function Register() {
   const { t, i18n } = useTranslation(["common", "auth", "errors"]);
   const navigate = useNavigate();
+  const [method, setMethod] = useState<RegisterMethod>("email");
   const [selectedRole, setSelectedRole] = useState<RegisterRole>("student");
+  const [phoneRole, setPhoneRole] = useState<SocialAuthRole>("student");
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<"form" | "role" | "code">("form");
   const [pendingEmail, setPendingEmail] = useState("");
-  const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<EmailFormData | null>(null);
   const [codeError, setCodeError] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
   const [resendLoading, setResendLoading] = useState(false);
+  const [phoneStep, setPhoneStep] = useState<"phone" | "code">("phone");
+  const [pendingPhone, setPendingPhone] = useState<{
+    registrationId: string;
+    phone: string;
+    code?: string;
+    expiresAt?: string;
+  } | null>(null);
+  const [phoneCode, setPhoneCode] = useState("");
+  const [phonePassword, setPhonePassword] = useState("");
+  const [phoneConfirmPassword, setPhoneConfirmPassword] = useState("");
 
-  const schema = useMemo(
+  const passwordSchema = useMemo(
+    () =>
+      z
+        .string()
+        .min(8, t("auth:passwordMinLength"))
+        .refine((p) => /[A-Z]/.test(p), t("auth:passwordUppercase", "At least one uppercase letter"))
+        .refine((p) => /[a-z]/.test(p), t("auth:passwordLowercase", "At least one lowercase letter"))
+        .refine((p) => /\d/.test(p), t("auth:passwordNumber", "At least one number")),
+    [t],
+  );
+
+  const emailSchema = useMemo(
     () =>
       z
         .object({
           email: z.string().email(t("auth:invalidEmail")),
-          password: z
-            .string()
-            .min(8, t("auth:passwordMinLength"))
-            .refine(
-              (p) => /[A-Z]/.test(p),
-              t("auth:passwordUppercase", "At least one uppercase letter"),
-            )
-            .refine(
-              (p) => /[a-z]/.test(p),
-              t("auth:passwordLowercase", "At least one lowercase letter"),
-            )
-            .refine(
-              (p) => /\d/.test(p),
-              t("auth:passwordNumber", "At least one number"),
-            ),
+          password: passwordSchema,
           confirmPassword: z.string(),
           role: z.enum(["student", "university", "school_counsellor"]),
           acceptTerms: z.boolean().refine((v) => v === true, {
@@ -75,29 +106,44 @@ export function Register() {
           message: t("auth:passwordsMustMatch"),
           path: ["confirmPassword"],
         }),
+    [passwordSchema, t],
+  );
+
+  const phoneSchema = useMemo(
+    () =>
+      z.object({
+        phone: z.string().min(7, t("auth:phoneRequired", "Enter your phone number.")),
+        acceptTerms: z.boolean().refine((v) => v === true, {
+          message: t("auth:acceptTermsRequired"),
+        }),
+      }),
     [t],
   );
-  type FormData = z.infer<typeof schema>;
 
   const {
-    register,
-    handleSubmit,
+    register: registerEmailField,
+    handleSubmit: handleEmailSubmit,
     getValues,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
+  } = useForm<EmailFormData>({
+    resolver: zodResolver(emailSchema),
     defaultValues: { role: "student", acceptTerms: false },
   });
 
-  // Resend cooldown: 60s after entering code step or after successful resend
+  const {
+    register: registerPhoneField,
+    handleSubmit: handlePhoneSubmit,
+    formState: { errors: phoneErrors },
+  } = useForm<PhoneFormData>({
+    resolver: zodResolver(phoneSchema),
+    defaultValues: { acceptTerms: false },
+  });
+
   useEffect(() => {
     if (step !== "code" || resendCooldown <= 0) return;
-    const t = setInterval(
-      () => setResendCooldown((c) => Math.max(0, c - 1)),
-      1000,
-    );
-    return () => clearInterval(t);
+    const timer = window.setInterval(() => setResendCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => window.clearInterval(timer);
   }, [step, resendCooldown]);
 
   const handleGoogleCredential = async (credential: string) => {
@@ -110,24 +156,14 @@ export function Register() {
         acceptTerms: true,
       });
       if (data.user.mustSetLocalPassword) {
-        showOAuthPasswordReminder(
-          t("auth:oauthPasswordToastTitle"),
-          t("auth:oauthPasswordToastDesc"),
-        );
+        showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
       }
       await navigateAfterRegistration(navigate, data.user, i18n);
     } catch (err) {
       const apiErr = getApiError(err);
-      const errList = apiErr.errors as
-        | Array<{ field?: string; message?: string }>
-        | undefined;
-      const firstMsg =
-        Array.isArray(errList) && errList[0]?.message
-          ? errList[0].message
-          : null;
-      setSubmitError(
-        firstMsg ?? apiErr.message ?? t(`errors:${getApiErrorKey(err)}`),
-      );
+      const errList = apiErr.errors as Array<{ field?: string; message?: string }> | undefined;
+      const firstMsg = Array.isArray(errList) && errList[0]?.message ? errList[0].message : null;
+      setSubmitError(firstMsg ?? apiErr.message ?? t(`errors:${getApiErrorKey(err)}`));
     } finally {
       setLoading(false);
     }
@@ -148,7 +184,7 @@ export function Register() {
     }
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmitEmail = async (data: EmailFormData) => {
     setPendingFormData(data);
     setSelectedRole(data.role);
     setStep("role");
@@ -167,32 +203,28 @@ export function Register() {
       });
       if ("needsVerification" in result && result.needsVerification) {
         setPendingEmail(result.email);
+        setResendCooldown(60);
         setStep("code");
       } else if ("user" in result && result.user) {
         await navigateAfterRegistration(navigate, result.user, i18n);
       }
     } catch (err) {
       const apiErr = getApiError(err);
-      const errList = apiErr.errors as
-        | Array<{ field?: string; message?: string }>
-        | undefined;
-      const firstMsg =
-        Array.isArray(errList) && errList[0]?.message
-          ? errList[0].message
-          : null;
+      const errList = apiErr.errors as Array<{ field?: string; message?: string }> | undefined;
+      const firstMsg = Array.isArray(errList) && errList[0]?.message ? errList[0].message : null;
       setSubmitError(firstMsg ?? t(`errors:${getApiErrorKey(err)}`));
     } finally {
       setLoading(false);
     }
   };
 
-  const onVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onVerifyEmailCode = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const codeInput = form.elements.namedItem("code") as HTMLInputElement;
     const code = codeInput?.value?.trim().replace(/\D/g, "").slice(0, 6);
     if (!code || code.length !== 6) {
-      setCodeError(t("auth:enterCode") + " – 6 digits");
+      setCodeError(`${t("auth:enterCode")} - 6 digits`);
       return;
     }
     setCodeError("");
@@ -208,14 +240,76 @@ export function Register() {
     }
   };
 
+  const onStartPhoneRegistration = async (data: PhoneFormData) => {
+    setSubmitError("");
+    setLoading(true);
+    try {
+      const result = await startPhoneRegistration({
+        phone: data.phone,
+        role: phoneRole,
+        acceptTerms: true,
+      });
+      setPendingPhone({
+        registrationId: result.registrationId,
+        phone: result.phone,
+        code: result.verification.code,
+        expiresAt: result.verification.expiresAt,
+      });
+      setPhoneCode("");
+      setPhonePassword("");
+      setPhoneConfirmPassword("");
+      setPhoneStep("code");
+    } catch (err) {
+      const apiErr = getApiError(err);
+      const key = getApiErrorKey(err);
+      setSubmitError(key !== "default" ? t(`errors:${key}`) : apiErr.message || t("errors:default"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onCompletePhoneRegistration = async () => {
+    if (!pendingPhone) return;
+    setSubmitError("");
+    const normalizedCode = phoneCode.replace(/\D/g, "").slice(0, 6);
+    if (normalizedCode.length !== 6) {
+      setSubmitError(t("auth:codeInvalid", "Enter the full 6-digit code."));
+      return;
+    }
+    const parsedPassword = passwordSchema.safeParse(phonePassword);
+    if (!parsedPassword.success) {
+      setSubmitError(parsedPassword.error.issues[0]?.message ?? t("auth:passwordRequirements"));
+      return;
+    }
+    if (phonePassword !== phoneConfirmPassword) {
+      setSubmitError(t("auth:passwordsMustMatch"));
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await completePhoneRegistration({
+        registrationId: pendingPhone.registrationId,
+        code: normalizedCode,
+        password: phonePassword,
+      });
+      await navigateAfterRegistration(navigate, result.user, i18n);
+    } catch (err) {
+      const apiErr = getApiError(err);
+      const key = getApiErrorKey(err);
+      setSubmitError(key !== "default" ? t(`errors:${key}`) : apiErr.message || t("errors:default"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (step === "code") {
     return (
       <Card className="p-6">
         <CardTitle className="mb-2">{t("auth:verifyEmail")}</CardTitle>
-        <p className="text-sm text-[var(--color-text-muted)] mb-4">
+        <p className="mb-4 text-sm text-[var(--color-text-muted)]">
           {t("auth:verificationCodeSent", { email: pendingEmail })}
         </p>
-        <form onSubmit={onVerifyCode} className="space-y-4">
+        <form onSubmit={onVerifyEmailCode} className="space-y-4">
           <Input
             label={t("auth:enterCode")}
             name="code"
@@ -224,17 +318,11 @@ export function Register() {
             autoComplete="one-time-code"
             error={codeError}
             onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-              e.target.value = v;
+              e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
               setCodeError("");
             }}
           />
-          <Button
-            type="submit"
-            className="w-full"
-            loading={codeLoading}
-            disabled={codeLoading}
-          >
+          <Button type="submit" className="w-full" loading={codeLoading} disabled={codeLoading}>
             {t("auth:verifyAndContinue")}
           </Button>
           <div className="flex items-center justify-between gap-2">
@@ -243,7 +331,7 @@ export function Register() {
               onClick={() => setStep("form")}
               className="text-sm text-[var(--color-text-muted)] hover:underline"
             >
-              ← {t("common:back")}
+              {t("common:back", "Back")}
             </button>
             {resendCooldown > 0 ? (
               <span className="text-sm text-[var(--color-text-muted)]">
@@ -266,6 +354,12 @@ export function Register() {
   }
 
   if (step === "role") {
+    const roleOptions: Array<{ role: RegisterRole; label: string; icon: typeof GraduationCap }> = [
+      { role: "student", label: t("auth:roleStudent", "Student"), icon: GraduationCap },
+      { role: "university", label: t("auth:roleUniversity", "University"), icon: Building2 },
+      { role: "school_counsellor", label: t("auth:roleCounsellor", "Counsellor"), icon: UserRoundCheck },
+    ];
+
     return (
       <Card className="p-6">
         <div className="mb-4 flex flex-col items-center gap-2 text-center">
@@ -276,43 +370,23 @@ export function Register() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-2">
-          <button
-            type="button"
-            onClick={() => setSelectedRole("student")}
-            className={
-              selectedRole === "student"
-                ? "rounded-card flex items-center gap-3 border-2 border-primary-accent px-3 py-2 text-left"
-                : "rounded-card flex items-center gap-3 border border-[var(--color-border)] px-3 py-2 text-left"
-            }
-          >
-            <GraduationCap className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
-            {t("auth:roleStudent", "Student")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedRole("university")}
-            className={
-              selectedRole === "university"
-                ? "rounded-card flex items-center gap-3 border-2 border-primary-accent px-3 py-2 text-left"
-                : "rounded-card flex items-center gap-3 border border-[var(--color-border)] px-3 py-2 text-left"
-            }
-          >
-            <Building2 className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
-            {t("auth:roleUniversity", "University")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedRole("school_counsellor")}
-            className={
-              selectedRole === "school_counsellor"
-                ? "rounded-card flex items-center gap-3 border-2 border-primary-accent px-3 py-2 text-left"
-                : "rounded-card flex items-center gap-3 border border-[var(--color-border)] px-3 py-2 text-left"
-            }
-          >
-            <UserRoundCheck className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
-            {t("auth:roleCounsellor", "Counsellor")}
-          </button>
+          {roleOptions.map(({ role, label, icon: Icon }) => (
+            <button
+              key={role}
+              type="button"
+              onClick={() => setSelectedRole(role)}
+              className={
+                selectedRole === role
+                  ? "flex items-center gap-3 rounded-card border-2 border-primary-accent px-3 py-2 text-left"
+                  : "flex items-center gap-3 rounded-card border border-[var(--color-border)] px-3 py-2 text-left transition-colors hover:border-primary-accent/50"
+              }
+            >
+              <Icon className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
+              {label}
+            </button>
+          ))}
         </div>
+        {submitError && <p className="mt-3 text-sm text-red-500">{submitError}</p>}
         <Button
           type="button"
           className="mt-4 w-full"
@@ -330,7 +404,7 @@ export function Register() {
           onClick={() => setStep("form")}
           className="mt-3 block w-full text-center text-sm text-[var(--color-text-muted)] hover:underline"
         >
-          ← {t("common:back")}
+          {t("common:back", "Back")}
         </button>
       </Card>
     );
@@ -341,111 +415,218 @@ export function Register() {
       <div className="mb-4 flex flex-col items-center gap-2 text-center">
         <BrandMark className="h-14 w-14" />
         <CardTitle>{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
-        {false && (
-          <Link
-            to="/register-phone"
-            className="text-xs text-primary-accent underline hover:no-underline"
-          >
-            Регистрация по номеру телефона
-          </Link>
-        )}
       </div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label={t("auth:email")}
-          type="email"
-          autoComplete="email"
-          placeholder={t("auth:emailPlaceholder")}
-          error={errors.email?.message}
-          {...register("email")}
-        />
-        <Input
-          label={t("auth:password")}
-          type="password"
-          autoComplete="new-password"
-          hint={t(
-            "auth:passwordRequirements",
-            "8+ chars, uppercase, lowercase, number",
-          )}
-          error={errors.password?.message}
-          passwordVisible={showPassword}
-          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle
-          {...register("password")}
-        />
-        <Input
-          label={t("auth:confirmPassword")}
-          type="password"
-          autoComplete="new-password"
-          error={errors.confirmPassword?.message}
-          passwordVisible={showPassword}
-          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle
-          {...register("confirmPassword")}
-        />
-        <input type="hidden" {...register("role")} />
-        <div className="flex items-start gap-2">
-          <Checkbox
-            {...register("acceptTerms")}
-            label={
-              <span className="text-sm text-[var(--color-text)]">
-                {t("auth:acceptTerms")}{" "}
-                <Link
-                  to="/privacy"
-                  className="text-primary-accent underline hover:no-underline"
-                >
-                  {t("common:privacy")}
-                </Link>
-              </span>
-            }
-          />
-        </div>
-        {errors.acceptTerms && (
-          <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>
-        )}
-        {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-        <Button
-          type="submit"
-          className="w-full"
-          loading={loading}
-          disabled={loading}
-        >
-          {t("common:register")}
-        </Button>
-        <Link
-          to="/login"
-          className="block text-sm text-[var(--color-text-muted)] hover:underline text-center"
-        >
-          {t("auth:haveAccount")} Sign in
-        </Link>
-      </form>
 
-      {(selectedRole === "student" || selectedRole === "university") && (
-        <div className="mt-6 space-y-4">
-          <AuthSocialButtons
-            mode="register"
-            loading={loading}
-            role={selectedRole}
-            yandexAcceptTerms
-            setLoading={setLoading}
-            setSubmitError={setSubmitError}
-            onGoogleCredential={handleGoogleCredential}
-            onYandexSuccess={async () => {
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-1">
+        {(["email", "phone"] as RegisterMethod[]).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => {
+              setMethod(value);
               setSubmitError("");
-              const user = useAuthStore.getState().user;
-              if (user) {
-                if (user.mustSetLocalPassword) {
-                  showOAuthPasswordReminder(
-                    t("auth:oauthPasswordToastTitle"),
-                    t("auth:oauthPasswordToastDesc"),
-                  );
-                }
-                await navigateAfterRegistration(navigate, user, i18n);
-              }
             }}
-          />
-        </div>
-      )}
+            className={`relative min-h-[40px] overflow-hidden rounded-input text-sm font-medium transition-colors duration-200 ${
+              method === value ? "text-primary-accent" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+            }`}
+          >
+            {method === value && (
+              <motion.span
+                layoutId="register-method-switch"
+                className="absolute inset-0 rounded-input bg-[var(--color-card)] shadow-sm"
+                transition={{ type: "spring", stiffness: 480, damping: 34 }}
+              />
+            )}
+            <span className="relative z-[1]">
+              {value === "email" ? t("auth:email", "Email") : t("auth:phone", "Phone")}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait" initial={false}>
+        {method === "email" ? (
+          <motion.div key="email" {...panelMotion}>
+            <form onSubmit={handleEmailSubmit(onSubmitEmail)} className="space-y-4">
+              <Input
+                label={t("auth:email")}
+                type="email"
+                autoComplete="email"
+                placeholder={t("auth:emailPlaceholder")}
+                error={errors.email?.message}
+                {...registerEmailField("email")}
+              />
+              <Input
+                label={t("auth:password")}
+                type="password"
+                autoComplete="new-password"
+                hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
+                error={errors.password?.message}
+                passwordVisible={showPassword}
+                onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+                showPasswordToggle
+                {...registerEmailField("password")}
+              />
+              <Input
+                label={t("auth:confirmPassword")}
+                type="password"
+                autoComplete="new-password"
+                error={errors.confirmPassword?.message}
+                passwordVisible={showPassword}
+                onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+                showPasswordToggle
+                {...registerEmailField("confirmPassword")}
+              />
+              <input type="hidden" {...registerEmailField("role")} />
+              <Checkbox
+                {...registerEmailField("acceptTerms")}
+                label={
+                  <span className="text-sm text-[var(--color-text)]">
+                    {t("auth:acceptTerms")}{" "}
+                    <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
+                      {t("common:privacy")}
+                    </Link>
+                  </span>
+                }
+              />
+              {errors.acceptTerms && <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>}
+              {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+              <Button type="submit" className="w-full" loading={loading} disabled={loading}>
+                {t("common:register")}
+              </Button>
+            </form>
+
+            {(selectedRole === "student" || selectedRole === "university") && (
+              <div className="mt-6 space-y-4">
+                <AuthSocialButtons
+                  mode="register"
+                  loading={loading}
+                  role={selectedRole}
+                  yandexAcceptTerms
+                  setLoading={setLoading}
+                  setSubmitError={setSubmitError}
+                  onGoogleCredential={handleGoogleCredential}
+                  onYandexSuccess={async () => {
+                    setSubmitError("");
+                    const user = useAuthStore.getState().user;
+                    if (user) {
+                      if (user.mustSetLocalPassword) {
+                        showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
+                      }
+                      await navigateAfterRegistration(navigate, user, i18n);
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div key="phone" className="space-y-4" {...panelMotion}>
+            {phoneStep === "phone" ? (
+              <form onSubmit={handlePhoneSubmit(onStartPhoneRegistration)} className="space-y-4">
+                <Input
+                  label={t("auth:phone", "Phone number")}
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+998..."
+                  error={phoneErrors.phone?.message}
+                  {...registerPhoneField("phone")}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  {(["student", "university"] as SocialAuthRole[]).map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => setPhoneRole(role)}
+                      className={
+                        phoneRole === role
+                          ? "min-h-[40px] rounded-card border-2 border-primary-accent px-3 py-2 text-sm font-medium text-primary-accent"
+                          : "min-h-[40px] rounded-card border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:border-primary-accent/50 hover:text-[var(--color-text)]"
+                      }
+                    >
+                      {role === "student" ? t("auth:roleStudent", "Student") : t("auth:roleUniversity", "University")}
+                    </button>
+                  ))}
+                </div>
+                <Checkbox
+                  {...registerPhoneField("acceptTerms")}
+                  label={
+                    <span className="text-sm text-[var(--color-text)]">
+                      {t("auth:acceptTerms")}{" "}
+                      <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
+                        {t("common:privacy")}
+                      </Link>
+                    </span>
+                  }
+                />
+                {phoneErrors.acceptTerms && <p className="text-sm text-red-500">{phoneErrors.acceptTerms.message}</p>}
+                {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+                <Button type="submit" className="w-full" loading={loading} disabled={loading}>
+                  {t("auth:sendCode", "Send code")}
+                </Button>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
+                  <p className="text-sm font-medium text-[var(--color-text)]">{pendingPhone?.phone}</p>
+                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                    {t("auth:phoneCodeSentHint", "Enter the code, then create the temporary password for this generated account.")}
+                  </p>
+                  {pendingPhone?.code ? (
+                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                      {t("auth:testCodeHint", "Testing code")}: <span className="font-mono">{pendingPhone.code}</span>
+                    </p>
+                  ) : null}
+                </div>
+                <Input
+                  label={t("auth:enterCode", "Enter code")}
+                  placeholder="000000"
+                  autoComplete="one-time-code"
+                  value={phoneCode}
+                  maxLength={6}
+                  onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                />
+                <Input
+                  label={t("auth:password")}
+                  type="password"
+                  autoComplete="new-password"
+                  hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
+                  value={phonePassword}
+                  passwordVisible={showPassword}
+                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+                  showPasswordToggle
+                  onChange={(e) => setPhonePassword(e.target.value)}
+                />
+                <Input
+                  label={t("auth:confirmPassword")}
+                  type="password"
+                  autoComplete="new-password"
+                  value={phoneConfirmPassword}
+                  passwordVisible={showPassword}
+                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+                  showPasswordToggle
+                  onChange={(e) => setPhoneConfirmPassword(e.target.value)}
+                />
+                {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+                <Button type="button" className="w-full" loading={loading} disabled={loading} onClick={() => void onCompletePhoneRegistration()}>
+                  {t("auth:verifyAndContinue", "Verify and continue")}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setPhoneStep("phone")}
+                  className="block w-full text-center text-sm text-[var(--color-text-muted)] hover:underline"
+                >
+                  {t("common:back", "Back")}
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Link to="/login" className="mt-4 block text-center text-sm text-[var(--color-text-muted)] hover:underline">
+        {t("auth:haveAccount")} {t("common:signIn", "Sign in")}
+      </Link>
     </Card>
   );
 }

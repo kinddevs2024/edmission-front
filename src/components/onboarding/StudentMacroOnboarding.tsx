@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { GraduationCap, MessageCircle, Sparkles } from 'lucide-react'
+import { Bot, Gift, GraduationCap, MessageCircle, Sparkles } from 'lucide-react'
 import { trackStudentFunnel } from '@/analytics/studentFunnel'
 import { useStudentOnboardingFlowStore } from '@/store/studentOnboardingFlowStore'
 import { MACRO_ONBOARDING_STORAGE_KEY } from '@/constants/studentOnboarding'
@@ -48,7 +48,7 @@ export function StudentMacroOnboarding({ open, onClose }: StudentMacroOnboarding
   const { t } = useTranslation(['student', 'common'])
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
-  const total = 3
+  const total = 5
 
   const setMacroGate = useStudentOnboardingFlowStore((s) => s.setMacroOnboardingDone)
 
@@ -153,6 +153,46 @@ export function StudentMacroOnboarding({ open, onClose }: StudentMacroOnboarding
         ) : null}
 
         {step === 2 ? (
+          <div className="space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-accent/15 text-primary-accent">
+              <Bot className="h-6 w-6" aria-hidden />
+            </div>
+            <p className="font-medium text-[var(--color-text)]">
+              {t('macroOnboardingStep3Title', 'How AI matching works')}
+            </p>
+            <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+              {t(
+                'macroOnboardingStep3',
+                'Edmission compares your profile with university requirements, budget, location, language level, and scholarship fit. Better data means better matches.'
+              )}
+            </p>
+            <Link to="/how-edmission-works" className="inline-flex min-h-[44px] items-center text-sm font-medium text-primary-accent hover:underline" onClick={() => finish('complete')}>
+              {t('macroOnboardingLearnHow', 'See how Edmission works')}
+            </Link>
+          </div>
+        ) : null}
+
+        {step === 3 ? (
+          <div className="space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-accent/15 text-primary-accent">
+              <Gift className="h-6 w-6" aria-hidden />
+            </div>
+            <p className="font-medium text-[var(--color-text)]">
+              {t('macroOnboardingStep4Title', 'Offers and scholarships')}
+            </p>
+            <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+              {t(
+                'macroOnboardingStep4',
+                'Universities can send offers or scholarships after reviewing your interest. You can accept, reject, or postpone decisions from the Offers page.'
+              )}
+            </p>
+            <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => { finish('complete'); navigate('/student/offers') }}>
+              {t('macroOnboardingOpenOffers', 'Open offers center')}
+            </Button>
+          </div>
+        ) : null}
+
+        {step === 4 ? (
           <div className="space-y-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-accent/15 text-primary-accent">
               <MessageCircle className="h-6 w-6" aria-hidden />

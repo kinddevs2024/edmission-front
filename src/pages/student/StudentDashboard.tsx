@@ -121,7 +121,7 @@ function mergeUniversityListsForDashboard(
 
 export function StudentDashboard() {
   const { t } = useTranslation(['student', 'common'])
-  const { role } = useAuth()
+  const { role, user } = useAuth()
   const [profilePercent, setProfilePercent] = useState(0)
   const [minimalComplete, setMinimalComplete] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
@@ -263,12 +263,22 @@ export function StudentDashboard() {
       { label: t('stepMinimalProfile'), to: '/student/profile', done: minimalComplete },
       { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
       {
+        label: t('student:stepConnectTelegram', 'Connect Telegram for reminders'),
+        to: '/profile',
+        done: Boolean(user?.linkedProviders?.telegram || user?.socialLinks?.telegram),
+      },
+      {
         label: t('student:stepFirstApplication', 'Show interest to one university'),
         to: '/student/universities',
         done: applications.length > 0,
       },
+      {
+        label: t('student:stepReviewOffers', 'Know where offers and scholarships arrive'),
+        to: '/student/offers',
+        done: offers.length > 0,
+      },
     ],
-    [t, minimalComplete, docCount, applications.length]
+    [t, minimalComplete, docCount, applications.length, offers.length, user?.linkedProviders?.telegram, user?.socialLinks?.telegram]
   )
   const onboardingDone = onboardingSteps.every((s) => s.done)
   const nextIncomplete = onboardingSteps.find((s) => !s.done)

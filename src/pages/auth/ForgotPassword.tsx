@@ -19,7 +19,7 @@ export function ForgotPassword() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const schema = z.object({ email: z.string().email(t('auth:invalidEmail')) })
+  const schema = z.object({ email: z.string().min(1, t('auth:loginRequired', 'Enter email or phone.')) })
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (data: FormData) => {
@@ -40,8 +40,10 @@ export function ForgotPassword() {
   if (sent) {
     return (
       <Card className="p-6">
-        <CardTitle className="mb-2">{t('auth:verifyEmail')}</CardTitle>
-        <p className="text-[var(--color-text-muted)] mb-4">{t('auth:verifyEmailSent')}</p>
+        <CardTitle className="mb-2">{t('auth:resetPassword', 'Reset password')}</CardTitle>
+        <p className="text-[var(--color-text-muted)] mb-4">
+          {t('auth:resetPasswordSent')}
+        </p>
         {resetLink && (
           <p className="mb-4 break-all text-sm text-[var(--color-text-muted)]">
             Dev reset link:{' '}
@@ -59,7 +61,14 @@ export function ForgotPassword() {
     <Card className="p-6">
       <CardTitle className="mb-4">{t('auth:forgotPassword')}</CardTitle>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input label={t('auth:email')} type="email" placeholder={t('auth:emailPlaceholder')} error={errors.email?.message} {...register('email')} />
+        <Input
+          label={t('auth:emailOrPhone', 'Email or phone')}
+          type="text"
+          autoComplete="username"
+          placeholder={t('auth:emailOrPhonePlaceholder', 'email@example.com or +998...')}
+          error={errors.email?.message}
+          {...register('email')}
+        />
         {error && <p className="text-sm text-red-500">{error}</p>}
         <Button type="submit" className="w-full" loading={loading} disabled={loading}>{t('common:submit')}</Button>
         <Link to="/login" className="block text-sm text-[var(--color-text-muted)] hover:underline text-center">

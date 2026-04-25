@@ -101,6 +101,7 @@ const SupportPage = lazy(() => import('@/pages/SupportPage').then((m) => ({ defa
 const Privacy = lazy(() => import('@/pages/Privacy').then((m) => ({ default: m.Privacy })))
 const Cookies = lazy(() => import('@/pages/Cookies').then((m) => ({ default: m.Cookies })))
 const Maintenance = lazy(() => import('@/pages/Maintenance').then((m) => ({ default: m.Maintenance })))
+const HowEdmissionWorks = lazy(() => import('@/pages/HowEdmissionWorks').then((m) => ({ default: m.HowEdmissionWorks })))
 
 function PageFallback() {
   return (
@@ -222,6 +223,8 @@ export function Router() {
         <Route path="explore" element={<PublicOnlyRoute><ExploreCatalogPage /></PublicOnlyRoute>} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="cookies" element={<Cookies />} />
+        <Route path="how-edmission-works" element={<HowEdmissionWorks />} />
+        <Route path="help/tutorials" element={<HowEdmissionWorks />} />
         <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
         <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
         <Route

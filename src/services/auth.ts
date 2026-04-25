@@ -15,8 +15,34 @@ export interface LoginByPhonePayload {
   password: string
 }
 
+export interface PhoneCodeStartPayload {
+  phone: string
+  role?: 'student' | 'university'
+  acceptTerms?: boolean
+  firstName?: string
+  lastName?: string
+  email?: string
+}
+
+export type PhoneCodeStartResult =
+  | {
+      mode: 'login'
+      phone: string
+      delivery: 'telegram'
+      expiresAt: string
+    }
+  | {
+      mode: 'telegram_required' | 'register'
+      phone: string
+      sessionId: string
+      deepLink: string
+      expiresAt: string
+      message?: string
+    }
+
 export interface RegisterPayload {
   email: string
+  phone?: string
   password: string
   role: 'student' | 'university' | 'school_counsellor'
   acceptTerms: boolean
@@ -29,10 +55,7 @@ export type RegisterResult =
   | LoginResponse
 
 export interface PhoneRegisterStartPayload {
-  firstName: string
-  lastName: string
   phone: string
-  password: string
   role: 'student' | 'university'
   acceptTerms: boolean
 }
@@ -41,7 +64,7 @@ export interface PhoneRegisterStartResult {
   registrationId: string
   phone: string
   verification: {
-    method: 'telegram'
+    method: 'code'
     code: string
     expiresAt: string
     deepLink: string
@@ -252,6 +275,21 @@ export async function loginByPhone(payload: LoginByPhonePayload): Promise<LoginR
   return data
 }
 
+export async function startPhoneCodeAuth(payload: PhoneCodeStartPayload): Promise<PhoneCodeStartResult> {
+  const { data } = await api.post<PhoneCodeStartResult>('/auth/phone/start', payload)
+  return data
+}
+
+export async function verifyPhoneCodeAuth(payload: { phone: string; code: string }): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/phone/verify', payload)
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
 export async function register(payload: RegisterPayload): Promise<RegisterResult> {
   const body: Record<string, unknown> = {
     email: payload.email,
@@ -259,6 +297,7 @@ export async function register(payload: RegisterPayload): Promise<RegisterResult
     role: payload.role,
     acceptTerms: payload.acceptTerms,
   }
+  if (payload.phone) body.phone = payload.phone
   if (payload.name) body.name = payload.name
   if (payload.avatarUrl) body.avatarUrl = payload.avatarUrl
   const { data } = await api.post<RegisterResult>('/auth/register', body)
@@ -282,8 +321,12 @@ export async function getPhoneRegistrationStatus(registrationId: string): Promis
   return data
 }
 
-export async function completePhoneRegistration(registrationId: string): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/auth/register-phone/complete', { registrationId })
+export async function completePhoneRegistration(payload: {
+  registrationId: string
+  code: string
+  password: string
+}): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/register-phone/complete', payload)
   useAIChatStore.getState().resetSession()
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
@@ -322,8 +365,8 @@ export interface ForgotPasswordResponse {
   resetLink?: string
 }
 
-export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
-  const { data } = await api.post<ForgotPasswordResponse>('/auth/forgot-password', { email })
+export async function forgotPassword(identifier: string): Promise<ForgotPasswordResponse> {
+  const { data } = await api.post<ForgotPasswordResponse>('/auth/forgot-password', { email: identifier })
   return data
 }
 

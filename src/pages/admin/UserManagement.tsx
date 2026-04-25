@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 ﻿import { useEffect, useMemo, useState } from 'react'
+=======
+import { useEffect, useMemo, useRef, useState } from 'react'
+>>>>>>> Stashed changes
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -8,7 +12,21 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
-import { createUser, getUsers, getAdminUser, updateUser, suspendUser, unsuspendUser, deleteUser, resetUserPassword } from '@/services/admin'
+import {
+  createUser,
+  getUsers,
+  getAdminUser,
+  updateUser,
+  suspendUser,
+  unsuspendUser,
+  deleteUser,
+  resetUserPassword,
+  downloadAllUsersExcel,
+  downloadUsersTemplate,
+  previewUsersExcel,
+  uploadUsersExcel,
+  type UsersImportPreviewResult,
+} from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
 import { Modal } from '@/components/ui/Modal'
@@ -17,6 +35,19 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
+import { Download, Upload } from 'lucide-react'
+import { toast } from 'sonner'
+
+function formatPreviewValue(value: unknown): string {
+  if (value == null || value === '') return '—'
+  if (Array.isArray(value)) {
+    return value.length ? value.map((item) => formatPreviewValue(item)).join(', ') : '—'
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+  return String(value)
+}
 
 export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
@@ -106,7 +137,13 @@ export function UserManagement() {
   const [editManagerApproved, setEditManagerApproved] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
+  const [importingExcel, setImportingExcel] = useState(false)
+  const [confirmingImport, setConfirmingImport] = useState(false)
+  const [importPreview, setImportPreview] = useState<UsersImportPreviewResult | null>(null)
+  const [importPreviewFile, setImportPreviewFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const limit = 20
+  const showOneTimePasswordColumn = users.some((user) => Boolean(user.temporaryPassword))
 
   useEffect(() => {
     if (assignableRoles.length === 0) return
@@ -228,9 +265,108 @@ export function UserManagement() {
       .finally(() => setEditUserSaving(false))
   }
 
+  const reloadUsers = () => {
+    setLoading(true)
+    getUsers({
+      page,
+      limit,
+      role: roleFilter || undefined,
+      status: statusFilter || undefined,
+      search: appliedSearch || undefined,
+    })
+      .then((res) => {
+        setUsers(res.data ?? [])
+        setTotal(res.total ?? 0)
+      })
+      .catch((e) => {
+        toastApiError(e)
+        setUsers([])
+        setTotal(0)
+      })
+      .finally(() => setLoading(false))
+  }
+
+  const closeImportPreview = () => {
+    setImportPreview(null)
+    setImportPreviewFile(null)
+  }
+
+  const handleExcelSelected = (file: File) => {
+    setImportingExcel(true)
+    previewUsersExcel(file)
+      .then((res) => {
+        setImportPreviewFile(file)
+        setImportPreview(res)
+      })
+      .catch(toastApiError)
+      .finally(() => setImportingExcel(false))
+  }
+
+  const handleConfirmExcelImport = () => {
+    if (!importPreviewFile) return
+    setConfirmingImport(true)
+    uploadUsersExcel(importPreviewFile)
+      .then((res) => {
+        if (res.created > 0 || res.updated > 0) {
+          reloadUsers()
+          toast.success(
+            t('admin:importSuccessDetailed', '{{created}} created, {{updated}} updated.', {
+              created: res.created,
+              updated: res.updated,
+            })
+          )
+        }
+        if (res.errors.length > 0) {
+          toast.error(
+            t('admin:importErrors', '{{count}} row(s) failed.', { count: res.errors.length }) +
+              ' ' +
+              res.errors.slice(0, 3).map((x) => `${x.name}: ${x.message}`).join('; ')
+          )
+        } else {
+          closeImportPreview()
+        }
+      })
+      .catch(toastApiError)
+      .finally(() => setConfirmingImport(false))
+  }
+
   return (
     <div className="space-y-4">
-      <PageTitle title={t('admin:users')} icon="Users" />
+      <PageTitle title={t('admin:users')} icon="Users">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="secondary" onClick={() => downloadAllUsersExcel().catch(toastApiError)} icon={<Download size={16} />}>
+            {t('admin:downloadAllUsersData', 'Download all data')}
+          </Button>
+          {canManageUsers && (
+            <>
+              <Button size="sm" variant="secondary" onClick={() => downloadUsersTemplate().catch(toastApiError)} icon={<Download size={16} />}>
+                {t('admin:downloadTemplate', 'Download template')}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  e.target.value = ''
+                  handleExcelSelected(file)
+                }}
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={importingExcel}
+                onClick={() => fileInputRef.current?.click()}
+                icon={<Upload size={16} />}
+              >
+                {importingExcel ? t('common:loading', 'Loading...') : t('admin:uploadExcel', 'Upload Excel')}
+              </Button>
+            </>
+          )}
+        </div>
+      </PageTitle>
 
       <Card>
         <div className="mb-4 flex flex-col gap-4">
@@ -269,7 +405,7 @@ export function UserManagement() {
         </div>
         <CardTitle className="mb-2">{t('admin:users')}</CardTitle>
         {loading ? (
-          <TableSkeleton rows={8} cols={6} />
+          <TableSkeleton rows={8} cols={8} />
         ) : users.length === 0 ? (
           <EmptyState title={t('admin:noUsersFound')} description={t('admin:tryChangingFilters')} />
         ) : (
@@ -279,8 +415,12 @@ export function UserManagement() {
                 <TableRow>
                   <TableTh>{t('common:email')}</TableTh>
                   <TableTh>{t('common:name')}</TableTh>
+                  <TableTh>{t('admin:phone', 'Phone')}</TableTh>
                   <TableTh>{t('common:role')}</TableTh>
                   <TableTh>{t('admin:registered')}</TableTh>
+                  {showOneTimePasswordColumn && (
+                    <TableTh>{t('admin:oneTimePassword', 'One-time password')}</TableTh>
+                  )}
                   <TableTh>{t('admin:statusLabel')}</TableTh>
                   <TableTh>{t('common:actions')}</TableTh>
                 </TableRow>
@@ -290,8 +430,18 @@ export function UserManagement() {
                   <TableRow key={u.id}>
                     <TableTd>{u.email}</TableTd>
                     <TableTd>{u.name ?? '—'}</TableTd>
+                    <TableTd>{u.phone || '-'}</TableTd>
                     <TableTd>{roleLabels[u.role as keyof typeof roleLabels] ?? u.role}</TableTd>
                     <TableTd>{formatDate(u.createdAt)}</TableTd>
+                    {showOneTimePasswordColumn && (
+                      <TableTd>
+                        {u.temporaryPassword ? (
+                        <span className="font-mono text-xs">{u.temporaryPassword}</span>
+                        ) : (
+                          <span className="text-[var(--color-text-muted)]">-</span>
+                        )}
+                      </TableTd>
+                    )}
                     <TableTd>
                       <span className={u.status === 'active' ? 'text-[#22C55E]' : 'text-red-500'}>
                         {u.status === 'active' ? t('admin:active') : t('admin:suspended')}
@@ -353,6 +503,142 @@ export function UserManagement() {
           </>
         )}
       </Card>
+
+      <Modal
+        open={importPreview !== null}
+        onClose={closeImportPreview}
+        title={t('admin:importPreviewTitle', 'Confirm Excel import')}
+        panelClassName="max-w-5xl"
+        contentClassName="space-y-4"
+        footer={
+          <>
+            <Button variant="secondary" onClick={closeImportPreview} disabled={confirmingImport}>
+              {t('common:cancel')}
+            </Button>
+            <Button
+              onClick={handleConfirmExcelImport}
+              disabled={confirmingImport || !importPreview || importPreview.summary.total === 0 || importPreview.errors.length > 0}
+              loading={confirmingImport}
+            >
+              {t('admin:confirmImport', 'Confirm import')}
+            </Button>
+          </>
+        }
+      >
+        {importPreview && (
+          <>
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:rowsToImport', 'Rows to import')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.total}</p>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:newUsers', 'New')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.creates}</p>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:updatedUsers', 'Updates')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.updates}</p>
+              </div>
+              <div className="rounded-lg border border-[var(--color-border)] p-3">
+                <p className="text-xs text-[var(--color-text-muted)]">{t('admin:errors', 'Errors')}</p>
+                <p className="mt-1 text-xl font-semibold">{importPreview.summary.errors}</p>
+              </div>
+            </div>
+
+            {importPreview.errors.length > 0 && (
+              <Card className="border border-red-200 bg-red-50/60 dark:border-red-900 dark:bg-red-950/20">
+                <p className="font-medium text-red-700 dark:text-red-300">
+                  {t('admin:fixImportErrorsBeforeConfirm', 'Fix import errors before confirming.')}
+                </p>
+                <div className="mt-2 space-y-1 text-sm text-red-700 dark:text-red-300">
+                  {importPreview.errors.map((error, index) => (
+                    <p key={`${error.row}-${index}`}>
+                      #{error.row} {error.name ? `${error.name}: ` : ''}{error.message}
+                    </p>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            <div className="space-y-3">
+              {importPreview.items.map((item, index) => (
+                <details
+                  key={`${item.sourceId ?? item.email}-${index}`}
+                  open={index === 0}
+                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card)]"
+                >
+                  <summary className="cursor-pointer list-none px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-base font-semibold">{item.name || item.email}</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">
+                          {t('admin:excelRowLabel', 'Excel row')} #{item.row}
+                          {item.sourceId ? ` • ID: ${item.sourceId}` : ''}
+                          {item.existingId ? ` • Existing: ${item.existingId}` : ''}
+                        </p>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${item.action === 'create' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'}`}>
+                        {item.action === 'create' ? t('admin:newUsers', 'New') : t('admin:updatedUsers', 'Updates')}
+                      </span>
+                    </div>
+                  </summary>
+                  <div className="border-t border-[var(--color-border)] px-4 py-3 space-y-4">
+                    {item.incoming.generatedEmail && (
+                      <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-300">
+                        {t('admin:generatedEmailNotice', 'No email was provided, so a generated email will be used: {{email}}', { email: item.incoming.email })}
+                      </p>
+                    )}
+                    {item.changes.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text)] mb-2">
+                          {t('admin:changedFields', 'Changed fields')}
+                        </p>
+                        <div className="space-y-2">
+                          {item.changes.map((change) => (
+                            <div key={`${item.row}-${change.field}`} className="rounded-lg border border-[var(--color-border)] p-2 text-sm">
+                              <p className="font-medium">{change.field}</p>
+                              <p className="text-[var(--color-text-muted)]">
+                                {formatPreviewValue(change.before)} {' -> '} {formatPreviewValue(change.after)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 text-sm">
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('common:email')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.email)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('common:name')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.name)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('common:role')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.role)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('admin:phone', 'Phone')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.phone)}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('admin:location', 'Location')}</p>
+                        <p className="text-[var(--color-text-muted)]">{[item.incoming.country, item.incoming.city].filter(Boolean).join(', ') || '—'}</p>
+                      </div>
+                      <div className="rounded-lg border border-[var(--color-border)] p-3">
+                        <p className="font-medium">{t('admin:school', 'School')}</p>
+                        <p className="text-[var(--color-text-muted)]">{formatPreviewValue(item.incoming.schoolName)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </>
+        )}
+      </Modal>
 
       <Modal
         open={createOpen}

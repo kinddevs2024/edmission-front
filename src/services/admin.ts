@@ -32,6 +32,9 @@ export interface AdminUser {
   email: string
   role: string
   name?: string
+  phone?: string
+  mustChangePassword?: boolean
+  temporaryPassword?: string
   /** ISO date or empty when unknown */
   createdAt: string
   status: 'active' | 'suspended'
@@ -84,6 +87,9 @@ export async function createUser(payload: CreateAdminUserPayload): Promise<Admin
     email: String(raw.email ?? ''),
     role: String(raw.role ?? ''),
     name: (raw.name as string | undefined) ?? undefined,
+    phone: raw.phone != null ? String(raw.phone) : undefined,
+    mustChangePassword: Boolean(raw.mustChangePassword),
+    temporaryPassword: raw.temporaryPassword != null ? String(raw.temporaryPassword) : undefined,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
     status: (raw.suspended ? 'suspended' : 'active') as 'active' | 'suspended',
   }
@@ -254,6 +260,9 @@ export async function getUsers(params?: PaginationParams & { status?: string; ro
       email: String(rec.email ?? ''),
       role: String(rec.role ?? ''),
       name: (rec.name as string | undefined) ?? undefined,
+      phone: rec.phone != null ? String(rec.phone) : undefined,
+      mustChangePassword: Boolean(rec.mustChangePassword),
+      temporaryPassword: rec.temporaryPassword != null ? String(rec.temporaryPassword) : undefined,
       createdAt: normalizeAdminCreatedAt(rec),
       status: (rec.suspended === true ? 'suspended' : 'active') as 'active' | 'suspended',
     }
@@ -288,6 +297,9 @@ export async function updateUser(userId: string, payload: UpdateUserPayload): Pr
     email: String(raw.email ?? ''),
     role: String(raw.role ?? ''),
     name: (raw.name as string | undefined) ?? undefined,
+    phone: raw.phone != null ? String(raw.phone) : undefined,
+    mustChangePassword: Boolean(raw.mustChangePassword),
+    temporaryPassword: raw.temporaryPassword != null ? String(raw.temporaryPassword) : undefined,
     createdAt: normalizeAdminCreatedAt(raw),
     status: (raw.suspended ? 'suspended' : 'active') as 'active' | 'suspended',
   }
@@ -307,6 +319,93 @@ export async function deleteUser(userId: string): Promise<void> {
 
 export async function resetUserPassword(userId: string, password: string): Promise<void> {
   await api.post(`/admin/users/${userId}/reset-password`, { password })
+}
+
+export async function downloadUsersTemplate(): Promise<void> {
+  const { data } = await api.get<Blob>('/admin/users/template', { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'users_template.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function downloadAllUsersExcel(): Promise<void> {
+  const { data } = await api.get<Blob>('/admin/users/export', { responseType: 'blob' })
+  const url = URL.createObjectURL(data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'users_export.xlsx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export interface UsersExcelUserPayload {
+  email: string
+  generatedEmail?: boolean
+  role: string
+  name: string
+  firstName: string
+  lastName: string
+  phone?: string
+  language?: string
+  emailVerified?: boolean
+  suspended?: boolean
+  country?: string
+  city?: string
+  gradeLevel?: string
+  gpa?: number
+  schoolName?: string
+  graduationYear?: number
+  preferredCountries?: string[]
+  interestedFaculties?: string[]
+  counsellorUserId?: string
+  managedUniversityUserIds?: string[]
+  universityMultiManagerApproved?: boolean
+}
+
+export interface UsersImportPreviewItem {
+  row: number
+  sourceId?: string
+  existingId?: string
+  email: string
+  name: string
+  action: 'create' | 'update'
+  incoming: UsersExcelUserPayload
+  current?: UsersExcelUserPayload
+  changes: Array<{ field: string; before: string; after: string }>
+}
+
+export interface UsersImportPreviewResult {
+  items: UsersImportPreviewItem[]
+  errors: Array<{ row: number; name: string; message: string }>
+  summary: {
+    total: number
+    creates: number
+    updates: number
+    errors: number
+  }
+}
+
+export interface UsersImportResult {
+  created: number
+  updated: number
+  errors: Array<{ row: number; name: string; message: string }>
+}
+
+export async function previewUsersExcel(file: File): Promise<UsersImportPreviewResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<UsersImportPreviewResult>('/admin/users/import/preview', formData)
+  return data!
+}
+
+export async function uploadUsersExcel(file: File): Promise<UsersImportResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await api.post<UsersImportResult>('/admin/users/import', formData)
+  return data!
 }
 
 export async function getUniversityProfileByUser(userId: string): Promise<AdminUniversityProfile> {
