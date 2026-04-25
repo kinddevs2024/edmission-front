@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-﻿import { useEffect, useMemo, useState } from 'react'
-=======
 import { useEffect, useMemo, useRef, useState } from 'react'
->>>>>>> Stashed changes
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
