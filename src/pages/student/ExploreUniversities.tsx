@@ -26,7 +26,7 @@ import {
 } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
 import { toastApiError } from '@/utils/toastError'
-import { Building2, Search, SlidersHorizontal } from 'lucide-react'
+import { Building2, MapPin, Search, SlidersHorizontal } from 'lucide-react'
 import { notifyInfo, notifySuccess } from '@/utils/notify'
 import { getAllRegionCodesForFilter } from '@/utils/countryRegionCodes'
 
@@ -345,6 +345,9 @@ export function ExploreUniversities() {
               </Badge>
               <Button variant="secondary" size="sm" onClick={openFullFilter} icon={<SlidersHorizontal size={16} />}>
                 {t('student:fullFilter', 'Full Filter')}
+              </Button>
+              <Button to="/student/universities/map" variant="secondary" size="sm" icon={<MapPin size={16} />}>
+                {t('student:navMap', 'Map')}
               </Button>
               {showClear ? (
                 <Button variant="ghost" size="sm" onClick={handleClearFilters}>

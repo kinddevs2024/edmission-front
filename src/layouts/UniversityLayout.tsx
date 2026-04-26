@@ -49,6 +49,7 @@ export function UniversityLayout() {
               icon: 'Users',
               section: t('navSectionRecruitment', 'Recruitment'),
             },
+            { to: '/university/students/map', label: t('navStudentMap', 'Student map'), icon: 'Map' },
             { to: '/university/pipeline', label: t('navPipeline', 'Pipeline'), icon: 'GitBranch' },
             { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
             {

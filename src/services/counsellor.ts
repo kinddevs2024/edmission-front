@@ -205,6 +205,7 @@ export async function addInterestForStudent(studentUserId: string, universityId:
 export interface CounsellorStudentUniversitiesParams extends PaginationParams {
   country?: string
   city?: string
+  hasScholarship?: boolean
   useProfileFilters?: boolean
 }
 

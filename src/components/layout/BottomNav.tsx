@@ -1,9 +1,10 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { getNavIcon } from '@/components/icons/NavIcons'
 import type { NavItem } from '@/components/layout/Sidebar'
 
 export function BottomNav({ items }: { items: NavItem[] }) {
+  const location = useLocation()
   return (
     <>
       <div
@@ -25,6 +26,10 @@ export function BottomNav({ items }: { items: NavItem[] }) {
         aria-label="Main navigation"
       >
         {items.map(({ to, label, icon, section: _s }) => {
+          const forceInactive =
+            (to === '/student/universities' && location.pathname.startsWith('/student/universities/map')) ||
+            (to === '/university/students' && location.pathname.startsWith('/university/students/map')) ||
+            (to === '/school/my-students' && location.pathname.startsWith('/school/my-students/map'))
           const onboardingId = to.startsWith('/student/')
             ? `nav-${to.replace(/^\/student\//, '').replace(/\//g, '-')}`
             : to.startsWith('/university/')
@@ -35,15 +40,16 @@ export function BottomNav({ items }: { items: NavItem[] }) {
             key={to}
             to={to}
             {...(onboardingId ? { 'data-onboarding': onboardingId } : {})}
-            className={({ isActive }) =>
-              cn(
+            className={({ isActive }) => {
+              const active = isActive && !forceInactive
+              return cn(
                 'flex min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-2 text-xs font-medium transition-colors duration-200',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)]',
-                isActive
+                active
                   ? 'bg-primary-accent/14 text-primary-accent'
                   : 'text-[var(--color-text-muted)] active:bg-[var(--color-border)]/45 hover:text-[var(--color-text)]'
               )
-            }
+            }}
           >
             <span className="shrink-0 flex items-center justify-center">
               {getNavIcon(icon, 'size-5')}

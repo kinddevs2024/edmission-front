@@ -85,6 +85,7 @@ export function MainLayout() {
             icon: 'Users',
             section: t('university:navSectionRecruitment', 'Recruitment'),
           },
+          { to: '/university/students/map', label: t('university:navStudentMap', 'Student map'), icon: 'Map' },
           { to: '/university/pipeline', label: t('university:navPipeline', 'Pipeline'), icon: 'GitBranch' },
           { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
           {
@@ -152,6 +153,7 @@ export function MainLayout() {
           { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
           { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
+          { to: '/school/my-students/map', label: tSchool('studentMap', 'Student map'), icon: 'Map' },
           { to: '/school/student-interests', label: tSchool('studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' },
           { to: '/school/applications', label: tSchool('applications', 'Applications'), icon: 'Heart' },
           { to: '/school/offers', label: tSchool('offers', 'Offers'), icon: 'Gift' },

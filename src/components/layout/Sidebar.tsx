@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useUIStore } from '@/store/uiStore'
 import { useAuth } from '@/hooks/useAuth'
@@ -22,6 +22,11 @@ function NavLinkItem({
   collapsed,
   section: _section,
 }: NavItem & { collapsed: boolean }) {
+  const location = useLocation()
+  const forceInactive =
+    (to === '/student/universities' && location.pathname.startsWith('/student/universities/map')) ||
+    (to === '/university/students' && location.pathname.startsWith('/university/students/map')) ||
+    (to === '/school/my-students' && location.pathname.startsWith('/school/my-students/map'))
   const onboardingId = to.startsWith('/student/')
     ? `nav-${to.replace(/^\/student\//, '').replace(/\//g, '-')}`
     : to.startsWith('/university/')
@@ -31,16 +36,21 @@ function NavLinkItem({
     <NavLink
       to={to}
       {...(onboardingId ? { 'data-onboarding': onboardingId } : {})}
-      className={({ isActive }) =>
+      className={({ isActive }) => {
+        const active = isActive && !forceInactive
+        return (
         cn(
           'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors duration-200',
           collapsed && 'justify-center px-2',
-          isActive ? 'text-primary-accent' : 'text-dark-muted hover:bg-white/5 hover:text-white'
+          active ? 'text-primary-accent' : 'text-dark-muted hover:bg-white/5 hover:text-white'
         )
-      }
-      children={({ isActive }) => (
-        <>
-          {isActive && (
+        )
+      }}
+      children={({ isActive }) => {
+        const active = isActive && !forceInactive
+        return (
+          <>
+          {active && (
             <motion.div
               layoutId="sidebar-active"
               className="absolute inset-0 rounded-xl bg-primary-accent/20 shadow-sm"
@@ -53,7 +63,8 @@ function NavLinkItem({
           </span>
           {!collapsed && <span className="relative z-10 flex-1 truncate">{label}</span>}
         </>
-      )}
+        )
+      }}
     />
   )
 }

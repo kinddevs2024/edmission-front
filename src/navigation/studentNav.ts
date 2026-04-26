@@ -23,6 +23,7 @@ export function buildStudentNavigation(
   ]
 
   const more: NavItem[] = [
+    { to: '/student/universities/map', label: t('navMap', 'Map'), icon: 'Map' },
     {
       to: '/student/ai',
       label: t('navEdmissionAi', 'Edmission AI'),

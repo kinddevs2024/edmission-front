@@ -129,6 +129,63 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 
+.edmission-university-map,
+.edmission-university-map .leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-container {
+  background: var(--color-bg);
+}
+
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--color-card) 82%, transparent) !important;
+  color: var(--color-text-muted) !important;
+  border-radius: 8px 0 0 0;
+}
+
+.leaflet-control-zoom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.leaflet-control-zoom a {
+  width: 36px !important;
+  height: 36px !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 10px !important;
+  background: color-mix(in srgb, var(--color-card) 88%, transparent) !important;
+  color: var(--color-text) !important;
+  line-height: 34px !important;
+  box-shadow: var(--shadow-card);
+}
+
+.leaflet-control-zoom a:hover,
+.leaflet-control-zoom a:focus {
+  background: var(--color-border) !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  box-shadow: 0 18px 48px -26px rgba(15, 23, 42, 0.55);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  min-width: auto;
+  line-height: normal;
+}
+
+.leaflet-popup-tip {
+  border-radius: 4px;
+}
+
 /**
  * Space below scrollable content on mobile so it clears the fixed BottomNav
  * (bottom-3 offset + bar + labels + touch margin) plus home indicator / safe area.

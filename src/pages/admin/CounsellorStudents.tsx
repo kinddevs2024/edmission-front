@@ -26,7 +26,7 @@ import {
 } from '@/services/counsellor'
 import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
-import { Download, Upload } from 'lucide-react'
+import { Download, Map, Upload } from 'lucide-react'
 
 export function CounsellorStudents() {
   const { t } = useTranslation(['common', 'admin'])
@@ -207,6 +207,9 @@ export function CounsellorStudents() {
     <div className="space-y-4">
       <PageTitle title={t('admin:myStudents', 'My students')} icon="Users">
         <div className="flex flex-wrap items-center gap-2">
+          <Button to="/school/my-students/map" size="sm" variant="secondary" icon={<Map size={16} />}>
+            {t('admin:studentMap', 'Student map')}
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => downloadCounsellorStudentsExcel().catch(toastApiError)} icon={<Download size={16} />}>
             {t('admin:downloadAllUsersData', 'Download all data')}
           </Button>

@@ -26,6 +26,7 @@ const TelegramAuth = lazy(() => import('@/pages/auth/TelegramAuth').then((m) => 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
 const ExploreUniversities = lazy(() => import('@/pages/student/ExploreUniversities').then((m) => ({ default: m.ExploreUniversities })))
+const UniversitiesMap = lazy(() => import('@/pages/student/UniversitiesMap').then((m) => ({ default: m.UniversitiesMap })))
 const StudentExploreMore = lazy(() => import('@/pages/student/StudentExploreMore').then((m) => ({ default: m.StudentExploreMore })))
 const UniversityDetail = lazy(() => import('@/pages/student/UniversityDetail').then((m) => ({ default: m.UniversityDetail })))
 const StudentApplications = lazy(() => import('@/pages/student/StudentApplications').then((m) => ({ default: m.StudentApplications })))
@@ -40,6 +41,7 @@ const UniversityDashboard = lazy(() => import('@/pages/university/UniversityDash
 const UniversityProfilePage = lazy(() => import('@/pages/university/UniversityProfilePage').then((m) => ({ default: m.UniversityProfilePage })))
 const UniversityOnboarding = lazy(() => import('@/pages/university/UniversityOnboarding').then((m) => ({ default: m.UniversityOnboarding })))
 const Discovery = lazy(() => import('@/pages/university/Discovery').then((m) => ({ default: m.Discovery })))
+const StudentsMap = lazy(() => import('@/pages/university/StudentsMap').then((m) => ({ default: m.StudentsMap })))
 const UniversityStudentProfile = lazy(() => import('@/pages/university/UniversityStudentProfile').then((m) => ({ default: m.UniversityStudentProfile })))
 const Pipeline = lazy(() => import('@/pages/university/Pipeline').then((m) => ({ default: m.Pipeline })))
 const Scholarships = lazy(() => import('@/pages/university/Scholarships').then((m) => ({ default: m.Scholarships })))
@@ -90,6 +92,7 @@ const CounsellorOffers = lazy(() => import('@/pages/school/CounsellorOffers').th
 const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
 const CounsellorStudentProfile = lazy(() => import('@/pages/school/CounsellorStudentProfile').then((m) => ({ default: m.CounsellorStudentProfile })))
 const CounsellorStudentDocuments = lazy(() => import('@/pages/school/CounsellorStudentDocuments').then((m) => ({ default: m.CounsellorStudentDocuments })))
+const CounsellorStudentsMap = lazy(() => import('@/pages/school/CounsellorStudentsMap').then((m) => ({ default: m.CounsellorStudentsMap })))
 
 const Profile = lazy(() => import('@/pages/Profile').then((m) => ({ default: m.Profile })))
 const Landing = lazy(() => import('@/pages/Landing').then((m) => ({ default: m.Landing })))
@@ -249,6 +252,7 @@ export function Router() {
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="universities" element={<ExploreUniversities />} />
+          <Route path="universities/map" element={<UniversitiesMap />} />
           <Route path="explore-more" element={<StudentExploreMore />} />
           <Route path="universities/:id" element={<UniversityDetail />} />
           <Route path="applications" element={<Navigate to="/student/interests" replace />} />
@@ -278,6 +282,7 @@ export function Router() {
           <Route path="onboarding" element={<UniversityOnboarding />} />
           <Route path="profile" element={<UniversityProfilePage />} />
           <Route path="dashboard" element={<UniversityDashboard />} />
+          <Route path="students/map" element={<StudentsMap />} />
           <Route path="students/:studentId" element={<UniversityStudentProfile />} />
           <Route path="students" element={<Discovery />} />
           <Route path="pipeline" element={<Pipeline />} />
@@ -330,6 +335,7 @@ export function Router() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<SchoolDashboard />} />
           <Route path="my-school" element={<CounsellorSchoolProfile />} />
+          <Route path="my-students/map" element={<CounsellorStudentsMap />} />
           <Route path="my-students" element={<CounsellorStudents />} />
           <Route path="student-interests" element={<CounsellorStudentInterests />} />
           <Route path="applications" element={<CounsellorApplications />} />

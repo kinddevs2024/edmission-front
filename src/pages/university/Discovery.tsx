@@ -16,7 +16,7 @@ import { getStudentAvatarUrl } from '@/services/upload'
 import { getStudents, type DiscoverStudentItem, type StudentSearchParams } from '@/services/university'
 import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDisplay'
 import { toastApiError } from '@/utils/toastError'
-import { Lock, MessageCircle, Search, SlidersHorizontal, User } from 'lucide-react'
+import { Lock, Map, MessageCircle, Search, SlidersHorizontal, User } from 'lucide-react'
 
 const COUNTRY_OPTIONS = [
   { value: '', label: 'All countries' },
@@ -215,7 +215,11 @@ export function Discovery() {
   return (
     <div className="space-y-5">
       <div data-onboarding="university-discovery-overview">
-        <PageTitle title={t('university:navDiscovery')} icon="Users" />
+        <PageTitle title={t('university:navDiscovery')} icon="Users">
+          <Button to="/university/students/map" variant="secondary" size="sm" icon={<Map size={16} />}>
+            {t('university:studentMap', 'Student map')}
+          </Button>
+        </PageTitle>
       </div>
 
       <Card className="space-y-4 overflow-hidden border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(15,23,42,0.03)_0%,rgba(14,165,233,0.07)_100%)]">

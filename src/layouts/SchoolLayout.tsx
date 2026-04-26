@@ -20,6 +20,7 @@ export function SchoolLayout() {
       { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
       { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' as const },
+      { to: '/school/my-students/map', label: t('school:studentMap', 'Student map'), icon: 'Map' as const },
       { to: '/school/student-interests', label: t('school:studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' as const },
       { to: '/school/applications', label: t('school:applications', 'Applications'), icon: 'Heart' as const },
       { to: '/school/offers', label: t('school:offers', 'Offers'), icon: 'Gift' as const },

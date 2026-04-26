@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
+import { BackgroundLines } from '@/components/ui/background-lines'
 import { PartyPopper } from 'lucide-react'
 import type { DocumentType } from '@/types/documentModule'
 
@@ -33,12 +34,10 @@ export function CelebrationModal({
       )}
       footer={<Button onClick={onView}>{t('celebration.viewDocument', 'View document')}</Button>}
     >
-      <div className="relative overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[radial-gradient(circle_at_top,#fef3c7,transparent_45%),linear-gradient(135deg,#eff6ff_0%,#f8fafc_55%,#ecfeff_100%)] p-8 text-center">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-8 top-8 h-20 w-20 rounded-full bg-pink-400/15 blur-2xl" />
-          <div className="absolute right-12 top-12 h-16 w-16 rounded-full bg-sky-400/20 blur-2xl" />
-          <div className="absolute bottom-10 left-1/2 h-24 w-24 -translate-x-1/2 rounded-full bg-emerald-400/15 blur-2xl" />
-        </div>
+      <BackgroundLines
+        className="relative h-auto min-h-[260px] md:h-auto overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[linear-gradient(135deg,#eff6ff_0%,#f8fafc_55%,#ecfeff_100%)] p-8 text-center dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.98)_0%,rgba(17,24,39,0.96)_55%,rgba(6,78,59,0.28)_100%)]"
+        svgOptions={{ duration: 12 }}
+      >
         <div className="relative space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-text-muted)]">{t('celebration.congratulations', 'Congratulations')}</p>
           <h3 className="text-3xl font-semibold text-[var(--color-text)]">{universityName}</h3>
@@ -48,7 +47,7 @@ export function CelebrationModal({
               : t('celebration.scholarshipDescription', 'Your personalized scholarship is ready. Open it to review the full details and make a decision.')}
           </p>
         </div>
-      </div>
+      </BackgroundLines>
     </Modal>
   )
 }
