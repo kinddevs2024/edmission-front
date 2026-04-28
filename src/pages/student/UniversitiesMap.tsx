@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { CircleMarker, MapContainer, Popup, TileLayer, ZoomControl, useMap } from 'react-leaflet'
-import type { LatLngExpression } from 'leaflet'
+import { Marker, MapContainer, Popup, TileLayer, ZoomControl, useMap } from 'react-leaflet'
+import { divIcon, type LatLngExpression } from 'leaflet'
 import { Building2, GraduationCap, MapPin, Maximize2, Minimize2, Search, Sparkles, X } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -245,6 +245,26 @@ function getUniversityCoordinate(university: UniversityListItem, index: number, 
   return { lat: 20 + fallback.lat * 35, lng: fallback.lng * 80, precision: 'approximate' }
 }
 
+function getUniversityMarkerIcon(logoUrl: string | undefined, isSelected: boolean) {
+  const safeLogoUrl = String(logoUrl ?? '').replace(/"/g, '')
+  const size = isSelected ? 46 : 38
+  const borderColor = isSelected ? '#84cc16' : '#2563eb'
+
+  return divIcon({
+    className: 'edmission-university-map-marker-icon',
+    html: `
+      <div class="edmission-university-map-marker ${isSelected ? 'selected' : ''}" style="width:${size}px;height:${size}px;border-color:${borderColor};">
+        ${safeLogoUrl
+          ? `<img src="${safeLogoUrl}" alt="" loading="lazy" />`
+          : '<span class="fallback-logo">U</span>'}
+      </div>
+    `,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -Math.round(size / 2)],
+  })
+}
+
 function buildLocationKey(university: UniversityListItem) {
   return `${normalizeCountryCode(university.country)}:${normalizeText(university.city) || 'country'}`
 }
@@ -363,21 +383,36 @@ export function UniversitiesMap() {
     }
   }, [isMapFullscreen])
 
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.deltaY !== 0) {
+        event.preventDefault()
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return
+      if (['+', '=', '-', '_', '0'].includes(event.key)) {
+        event.preventDefault()
+      }
+    }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('wheel', handleWheel as EventListener)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   const renderUniversityMarkers = () => filteredUniversities.map((university) => {
     const isSelected = university.id === selectedUniversity?.id
-    const radius = isSelected ? 13 : university.hasScholarship ? 10 : 8
+    const logoUrl = university.logo ? getImageUrl(university.logo) : ''
     return (
-      <CircleMarker
+      <Marker
         key={university.id}
-        center={[university.coordinates.lat, university.coordinates.lng]}
-        radius={radius}
-        pathOptions={{
-          color: isSelected ? '#84cc16' : '#2563eb',
-          fillColor: university.hasScholarship ? '#10b981' : '#2563eb',
-          fillOpacity: isSelected ? 0.9 : 0.68,
-          opacity: 0.9,
-          weight: isSelected ? 3 : 2,
-        }}
+        position={[university.coordinates.lat, university.coordinates.lng]}
+        icon={getUniversityMarkerIcon(logoUrl, isSelected)}
         eventHandlers={{
           click: () => setSelectedId(university.id),
           mouseover: (event) => event.target.openPopup(),
@@ -386,7 +421,7 @@ export function UniversitiesMap() {
         <Popup closeButton={false}>
           <UniversityPopup university={university} />
         </Popup>
-      </CircleMarker>
+      </Marker>
     )
   })
 
