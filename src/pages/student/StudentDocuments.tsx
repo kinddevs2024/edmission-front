@@ -393,7 +393,7 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
               value={fileUrl}
               onChange={setFileUrl}
               inputRef={uploadInputRef}
-              accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,application/pdf,.pdf"
               label="File (image or PDF)"
             />
 

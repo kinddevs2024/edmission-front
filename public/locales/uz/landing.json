@@ -169,7 +169,7 @@
     ]
   },
   "walkthrough": {
-    "eyebrow": "Platforma walkthrough",
+    "eyebrow": "Platforma ko‘rinishi",
     "title": "Asosiy jarayonlar bitta tajribada",
     "description": "Zamonaviy admission ish jarayonlari uchun asosiy ekranlarni gorizontal ko'ring.",
     "cards": [
@@ -271,7 +271,7 @@
     "contact": "Aloqa",
     "platform": { "title": "Platforma", "0": "Loyiha haqida", "1": "Infratuzilma", "2": "AI matching" },
     "students": { "title": "Talabalar", "0": "Universitetlarni ko'rish", "1": "Arizalar", "2": "Offerlar" },
-    "universities": { "title": "Universitetlar", "0": "Discovery", "1": "Pipeline", "2": "Stipendiyalar" },
+    "universities": { "title": "Universitetlar", "0": "Talabalarni qidirish", "1": "Jarayon", "2": "Stipendiyalar" },
     "support": { "title": "Yordam", "0": "Xavfsizlik", "1": "Yordam markazi", "2": "Aloqa" },
     "security": {
       "title": "Xavfsizlik va muvofiqlik",

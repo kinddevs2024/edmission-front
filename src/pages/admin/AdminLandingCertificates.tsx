@@ -125,7 +125,7 @@ export function AdminLandingCertificates() {
         label={t('admin:certificateImage', 'Image')}
         value={formImageUrl}
         onChange={setFormImageUrl}
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs"
       />
     </div>
   )

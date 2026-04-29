@@ -6,8 +6,13 @@ const baseURL =
 
 const apiOrigin = baseURL.replace(/\/api\/?$/, '') || (typeof window !== 'undefined' ? window.location.origin : '')
 
-/** Default avatar when student has not set a photo (path from public). */
-export const DEFAULT_STUDENT_AVATAR = '/default-student-avatar.svg'
+/** Default avatar when a user has not set a photo. */
+export const DEFAULT_USER_AVATAR = 'https://img.icons8.com/lollipop/96/user.png'
+export const DEFAULT_STUDENT_AVATAR = DEFAULT_USER_AVATAR
+
+export const IPHONE_IMAGE_ACCEPT = 'image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs'
+export const IMAGE_UPLOAD_ACCEPT = `image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif,image/jfif,${IPHONE_IMAGE_ACCEPT}`
+export const IMAGE_OR_PDF_UPLOAD_ACCEPT = `${IMAGE_UPLOAD_ACCEPT},application/pdf,.pdf`
 
 /** Resolve image URL for preview/display (backend often returns path like /api/uploads/...). */
 export function getImageUrl(value: string | undefined | null): string {

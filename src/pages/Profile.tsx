@@ -261,7 +261,7 @@ export function Profile() {
               variant="avatar"
               value={universityLogoUrl || user?.avatar}
               onChange={handleUniversityLogoChange}
-              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs"
               hint={t('university:uploadLogoOrUrl', 'Upload a logo or set the full URL on the university profile page')}
             />
           </div>

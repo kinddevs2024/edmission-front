@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type Ref } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
-import { uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
+import { DEFAULT_USER_AVATAR, IMAGE_UPLOAD_ACCEPT, uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
 import { getApiError } from '@/services/auth'
 import { cn } from '@/utils/cn'
 import { AvatarCropModal } from '@/components/ui/AvatarCropModal'
@@ -25,7 +25,7 @@ export function FileUpload({
   value,
   onChange,
   inputRef,
-  accept = 'image/jpeg,image/png,image/gif,image/webp',
+  accept = IMAGE_UPLOAD_ACCEPT,
   label,
   hint,
   className,
@@ -44,6 +44,18 @@ export function FileUpload({
   const uploadFn = publicUpload ? uploadAvatarForRegister : uploadFile
 
   const isAvatar = variant === 'avatar'
+
+  const uploadDirectly = async (file: File) => {
+    setUploading(true)
+    try {
+      const url = await uploadFn(file)
+      onChange(url)
+    } catch (err: unknown) {
+      setError(getApiError(err).message)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const closeCrop = () => {
     if (cropObjectUrlRef.current) {
@@ -82,7 +94,7 @@ export function FileUpload({
     input.value = ''
     setError('')
 
-    if (isAvatar) {
+    if (isAvatar && !isHeicLikeImage(file)) {
       if (cropObjectUrlRef.current) URL.revokeObjectURL(cropObjectUrlRef.current)
       const url = URL.createObjectURL(file)
       cropObjectUrlRef.current = url
@@ -91,15 +103,7 @@ export function FileUpload({
       return
     }
 
-    setUploading(true)
-    try {
-      const url = await uploadFn(file)
-      onChange(url)
-    } catch (err: unknown) {
-      setError(getApiError(err).message)
-    } finally {
-      setUploading(false)
-    }
+    await uploadDirectly(file)
   }
 
   const shouldTryImagePreview = (() => {
@@ -201,6 +205,8 @@ export function FileUpload({
               <X className="w-4 h-4" />
             </button>
           </>
+        ) : isAvatar ? (
+          <img src={DEFAULT_USER_AVATAR} alt="" className="h-full w-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-1 text-center text-[var(--color-text-muted)]">
             <Upload className={isAvatar ? 'w-8 h-8' : 'w-10 h-10'} aria-hidden />
@@ -214,4 +220,14 @@ export function FileUpload({
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )
+}
+
+function isHeicLikeImage(file: File) {
+  const type = file.type.toLowerCase()
+  const name = file.name.toLowerCase()
+  return type === 'image/heic' ||
+    type === 'image/heif' ||
+    type === 'image/heic-sequence' ||
+    type === 'image/heif-sequence' ||
+    /\.(heic|heics|heif|heifs)$/i.test(name)
 }

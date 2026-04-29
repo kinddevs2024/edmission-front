@@ -450,7 +450,7 @@ export function AdminUniversities() {
             label={t('university:logo', 'Logo')}
             value={formLogoUrl}
             onChange={setFormLogoUrl}
-            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs"
             hint={t('university:uploadLogoOrUrl', 'Upload from device (JPEG, PNG, GIF, WebP, SVG) or paste URL below')}
           />
           <Input label={t('university:logoUrl', 'Logo URL')} value={formLogoUrl} onChange={(e) => setFormLogoUrl(e.target.value)} placeholder="https://... or leave empty if uploaded above" />

@@ -17,7 +17,7 @@ import { MobileNavDrawer } from './MobileNavDrawer'
 import { BrandLogo } from './BrandLogo'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
-import { getImageUrl } from '@/services/upload'
+import { DEFAULT_USER_AVATAR, getImageUrl } from '@/services/upload'
 import { getDashboardPath } from '@/utils/dashboardPath'
 import { notifyInfo } from '@/utils/notify'
 import { useUIStore } from '@/store/uiStore'
@@ -205,9 +205,7 @@ export function TopBar() {
                 onError={() => setAvatarLoadError(true)}
               />
             ) : (
-              <span className="text-sm font-medium text-[var(--color-text-muted)]">
-                {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
-              </span>
+              <img src={DEFAULT_USER_AVATAR} alt="" className="w-full h-full object-cover" />
             )}
           </Link>
           <Button
@@ -256,9 +254,7 @@ export function TopBar() {
                   onError={() => setAvatarLoadError(true)}
                 />
               ) : (
-                <span className="text-sm font-medium text-[var(--color-text-muted)]">
-                  {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
-                </span>
+                <img src={DEFAULT_USER_AVATAR} alt="" className="w-full h-full object-cover" />
               )}
             </Link>
             <MobileNavDrawer />

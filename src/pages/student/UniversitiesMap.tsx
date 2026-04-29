@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { getUniversities } from '@/services/student'
+import { getStudentProfile, getUniversities } from '@/services/student'
 import { getImageUrl } from '@/services/upload'
 import { useUIStore } from '@/store/uiStore'
 import type { UniversityListItem } from '@/types/university'
@@ -320,10 +320,18 @@ export function UniversitiesMap() {
     return window.localStorage.getItem(MAP_INTRO_DISMISSED_KEY) === '1'
   })
 
+  const { data: studentProfile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ['student', 'profile', 'mapGate'],
+    queryFn: getStudentProfile,
+    staleTime: 60 * 1000,
+  })
+  const minimalProfileComplete = studentProfile?.minimalPortfolioComplete ?? false
+
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['student', 'universities', 'map'],
     queryFn: () => getUniversities({ page: 1, limit: MAP_PAGE_LIMIT, sort: 'name', useProfileFilters: false }),
     staleTime: 60 * 1000,
+    enabled: minimalProfileComplete,
   })
 
   const universities = data?.data ?? []
@@ -589,11 +597,21 @@ export function UniversitiesMap() {
         </div>
       </Card>
 
-      {isLoading ? (
+      {isProfileLoading || (minimalProfileComplete && isLoading) ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Skeleton className="min-h-[520px] rounded-card" />
           <Skeleton className="min-h-[520px] rounded-card" />
         </div>
+      ) : !minimalProfileComplete ? (
+        <Card>
+          <EmptyState
+            icon={<Building2 className="h-14 w-14 text-[var(--color-text-muted)] opacity-70" />}
+            title={t('student:completeMinimalProfileTitle', 'Complete your profile first')}
+            description={t('student:completeMinimalProfileDesc', 'Universities will appear after you complete the minimum student profile: name, location, and education history.')}
+            actionLabel={t('student:navProfile', 'Profile')}
+            actionTo="/student/profile"
+          />
+        </Card>
       ) : filteredUniversities.length === 0 ? (
         <Card>
           <EmptyState

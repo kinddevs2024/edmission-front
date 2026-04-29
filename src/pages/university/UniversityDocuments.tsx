@@ -516,7 +516,7 @@ export function UniversityDocuments() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,.pdf,application/pdf"
+          accept="image/*,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,.pdf,application/pdf"
           className="hidden"
           onChange={(event) => {
             const file = event.target.files?.[0] ?? null

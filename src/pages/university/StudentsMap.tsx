@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { StudentsMapView, type StudentMapItem } from '@/components/maps/StudentsMapView'
 import { getStudents } from '@/services/university'
 import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDisplay'
@@ -5,6 +6,8 @@ import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDi
 const MAP_PAGE_LIMIT = 300
 
 export function StudentsMap() {
+  const { t } = useTranslation(['university', 'student'])
+
   return (
     <StudentsMapView
       queryKey={['university', 'students', 'map']}
@@ -31,13 +34,13 @@ export function StudentsMap() {
         })
       }}
       introStorageKey="edmission-university-students-map-intro-dismissed"
-      eyebrow="Student map"
-      title="Find students by city and country"
-      description="Browse discoverable students geographically, open profiles from the map, and focus outreach by location."
-      panelTitle="Students on this map"
-      panelHint="Select a student to move the map and open profile details."
-      emptyTitle="No students found"
-      emptyDescription="Try changing filters or search to see more students."
+      eyebrow={t('university:studentsMapEyebrow', 'Student map')}
+      title={t('university:studentsMapTitle', 'Find students by city and country')}
+      description={t('university:studentsMapDescription', 'Browse discoverable students geographically, open profiles from the map, and focus outreach by location.')}
+      panelTitle={t('university:studentsMapPanel', 'Students on this map')}
+      panelHint={t('university:studentsMapPanelHint', 'Select a student to move the map and open profile details.')}
+      emptyTitle={t('university:noStudentsFound', 'No students found')}
+      emptyDescription={t('university:tryChangingFiltersOrSearchStudents', 'Try changing filters or search to see more students.')}
     />
   )
 }

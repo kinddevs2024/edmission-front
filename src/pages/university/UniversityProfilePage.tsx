@@ -394,7 +394,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
                 if ((watch('logo') ?? '') === url) return
                 setValue('logo', url, { shouldDirty: true, shouldValidate: true })
               }}
-              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs"
               hint={t('university:uploadLogoOrUrl', 'Upload from device or paste a direct logo URL below')}
             />
             <Input
@@ -410,7 +410,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
                 if ((watch('coverImage') ?? '') === url) return
                 setValue('coverImage', url, { shouldDirty: true, shouldValidate: true })
               }}
-              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs"
               hint={t('university:coverImageHint', 'Optional large image shown on university detail page')}
             />
             <Input

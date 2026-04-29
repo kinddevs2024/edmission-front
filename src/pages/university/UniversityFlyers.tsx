@@ -117,7 +117,7 @@ export function UniversityFlyers() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*,audio/*,.jpg,.jpeg,.png,.gif,.webp,.svg,.jfif,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv"
+              accept="image/*,image/heic,image/heif,image/heic-sequence,image/heif-sequence,video/*,audio/*,.jpg,.jpeg,.png,.gif,.webp,.svg,.avif,.jfif,.heic,.heics,.heif,.heifs,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv"
               className="hidden"
               onChange={(event) => {
                 const file = event.target.files?.[0] ?? null

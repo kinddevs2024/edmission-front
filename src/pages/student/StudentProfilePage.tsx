@@ -135,6 +135,7 @@ function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormD
 }
 
 type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'documents'
+type ProfileFocusField = 'firstName' | 'lastName' | 'city' | 'schoolName' | 'gradeLevel' | 'graduationYear'
 
 /** Same order for self-edit and admin/counsellor edit; `documents` is last so staff tools do not reorder the core portfolio flow. */
 const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof FileStack }[] = [
@@ -413,9 +414,9 @@ function getMinimalChecklist(profile: StudentProfileData | null, t: (key: string
     )
 
   return [
-    { label: t('student:minProfileName', 'Name'), done: hasName },
-    { label: t('student:minProfileLocation', 'Location'), done: hasLocation },
-    { label: t('student:minProfileEducation', 'Education'), done: hasEducation },
+    { label: t('student:minProfileName', 'Name'), done: hasName, section: 'personal' as const },
+    { label: t('student:minProfileLocation', 'Location'), done: hasLocation, section: 'location' as const },
+    { label: t('student:minProfileEducation', 'Education'), done: hasEducation, section: 'education' as const },
   ]
 }
 const GRADING_SCHEME_OPTIONS = [
@@ -489,6 +490,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   const [docFileUrl, setDocFileUrl] = useState('')
   const [previewDocument, setPreviewDocument] = useState<CounsellorStudentDocument | null>(null)
   const [showUnsavedModal, setShowUnsavedModal] = useState(false)
+  const [autoFocusField, setAutoFocusField] = useState<ProfileFocusField | null>(null)
+  const requestedEducationStepRef = useRef<number | null>(null)
   /** School counsellor: visibility is edited here (students use /profile → Account). */
   const [counsellorVisibility, setCounsellorVisibility] = useState<'private' | 'public'>('private')
   const isExternalStudent = Boolean(studentUserId && (counsellorMode || adminMode))
@@ -501,7 +504,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     return user?.id ? `student-profile-draft:${user.id}` : null
   }, [adminMode, counsellorMode, studentUserId, user?.id])
 
-  const { register, reset, control, watch, setValue, getValues, formState: { errors, isDirty } } = useForm<FormData>({
+  const { register, reset, control, watch, setValue, getValues, setFocus, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       skills: [],
@@ -575,12 +578,37 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     return normalizeBrokenTranslation(t(section.titleKey, fallback), fallback)
   }
   const visibleSectionIds = useMemo(() => new Set(displayedSections.map((section) => section.id)), [displayedSections])
-  const openSectionWithHistory = (section: SectionId) => {
+  const openSectionWithHistory = (section: SectionId, options?: { focusField?: ProfileFocusField; educationStep?: number }) => {
+    requestedEducationStepRef.current = section === 'education' ? options?.educationStep ?? null : null
+    setAutoFocusField(options?.focusField ?? null)
     if (typeof window !== 'undefined') {
       const nextUrl = buildProfileSectionUrl(section)
       window.history.pushState({ ...(window.history.state ?? {}), profileSection: section }, '', nextUrl)
     }
     setOpenSection(section)
+  }
+  const getFocusOptionsForSection = (section: SectionId): { focusField?: ProfileFocusField; educationStep?: number } => {
+    const values = getValues()
+    if (section === 'personal') {
+      return { focusField: hasFilledValue(values.firstName) && !hasFilledValue(values.lastName) ? 'lastName' : 'firstName' }
+    }
+    if (section === 'location') {
+      return { focusField: 'city' }
+    }
+    if (section === 'education') {
+      if (!values.educationStatus) return { educationStep: 1 }
+      if (!hasFilledValue(values.schoolName)) return { educationStep: 2, focusField: 'schoolName' }
+      if (!hasFilledValue(values.gradeLevel)) return { educationStep: 2, focusField: 'gradeLevel' }
+      if (values.graduationYear == null || String(values.graduationYear).trim() === '') {
+        return { educationStep: 2, focusField: 'graduationYear' }
+      }
+      return { educationStep: 2, focusField: 'schoolName' }
+    }
+    return {}
+  }
+  const openEditableSection = (section: SectionId, options?: { focusField?: ProfileFocusField; educationStep?: number }) => {
+    if (profile) reset(mapProfileToFormData(profile))
+    openSectionWithHistory(section, options ?? getFocusOptionsForSection(section))
   }
   const closeSectionWithHistory = () => {
     if (typeof window !== 'undefined') {
@@ -642,9 +670,35 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
 
   useEffect(() => {
     if (openSection === 'education') {
-      setEducationWizardStep(1)
+      setEducationWizardStep(requestedEducationStepRef.current ?? 1)
+      requestedEducationStepRef.current = null
+    } else {
+      requestedEducationStepRef.current = null
     }
   }, [openSection])
+
+  useEffect(() => {
+    if (!openSection || !autoFocusField) return
+    const timer = window.setTimeout(() => {
+      try {
+        setFocus(autoFocusField)
+      } catch {
+        // The field may be hidden on the current wizard step.
+      }
+      const node = document.querySelector<HTMLInputElement>(`input[name="${autoFocusField}"]`)
+      if (node) {
+        node.focus({ preventScroll: true })
+        const valueLength = node.value.length
+        try {
+          node.setSelectionRange(valueLength, valueLength)
+        } catch {
+          // Some input types do not support selection ranges.
+        }
+      }
+      setAutoFocusField(null)
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [autoFocusField, educationWizardStep, openSection, setFocus])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -1167,7 +1221,12 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {minimalChecklist.map((item) => (
-              <div key={item.label} className="flex items-center gap-2 rounded-xl border border-[var(--color-border)] px-3 py-3">
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => openEditableSection(item.section)}
+                className="flex min-h-[46px] items-center gap-2 rounded-xl border border-[var(--color-border)] px-3 py-3 text-left transition-colors hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
+              >
                 {item.done ? (
                   <Check className="h-4 w-4 shrink-0 text-green-500" />
                 ) : (
@@ -1176,7 +1235,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                 <span className={cn('text-sm', item.done ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]')}>
                   {item.label}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         </Card>
@@ -1274,8 +1333,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                   navigate(`/school/students/${studentUserId}/documents`)
                   return
                 }
-                if (profile) reset(mapProfileToFormData(profile))
-                openSectionWithHistory(sec.id)
+                openEditableSection(sec.id)
               }}
               className={cn(
                 'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
@@ -1371,8 +1429,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
           {openSection === 'personal' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label={t('firstName')} error={errors.firstName?.message} {...register('firstName')} />
-                <Input label={t('lastName')} error={errors.lastName?.message} {...register('lastName')} />
+                <Input label={t('firstName')} error={errors.firstName?.message} autoFocus={autoFocusField === 'firstName'} {...register('firstName')} />
+                <Input label={t('lastName')} error={errors.lastName?.message} autoFocus={autoFocusField === 'lastName'} {...register('lastName')} />
               </div>
               <Input label={t('birthDate')} type="date" error={errors.birthDate?.message} {...register('birthDate')} />
             </>
@@ -1382,7 +1440,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select label={t('country')} error={errors.country?.message} options={countrySelectOptions} placeholder={t('student:countryResidencePlaceholder', 'Select your country')} {...register('country')} />
-                <Input label={t('city')} error={errors.city?.message} {...register('city')} placeholder={t('city')} />
+                <Input label={t('city')} error={errors.city?.message} autoFocus={autoFocusField === 'city'} {...register('city')} placeholder={t('city')} />
               </div>
               <div className="mt-4 space-y-3">
                 <div>
@@ -1446,6 +1504,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                         if (o.value === 'in_school') {
                           setValue('targetDegreeLevel', undefined, { shouldDirty: true })
                         }
+                        setEducationWizardStep(2)
+                        setAutoFocusField('schoolName')
                       }}
                       className={cn(
                         'p-4 rounded-xl border-2 text-left text-sm font-medium transition-all',
@@ -1473,10 +1533,10 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
 
                   {(educationStatus === 'in_school' || educationStatus === 'finished_school') && (
                     <div className="space-y-3">
-                      <Input label={t('schoolName')} {...register('schoolName')} placeholder="Lyceum No.1" />
+                      <Input label={t('schoolName')} autoFocus={autoFocusField === 'schoolName'} {...register('schoolName')} placeholder="Lyceum No.1" />
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
-                        <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2026" />
+                        <Input label={t('gradeLevel')} error={errors.gradeLevel?.message} autoFocus={autoFocusField === 'gradeLevel'} {...register('gradeLevel')} placeholder={t('gradePlaceholder')} />
+                        <Input label={t('graduationYear')} type="number" min={1950} max={2030} autoFocus={autoFocusField === 'graduationYear'} {...register('graduationYear')} placeholder="2026" />
                       </div>
                       {educationStatus === 'finished_school' && (
                         <Input label={t('gpa')} type="number" step="0.01" min={0} max={4} error={errors.gpa?.message} {...register('gpa')} placeholder="0-4" />
@@ -1486,10 +1546,10 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
 
                   {(educationStatus === 'in_university' || educationStatus === 'finished_university') && (
                     <div className="space-y-3">
-                      <Input label={t('institutionName')} {...register('schoolName')} placeholder="TashGU" />
+                      <Input label={t('institutionName')} autoFocus={autoFocusField === 'schoolName'} {...register('schoolName')} placeholder="TashGU" />
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input label={t('gradeLevel')} {...register('gradeLevel')} placeholder="1 course, 2 course..." />
-                        <Input label={t('graduationYear')} type="number" min={1950} max={2030} {...register('graduationYear')} placeholder="2027" />
+                        <Input label={t('gradeLevel')} autoFocus={autoFocusField === 'gradeLevel'} {...register('gradeLevel')} placeholder="1 course, 2 course..." />
+                        <Input label={t('graduationYear')} type="number" min={1950} max={2030} autoFocus={autoFocusField === 'graduationYear'} {...register('graduationYear')} placeholder="2027" />
                       </div>
                     </div>
                   )}
@@ -1927,7 +1987,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                         if ((watch(`portfolioWorks.${i}.fileUrl`) ?? '') === url) return
                         setValue(`portfolioWorks.${i}.fileUrl`, url, { shouldDirty: true, shouldValidate: true })
                       }}
-                      accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                      accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,application/pdf,.pdf"
                     />
                     <Input label="" {...register(`portfolioWorks.${i}.linkUrl`)} placeholder="https://… (optional link)" />
                   </Card>
@@ -1993,7 +2053,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                 label={t('student:file', 'File')}
                 value={docFileUrl}
                 onChange={setDocFileUrl}
-                accept="image/*,application/pdf"
+                accept="image/*,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,application/pdf,.pdf"
               />
               <Button
                 type="button"
