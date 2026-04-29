@@ -188,18 +188,11 @@ export async function initI18n() {
   // Load only critical namespaces (common + landing) for first paint, then load rest in background.
   const criticalRes = applyLocalePatches(initialLng, await loadNamespaces(initialLng, CRITICAL_NS))
   const resourcesMap: Record<string, Record<string, object>> = { [initialLng]: { ...criticalRes } }
-  // Add empty placeholders for other NS so t() doesn't break; they'll be filled async.
-  for (const ns of OTHER_NS) {
-    resourcesMap[initialLng][ns] = {}
-  }
 
   // Preload English so fallbackLng has resources (e.g. student profile in EN when current is ru/uz)
   if (initialLng !== fallbackLng) {
     const enCritical = applyLocalePatches(fallbackLng, await loadNamespaces(fallbackLng, CRITICAL_NS))
     resourcesMap[fallbackLng] = { ...enCritical }
-    for (const ns of OTHER_NS) {
-      resourcesMap[fallbackLng][ns] = {}
-    }
   }
 
   await i18n.use(initReactI18next).init({
@@ -210,6 +203,7 @@ export async function initI18n() {
     ns: [...namespaces],
     supportedLngs: [...supportedLngs],
     interpolation: { escapeValue: false },
+    react: { useSuspense: true },
   })
   loadedLanguages.add(initialLng)
   if (initialLng !== fallbackLng) loadedLanguages.add(fallbackLng)

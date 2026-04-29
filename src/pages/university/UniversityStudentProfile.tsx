@@ -20,7 +20,7 @@ import { buildStudentShareLink, shareAccountLink } from '@/utils/shareAccount'
 export function UniversityStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
-  const { t } = useTranslation(['common', 'university'])
+  const { t } = useTranslation(['common', 'university', 'student'])
   const [profile, setProfile] = useState<FullStudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -138,25 +138,6 @@ export function UniversityStudentProfile() {
 
       <div className={cn('grid gap-6', 'md:grid-cols-[minmax(0,340px)_1fr]')}>
         <div className="space-y-4">
-          {profile.readiness && (
-            <Card className="border-primary-accent/20">
-              <CardTitle>Readiness for university</CardTitle>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <span className={profile.readiness.profile ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
-                  {profile.readiness.profile ? '--' : '--'} Profile (country, city)
-                </span>
-                <span className={profile.readiness.education ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
-                  {profile.readiness.education ? '--' : '--'} Education (grades)
-                </span>
-                <span className={profile.readiness.certificates ? 'text-green-600 dark:text-green-400' : 'text-[var(--color-text-muted)]'}>
-                  {profile.readiness.certificates ? '--' : '--'} Certificates
-                </span>
-                {profile.readiness.ready && (
-                  <span className="font-medium text-primary-accent">Ready</span>
-                )}
-              </div>
-            </Card>
-          )}
           <div className="flex justify-center md:justify-start">
             {isPrivate ? (
               <div className="w-24 h-24 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] flex items-center justify-center" aria-hidden>
@@ -168,12 +149,12 @@ export function UniversityStudentProfile() {
           </div>
 
               <Card>
-            <CardTitle>Personal</CardTitle>
+            <CardTitle>{t('student:stepPersonal', 'Personal details')}</CardTitle>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-              <dt className="text-[var(--color-text-muted)]">First name</dt><dd>{profile.firstName ?? '--'}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:firstName', 'First name')}</dt><dd>{profile.firstName ?? '--'}</dd>
               {isPrivate ? null : (
                 <>
-                  <dt className="text-[var(--color-text-muted)]">Email</dt>
+                  <dt className="text-[var(--color-text-muted)]">{t('common:email', 'Email')}</dt>
                   <dd>
                     {profile.email ? (
                       <span
@@ -186,17 +167,17 @@ export function UniversityStudentProfile() {
                       '--'
                     )}
                   </dd>
-                  <dt className="text-[var(--color-text-muted)]">Date of birth</dt><dd>{profile.birthDate ? formatDate(profile.birthDate) : '--'}</dd>
+                  <dt className="text-[var(--color-text-muted)]">{t('student:birthDate', 'Date of birth')}</dt><dd>{profile.birthDate ? formatDate(profile.birthDate) : '--'}</dd>
                 </>
               )}
             </dl>
           </Card>
 
           <Card>
-            <CardTitle>Location</CardTitle>
+            <CardTitle>{t('student:stepLocation', 'Location')}</CardTitle>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-              <dt className="text-[var(--color-text-muted)]">Country</dt><dd>{profile.country ?? '--'}</dd>
-              <dt className="text-[var(--color-text-muted)]">City</dt><dd>{profile.city ?? '--'}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:country', 'Country')}</dt><dd>{profile.country ?? '--'}</dd>
+              <dt className="text-[var(--color-text-muted)]">{t('student:city', 'City')}</dt><dd>{profile.city ?? '--'}</dd>
             </dl>
           </Card>
 
@@ -212,32 +193,40 @@ export function UniversityStudentProfile() {
 
         <div className="space-y-4">
       <Card>
-        <CardTitle>Education</CardTitle>
+        <CardTitle>{t('student:stepEducation', 'Education')}</CardTitle>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
           {(profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd') && (
-            <><dt className="text-[var(--color-text-muted)]">Applying for</dt><dd>{profile.targetDegreeLevel === 'master' ? 'Master' : 'PhD'}</dd></>
+            <><dt className="text-[var(--color-text-muted)]">{t('student:applyingForDegree', 'Applying for degree')}</dt><dd>{profile.targetDegreeLevel === 'master' ? t('student:degreeMaster', 'Master') : t('student:degreePhd', 'PhD')}</dd></>
           )}
-          <dt className="text-[var(--color-text-muted)]">Grade / level</dt><dd>{profile.gradeLevel ?? '--'}</dd>
-          <dt className="text-[var(--color-text-muted)]">GPA</dt><dd>{profile.gpa != null ? profile.gpa : '--'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University completed' : 'School completed'}</dt><dd>{profile.schoolCompleted != null ? (profile.schoolCompleted ? 'Yes' : 'No') : '--'}</dd>
+          <dt className="text-[var(--color-text-muted)]">{t('student:gradeLevel', 'Grade / education level')}</dt><dd>{profile.gradeLevel ?? '--'}</dd>
+          <dt className="text-[var(--color-text-muted)]">{t('student:gpa', 'GPA (0–4)')}</dt><dd>{profile.gpa != null ? profile.gpa : '--'}</dd>
+          <dt className="text-[var(--color-text-muted)]">
+            {profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd'
+              ? t('student:institutionCompleted', 'University completed')
+              : t('student:schoolCompleted', 'School completed')}
+          </dt><dd>{profile.schoolCompleted != null ? (profile.schoolCompleted ? t('common:yes', 'Yes') : t('common:no', 'No')) : '--'}</dd>
           {profile.schoolName?.trim() ? (
             <>
-              <dt className="text-[var(--color-text-muted)]">{profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd' ? 'University / Institution name' : 'School name'}</dt>
+              <dt className="text-[var(--color-text-muted)]">
+                {profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd'
+                  ? t('student:institutionName', 'University / Institution name')
+                  : t('student:schoolName', 'School name')}
+              </dt>
               <dd>{profile.schoolName}</dd>
             </>
           ) : null}
-          <dt className="text-[var(--color-text-muted)]">Graduation year</dt><dd>{profile.graduationYear ?? '--'}</dd>
-          {profile.gradingScheme && <><dt className="text-[var(--color-text-muted)]">Grading scheme</dt><dd>{profile.gradingScheme}</dd></>}
-          {profile.gradeScale != null && <><dt className="text-[var(--color-text-muted)]">Grade scale (out of)</dt><dd>{profile.gradeScale}</dd></>}
-          {profile.highestEducationLevel && <><dt className="text-[var(--color-text-muted)]">Highest education level</dt><dd>{profile.highestEducationLevel}</dd></>}
+          <dt className="text-[var(--color-text-muted)]">{t('student:graduationYear', 'Graduation year')}</dt><dd>{profile.graduationYear ?? '--'}</dd>
+          {profile.gradingScheme && <><dt className="text-[var(--color-text-muted)]">{t('student:gradingScheme', 'Grading scheme')}</dt><dd>{profile.gradingScheme}</dd></>}
+          {profile.gradeScale != null && <><dt className="text-[var(--color-text-muted)]">{t('student:gradeScaleOutOf', 'Grade scale (out of)')}</dt><dd>{profile.gradeScale}</dd></>}
+          {profile.highestEducationLevel && <><dt className="text-[var(--color-text-muted)]">{t('student:highestLevelOfEducation', 'Highest level of education')}</dt><dd>{profile.highestEducationLevel}</dd></>}
         </dl>
         {profile.schoolsAttended?.length ? (
           <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
-            <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Schools / Universities attended</p>
+            <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">{t('student:schoolsUniversitiesAttended', 'Schools / Universities attended')}</p>
             <ul className="space-y-2">
               {profile.schoolsAttended.map((s, i) => (
                 <li key={i} className="text-sm">
-                  {s.institutionName ?? '--'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` В· ${s.attendedFrom.slice(0, 4)}вЂ“${s.attendedTo.slice(0, 4)}`}
+                  {s.institutionName ?? '--'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` · ${s.attendedFrom.slice(0, 4)}–${s.attendedTo.slice(0, 4)}`}
                 </li>
               ))}
             </ul>
@@ -246,9 +235,9 @@ export function UniversityStudentProfile() {
       </Card>
 
       <Card>
-        <CardTitle>Languages</CardTitle>
+        <CardTitle>{t('university:languages', 'Languages')}</CardTitle>
         <div className="mt-2 text-sm">
-          {profile.languageLevel && <p><span className="text-[var(--color-text-muted)]">Level: </span>{profile.languageLevel}</p>}
+          {profile.languageLevel && <p><span className="text-[var(--color-text-muted)]">{t('student:languageLevel', 'Language level')}: </span>{profile.languageLevel}</p>}
           {profile.languages?.length ? (
             <ul className="list-disc list-inside mt-1">
               {profile.languages.map((l, i) => (
@@ -263,13 +252,13 @@ export function UniversityStudentProfile() {
 
       {profile.bio && (
         <Card>
-          <CardTitle>About</CardTitle>
+          <CardTitle>{t('student:bio', 'About me')}</CardTitle>
           <p className="mt-2 text-sm whitespace-pre-wrap">{profile.bio}</p>
         </Card>
       )}
 
       <Card>
-        <CardTitle>Skills</CardTitle>
+        <CardTitle>{t('student:skills', 'Skills')}</CardTitle>
         <div className="mt-2 flex flex-wrap gap-2">
           {profile.skills?.length ? profile.skills.map((s, i) => (
             <span key={i} className="px-2 py-1 rounded-full bg-[var(--color-bg-muted)] text-sm">{s}</span>
@@ -278,7 +267,7 @@ export function UniversityStudentProfile() {
       </Card>
 
       <Card>
-        <CardTitle>Interests</CardTitle>
+        <CardTitle>{t('university:interests', 'Interests')}</CardTitle>
         <div className="mt-2 flex flex-wrap gap-2">
           {profile.interests?.length ? profile.interests.map((s, i) => (
             <span key={i} className="px-2 py-1 rounded-full bg-[var(--color-bg-muted)] text-sm">{s}</span>
@@ -287,7 +276,7 @@ export function UniversityStudentProfile() {
       </Card>
 
       <Card>
-        <CardTitle>Hobbies</CardTitle>
+        <CardTitle>{t('university:hobbies', 'Hobbies')}</CardTitle>
         <div className="mt-2 flex flex-wrap gap-2">
           {profile.hobbies?.length ? profile.hobbies.map((s, i) => (
             <span key={i} className="px-2 py-1 rounded-full bg-[var(--color-bg-muted)] text-sm">{s}</span>
@@ -297,7 +286,7 @@ export function UniversityStudentProfile() {
 
       {profile.experiences?.length ? (
         <Card>
-          <CardTitle>Experience</CardTitle>
+          <CardTitle>{t('student:stepExperience', 'Work Experience')}</CardTitle>
           <ul className="mt-2 space-y-3">
             {profile.experiences.map((e, i) => (
               <li key={i} className="text-sm border-b border-[var(--color-border)] pb-2 last:border-0">
@@ -305,7 +294,7 @@ export function UniversityStudentProfile() {
                 {e.organization && <p className="text-[var(--color-text-muted)]">{e.organization}</p>}
                 {(e.startDate || e.endDate) && (
                   <p className="text-[var(--color-text-muted)]">
-                    {e.startDate ? formatDate(e.startDate) : '?'} -- {e.endDate ? formatDate(e.endDate) : 'Present'}
+                    {e.startDate ? formatDate(e.startDate) : '?'} -- {e.endDate ? formatDate(e.endDate) : t('common:present', 'Present')}
                   </p>
                 )}
                 {e.description && <p className="mt-1">{e.description}</p>}
@@ -317,20 +306,20 @@ export function UniversityStudentProfile() {
 
       {profile.portfolioWorks?.length ? (
         <Card>
-          <CardTitle>Portfolio / works</CardTitle>
+          <CardTitle>{t('student:stepWorks', 'Portfolio & Extracurriculars')}</CardTitle>
           <ul className="mt-2 space-y-3">
             {profile.portfolioWorks.map((w, i) => (
               <li key={i} className="text-sm">
-                <p className="font-medium">{w.title ?? 'Work'}</p>
+                <p className="font-medium">{w.title ?? t('student:portfolioWork', 'Work / project')}</p>
                 {w.description && <p className="text-[var(--color-text-muted)]">{w.description}</p>}
                 {w.linkUrl && (
                   <a href={w.linkUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-accent mt-1">
-                    <ExternalLink size={14} /> Link
+                    <ExternalLink size={14} /> {t('common:link', 'Link')}
                   </a>
                 )}
                 {w.fileUrl && (
                   <a href={w.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary-accent mt-1 ml-2">
-                    <FileText size={14} /> File
+                    <FileText size={14} /> {t('common:file', 'File')}
                   </a>
                 )}
               </li>
@@ -341,20 +330,20 @@ export function UniversityStudentProfile() {
 
       {profile.documents?.length ? (
         <Card>
-          <CardTitle>Documents (approved)</CardTitle>
+          <CardTitle>{t('university:documentsApproved', 'Documents (approved)')}</CardTitle>
           <ul className="mt-2 space-y-2">
             {profile.documents.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-2 text-sm">
                 <FileText className="w-4 h-4 text-[var(--color-text-muted)] shrink-0" />
                 <span className="font-medium">{d.name ?? d.type}</span>
                 {d.certificateType && <span className="text-[var(--color-text-muted)]">{d.certificateType}</span>}
-                {d.score && <span className="text-[var(--color-text-muted)]">Score: {d.score}</span>}
+                {d.score && <span className="text-[var(--color-text-muted)]">{t('university:scoreLabel', 'Score')}: {d.score}</span>}
                 <button
                   type="button"
                   onClick={() => setFilePreview(d)}
                   className="text-primary-accent hover:underline"
                 >
-                  Preview
+                  {t('common:preview', 'Preview')}
                 </button>
               </li>
             ))}
