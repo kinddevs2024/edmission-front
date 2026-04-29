@@ -64,7 +64,7 @@ export function AdminChats() {
   const displayDate = (value: unknown): string => {
     if (typeof value !== 'string' || !value.trim()) return 'No date'
     const formatted = formatDateTime(value)
-    return formatted && formatted !== 'вЂ”' && formatted !== '—' ? formatted : 'No date'
+    return formatted && formatted !== '--' && formatted !== '—' ? formatted : 'No date'
   }
 
   const getStudentLabel = (chat?: AdminChat | null) =>

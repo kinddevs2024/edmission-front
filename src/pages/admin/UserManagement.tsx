@@ -35,9 +35,9 @@ import { Ban, Eye, KeyRound, ShieldCheck, Trash2, Upload, UserCog, Download } fr
 import { toast } from 'sonner'
 
 function formatPreviewValue(value: unknown): string {
-  if (value == null || value === '') return 'вЂ”'
+  if (value == null || value === '') return '--'
   if (Array.isArray(value)) {
-    return value.length ? value.map((item) => formatPreviewValue(item)).join(', ') : 'вЂ”'
+    return value.length ? value.map((item) => formatPreviewValue(item)).join(', ') : '--'
   }
   if (typeof value === 'object') {
     return JSON.stringify(value)
@@ -430,7 +430,7 @@ export function UserManagement() {
                 {users.map((u) => (
                   <TableRow key={u.id}>
                     <TableTd>{u.email}</TableTd>
-                    {showNameColumn && <TableTd>{u.name ?? 'вЂ”'}</TableTd>}
+                    {showNameColumn && <TableTd>{u.name ?? '--'}</TableTd>}
                     {showPhoneColumn && <TableTd>{u.phone || '-'}</TableTd>}
                     <TableTd>{roleLabels[u.role as keyof typeof roleLabels] ?? u.role}</TableTd>
                     <TableTd>{formatDate(u.createdAt)}</TableTd>
@@ -450,7 +450,7 @@ export function UserManagement() {
                     </TableTd>
                     <TableTd>
                       {!canManageUserRole(u.role) && !canViewStudentProfile(u.role) ? (
-                        <span className="text-[var(--color-text-muted)]">вЂ”</span>
+                        <span className="text-[var(--color-text-muted)]">--</span>
                       ) : (
                         <div className="flex gap-2 flex-wrap">
                           {canViewStudentProfile(u.role) && (
@@ -686,7 +686,7 @@ export function UserManagement() {
                       </div>
                       <div className="rounded-lg border border-[var(--color-border)] p-3">
                         <p className="font-medium">{t('admin:location', 'Location')}</p>
-                        <p className="text-[var(--color-text-muted)]">{[item.incoming.country, item.incoming.city].filter(Boolean).join(', ') || 'вЂ”'}</p>
+                        <p className="text-[var(--color-text-muted)]">{[item.incoming.country, item.incoming.city].filter(Boolean).join(', ') || '--'}</p>
                       </div>
                       <div className="rounded-lg border border-[var(--color-border)] p-3">
                         <p className="font-medium">{t('admin:school', 'School')}</p>
