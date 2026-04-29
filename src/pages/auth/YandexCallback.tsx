@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { navigateAfterLogin, navigateAfterRegistration } from '@/utils/navigateAfterAuth'
 import { showOAuthPasswordReminder } from '@/utils/oauthPasswordToast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { loginWithYandex } from '@/services/auth'
+import { loginWithYandex, loginWithYandexAccessToken } from '@/services/auth'
 import { getApiError } from '@/services/api'
 import { getApiErrorKey } from '@/utils/apiErrorI18n'
 import { decodeYandexOAuthState, getYandexRedirectUri } from '@/utils/yandexOAuth'
@@ -25,10 +25,12 @@ export function YandexCallback() {
       return
     }
 
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
     const code = params.get('code')
-    const stateRaw = params.get('state')
-    if (!code || !stateRaw) {
-      setError(t('auth:yandexMissingParams', 'Missing authorization code. Try signing in again.'))
+    const accessToken = hashParams.get('access_token')
+    const stateRaw = params.get('state') || hashParams.get('state')
+    if ((!code && !accessToken) || !stateRaw) {
+      setError(t('auth:yandexMissingParams', 'Missing Yandex authorization data. Try signing in again.'))
       setLoading(false)
       return
     }
@@ -43,12 +45,18 @@ export function YandexCallback() {
     let cancelled = false
     void (async () => {
       try {
-        const { user } = await loginWithYandex({
-          code,
-          redirectUri: getYandexRedirectUri(),
-          role: parsed.role,
-          acceptTerms: parsed.acceptTerms,
-        })
+        const { user } = accessToken
+          ? await loginWithYandexAccessToken({
+              accessToken,
+              role: parsed.role,
+              acceptTerms: parsed.acceptTerms,
+            })
+          : await loginWithYandex({
+              code: code as string,
+              redirectUri: getYandexRedirectUri(),
+              role: parsed.role,
+              acceptTerms: parsed.acceptTerms,
+            })
         if (cancelled) return
 
         if (user.mustSetLocalPassword) {

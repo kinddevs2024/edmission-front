@@ -2,8 +2,8 @@
 export const YANDEX_OAUTH_CALLBACK_PATH = '/auth/yandex/callback'
 
 const YANDEX_AUTHORIZE = 'https://oauth.yandex.ru/authorize'
-/** Space-separated scopes: email + profile name */
-const YANDEX_SCOPE = 'login:email login:info'
+/** Space-separated Yandex ID scopes: email, names, avatar, birthday, and phone when the user/app allows it. */
+const YANDEX_SCOPE = 'login:email login:info login:avatar login:birthday login:default_phone'
 
 export type YandexOAuthFlow = 'login' | 'register'
 
@@ -55,7 +55,7 @@ export function buildYandexAuthorizeUrl(
   const state = encodeYandexOAuthState(statePayload)
   const redirectUri = encodeURIComponent(getYandexRedirectUri())
   const scope = encodeURIComponent(YANDEX_SCOPE)
-  return `${YANDEX_AUTHORIZE}?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${redirectUri}&scope=${scope}&state=${encodeURIComponent(state)}`
+  return `${YANDEX_AUTHORIZE}?response_type=token&client_id=${encodeURIComponent(clientId)}&redirect_uri=${redirectUri}&scope=${scope}&state=${encodeURIComponent(state)}`
 }
 
 /** Вспомогательная страница Passport SDK (`public/suggest/token.html`). */
