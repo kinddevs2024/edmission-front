@@ -23,6 +23,7 @@ export function AdminDashboard() {
           studentsCount: 0,
           universitiesCount: 0,
           activeOffersCount: 0,
+          pendingDocumentsCount: 0,
           healthStatus: 'ok',
         })
       })
@@ -47,7 +48,7 @@ export function AdminDashboard() {
     <div className="space-y-6 pb-page-bottom-cta">
       <PageTitle title={t('dashboard')} icon="LayoutDashboard" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Link to="/admin/users">
           <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
             <CardTitle>{t('students')}</CardTitle>
@@ -64,6 +65,12 @@ export function AdminDashboard() {
           <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
             <CardTitle>{t('activeOffers')}</CardTitle>
             <p className="text-2xl font-semibold">{stats?.activeOffersCount ?? 0}</p>
+          </Card>
+        </Link>
+        <Link to="/admin/documents">
+          <Card className="h-full cursor-pointer hover:border-primary-accent transition-colors" interactive>
+            <CardTitle>{t('pendingDocuments', 'Unverified files')}</CardTitle>
+            <p className="text-2xl font-semibold">{stats?.pendingDocumentsCount ?? 0}</p>
           </Card>
         </Link>
         <Link to="/admin/health">

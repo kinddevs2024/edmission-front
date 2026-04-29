@@ -19,7 +19,11 @@ interface DocumentPreviewModalProps {
 
 export function DocumentPreviewModal({ open, onClose, title, document }: DocumentPreviewModalProps) {
   const fileUrl = document?.fileUrl ? getImageUrl(document.fileUrl) : ''
-  const isPdf = fileUrl ? fileUrl.toLowerCase().includes('.pdf') || fileUrl.includes('application/pdf') : false
+  const lowerFileUrl = fileUrl.toLowerCase()
+  const lowerTitle = title.toLowerCase()
+  const isPdf = fileUrl
+    ? lowerFileUrl.includes('.pdf') || lowerFileUrl.includes('application/pdf') || lowerTitle.endsWith('.pdf')
+    : false
   const isImage = fileUrl ? /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(fileUrl) || fileUrl.startsWith('data:image/') : false
   const scene = document?.canvasJson
     ? parseScene(document.canvasJson, document.pageFormat ?? 'A4_PORTRAIT', document.width, document.height)
@@ -30,7 +34,11 @@ export function DocumentPreviewModal({ open, onClose, title, document }: Documen
       {!document ? null : fileUrl ? (
         <div className="min-h-[200px] max-h-[70vh] overflow-auto">
           {isPdf ? (
-            <iframe src={fileUrl} title={title} className="w-full h-[60vh] rounded border border-[var(--color-border)]" />
+            <iframe
+              src={`${fileUrl}#toolbar=0&navpanes=0`}
+              title={title}
+              className="h-[60vh] w-full rounded border border-[var(--color-border)] bg-white"
+            />
           ) : isImage ? (
             <img src={fileUrl} alt={title} className="max-w-full h-auto rounded border border-[var(--color-border)]" />
           ) : (

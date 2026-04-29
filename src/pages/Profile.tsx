@@ -226,6 +226,18 @@ export function Profile() {
     }
   }
 
+  const loginMethods = useMemo(
+    () => [
+      { key: 'email', label: t('auth:email', 'Email'), connected: user?.linkedProviders?.email ?? Boolean(user?.email) },
+      { key: 'phone', label: t('auth:phone', 'Phone'), connected: user?.linkedProviders?.phone ?? Boolean(user?.phone) },
+      { key: 'telegram', label: 'Telegram', connected: user?.linkedProviders?.telegram ?? Boolean(user?.socialLinks?.telegram) },
+      { key: 'google', label: 'Google', connected: Boolean(user?.linkedProviders?.google) },
+      { key: 'yandex', label: 'Yandex', connected: Boolean(user?.linkedProviders?.yandex) },
+    ],
+    [t, user?.email, user?.linkedProviders?.email, user?.linkedProviders?.google, user?.linkedProviders?.phone, user?.linkedProviders?.telegram, user?.linkedProviders?.yandex, user?.phone, user?.socialLinks?.telegram]
+  )
+  const shouldShowLoginMethods = loginMethods.filter((item) => item.connected).length < 2
+
   return (
     <div className="w-full space-y-4 pb-page-bottom-cta">
       <PageTitle title={t('profile')} icon="Settings" />
@@ -285,36 +297,32 @@ export function Profile() {
         </div>
       </Card>
 
-      <Card>
-        <CardTitle>{t('auth:connectedLoginMethods', 'Connected login methods')}</CardTitle>
-        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-          {t('auth:connectedLoginMethodsHint', 'Keep at least two methods connected so you never lose access.')}
-        </p>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            { key: 'email', label: t('auth:email', 'Email'), connected: user?.linkedProviders?.email ?? Boolean(user?.email) },
-            { key: 'phone', label: t('auth:phone', 'Phone'), connected: user?.linkedProviders?.phone ?? Boolean(user?.phone) },
-            { key: 'telegram', label: 'Telegram', connected: user?.linkedProviders?.telegram ?? Boolean(user?.socialLinks?.telegram) },
-            { key: 'google', label: 'Google', connected: user?.linkedProviders?.google },
-            { key: 'yandex', label: 'Yandex', connected: user?.linkedProviders?.yandex },
-          ].map((item) => (
-            <div key={item.key} className="flex min-h-[56px] items-center justify-between gap-3 rounded-card border border-[var(--color-border)] px-3 py-2">
-              <span className="text-sm font-medium text-[var(--color-text)]">{item.label}</span>
-              {item.connected ? (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
-                  <CheckCircle className="h-4 w-4" aria-hidden />
-                  {t('auth:connected', 'Connected')}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-text-muted)]">
-                  <CircleAlert className="h-4 w-4" aria-hidden />
-                  {t('auth:notConnected', 'Not connected')}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
+      {shouldShowLoginMethods ? (
+        <Card>
+          <CardTitle>{t('auth:connectedLoginMethods', 'Connected login methods')}</CardTitle>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {t('auth:connectedLoginMethodsHint', 'Keep at least two methods connected so you never lose access.')}
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {loginMethods.map((item) => (
+              <div key={item.key} className="flex min-h-[56px] items-center justify-between gap-3 rounded-card border border-[var(--color-border)] px-3 py-2">
+                <span className="text-sm font-medium text-[var(--color-text)]">{item.label}</span>
+                {item.connected ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                    <CheckCircle className="h-4 w-4" aria-hidden />
+                    {t('auth:connected', 'Connected')}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-text-muted)]">
+                    <CircleAlert className="h-4 w-4" aria-hidden />
+                    {t('auth:notConnected', 'Not connected')}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       {user?.role === 'student' && studentProfileVisibility != null && (
         <Card>

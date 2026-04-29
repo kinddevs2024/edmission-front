@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -31,13 +31,13 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
 import type { Role } from '@/types/user'
-import { Download, Upload } from 'lucide-react'
+import { Ban, Eye, KeyRound, ShieldCheck, Trash2, Upload, UserCog, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 function formatPreviewValue(value: unknown): string {
-  if (value == null || value === '') return '—'
+  if (value == null || value === '') return 'вЂ”'
   if (Array.isArray(value)) {
-    return value.length ? value.map((item) => formatPreviewValue(item)).join(', ') : '—'
+    return value.length ? value.map((item) => formatPreviewValue(item)).join(', ') : 'вЂ”'
   }
   if (typeof value === 'object') {
     return JSON.stringify(value)
@@ -139,6 +139,9 @@ export function UserManagement() {
   const [importPreviewFile, setImportPreviewFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const limit = 20
+  const hasVisibleValue = (value: unknown) => String(value ?? '').trim().length > 0
+  const showNameColumn = users.some((user) => hasVisibleValue(user.name))
+  const showPhoneColumn = users.some((user) => hasVisibleValue(user.phone))
   const showOneTimePasswordColumn = users.some((user) => Boolean(user.temporaryPassword))
 
   useEffect(() => {
@@ -372,9 +375,11 @@ export function UserManagement() {
                 label={t('admin:userSearchLabel', 'Search')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
+                name="admin-users-search"
+                autoComplete="off"
                 placeholder={t(
                   'admin:userSearchPlaceholder',
-                  'Email, name, or student first/last name…'
+                  'Email, name, or student first/last nameвЂ¦'
                 )}
               />
             </div>
@@ -410,8 +415,8 @@ export function UserManagement() {
               <TableHead>
                 <TableRow>
                   <TableTh>{t('common:email')}</TableTh>
-                  <TableTh>{t('common:name')}</TableTh>
-                  <TableTh>{t('admin:phone', 'Phone')}</TableTh>
+                  {showNameColumn && <TableTh>{t('common:name')}</TableTh>}
+                  {showPhoneColumn && <TableTh>{t('admin:phone', 'Phone')}</TableTh>}
                   <TableTh>{t('common:role')}</TableTh>
                   <TableTh>{t('admin:registered')}</TableTh>
                   {showOneTimePasswordColumn && (
@@ -425,8 +430,8 @@ export function UserManagement() {
                 {users.map((u) => (
                   <TableRow key={u.id}>
                     <TableTd>{u.email}</TableTd>
-                    <TableTd>{u.name ?? '—'}</TableTd>
-                    <TableTd>{u.phone || '-'}</TableTd>
+                    {showNameColumn && <TableTd>{u.name ?? 'вЂ”'}</TableTd>}
+                    {showPhoneColumn && <TableTd>{u.phone || '-'}</TableTd>}
                     <TableTd>{roleLabels[u.role as keyof typeof roleLabels] ?? u.role}</TableTd>
                     <TableTd>{formatDate(u.createdAt)}</TableTd>
                     {showOneTimePasswordColumn && (
@@ -445,57 +450,106 @@ export function UserManagement() {
                     </TableTd>
                     <TableTd>
                       {!canManageUserRole(u.role) && !canViewStudentProfile(u.role) ? (
-                        <span className="text-[var(--color-text-muted)]">—</span>
+                        <span className="text-[var(--color-text-muted)]">вЂ”</span>
                       ) : (
                         <div className="flex gap-2 flex-wrap">
                           {canViewStudentProfile(u.role) && (
                             <Button
                               variant="secondary"
                               size="sm"
+                              className="h-8 w-8 p-0"
                               type="button"
+                              icon={<Eye />}
+                              aria-label={t('admin:viewProfile', 'View profile')}
+                              title={t('admin:viewProfile', 'View profile')}
                               disabled={!!actionUserId}
                               onClick={() => navigate(`/admin/users/${u.id}/student-profile`)}
-                            >
-                              {t('admin:viewProfile', 'View profile')}
-                            </Button>
+                            />
                           )}
                           {canManageUserRole(u.role) && (
                             <>
-                              <Button variant="secondary" size="sm" onClick={() => openEditUser(u)} disabled={!!actionUserId}>
-                                {t('admin:changeRole', 'Change role')}
-                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                icon={<UserCog />}
+                                aria-label={t('admin:changeRole', 'Change role')}
+                                title={t('admin:changeRole', 'Change role')}
+                                onClick={() => openEditUser(u)}
+                                disabled={!!actionUserId}
+                              />
                               {u.status === 'active' ? (
-                                <Button variant="danger" size="sm" onClick={() => handleSuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:suspend')}</Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  icon={<Ban />}
+                                  aria-label={t('admin:suspend')}
+                                  title={t('admin:suspend')}
+                                  onClick={() => handleSuspend(u.id)}
+                                  disabled={!!actionUserId}
+                                  loading={actionUserId === u.id}
+                                />
                               ) : (
-                                <Button variant="secondary" size="sm" onClick={() => handleUnsuspend(u.id)} disabled={!!actionUserId} loading={actionUserId === u.id}>{t('admin:unsuspend')}</Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  icon={<ShieldCheck />}
+                                  aria-label={t('admin:unsuspend')}
+                                  title={t('admin:unsuspend')}
+                                  onClick={() => handleUnsuspend(u.id)}
+                                  disabled={!!actionUserId}
+                                  loading={actionUserId === u.id}
+                                />
                               )}
                               {isAdmin && u.role === 'university' && (
                                 <Button
                                   variant="secondary"
                                   size="sm"
+                                  className="h-8 w-8 p-0"
                                   type="button"
+                                  icon={<Eye />}
+                                  aria-label={t('admin:editProfile', 'Edit profile')}
+                                  title={t('admin:editProfile', 'Edit profile')}
                                   disabled={!!actionUserId}
                                   onClick={() => navigate(`/admin/users/${u.id}/university-profile`)}
-                                >
-                                  {t('admin:editProfile', 'Edit profile')}
-                                </Button>
+                                />
                               )}
                               {canManageUserRole(u.role) && u.role === 'school_counsellor' && (
                                 <Button
                                   variant="secondary"
                                   size="sm"
+                                  className="h-8 w-8 p-0"
                                   type="button"
+                                  icon={<Eye />}
+                                  aria-label={t('admin:editProfile', 'Edit profile')}
+                                  title={t('admin:editProfile', 'Edit profile')}
                                   disabled={!!actionUserId}
                                   onClick={() => navigate(`/admin/users/${u.id}/counsellor-profile`)}
-                                >
-                                  {t('admin:editProfile', 'Edit profile')}
-                                </Button>
+                                />
                               )}
-                              <Button variant="secondary" size="sm" onClick={() => { setResetTarget(u); setResetPassword('') }} disabled={!!actionUserId}>
-                                {t('admin:resetPassword', 'Reset password')}
-                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                icon={<KeyRound />}
+                                aria-label={t('admin:resetPassword', 'Reset password')}
+                                title={t('admin:resetPassword', 'Reset password')}
+                                onClick={() => { setResetTarget(u); setResetPassword('') }}
+                                disabled={!!actionUserId}
+                              />
                               {u.role !== 'admin' && (
-                                <Button variant="danger" size="sm" onClick={() => setDeleteTarget(u)} disabled={!!actionUserId}>{t('admin:delete')}</Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  icon={<Trash2 />}
+                                  aria-label={t('admin:delete')}
+                                  title={t('admin:delete')}
+                                  onClick={() => setDeleteTarget(u)}
+                                  disabled={!!actionUserId}
+                                />
                               )}
                             </>
                           )}
@@ -581,8 +635,8 @@ export function UserManagement() {
                         <p className="text-base font-semibold">{item.name || item.email}</p>
                         <p className="text-xs text-[var(--color-text-muted)]">
                           {t('admin:excelRowLabel', 'Excel row')} #{item.row}
-                          {item.sourceId ? ` • ID: ${item.sourceId}` : ''}
-                          {item.existingId ? ` • Existing: ${item.existingId}` : ''}
+                          {item.sourceId ? ` вЂў ID: ${item.sourceId}` : ''}
+                          {item.existingId ? ` вЂў Existing: ${item.existingId}` : ''}
                         </p>
                       </div>
                       <span className={`rounded-full px-2 py-1 text-xs font-medium ${item.action === 'create' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'}`}>
@@ -632,7 +686,7 @@ export function UserManagement() {
                       </div>
                       <div className="rounded-lg border border-[var(--color-border)] p-3">
                         <p className="font-medium">{t('admin:location', 'Location')}</p>
-                        <p className="text-[var(--color-text-muted)]">{[item.incoming.country, item.incoming.city].filter(Boolean).join(', ') || '—'}</p>
+                        <p className="text-[var(--color-text-muted)]">{[item.incoming.country, item.incoming.city].filter(Boolean).join(', ') || 'вЂ”'}</p>
                       </div>
                       <div className="rounded-lg border border-[var(--color-border)] p-3">
                         <p className="font-medium">{t('admin:school', 'School')}</p>
@@ -761,6 +815,9 @@ export function UserManagement() {
             <Input
               label={t('auth:password')}
               type="password"
+              name="admin-reset-user-password"
+              autoComplete="new-password"
+              autoFocus
               value={resetPassword}
               onChange={(e) => setResetPassword(e.target.value)}
               placeholder={t('auth:passwordRequirements', '8+ chars, uppercase, lowercase, number')}

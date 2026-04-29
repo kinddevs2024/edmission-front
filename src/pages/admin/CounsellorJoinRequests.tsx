@@ -117,10 +117,10 @@ export function CounsellorJoinRequests() {
                 <tbody>
                   {list.map((r) => (
                     <tr key={r.id} className="border-b border-[var(--color-border)] last:border-0">
-                      <td className="py-3">{r.studentEmail}</td>
-                      <td className="py-3">{r.studentName}</td>
-                      <td className="py-3">{r.status}</td>
-                      <td className="py-3 text-right">
+                      <td className="py-2">{r.studentEmail}</td>
+                      <td className="py-2">{r.studentName}</td>
+                      <td className="py-2">{r.status}</td>
+                      <td className="py-2 text-right">
                         {r.status === 'pending' && (
                           <>
                             <Button size="sm" variant="secondary" onClick={() => handleAccept(r.id)} disabled={!!actionId} loading={actionId === r.id}>{t('admin:accept', 'Accept')}</Button>

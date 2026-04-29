@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BackLink } from '@/components/ui/BackLink'
+import { AdminAccountCredentials } from '@/components/admin/AdminAccountCredentials'
 import { StudentProfilePage } from '@/pages/student/StudentProfilePage'
 
 export function AdminStudentProfile() {
@@ -19,6 +20,7 @@ export function AdminStudentProfile() {
   return (
     <div className="space-y-4">
       <BackLink to="/admin/users">{t('admin:backToUsers', 'Back to users')}</BackLink>
+      <AdminAccountCredentials userId={userId} />
       <StudentProfilePage adminMode studentUserId={userId} />
     </div>
   )

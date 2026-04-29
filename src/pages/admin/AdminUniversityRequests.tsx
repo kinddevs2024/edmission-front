@@ -113,7 +113,7 @@ export function AdminUniversityRequests() {
               <tbody>
                 {list.map((item) => (
                   <tr key={item.id} className="border-b border-[var(--color-border)] last:border-0">
-                    <td className="py-3">
+                    <td className="py-2">
                       <span className="font-medium">{item.university?.name ?? '—'}</span>
                       {(item.university?.country || item.university?.city) && (
                         <span className="block text-[var(--color-text-muted)] text-xs">
@@ -121,9 +121,9 @@ export function AdminUniversityRequests() {
                         </span>
                       )}
                     </td>
-                    <td className="py-3">{item.userEmail ?? '—'}</td>
-                    <td className="py-3">{formatDate(item.createdAt)}</td>
-                    <td className="py-3">
+                    <td className="py-2">{item.userEmail ?? '—'}</td>
+                    <td className="py-2">{formatDate(item.createdAt)}</td>
+                    <td className="py-2">
                       <span
                         className={
                           item.status === 'approved'
@@ -137,9 +137,9 @@ export function AdminUniversityRequests() {
                       </span>
                     </td>
                     {filter === 'all' && (
-                      <td className="py-3">{item.reviewedAt ? formatDate(item.reviewedAt) : '—'}</td>
+                      <td className="py-2">{item.reviewedAt ? formatDate(item.reviewedAt) : '—'}</td>
                     )}
-                    <td className="py-3 text-right">
+                    <td className="py-2 text-right">
                       {item.status === 'pending' && (
                         <div className="flex gap-2 justify-end">
                           <Button size="sm" onClick={() => setActionModal({ type: 'approve', item })}>

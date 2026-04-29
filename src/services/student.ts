@@ -75,7 +75,7 @@ export interface StudentProfileData {
   preferredCountries?: string[]
   budgetAmount?: number
   budgetCurrency?: string
-  /** Default private: universities see a reduced profile. */
+  /** Default public; private mode still shows the student's name to universities. */
   profileVisibility?: 'private' | 'public'
 }
 

@@ -42,6 +42,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const type = message.type ?? 'text'
   const displayText = message.text ?? message.message ?? ''
   const replyPreview = message.metadata?.replyToPreview?.trim()
+  const isAdminMessage = message.metadata?.sentByAdmin || message.metadata?.senderRole === 'admin'
+  const adminLabel = message.metadata?.senderLabel || 'Admin'
 
   const replyBlock = replyPreview ? (
     <div
@@ -172,6 +174,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
       >
         {replyBlock}
+        {isAdminMessage ? <p className="mb-1 text-xs font-semibold text-[var(--color-text-muted)]">{adminLabel}</p> : null}
         <p className="whitespace-pre-wrap break-words">{displayText}</p>
         {isFromMe ? (
           <OutgoingStatusFooter

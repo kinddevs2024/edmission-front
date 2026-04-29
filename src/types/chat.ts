@@ -50,5 +50,9 @@ export interface Message {
     postponeUntil?: string
     replyToMessageId?: string
     replyToPreview?: string
+    sentByAdmin?: boolean
+    senderRole?: string
+    senderLabel?: string
+    senderEmail?: string
   }
 }

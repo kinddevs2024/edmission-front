@@ -259,10 +259,10 @@ export function CounsellorStudents() {
               <tbody>
                 {pendingInvitations.map((inv) => (
                   <tr key={inv.id} className="border-b border-[var(--color-border)] last:border-0">
-                    <td className="py-3">{inv.studentEmail}</td>
-                    <td className="py-3">{inv.studentName || '—'}</td>
-                    <td className="py-3 text-[var(--color-text-muted)]">{t('admin:awaitingResponse', 'Awaiting response')}</td>
-                    <td className="py-3 text-right">
+                    <td className="py-2">{inv.studentEmail}</td>
+                    <td className="py-2">{inv.studentName || '—'}</td>
+                    <td className="py-2 text-[var(--color-text-muted)]">{t('admin:awaitingResponse', 'Awaiting response')}</td>
+                    <td className="py-2 text-right">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -308,10 +308,10 @@ export function CounsellorStudents() {
                 <tbody>
                   {list.map((s) => (
                     <tr key={s.userId} className="border-b border-[var(--color-border)] last:border-0">
-                      <td className="py-3">{s.email}</td>
-                      <td className="py-3">{s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || '—'}</td>
+                      <td className="py-2">{s.email}</td>
+                      <td className="py-2">{s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || '—'}</td>
                       {showOneTimePasswordColumn && (
-                        <td className="py-3">
+                        <td className="py-2">
                           {s.temporaryPassword ? (
                             <span className="font-mono text-xs">{s.temporaryPassword}</span>
                           ) : (
@@ -319,7 +319,7 @@ export function CounsellorStudents() {
                           )}
                         </td>
                       )}
-                      <td className="py-3 text-right space-x-1">
+                      <td className="py-2 text-right space-x-1">
                         <Link to={`/school/students/${s.userId}/profile`}>
                           <Button size="sm" variant="ghost">{t('admin:editProfile', 'Edit profile')}</Button>
                         </Link>

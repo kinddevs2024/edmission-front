@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { Select } from '@/components/ui/Select'
-import { getChats, getChatMessages, sendAdminChatMessage, type AdminChat, type AdminChatMessage } from '@/services/admin'
+import { deleteAdminChat, getChats, getChatMessages, sendAdminChatMessage, type AdminChat, type AdminChatMessage } from '@/services/admin'
 import { useAuth } from '@/hooks/useAuth'
 import { AdminUniversityOfferModal } from '@/components/admin/AdminUniversityOfferModal'
 import { formatDateTime } from '@/utils/format'
@@ -27,6 +27,7 @@ export function AdminChats() {
   const [loading, setLoading] = useState(true)
   const [modalChatId, setModalChatId] = useState<string | null>(null)
   const [messages, setMessages] = useState<AdminChatMessage[]>([])
+  const [activeChat, setActiveChat] = useState<AdminChat | null>(null)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [messageText, setMessageText] = useState('')
   const [sending, setSending] = useState(false)
@@ -40,7 +41,7 @@ export function AdminChats() {
   const limit = 20
 
   const chatIdFromUrl = searchParams.get('chatId')
-  const canSendInCurrentChat = role === 'admin' && Boolean(modalChatId) && Boolean(offerContext?.universityUserId)
+  const canSendInCurrentChat = role === 'admin' && Boolean(modalChatId)
 
   const toDisplayText = (value: unknown): string => {
     if (value == null) return '-'
@@ -52,6 +53,30 @@ export function AdminChats() {
       if (obj._id != null) return String(obj._id)
     }
     return String(value)
+  }
+
+  const cleanText = (value: unknown): string => {
+    const text = toDisplayText(value).trim()
+    if (!text || text === '-' || text === '[object Object]' || /\{\{.*\}\}/.test(text)) return ''
+    return text
+  }
+
+  const displayDate = (value: unknown): string => {
+    if (typeof value !== 'string' || !value.trim()) return 'No date'
+    const formatted = formatDateTime(value)
+    return formatted && formatted !== 'вЂ”' && formatted !== '—' ? formatted : 'No date'
+  }
+
+  const getStudentLabel = (chat?: AdminChat | null) =>
+    cleanText(chat?.studentName) || cleanText(chat?.studentEmail) || 'Unknown student'
+
+  const getUniversityLabel = (chat?: AdminChat | null) =>
+    cleanText(chat?.universityName) || cleanText(chat?.universityEmail) || 'Unknown university'
+
+  const getSenderLabel = (message: AdminChatMessage) => {
+    if (message.sentByAdmin || message.senderRole === 'admin') return `Admin${message.senderEmail ? ` (${message.senderEmail})` : ''}`
+    const sender = cleanText(message.senderName) || cleanText(message.senderEmail) || cleanText(message.senderId)
+    return sender || 'Unknown sender'
   }
 
   const toMessageText = (value: unknown): string => {
@@ -91,8 +116,9 @@ export function AdminChats() {
     return String(value)
   }
 
-  const openMessages = useCallback((chatId: string) => {
+  const openMessages = useCallback((chatId: string, chat?: AdminChat) => {
     setModalChatId(chatId)
+    setActiveChat(chat ?? null)
     setMessageText('')
     setMessages([])
     setOfferContext(null)
@@ -105,9 +131,14 @@ export function AdminChats() {
             ...msg,
             senderId: toDisplayText(raw.senderId ?? ''),
             message: toMessageText(raw.message ?? raw.text),
+            senderName: cleanText(raw.senderName),
+            senderEmail: cleanText(raw.senderEmail),
+            senderRole: cleanText(raw.senderRole),
+            sentByAdmin: Boolean(raw.sentByAdmin),
           }
         }))
         const ch = res.chat
+        setActiveChat((prev) => ({ ...(prev ?? {} as AdminChat), ...ch }))
         const uni = (ch as { universityUserId?: string }).universityUserId
         const stud = (ch as { studentProfileId?: string }).studentProfileId
         if (uni) {
@@ -165,12 +196,33 @@ export function AdminChats() {
           type: msg.type ?? 'text',
           message: toMessageText(msg.message ?? msg.text ?? ''),
           senderId: toDisplayText(msg.senderId ?? ''),
+          senderName: cleanText(msg.senderName),
+          senderEmail: cleanText(msg.senderEmail),
+          senderRole: cleanText(msg.senderRole || 'admin'),
+          sentByAdmin: true,
           createdAt: msg.createdAt ?? new Date().toISOString(),
         }])
         setMessageText('')
       })
       .catch(toastApiError)
       .finally(() => setSending(false))
+  }
+
+  const handleDeleteChat = (chat: AdminChat) => {
+    const label = `${getStudentLabel(chat)} -> ${getUniversityLabel(chat)}`
+    if (!window.confirm(`Delete chat ${label}?`)) return
+    deleteAdminChat(chat.id)
+      .then(() => {
+        setItems((prev) => prev.filter((item) => item.id !== chat.id))
+        setTotal((prev) => Math.max(0, prev - 1))
+        if (modalChatId === chat.id) {
+          setModalChatId(null)
+          setActiveChat(null)
+          setOfferContext(null)
+          setMessages([])
+        }
+      })
+      .catch(toastApiError)
   }
 
   return (
@@ -190,13 +242,14 @@ export function AdminChats() {
         </div>
         <CardTitle>{t('admin:allChats', 'All chats')}</CardTitle>
         {loading ? (
-          <TableSkeleton rows={8} cols={4} />
+          <TableSkeleton rows={8} cols={5} />
         ) : (
           <>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableTh>{t('admin:participants', 'Who with whom')}</TableTh>
+                  <TableTh>Email</TableTh>
                   <TableTh>{t('common:created', 'Created')}</TableTh>
                   <TableTh>{t('common:updated', 'Updated')}</TableTh>
                   <TableTh>{t('common:actions')}</TableTh>
@@ -206,16 +259,27 @@ export function AdminChats() {
                 {items.map((c) => (
                   <TableRow key={c.id}>
                     <TableTd>
-                      <div className="text-sm font-medium">{(c as { studentName?: string }).studentName?.trim() || toDisplayText(c.studentId)}</div>
-                      <div className="text-xs text-[var(--color-text-muted)]">{'<->'} {(c as { universityName?: string }).universityName?.trim() || toDisplayText(c.universityId)}</div>
+                      <div className="text-sm font-medium">{getStudentLabel(c)}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">to {getUniversityLabel(c)}</div>
                     </TableTd>
-                    <TableTd>{c.createdAt ? formatDateTime(c.createdAt) : '-'}</TableTd>
-                    <TableTd>{c.updatedAt ? formatDateTime(c.updatedAt) : '-'}</TableTd>
+                    <TableTd>
+                      <div className="text-xs">
+                        <div>Student: {cleanText(c.studentEmail) || 'No email'}</div>
+                        <div>University: {cleanText(c.universityEmail) || 'No email'}</div>
+                      </div>
+                    </TableTd>
+                    <TableTd>{displayDate(c.createdAt)}</TableTd>
+                    <TableTd>{displayDate(c.updatedAt)}</TableTd>
                     <TableTd>
                       <div className="flex flex-wrap gap-2">
-                        <Button size="sm" variant="secondary" onClick={() => openMessages(c.id)}>
+                        <Button size="sm" variant="secondary" onClick={() => openMessages(c.id, c)}>
                           {t('admin:openChat', 'Open chat')}
                         </Button>
+                        {role === 'admin' ? (
+                          <Button size="sm" variant="danger" onClick={() => handleDeleteChat(c)}>
+                            {t('common:delete', 'Delete')}
+                          </Button>
+                        ) : null}
                       </div>
                     </TableTd>
                   </TableRow>
@@ -229,8 +293,8 @@ export function AdminChats() {
 
       <Modal
         open={!!modalChatId}
-        onClose={() => { setModalChatId(null); setOfferContext(null); setMessageText(''); setMessages([]) }}
-        title={modalChatId ? t('admin:chatMessagesWithId', 'Chat messages') : t('admin:chatMessages', 'Chat messages')}
+        onClose={() => { setModalChatId(null); setActiveChat(null); setOfferContext(null); setMessageText(''); setMessages([]) }}
+        title={`${getStudentLabel(activeChat)} -> ${getUniversityLabel(activeChat)}`}
         footer={
           <div className="flex flex-col gap-2 w-full">
             {canSendInCurrentChat ? (
@@ -249,7 +313,7 @@ export function AdminChats() {
                   <Button variant="secondary" onClick={() => setOfferModalOpen(true)}>
                     {t('admin:sendOffer', 'Send offer')}
                   </Button>
-                  <Button variant="secondary" onClick={() => { setModalChatId(null); setOfferContext(null); setMessageText(''); setMessages([]) }}>
+                  <Button variant="secondary" onClick={() => { setModalChatId(null); setActiveChat(null); setOfferContext(null); setMessageText(''); setMessages([]) }}>
                     {t('common:close')}
                   </Button>
                 </div>
@@ -261,7 +325,7 @@ export function AdminChats() {
                     ? t('admin:chatReadonlyNoUniversity', 'Cannot send messages in this chat: university account is missing.')
                     : t('common:viewOnly', 'View only')}
                 </p>
-                <Button variant="secondary" onClick={() => { setModalChatId(null); setOfferContext(null); setMessageText(''); setMessages([]) }}>
+                <Button variant="secondary" onClick={() => { setModalChatId(null); setActiveChat(null); setOfferContext(null); setMessageText(''); setMessages([]) }}>
                   {t('common:close')}
                 </Button>
               </div>
@@ -278,8 +342,8 @@ export function AdminChats() {
             {messages.map((m) => (
               <li key={m.id} className="rounded-input border border-[var(--color-border)] p-3">
                 <div className="flex justify-between gap-2 text-xs text-[var(--color-text-muted)]">
-                  <span className="font-mono">{toDisplayText(m.senderId)}</span>
-                  <span>{m.createdAt ? formatDateTime(m.createdAt) : '-'}</span>
+                  <span>{getSenderLabel(m)}</span>
+                  <span>{displayDate(m.createdAt)}</span>
                 </div>
                 <p className="text-sm mt-1 whitespace-pre-wrap">{toMessageText(m.message)}</p>
               </li>

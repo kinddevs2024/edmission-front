@@ -200,9 +200,7 @@ export function UniversityDashboard() {
                 const st = r.student
                 const name = getStudentDisplayName(
                   st,
-                  st?.profileVisibility === 'private'
-                    ? t('university:privateStudentCardName', 'Private student')
-                    : t('university:studentLabel', 'Student')
+                  t('university:studentLabel', 'Student')
                 )
                 const studentId = pickStudentProfileId({ studentProfileId: r.studentProfileId, student: st })
                 const canOpenProfile = Boolean(studentId)

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
@@ -22,6 +22,7 @@ import {
   getInterestedUniversityIds,
   getInterestLimit,
   getStudentProfile,
+  getStudentUniversityCountries,
   type UniversitiesParams,
 } from '@/services/student'
 import type { UniversityListItem } from '@/types/university'
@@ -115,16 +116,32 @@ export function ExploreUniversities() {
   const queryClient = useQueryClient()
 
   const regionCodes = useMemo(() => getAllRegionCodesForFilter(), [])
+  const { data: universityCountryCodes = [] } = useQuery({
+    queryKey: ['student', 'universityCountries'],
+    queryFn: getStudentUniversityCountries,
+    staleTime: 5 * 60 * 1000,
+  })
   const facultyOptions = useMemo(
     () => FIELD_OF_STUDY.map((item) => ({ code: item.id, label: t(item.titleKey) })),
     [t]
   )
   const countryOptions = useMemo(
-    () => [
-      { value: '', label: t('student:allCountries', 'All countries') },
-      ...regionCodes.map((code) => ({ value: code, label: getLocalizedCountryName(code, i18n.language) })),
-    ],
-    [i18n.language, t, regionCodes]
+    () => {
+      const codes = new Set(
+        universityCountryCodes
+          .map((code) => String(code ?? '').trim())
+          .filter(Boolean)
+      )
+      if (filters.country) codes.add(filters.country)
+      if (draftFilters.country) codes.add(draftFilters.country)
+      return [
+        { value: '', label: t('student:allCountries', 'All countries') },
+        ...Array.from(codes)
+          .sort((left, right) => getLocalizedCountryName(left, i18n.language).localeCompare(getLocalizedCountryName(right, i18n.language)))
+          .map((code) => ({ value: code, label: getLocalizedCountryName(code, i18n.language) })),
+      ]
+    },
+    [draftFilters.country, filters.country, i18n.language, t, universityCountryCodes]
   )
   const degreeLevelOptions = useMemo(
     () => DEGREE_LEVEL_OPTIONS.map((value) => ({ value, label: getDegreeLevelLabel(value, t) })),
@@ -175,11 +192,33 @@ export function ExploreUniversities() {
     hasNextPage,
     isFetching,
     isFetchingNextPage,
-    isLoading: universitiesLoading,
   } = useInfiniteQuery({
     queryKey: ['student', 'universities', filters],
     queryFn: ({ pageParam }) => getUniversities(buildUniversitySearchParams(pageParam, UNIVERSITIES_PAGE_SIZE, filters)),
     initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, p) => sum + p.data.length, 0)
+      const serverTotal = lastPage.total
+      if (typeof serverTotal === 'number' && Number.isFinite(serverTotal) && loaded >= serverTotal) return undefined
+      if (lastPage.data.length < UNIVERSITIES_PAGE_SIZE) return undefined
+      return allPages.length + 1
+    },
+    staleTime: 30 * 1000,
+  })
+
+  const canLoadFallbackUniversities = minimalProfileComplete && filters.useProfileFilters && hasNextPage === false && !isFetching
+  const fallbackFilters = useMemo(() => ({ ...filters, useProfileFilters: false }), [filters])
+  const {
+    data: fallbackData,
+    fetchNextPage: fetchNextFallbackPage,
+    hasNextPage: hasNextFallbackPage,
+    isFetching: isFetchingFallback,
+    isFetchingNextPage: isFetchingNextFallbackPage,
+  } = useInfiniteQuery({
+    queryKey: ['student', 'universities', 'fallback', fallbackFilters],
+    queryFn: ({ pageParam }) => getUniversities(buildUniversitySearchParams(pageParam, UNIVERSITIES_PAGE_SIZE, fallbackFilters)),
+    initialPageParam: 1,
+    enabled: canLoadFallbackUniversities,
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.reduce((sum, p) => sum + p.data.length, 0)
       const serverTotal = lastPage.total
@@ -205,12 +244,27 @@ export function ExploreUniversities() {
     return out
   }, [data, interestedIds])
 
-  const total = typeof data?.pages?.[0]?.total === 'number' && Number.isFinite(data.pages[0].total) ? data.pages[0].total : list.length
+  const fallbackList = useMemo(() => {
+    const pages = fallbackData?.pages ?? []
+    const seen = new Set(list.map((university) => university.id))
+    const out: UniversityListItem[] = []
+    for (const p of pages) {
+      for (const u of p.data) {
+        if (seen.has(u.id)) continue
+        if (interestedIds.has(u.id)) continue
+        seen.add(u.id)
+        out.push(u)
+      }
+    }
+    return out
+  }, [fallbackData, interestedIds, list])
 
-  const profileFallbackLockRef = useRef(false)
+  const total = typeof data?.pages?.[0]?.total === 'number' && Number.isFinite(data.pages[0].total) ? data.pages[0].total : list.length
+  const visibleTotal = fallbackData ? list.length + fallbackList.length : total
+
   const isInitialUniversitiesLoading = !data && isFetching
 
-  const { data: profileFilterCounts, isLoading: profileCountsLoading } = useQuery({
+  const { data: profileFilterCounts } = useQuery({
     queryKey: ['student', 'profile', 'filterCounts'],
     queryFn: getStudentProfile,
     select: (profile) => ({
@@ -235,27 +289,6 @@ export function ExploreUniversities() {
       queryClient.invalidateQueries({ queryKey: ['student', 'interestLimit'] })
     },
   })
-
-  /** If "match my profile" is on but profile criteria exclude every university, turn the layer off so the catalog is visible. */
-  useEffect(() => {
-    if (universitiesLoading) return
-    if (profileCountsLoading) return
-    const pages = data?.pages
-    if (!pages || pages.length !== 1) return
-    const first = pages[0]
-    if (!filters.useProfileFilters) {
-      profileFallbackLockRef.current = false
-      return
-    }
-    if (profileCriteriaCount === 0) return
-    if ((first.total ?? 0) > 0) return
-    if (first.data.length > 0) return
-    if (profileFallbackLockRef.current) return
-    profileFallbackLockRef.current = true
-
-    setFilters((current) => ({ ...current, useProfileFilters: false }))
-    setDraftFilters((current) => ({ ...current, useProfileFilters: false }))
-  }, [universitiesLoading, profileCountsLoading, data?.pages, filters.useProfileFilters, profileCriteriaCount])
 
   useEffect(() => {
     const params: Record<string, string> = {}
@@ -310,6 +343,8 @@ export function ExploreUniversities() {
   const draftTargetCountryLabels = draftFilters.targetStudentCountries.map(
     (code) => targetCountryOptions.find((item) => item.code === code)?.label ?? code
   )
+  const showFallbackDivider = filters.useProfileFilters && hasNextPage === false && (fallbackList.length > 0 || isFetchingFallback)
+  const hasAnyUniversities = list.length > 0 || fallbackList.length > 0
 
   return (
     <div className="space-y-5">
@@ -406,9 +441,9 @@ export function ExploreUniversities() {
       <div className="flex flex-wrap items-center gap-2">
         <Search size={16} className="text-[var(--color-text-muted)]" />
         <p className="text-[var(--color-text-muted)]">
-          {list.length === 0 && !isInitialUniversitiesLoading
+          {!hasAnyUniversities && !isInitialUniversitiesLoading && !isFetchingFallback
             ? t('student:noUniversitiesFound', 'No universities found')
-            : t('student:universitiesFound', { count: total, defaultValue: '{{count}} universities found' })}
+            : t('student:universitiesFound', { count: visibleTotal, defaultValue: '{{count}} universities found' })}
         </p>
       </div>
       )}
@@ -657,7 +692,7 @@ export function ExploreUniversities() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
         </div>
-      ) : list.length === 0 ? (
+      ) : !hasAnyUniversities && !isFetchingFallback ? (
         <Card>
           <EmptyState
             icon={<Building2 className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
@@ -669,17 +704,47 @@ export function ExploreUniversities() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {list.map((university, index) => (
-              <div
-                key={university.id}
-                className="animate-card-enter opacity-0"
-                style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
-              >
-                <UniversityCard university={university} onInterest={handleInterest} interested={interestedIds.has(university.id)} interestDisabled={!canShowInterest} />
-              </div>
-            ))}
-          </div>
+          {list.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {list.map((university, index) => (
+                <div
+                  key={university.id}
+                  className="animate-card-enter opacity-0"
+                  style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
+                >
+                  <UniversityCard university={university} onInterest={handleInterest} interested={interestedIds.has(university.id)} interestDisabled={!canShowInterest} />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {showFallbackDivider ? (
+            <div className="my-6 flex items-center gap-3 text-sm text-[var(--color-text-muted)]">
+              <span className="h-px flex-1 bg-[var(--color-border)]" />
+              <span className="max-w-[min(100%,34rem)] text-center">
+                {t('student:lessSuitableUniversitiesDivider', 'These universities may not match your profile, but you can still explore them')}
+              </span>
+              <span className="h-px flex-1 bg-[var(--color-border)]" />
+            </div>
+          ) : null}
+
+          {fallbackList.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {fallbackList.map((university, index) => (
+                <div
+                  key={university.id}
+                  className="animate-card-enter opacity-0"
+                  style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
+                >
+                  <UniversityCard university={university} onInterest={handleInterest} interested={interestedIds.has(university.id)} interestDisabled={!canShowInterest} />
+                </div>
+              ))}
+            </div>
+          ) : isFetchingFallback ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <CardSkeleton /><CardSkeleton /><CardSkeleton />
+            </div>
+          ) : null}
 
           {hasNextPage ? (
             <div className="mt-8 flex justify-center">
@@ -695,7 +760,21 @@ export function ExploreUniversities() {
                   : t('common:loadMoreUniversities', 'Show more')}
               </Button>
             </div>
-      ) : null}
+          ) : hasNextFallbackPage ? (
+            <div className="mt-8 flex justify-center">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => fetchNextFallbackPage()}
+                disabled={isFetchingNextFallbackPage}
+                loading={isFetchingNextFallbackPage}
+              >
+                {isFetchingNextFallbackPage
+                  ? t('common:loadingMoreUniversities', 'LoadingвЂ¦')
+                  : t('common:loadMoreUniversities', 'Show more')}
+              </Button>
+            </div>
+          ) : null}
         </>
       )}
     </div>

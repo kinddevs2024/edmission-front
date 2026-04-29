@@ -118,7 +118,7 @@ type DiscoveryFilters = {
   useProfileFilters: boolean
 }
 
-function createInitialFilters(useProfileFilters = true): DiscoveryFilters {
+function createInitialFilters(useProfileFilters = false): DiscoveryFilters {
   return {
     search: '',
     country: '',
@@ -158,8 +158,8 @@ export function Discovery() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [criteria, setCriteria] = useState<{ skills: string[]; interests: string[]; hobbies: string[] } | null>(null)
-  const [filters, setFilters] = useState<DiscoveryFilters>(() => createInitialFilters(true))
-  const [draftFilters, setDraftFilters] = useState<DiscoveryFilters>(() => createInitialFilters(true))
+  const [filters, setFilters] = useState<DiscoveryFilters>(() => createInitialFilters())
+  const [draftFilters, setDraftFilters] = useState<DiscoveryFilters>(() => createInitialFilters())
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const limit = 20
 
@@ -185,7 +185,7 @@ export function Discovery() {
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const filterCount = useMemo(() => countActiveFilters(filters), [filters])
   const hasExplicitFilters = filterCount > 0
-  const showClear = hasExplicitFilters || !filters.useProfileFilters
+  const showClear = hasExplicitFilters || filters.useProfileFilters
 
   const syncQuickFilters = (patch: Partial<DiscoveryFilters>) => {
     setPage(1)
@@ -205,7 +205,7 @@ export function Discovery() {
   }
 
   const handleClearFilters = () => {
-    const cleared = createInitialFilters(false)
+    const cleared = createInitialFilters()
     setPage(1)
     setFilters(cleared)
     setDraftFilters(cleared)
@@ -234,7 +234,7 @@ export function Discovery() {
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="default">{filterCount} active</Badge>
             <Badge variant={filters.useProfileFilters ? 'success' : 'default'}>
-              {filters.useProfileFilters ? 'University profile matching on' : 'University profile matching off'}
+              {filters.useProfileFilters ? 'University profile matching on' : 'All students'}
             </Badge>
             <Button variant="secondary" size="sm" onClick={openFullFilter} icon={<SlidersHorizontal size={16} />}>
               Full Filter
@@ -515,7 +515,7 @@ export function Discovery() {
                 <div className="grid gap-3 md:grid-cols-2">
                   <Checkbox checked={draftFilters.verifiedOnly} onChange={(event) => setDraftFilters((current) => ({ ...current, verifiedOnly: event.target.checked }))} label="Only verified student profiles" />
                   <Checkbox checked={draftFilters.hasPortfolio} onChange={(event) => setDraftFilters((current) => ({ ...current, hasPortfolio: event.target.checked }))} label="Only students with portfolio works" />
-                  <Checkbox checked={draftFilters.useProfileFilters} onChange={(event) => setDraftFilters((current) => ({ ...current, useProfileFilters: event.target.checked }))} label="Also apply university profile defaults" />
+                  <Checkbox checked={draftFilters.useProfileFilters} onChange={(event) => setDraftFilters((current) => ({ ...current, useProfileFilters: event.target.checked }))} label="Limit to university profile matches" />
                 </div>
               </div>
             </FilterSection>
@@ -544,9 +544,7 @@ export function Discovery() {
               const student = item.student
               const name = getStudentDisplayName(
                 student,
-                student?.profileVisibility === 'private'
-                  ? t('university:privateStudentCardName', 'Private student')
-                  : t('university:studentLabel')
+                t('university:studentLabel')
               )
               const email = getStudentContactEmail(student)
               const languages = student.languages?.slice(0, 2).map((entry) => `${entry.language}${entry.level ? ` (${entry.level})` : ''}`).join(', ')
@@ -741,7 +739,7 @@ function buildActiveFilterLabels(filters: DiscoveryFilters) {
   if (filters.documentQuery.trim()) labels.push(`Document: ${filters.documentQuery.trim()}`)
   if (filters.verifiedOnly) labels.push('Verified only')
   if (filters.hasPortfolio) labels.push('Has portfolio')
-  if (!filters.useProfileFilters) labels.push('University matching off')
+  if (filters.useProfileFilters) labels.push('University matching on')
   return labels.slice(0, 10)
 }
 

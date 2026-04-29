@@ -58,9 +58,7 @@ function mapPipelineItem(item: PipelineItem, t: (key: string, defaultValue?: str
     id: pickStudentProfileId(item),
     name: getStudentDisplayName(
       student,
-      student?.profileVisibility === 'private'
-        ? t('university:privateStudentCardName', 'Private student')
-        : t('university:studentLabel', 'Student')
+      t('university:studentLabel', 'Student')
     ),
     email: getStudentContactEmail(student),
     applicationId: item.id,

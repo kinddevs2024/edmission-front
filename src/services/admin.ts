@@ -14,6 +14,7 @@ export interface AdminDashboardResponse {
   universities: number
   pendingOffers: number
   pendingVerification: number
+  pendingDocuments?: number
   subscriptionsByPlan?: Record<string, number>
   mrr?: number
 }
@@ -22,6 +23,7 @@ export interface AdminStats {
   studentsCount: number
   universitiesCount: number
   activeOffersCount: number
+  pendingDocumentsCount: number
   healthStatus: 'ok' | 'degraded' | 'error'
   subscriptionsByPlan?: Record<string, number>
   mrr?: number
@@ -259,6 +261,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     studentsCount: data?.users ?? 0,
     universitiesCount: data?.universities ?? 0,
     activeOffersCount: data?.pendingOffers ?? 0,
+    pendingDocumentsCount: data?.pendingDocuments ?? 0,
     healthStatus: 'ok',
     subscriptionsByPlan: data?.subscriptionsByPlan,
     mrr: data?.mrr,
@@ -641,6 +644,8 @@ export interface AdminChat {
   universityId: string
   universityName?: string
   studentName?: string
+  universityEmail?: string
+  studentEmail?: string
   /** StudentProfile document id (for offers / documents). */
   studentProfileId?: string
   /** University account User id (for admin proxy APIs). */
@@ -662,6 +667,10 @@ export interface AdminChatMessage {
   id: string
   chatId: string
   senderId: string
+  senderName?: string
+  senderEmail?: string
+  senderRole?: string
+  sentByAdmin?: boolean
   type: string
   message: string
   createdAt: string
@@ -810,6 +819,10 @@ export async function adminUniversityCreateOffer(
 export async function sendAdminChatMessage(chatId: string, text: string): Promise<AdminChatMessage> {
   const { data } = await api.post<AdminChatMessage>(`/admin/chats/${chatId}/messages`, { text })
   return data
+}
+
+export async function deleteAdminChat(chatId: string): Promise<void> {
+  await api.delete(`/admin/chats/${chatId}`)
 }
 
 export async function getVerificationQueue(): Promise<VerificationItem[]> {

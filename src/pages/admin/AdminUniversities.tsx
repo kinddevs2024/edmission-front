@@ -375,10 +375,10 @@ export function AdminUniversities() {
                 <tbody>
                   {list.map((u) => (
                     <tr key={u.id} className="border-b border-[var(--color-border)] last:border-0">
-                      <td className="py-3 font-medium">{u.name || u.universityName}</td>
-                      <td className="py-3">{u.country ? getLocalizedCountryName(u.country, i18n.language) : '—'}</td>
-                      <td className="py-3">{u.city ?? '—'}</td>
-                      <td className="py-3 text-right">
+                      <td className="py-2 font-medium">{u.name || u.universityName}</td>
+                      <td className="py-2">{u.country ? getLocalizedCountryName(u.country, i18n.language) : '—'}</td>
+                      <td className="py-2">{u.city ?? '—'}</td>
+                      <td className="py-2 text-right">
                         {!isCounsellor && (
                           <span className="inline-flex items-center gap-1">
                             <Button size="sm" variant="ghost" onClick={() => openEdit(u.id)}>

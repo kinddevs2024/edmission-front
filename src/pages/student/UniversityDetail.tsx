@@ -12,7 +12,7 @@ import { showInterest, getApplications, getInterestLimit } from '@/services/stud
 import { getImageUrl } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
 import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Star } from 'lucide-react'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getPublicUniversityFlyers } from '@/services/university'
 import type { UniversityProfile, Program, Scholarship, Faculty, UniversityFlyer } from '@/types/university'
@@ -20,6 +20,7 @@ import { notifyError, notifySuccess } from '@/utils/notify'
 import { getMyDocuments } from '@/services/studentDocuments'
 import { getEffectiveIeltsMinBand } from '@/utils/admissionRequirements'
 import { buildUniversityShareLink, shareAccountLink } from '@/utils/shareAccount'
+import { FlyerMediaPreview } from '@/components/university/FlyerMediaPreview'
 export function UniversityDetail() {
   const { id } = useParams<{ id: string }>()
   const { t, i18n } = useTranslation(['common', 'student', 'university'])
@@ -34,6 +35,8 @@ export function UniversityDetail() {
   const [interestLimit, setInterestLimit] = useState<{ allowed: boolean; limit: number | null } | null>(null)
   const [loading, setLoading] = useState(true)
   const [documents, setDocuments] = useState<Awaited<ReturnType<typeof getMyDocuments>>>([])
+  const ratingValue = uni?.rating
+  const hasRating = typeof ratingValue === 'number' && Number.isFinite(ratingValue)
 
   useEffect(() => {
     getMyDocuments()
@@ -211,6 +214,12 @@ export function UniversityDetail() {
             )}
             <div>
               <h1 className="text-h1">{uni.name}</h1>
+              {hasRating ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300">
+                  <Star className="h-4 w-4 fill-current" aria-hidden />
+                  {t('student:compareRating', 'Rating')} {ratingValue}
+                </div>
+              ) : null}
               <p className="text-[var(--color-text-muted)]">
                 {[uni.country ? getLocalizedCountryName(uni.country, i18n.language) : '', uni.city].filter(Boolean).join(' · ')}
                 {uni.rating != null && ` · ${t('student:compareRating', 'Rating')} ${uni.rating}`}
@@ -410,40 +419,16 @@ export function UniversityDetail() {
           <CardTitle>{t('university:navFlyers', 'Flyers')}</CardTitle>
           <div className="grid gap-3 md:grid-cols-2">
             {flyers.map((flyer) => {
-              const mediaType = (flyer.mediaType ?? '').toLowerCase()
-              const isImage = mediaType.startsWith('image/')
-              const isVideo = mediaType.startsWith('video/')
-              const editorPreview = flyer.previewImageUrl ? getImageUrl(flyer.previewImageUrl) : ''
-              const mediaHref = flyer.mediaUrl ? getImageUrl(flyer.mediaUrl) : ''
               return (
                 <div key={flyer.id} className="rounded-card border border-[var(--color-border)] p-3 space-y-2">
                   {flyer.title ? <h3 className="font-medium text-[var(--color-text)]">{flyer.title}</h3> : null}
-                  {flyer.source === 'editor' && editorPreview ? (
-                    <img
-                      src={editorPreview}
-                      alt={flyer.title ?? ''}
-                      loading="lazy"
-                      className="w-full max-h-72 rounded-card object-cover bg-[var(--color-border)]/30"
-                    />
-                  ) : isImage ? (
-                    <img
-                      src={mediaHref}
-                      alt={flyer.title ?? ''}
-                      loading="lazy"
-                      className="w-full max-h-72 rounded-card object-cover bg-[var(--color-border)]/30"
-                    />
-                  ) : isVideo ? (
-                    <video src={mediaHref} controls className="w-full max-h-72 rounded-card bg-black/80" />
-                  ) : (
-                    <a
-                      href={mediaHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm text-primary-accent underline"
-                    >
-                      Open document
-                    </a>
-                  )}
+                  <FlyerMediaPreview
+                    url={flyer.mediaUrl}
+                    mediaType={flyer.mediaType}
+                    previewImageUrl={flyer.previewImageUrl}
+                    title={flyer.title || t('university:navFlyers', 'Flyers')}
+                    className="max-h-96"
+                  />
                 </div>
               )
             })}

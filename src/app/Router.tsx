@@ -11,6 +11,7 @@ import { UniversityLayout } from '@/layouts/UniversityLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { SchoolLayout } from '@/layouts/SchoolLayout'
 import { SiteVisitTracker } from '@/components/analytics/SiteVisitTracker'
+import { getProfile } from '@/services/auth'
 
 const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
 const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ default: m.Register })))
@@ -200,11 +201,31 @@ function ScrollToTop() {
   return null
 }
 
+function AuthSessionVerifier() {
+  const { pathname, search } = useLocation()
+  const { isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    getProfile().catch(() => {
+      if (cancelled) return
+      /* The API interceptor refreshes tokens or logs the user out on 401. */
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, pathname, search])
+
+  return null
+}
+
 export function Router() {
   return (
     <Suspense fallback={<PageFallback />}>
     <DocumentTitle />
     <ScrollToTop />
+    <AuthSessionVerifier />
     <SiteVisitTracker />
     <Routes>
       <Route path="/maintenance" element={<Maintenance />} />

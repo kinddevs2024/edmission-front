@@ -11,7 +11,9 @@ import { CardSkeleton } from '@/components/ui/Skeleton'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { Building2 } from 'lucide-react'
 import { listMyStudents, addInterestForStudent, listStudentUniversities, type CounsellorStudent, type CounsellorStudentUniversitiesParams } from '@/services/counsellor'
+import { getUniversityHubCountries } from '@/services/options'
 import { toastApiError } from '@/utils/toastError'
+import { getLocalizedCountryName } from '@/utils/localeDisplay'
 
 export function CounsellorStudentInterests() {
   const { t, i18n } = useTranslation(['school', 'student'])
@@ -31,6 +33,11 @@ export function CounsellorStudentInterests() {
     staleTime: 60 * 1000,
   })
   const students = studentsRes?.data ?? []
+  const { data: universityCountries = [] } = useQuery({
+    queryKey: ['options', 'universityCountries'],
+    queryFn: getUniversityHubCountries,
+    staleTime: 5 * 60 * 1000,
+  })
 
   const vars: CounsellorStudentUniversitiesParams = {
     page,
@@ -102,11 +109,27 @@ export function CounsellorStudentInterests() {
     { value: 'Netherlands', label: isRu ? 'Нидерланды' : isUz ? 'Niderlandiya' : 'Netherlands' },
   ]
 
+  void countryOptions
+
   const scholarshipOptions = [
     { value: 'all', label: t('school:allUniversities', 'All universities') },
     { value: 'with', label: t('school:withScholarship', 'With scholarship') },
     { value: 'without', label: t('school:withoutScholarship', 'Without scholarship') },
   ]
+  const availableCountryOptions = useMemo(() => {
+    const countries = new Set(
+      universityCountries
+        .map((value) => String(value ?? '').trim())
+        .filter(Boolean)
+    )
+    if (country) countries.add(country)
+    return [
+      { value: '', label: t('student:allCountries') },
+      ...Array.from(countries)
+        .sort((left, right) => getLocalizedCountryName(left, i18n.language).localeCompare(getLocalizedCountryName(right, i18n.language)))
+        .map((value) => ({ value, label: getLocalizedCountryName(value, i18n.language) })),
+    ]
+  }, [country, i18n.language, t, universityCountries])
 
   const handleClearFilters = () => {
     setCountry('')
@@ -173,7 +196,7 @@ export function CounsellorStudentInterests() {
                 label={t('student:country')}
                 value={country}
                 onChange={(e) => { setCountry(e.target.value); handleFilterChange() }}
-                options={countryOptions}
+                options={availableCountryOptions}
               />
               <Input
                 label={t('student:city')}

@@ -9,8 +9,8 @@ import { uploadFile } from '@/services/upload'
 import { deleteUniversityFlyer, getUniversityFlyers, createUniversityFlyer } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 import type { UniversityFlyer } from '@/types/university'
-import { getImageUrl } from '@/services/upload'
 import { UploadCloud } from 'lucide-react'
+import { FlyerMediaPreview } from '@/components/university/FlyerMediaPreview'
 
 type FlyerDraft = {
   id: string
@@ -117,7 +117,7 @@ export function UniversityFlyers() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+              accept="image/*,video/*,audio/*,.jpg,.jpeg,.png,.gif,.webp,.svg,.jfif,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv"
               className="hidden"
               onChange={(event) => {
                 const file = event.target.files?.[0] ?? null
@@ -146,15 +146,12 @@ export function UniversityFlyers() {
               <p className="text-sm text-[var(--color-text-muted)] break-all">{selectedFile.name}</p>
             ) : null}
             {selectedFile && selectedPreviewUrl ? (
-              selectedFile.type.startsWith('image/') ? (
-                <img src={selectedPreviewUrl} alt="" className="w-full max-h-72 rounded-card object-cover bg-[var(--color-border)]/30" />
-              ) : selectedFile.type.startsWith('video/') ? (
-                <video src={selectedPreviewUrl} controls className="w-full max-h-72 rounded-card bg-black/80" />
-              ) : (
-                <div className="rounded-card border border-dashed border-[var(--color-border)] p-3 text-sm text-[var(--color-text-muted)]">
-                  {t('flyers.fileSelected', 'File selected and ready to publish')}
-                </div>
-              )
+              <FlyerMediaPreview
+                url={selectedPreviewUrl}
+                mediaType={selectedFile.type}
+                title={selectedFile.name}
+                className="max-h-72"
+              />
             ) : null}
           </div>
           <div className="flex gap-2">
@@ -181,19 +178,13 @@ export function UniversityFlyers() {
           {flyers.map((flyer) => (
             <Card key={flyer.id} className="space-y-3 border border-[var(--color-border)]">
               {flyer.title ? <h3 className="text-base font-semibold">{flyer.title}</h3> : null}
-              {flyer.source === 'editor' && flyer.previewImageUrl ? (
-                <img src={getImageUrl(flyer.previewImageUrl)} alt={flyer.title ?? ''} className="w-full rounded-card object-cover max-h-80 bg-[var(--color-border)]/30" />
-              ) : flyer.mediaType?.toLowerCase().startsWith('image/') && flyer.mediaUrl ? (
-                <img src={getImageUrl(flyer.mediaUrl)} alt={flyer.title ?? ''} className="w-full rounded-card object-cover max-h-80 bg-[var(--color-border)]/30" />
-              ) : flyer.mediaType?.toLowerCase().startsWith('video/') && flyer.mediaUrl ? (
-                <video src={getImageUrl(flyer.mediaUrl)} controls className="w-full max-h-80 rounded-card bg-black/80" />
-              ) : flyer.mediaUrl ? (
-                <a href={flyer.mediaUrl} target="_blank" rel="noreferrer" className="text-primary-accent underline break-all">
-                  {flyer.mediaUrl}
-                </a>
-              ) : (
-                <div className="text-sm text-[var(--color-text-muted)]">{t('flyers.editorPost', 'Created with editor')}</div>
-              )}
+              <FlyerMediaPreview
+                url={flyer.mediaUrl}
+                mediaType={flyer.mediaType}
+                previewImageUrl={flyer.previewImageUrl}
+                title={flyer.title || t('flyers.editorPost', 'Created with editor')}
+                className="max-h-80"
+              />
               <div className="flex gap-2">
                 <Button variant="danger" onClick={() => handleRemove(flyer.id)}>
                   {t('common:delete', 'Delete')}

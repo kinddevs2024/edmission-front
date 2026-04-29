@@ -22,13 +22,13 @@ export function CardSkeleton() {
 export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="overflow-hidden rounded-card border border-[var(--color-border)]">
-      <div className="flex gap-4 px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-border)]/30">
+      <div className="flex gap-3 px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-border)]/30">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1 min-w-[60px]" />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex gap-4 px-4 py-3 border-b border-[var(--color-border)] last:border-0">
+        <div key={i} className="flex gap-3 px-3 py-2 border-b border-[var(--color-border)] last:border-0">
           {Array.from({ length: cols }).map((_, j) => (
             <Skeleton key={j} className="h-4 flex-1 min-w-[60px]" />
           ))}

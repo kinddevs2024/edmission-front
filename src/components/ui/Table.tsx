@@ -9,7 +9,7 @@ interface TableProps {
 export function Table({ children, className }: TableProps) {
   return (
     <div className="overflow-x-auto rounded-card border border-[var(--color-border)]">
-      <table className={cn('w-full text-sm', className)}>{children}</table>
+      <table className={cn('w-full text-sm leading-tight', className)}>{children}</table>
     </div>
   )
 }
@@ -32,14 +32,14 @@ export function TableRow({ children, className }: TableProps) {
 
 export function TableTh({ children, className }: TableProps) {
   return (
-    <th className={cn('px-4 py-3 text-left font-medium text-[var(--color-text)]', className)}>
+    <th className={cn('px-3 py-2 text-left font-medium text-[var(--color-text)]', className)}>
       {children}
     </th>
   )
 }
 
 export function TableTd({ children, className }: TableProps) {
-  return <td className={cn('px-4 py-3 text-[var(--color-text)]', className)}>{children}</td>
+  return <td className={cn('px-3 py-2 align-middle text-[var(--color-text)]', className)}>{children}</td>
 }
 
 interface PaginationProps {
@@ -56,7 +56,15 @@ export function Pagination({ page, total, limit, onPageChange }: PaginationProps
       <p className="text-sm text-[var(--color-text-muted)]">
         Page {page} of {totalPages} ({total} total)
       </p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => onPageChange(1)}
+          disabled={page <= 1}
+          className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
+        >
+          First
+        </button>
         <button
           type="button"
           onClick={() => onPageChange(page - 1)}
@@ -72,6 +80,14 @@ export function Pagination({ page, total, limit, onPageChange }: PaginationProps
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
           Next
+        </button>
+        <button
+          type="button"
+          onClick={() => onPageChange(totalPages)}
+          disabled={page >= totalPages}
+          className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
+        >
+          End
         </button>
       </div>
     </div>
