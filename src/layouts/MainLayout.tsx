@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingAIButton } from '@/components/ai/FloatingAIButton'
+import { ElevenLabsSupportProvider } from '@/components/ai/ElevenLabsSupport'
 import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
@@ -237,6 +238,7 @@ export function MainLayout() {
   }, [isAuthenticated])
 
   return (
+    <ElevenLabsSupportProvider>
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
       {isAuthenticated && <TopBar />}
       <div
@@ -288,5 +290,6 @@ export function MainLayout() {
       {isAuthenticated && <FloatingAIButton />}
       <CookieConsentBanner />
     </div>
+    </ElevenLabsSupportProvider>
   )
 }

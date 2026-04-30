@@ -423,6 +423,65 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   animation: ai-avatar-pulse 1.5s ease-out infinite;
 }
 
+@keyframes ai-support-wave {
+  0% {
+    opacity: 0.32;
+    transform: scale(0.72);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+@keyframes ai-support-frequency {
+  0%,
+  100% {
+    transform: scaleY(0.72);
+  }
+
+  50% {
+    transform: scaleY(1.2);
+  }
+}
+
+.ai-support-orb {
+  isolation: isolate;
+}
+
+.ai-support-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-primary-accent) 48%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-primary-accent) 16%, transparent), transparent 64%);
+  opacity: 0;
+}
+
+.ai-support-wave.is-active {
+  animation: ai-support-wave 1.9s ease-out infinite;
+}
+
+.ai-support-wave-delay-1.is-active {
+  animation-delay: 0.38s;
+}
+
+.ai-support-wave-delay-2.is-active {
+  animation-delay: 0.76s;
+}
+
+.ai-support-frequency-bar {
+  transform-origin: bottom;
+  animation: ai-support-frequency 0.68s ease-in-out infinite;
+  transition: height 0.12s linear;
+}
+
 @keyframes progress-fill {
   from {
     transform: scaleX(0);
