@@ -145,6 +145,10 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
       await conversation.startSession({
         agentId: ELEVENLABS_AGENT_ID,
         connectionType: 'websocket',
+        workletPaths: {
+          rawAudioProcessor: '/elevenlabs-worklets/rawAudioProcessor.js',
+          audioConcatProcessor: '/elevenlabs-worklets/audioConcatProcessor.js',
+        },
         dynamicVariables: {
           ...dynamicVariables,
           current_page: typeof window === 'undefined' ? dynamicVariables.current_page : window.location.pathname,
