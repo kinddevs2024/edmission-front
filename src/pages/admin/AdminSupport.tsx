@@ -180,19 +180,24 @@ export function AdminSupport() {
     <div className="space-y-4">
       <PageTitle title={t('supportTickets')} icon="HelpCircle" />
       <Card>
-        <div className="flex flex-wrap gap-4 mb-4">
-          <Select
-            label={t('status')}
-            options={statusOptions}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          />
-          <Select
-            label={t('role')}
-            options={roleOptions}
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-          />
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <CardTitle>{t('supportTickets')}</CardTitle>
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-[180px_180px]">
+            <Select
+              label={t('status')}
+              options={statusOptions}
+              value={statusFilter}
+              className="min-h-10 py-2"
+              onChange={(e) => setStatusFilter(e.target.value)}
+            />
+            <Select
+              label={t('role')}
+              options={roleOptions}
+              value={roleFilter}
+              className="min-h-10 py-2"
+              onChange={(e) => setRoleFilter(e.target.value)}
+            />
+          </div>
         </div>
         {loading ? (
           <p className="text-[var(--color-text-muted)] text-sm">{t('loading')}</p>

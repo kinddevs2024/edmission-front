@@ -201,7 +201,7 @@ export function AdminUniversityOfferModal({
                   label={t('admin:searchStudents', 'Search students (email or name)')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="min 2 characters"
+                  placeholder={t('admin:minTwoCharacters', 'min 2 characters')}
                 />
                 {searching ? <p className="text-xs text-[var(--color-text-muted)]">{t('common:loading', 'Loading…')}</p> : null}
                 <ul className="max-h-40 overflow-y-auto space-y-1">

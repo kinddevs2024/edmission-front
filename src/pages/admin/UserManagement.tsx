@@ -368,43 +368,40 @@ export function UserManagement() {
       </PageTitle>
 
       <Card>
-        <div className="mb-4 flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="min-w-0 flex-1">
-              <Input
-                label={t('admin:userSearchLabel', 'Search')}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                name="admin-users-search"
-                autoComplete="off"
-                placeholder={t(
-                  'admin:userSearchPlaceholder',
-                  'Email, name, or student first/last nameвЂ¦'
-                )}
-              />
-            </div>
-            {canManageUsers && assignableRoleOptions.length > 0 && (
-              <Button className="shrink-0" onClick={() => setCreateOpen(true)}>
-                {t('common:create')}
-              </Button>
-            )}
-          </div>
-          <div className="flex flex-wrap items-end gap-4">
-            <Select
-              label={t('common:role')}
-              options={ROLE_OPTIONS}
-              value={roleFilter}
-              onChange={(e) => { setRoleFilter(e.target.value); setPage(1) }}
-            />
-            <Select
-              label={t('admin:statusLabel')}
-              options={STATUS_OPTIONS}
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-            />
-          </div>
-        </div>
         <CardTitle className="mb-2">{t('admin:users')}</CardTitle>
+        <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-[minmax(260px,1fr)_180px_180px_auto] md:items-end">
+          <Input
+            label={t('admin:userSearchLabel', 'Search')}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            name="admin-users-search"
+            autoComplete="off"
+            className="min-h-10 py-2"
+            placeholder={t(
+              'admin:userSearchPlaceholder',
+              'Email, name, or student first/last nameвЂ¦'
+            )}
+          />
+          <Select
+            label={t('common:role')}
+            options={ROLE_OPTIONS}
+            value={roleFilter}
+            className="min-h-10 py-2"
+            onChange={(e) => { setRoleFilter(e.target.value); setPage(1) }}
+          />
+          <Select
+            label={t('admin:statusLabel')}
+            options={STATUS_OPTIONS}
+            value={statusFilter}
+            className="min-h-10 py-2"
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+          />
+          {canManageUsers && assignableRoleOptions.length > 0 && (
+            <Button className="h-10 shrink-0 px-4" onClick={() => setCreateOpen(true)}>
+              {t('common:create')}
+            </Button>
+          )}
+        </div>
         {loading ? (
           <TableSkeleton rows={8} cols={8} />
         ) : users.length === 0 ? (

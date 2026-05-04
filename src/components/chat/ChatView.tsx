@@ -47,11 +47,12 @@ export function ChatView() {
     authUser?.role === 'university_multi_manager'
       ? (getActAsUniversityUserId() ?? '')
       : (authUser?.id ?? '')
-  const role = ((): 'student' | 'university' | undefined => {
+  const role = ((): 'student' | 'university' | 'counsellor' | undefined => {
     const r = authUser?.role
     if (r === 'student') return 'student'
     if (r === 'university') return 'university'
     if (r === 'university_multi_manager' && getActAsUniversityUserId()) return 'university'
+    if (r === 'school_counsellor') return 'counsellor'
     return undefined
   })()
   const [chats, setChats] = useState<Chat[]>([])
@@ -93,7 +94,7 @@ export function ChatView() {
 
   const loadChats = useCallback(
     async (options?: { selectedChatId?: string | null; selectChatId?: string; openThread?: boolean }) => {
-      if (role !== 'student' && role !== 'university') {
+      if (role !== 'student' && role !== 'university' && role !== 'counsellor') {
         return []
       }
       const requestId = ++loadChatsRequestIdRef.current
@@ -195,7 +196,7 @@ export function ChatView() {
   useEffect(() => {
     const studentId = searchParams.get('studentId')
     const universityId = searchParams.get('universityId')
-    const hasValidId = (studentId && isValidObjectId(studentId)) || (universityId && isValidObjectId(universityId))
+    const hasValidId = role !== 'counsellor' && ((studentId && isValidObjectId(studentId)) || (universityId && isValidObjectId(universityId)))
     if (!hasValidId || !role || chatsLoading) return
 
     const params = studentId ? { studentId } : { universityId: universityId! }

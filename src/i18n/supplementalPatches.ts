@@ -198,14 +198,98 @@ mergeNamespacePatch('en', 'common', {
   addToCompare: 'Add to compare',
 })
 
+mergeNamespacePatch('en', 'school', {
+  counsellorOfferReadOnlyHint: 'This is a read-only counsellor view. The student keeps control of accepting, declining, or postponing the offer.',
+  backToOffers: 'Back to offers',
+})
+
 mergeNamespacePatch('ru', 'common', {
   messageButton: 'Написать',
   addToCompare: 'Добавить к сравнению',
 })
 
+mergeNamespacePatch('ru', 'school', {
+  counsellorOfferReadOnlyHint: 'Это режим просмотра для counsellor. Студент сам принимает, отклоняет или откладывает оффер.',
+  backToOffers: 'Назад к офферам',
+})
+
 mergeNamespacePatch('uz', 'common', {
   messageButton: 'Yozish',
   addToCompare: "Taqqoslashga qo'shish",
+})
+
+mergeNamespacePatch('en', 'university', {
+  aiHelperText: 'Get suggestions, refine your profile, and explore answers about applications and scholarships.',
+  openEdmissionAi: 'Open Edmission AI',
+  pipelineFunnelSteps: 'Interested → Contacted → Evaluating → Offer Sent → Accepted',
+  total: 'Total',
+  bestMatchScore: 'Best match score',
+  loading: 'Loading…',
+  noDataYet: 'No data yet.',
+  noRecommendationsYet: 'No recommendations yet.',
+  viewProfile: 'Profile',
+})
+
+mergeNamespacePatch('ru', 'university', {
+  aiHelperText: 'Получайте предложения, улучшайте профиль и находите ответы о поступлении и стипендиях.',
+  openEdmissionAi: 'Открыть Edmission AI',
+  pipelineFunnelSteps: 'Интерес → Связано → Рассмотрение → Оффер отправлен → Принято',
+  total: 'Всего',
+  bestMatchScore: 'Лучший балл совпадения',
+  loading: 'Загрузка…',
+  noDataYet: 'Пока нет данных.',
+  noRecommendationsYet: 'Пока нет рекомендаций.',
+  viewProfile: 'Профиль',
+})
+
+mergeNamespacePatch('uz', 'university', {
+  aiHelperText: 'Takliflar oling, profilingizni yaxshilang va qabul hamda stipendyalar boʻyicha javoblar toping.',
+  openEdmissionAi: 'Edmission AI ni ochish',
+  pipelineFunnelSteps: 'Qiziqish → Bogʻlanish → Koʻrib chiqish → Taklif yuborilgan → Qabul qilingan',
+  total: 'Jami',
+  bestMatchScore: 'Eng yaxshi moslik bal',
+  loading: 'Yuklanmoqda…',
+  noDataYet: 'Hali maʻlumot yoʻq.',
+  noRecommendationsYet: 'Hali tavsiyalar yoʻq.',
+  viewProfile: 'Profil',
+})
+
+mergeNamespacePatch('uz', 'school', {
+  counsellorOfferReadOnlyHint: 'Bu counsellor uchun faqat ko‘rish rejimi. Taklifni qabul qilish, rad etish yoki keyinga qoldirish talabaning o‘zida qoladi.',
+  backToOffers: 'Takliflarga qaytish',
+})
+
+mergeNamespacePatch('en', 'school', {
+  chats: 'Chats',
+})
+
+mergeNamespacePatch('ru', 'school', {
+  chats: 'Чаты',
+})
+
+mergeNamespacePatch('uz', 'school', {
+  chats: 'Chatlar',
+})
+
+mergeNamespacePatch('en', 'student', {
+  stepAddPhone: 'Add your phone number for important updates',
+  addPhoneTitle: 'Add your phone number',
+  addPhoneHint: 'We can use it for urgent reminders about offers, messages, and documents.',
+  addPhoneCta: 'Add phone',
+})
+
+mergeNamespacePatch('ru', 'student', {
+  stepAddPhone: 'Добавьте номер телефона для важных уведомлений',
+  addPhoneTitle: 'Добавьте номер телефона',
+  addPhoneHint: 'Мы сможем использовать его для срочных напоминаний об офферах, сообщениях и документах.',
+  addPhoneCta: 'Добавить номер',
+})
+
+mergeNamespacePatch('uz', 'student', {
+  stepAddPhone: 'Muhim xabarlar uchun telefon raqamingizni qo‘shing',
+  addPhoneTitle: 'Telefon raqamingizni qo‘shing',
+  addPhoneHint: 'Offerlar, xabarlar va hujjatlar bo‘yicha shoshilinch eslatmalar uchun foydalanamiz.',
+  addPhoneCta: 'Telefon qo‘shish',
 })
 
 mergeNamespacePatch('en', 'student', {
@@ -537,4 +621,100 @@ mergeNamespacePatch('uz', 'admin', {
   analyticsStudentVisitors: 'Saytni ochgan talabalar',
   analyticsRegistrations: "Ro'yxatdan o'tishlar",
   analyticsTrackingHint: 'Tashrif analitikasi ushbu treking joylangandan keyin yigʻila boshlaydi.',
+})
+
+mergeNamespacePatch('en', 'common', {
+  aiSupportTitle: 'Edmission.uz Support',
+  aiSupportSpeaking: 'Speaking',
+  aiSupportListening: 'Listening',
+  aiSupportConnecting: 'Connecting',
+  aiSupportReady: 'Ready',
+  aiSupportCall: 'Call',
+  aiSupportStartCall: 'Start call',
+  aiSupportStartSupportCall: 'Start Edmission support call',
+  aiSupportEndCall: 'End call',
+  aiSupportOpenChat: 'Open chat',
+  aiSupportChat: 'Chat',
+  aiSupportCloseChat: 'Close chat',
+  aiSupportEmptyChat: 'Chat messages will appear here.',
+  aiSupportMessagePlaceholder: 'Message Edmission support...',
+  aiSupportStartToType: 'Start the call to type',
+  aiSupportSendMessage: 'Send message',
+  aiSupportMicOn: 'Turn microphone on',
+  aiSupportMicOff: 'Turn microphone off',
+  aiSupportMinimize: 'Minimize AI call',
+  aiSupportOpenFull: 'Open full AI chat',
+  aiSupportExpand: 'Expand AI call',
+  aiSupportAgentMissing: 'ElevenLabs agent ID is not configured.',
+  aiSupportMicrophoneUnavailable: 'Microphone access is not available in this browser.',
+  aiSupportStartFailed: 'Could not start the call.',
+  aiSupportStartBeforeMessage: 'Start the call before sending a message.',
+  aiSupportSendFailed: 'Could not send the message.',
+  smsApplicationUpdates: 'Send important updates to my phone',
+  smsApplicationUpdatesPhoneHint: 'Add your phone number above to enable phone notifications.',
+  open: 'Open',
+})
+
+mergeNamespacePatch('ru', 'common', {
+  aiSupportTitle: 'Поддержка Edmission.uz',
+  aiSupportSpeaking: 'Говорит',
+  aiSupportListening: 'Слушает',
+  aiSupportConnecting: 'Подключение',
+  aiSupportReady: 'Готово',
+  aiSupportCall: 'Звонок',
+  aiSupportStartCall: 'Начать звонок',
+  aiSupportStartSupportCall: 'Начать звонок в поддержку Edmission',
+  aiSupportEndCall: 'Завершить звонок',
+  aiSupportOpenChat: 'Открыть чат',
+  aiSupportChat: 'Чат',
+  aiSupportCloseChat: 'Закрыть чат',
+  aiSupportEmptyChat: 'Сообщения чата появятся здесь.',
+  aiSupportMessagePlaceholder: 'Сообщение в поддержку Edmission...',
+  aiSupportStartToType: 'Начните звонок, чтобы писать',
+  aiSupportSendMessage: 'Отправить сообщение',
+  aiSupportMicOn: 'Включить микрофон',
+  aiSupportMicOff: 'Выключить микрофон',
+  aiSupportMinimize: 'Свернуть AI-звонок',
+  aiSupportOpenFull: 'Открыть полный AI-чат',
+  aiSupportExpand: 'Развернуть AI-звонок',
+  aiSupportAgentMissing: 'ID агента ElevenLabs не настроен.',
+  aiSupportMicrophoneUnavailable: 'Доступ к микрофону недоступен в этом браузере.',
+  aiSupportStartFailed: 'Не удалось начать звонок.',
+  aiSupportStartBeforeMessage: 'Начните звонок перед отправкой сообщения.',
+  aiSupportSendFailed: 'Не удалось отправить сообщение.',
+  smsApplicationUpdates: 'Отправлять важные обновления на мой номер',
+  smsApplicationUpdatesPhoneHint: 'Добавьте номер телефона выше, чтобы включить уведомления на номер.',
+  open: 'Открыть',
+})
+
+mergeNamespacePatch('uz', 'common', {
+  aiSupportTitle: 'Edmission.uz yordam xizmati',
+  aiSupportSpeaking: 'Gapiryapti',
+  aiSupportListening: 'Tinglayapti',
+  aiSupportConnecting: 'Ulanmoqda',
+  aiSupportReady: 'Tayyor',
+  aiSupportCall: 'Qo‘ng‘iroq',
+  aiSupportStartCall: 'Qo‘ng‘iroqni boshlash',
+  aiSupportStartSupportCall: 'Edmission yordamiga qo‘ng‘iroq qilish',
+  aiSupportEndCall: 'Qo‘ng‘iroqni tugatish',
+  aiSupportOpenChat: 'Chatni ochish',
+  aiSupportChat: 'Chat',
+  aiSupportCloseChat: 'Chatni yopish',
+  aiSupportEmptyChat: 'Chat xabarlari shu yerda ko‘rinadi.',
+  aiSupportMessagePlaceholder: 'Edmission yordamiga xabar...',
+  aiSupportStartToType: 'Yozish uchun qo‘ng‘iroqni boshlang',
+  aiSupportSendMessage: 'Xabar yuborish',
+  aiSupportMicOn: 'Mikrofonni yoqish',
+  aiSupportMicOff: 'Mikrofonni o‘chirish',
+  aiSupportMinimize: 'AI qo‘ng‘iroqni kichraytirish',
+  aiSupportOpenFull: 'To‘liq AI chatni ochish',
+  aiSupportExpand: 'AI qo‘ng‘iroqni kengaytirish',
+  aiSupportAgentMissing: 'ElevenLabs agent ID sozlanmagan.',
+  aiSupportMicrophoneUnavailable: 'Bu brauzerda mikrofondan foydalanib bo‘lmaydi.',
+  aiSupportStartFailed: 'Qo‘ng‘iroqni boshlab bo‘lmadi.',
+  aiSupportStartBeforeMessage: 'Xabar yuborishdan oldin qo‘ng‘iroqni boshlang.',
+  aiSupportSendFailed: 'Xabarni yuborib bo‘lmadi.',
+  smsApplicationUpdates: 'Muhim yangiliklarni telefon raqamimga yuborish',
+  smsApplicationUpdatesPhoneHint: 'Telefon bildirishnomalarini yoqish uchun yuqorida raqamingizni kiriting.',
+  open: 'Ochish',
 })

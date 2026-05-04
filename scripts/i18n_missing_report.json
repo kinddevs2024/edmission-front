@@ -1,0 +1,116 @@
+{
+  "admin": {
+    "ru": [
+      "createUser",
+      "createUserHint",
+      "createUserInviteHint",
+      "resetPasswordConfirm"
+    ],
+    "uz": [
+      "createUser",
+      "createUserHint",
+      "createUserInviteHint",
+      "resetPasswordConfirm"
+    ]
+  },
+  "common": {
+    "en": [
+      "file",
+      "link",
+      "present",
+      "preview"
+    ],
+    "uz": [
+      "file",
+      "link",
+      "present",
+      "preview"
+    ]
+  },
+  "documents": {
+    "en": [
+      "decisionPanel.postponeDays",
+      "decisionPanel.postponeDays_few",
+      "decisionPanel.postponeDays_many"
+    ],
+    "ru": [
+      "decisionPanel.postponeDays"
+    ],
+    "uz": [
+      "decisionPanel.postponeDays_few",
+      "decisionPanel.postponeDays_many",
+      "decisionPanel.postponeDays_one",
+      "decisionPanel.postponeDays_other"
+    ]
+  },
+  "student": {
+    "ru": [
+      "changeAvatar",
+      "compareMinRequirements",
+      "compareTuition",
+      "countryResidencePlaceholder",
+      "experienceOptionalHint",
+      "preferredCountriesChipPlaceholder",
+      "preferredCountriesNoUniversitiesYet",
+      "preferredStudyCountriesHeading",
+      "worksOptionalHint"
+    ],
+    "uz": [
+      "changeAvatar",
+      "compareMinRequirements",
+      "compareTuition",
+      "countryResidencePlaceholder",
+      "experienceOptionalHint",
+      "preferredCountriesChipPlaceholder",
+      "preferredCountriesNoUniversitiesYet",
+      "preferredStudyCountriesHeading",
+      "worksOptionalHint"
+    ]
+  },
+  "university": {
+    "ru": [
+      "accentColor",
+      "bodyTemplate",
+      "bodyTemplateHint",
+      "countryPlaceholder",
+      "createOfferTemplate",
+      "defaultTemplate",
+      "layout",
+      "navOfferTemplates",
+      "noOfferTemplates",
+      "offerTemplatesList",
+      "offerTemplatesTitle",
+      "primaryColor",
+      "titleTemplate",
+      "universityNameRequired"
+    ],
+    "uz": [
+      "accentColor",
+      "bodyTemplate",
+      "bodyTemplateHint",
+      "countryPlaceholder",
+      "createOfferTemplate",
+      "defaultTemplate",
+      "documentsApproved",
+      "hobbies",
+      "interests",
+      "languages",
+      "layout",
+      "navOfferTemplates",
+      "noOfferTemplates",
+      "offerTemplatesList",
+      "offerTemplatesTitle",
+      "primaryColor",
+      "scoreLabel",
+      "titleTemplate",
+      "universityNameRequired"
+    ],
+    "en": [
+      "documentsApproved",
+      "hobbies",
+      "interests",
+      "languages",
+      "scoreLabel"
+    ]
+  }
+}

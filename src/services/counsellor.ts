@@ -1,4 +1,5 @@
 import { api } from './api'
+import { assertMaxUploadSize } from '@/services/upload'
 import type { DocumentPageFormat } from '@/types/documentModule'
 import type { PaginatedResponse, PaginationParams } from '@/types/api'
 import type { UniversityListItem } from '@/types/university'
@@ -159,6 +160,7 @@ export async function downloadCounsellorStudentsExcel(): Promise<void> {
 }
 
 export async function uploadCounsellorStudentsExcel(file: File): Promise<CounsellorStudentsImportResult> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<CounsellorStudentsImportResult>('/counsellor/students/import', formData)

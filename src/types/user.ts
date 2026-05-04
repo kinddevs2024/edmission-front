@@ -22,6 +22,7 @@ export interface SubscriptionSummary {
 export interface NotificationPreferences {
   emailApplicationUpdates?: boolean
   emailTrialReminder?: boolean
+  smsApplicationUpdates?: boolean
 }
 
 export interface SocialLinks {

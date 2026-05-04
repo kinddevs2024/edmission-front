@@ -78,22 +78,26 @@ export function CounsellorApplications() {
       <PageTitle title={t('school:applications', 'Applications')} icon="Heart" />
 
       <Card>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-4">
-          <Select
-            label={t('common:status', 'Status')}
-            options={statusOptions}
-            value={status}
-            onChange={(event) => { setStatus(event.target.value); setPage(1) }}
-          />
-          <Select
-            label={t('school:student', 'Student')}
-            options={studentOptions}
-            value={studentUserId}
-            onChange={(event) => { setStudentUserId(event.target.value); setPage(1) }}
-          />
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <CardTitle>{t('school:studentApplications', 'Student applications')}</CardTitle>
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-[200px_220px]">
+            <Select
+              label={t('common:status', 'Status')}
+              options={statusOptions}
+              value={status}
+              className="min-h-10 py-2"
+              onChange={(event) => { setStatus(event.target.value); setPage(1) }}
+            />
+            <Select
+              label={t('school:student', 'Student')}
+              options={studentOptions}
+              value={studentUserId}
+              className="min-h-10 py-2"
+              onChange={(event) => { setStudentUserId(event.target.value); setPage(1) }}
+            />
+          </div>
         </div>
 
-        <CardTitle className="mb-2">{t('school:studentApplications', 'Student applications')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={6} cols={6} />
         ) : items.length === 0 ? (

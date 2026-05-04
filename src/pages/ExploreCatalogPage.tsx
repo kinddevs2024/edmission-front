@@ -57,10 +57,14 @@ export function ExploreCatalogPage() {
   const total = data?.pages?.[0]?.total ?? universities.length
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] pt-16 text-[var(--color-text)] safe-area-pb">
+    <main className="relative min-h-screen overflow-hidden bg-[var(--color-bg)] pt-16 text-[var(--color-text)] safe-area-pb">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.34] [background-image:linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [background-size:44px_44px]"
+      />
       <LandingHeader />
 
-      <section id="explore" className="mx-auto max-w-7xl px-4 py-10 md:px-6 lg:px-8">
+      <section id="explore" className="relative mx-auto max-w-7xl px-4 py-10 md:px-6 lg:px-8">
         <p className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
           {t('landing:explore.eyebrow', 'Explore')}
         </p>

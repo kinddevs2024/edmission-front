@@ -13,6 +13,14 @@ export const DEFAULT_STUDENT_AVATAR = DEFAULT_USER_AVATAR
 export const IPHONE_IMAGE_ACCEPT = 'image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs'
 export const IMAGE_UPLOAD_ACCEPT = `image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif,image/jfif,${IPHONE_IMAGE_ACCEPT}`
 export const IMAGE_OR_PDF_UPLOAD_ACCEPT = `${IMAGE_UPLOAD_ACCEPT},application/pdf,.pdf`
+export const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
+export const MAX_UPLOAD_SIZE_MB = 10
+
+export function assertMaxUploadSize(file: File): void {
+  if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+    throw new Error(`Maximum file size is ${MAX_UPLOAD_SIZE_MB} MB.`)
+  }
+}
 
 /** Resolve image URL for preview/display (backend often returns path like /api/uploads/...). */
 export function getImageUrl(value: string | undefined | null): string {
@@ -37,6 +45,7 @@ export function getStudentAvatarUrl(avatarUrl: string | undefined | null): strin
  * Requires authentication.
  */
 export async function uploadFile(file: File): Promise<string> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<{ url: string }>('/upload', formData)
@@ -47,6 +56,7 @@ export async function uploadFile(file: File): Promise<string> {
  * Public avatar upload for registration (no auth required).
  */
 export async function uploadAvatarForRegister(file: File): Promise<string> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<{ url: string }>('/upload/avatar', formData)

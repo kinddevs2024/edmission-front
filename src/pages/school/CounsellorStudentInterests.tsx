@@ -16,7 +16,7 @@ import { toastApiError } from '@/utils/toastError'
 import { getLocalizedCountryName } from '@/utils/localeDisplay'
 
 export function CounsellorStudentInterests() {
-  const { t, i18n } = useTranslation(['school', 'student'])
+  const { t, i18n } = useTranslation(['school', 'student', 'common'])
   const queryClient = useQueryClient()
 
   const [draftStudentId, setDraftStudentId] = useState<string>('')
@@ -257,17 +257,17 @@ export function CounsellorStudentInterests() {
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
                   >
-                    Previous
+                    {t('common:prev', 'Previous')}
                   </Button>
                   <span className="py-2 px-4 text-sm text-[var(--color-text-muted)]">
-                    Page {page} of {totalPages}
+                    {t('common:pageOfTotal', { page, totalPages, total })}
                   </span>
                   <Button
                     variant="secondary"
                     onClick={() => setPage((p) => p + 1)}
                     disabled={page >= totalPages}
                   >
-                    Next
+                    {t('common:next', 'Next')}
                   </Button>
                 </div>
               )}

@@ -478,8 +478,11 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
 
 .ai-support-frequency-bar {
   transform-origin: bottom;
-  animation: ai-support-frequency 0.68s ease-in-out infinite;
   transition: height 0.12s linear;
+}
+
+.ai-support-frequency-bar.is-active {
+  animation: ai-support-frequency 0.68s ease-in-out infinite;
 }
 
 @keyframes progress-fill {

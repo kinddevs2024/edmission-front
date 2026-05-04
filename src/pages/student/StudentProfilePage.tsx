@@ -474,6 +474,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   const [newLevel, setNewLevel] = useState(LEVEL_OPTIONS[0])
   const [customLanguageName, setCustomLanguageName] = useState('')
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
+  const [openSkillsPanel, setOpenSkillsPanel] = useState<'skills' | 'interests' | 'hobbies'>('skills')
   const [displayPercent, setDisplayPercent] = useState(0)
   const [educationShowAdvanced, setEducationShowAdvanced] = useState(false)
   const [educationWizardStep, setEducationWizardStep] = useState(1)
@@ -1811,7 +1812,66 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
               {!criteria ? (
                 <p className="text-[var(--color-text-muted)]">Loading options...</p>
               ) : (
-                <div className="space-y-5">
+                <>
+                <div className="overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
+                  {([
+                    {
+                      id: 'skills' as const,
+                      title: t('skillsSectionTitle', 'Skills'),
+                      hint: t('skillsPlaceholder'),
+                      options: criteria.skills,
+                      value: watch('skills') ?? [],
+                      placeholder: t('skillsPlaceholder'),
+                    },
+                    {
+                      id: 'interests' as const,
+                      title: t('interestsSectionTitle', 'Interests'),
+                      hint: t('interestsSectionHint', 'Subjects and areas you care about - helps match programs and activities.'),
+                      options: criteria.interests,
+                      value: watch('interests') ?? [],
+                      placeholder: t('interestsPlaceholder', 'Select interests'),
+                    },
+                    {
+                      id: 'hobbies' as const,
+                      title: t('hobbiesSectionTitle', 'Hobbies'),
+                      hint: t('hobbiesSectionHint', 'Activities outside class - optional but improves your profile.'),
+                      options: criteria.hobbies,
+                      value: watch('hobbies') ?? [],
+                      placeholder: t('hobbiesPlaceholder', 'Select hobbies'),
+                    },
+                  ]).map((panel, index) => {
+                    const open = openSkillsPanel === panel.id
+                    return (
+                      <div key={panel.id} className={cn(index > 0 && 'border-t border-[var(--color-border)]')}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenSkillsPanel(panel.id)}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                          aria-expanded={open}
+                        >
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-[var(--color-text)]">{panel.title}</span>
+                            <span className="mt-0.5 block text-xs text-[var(--color-text-muted)]">{panel.value.length} / 50</span>
+                          </span>
+                          <ChevronDown className={cn('h-4 w-4 shrink-0 text-[var(--color-text-muted)] transition-transform', open && 'rotate-180')} aria-hidden />
+                        </button>
+                        {open ? (
+                          <div className="px-4 pb-4">
+                            <p className="mb-3 text-xs text-[var(--color-text-muted)]">{panel.hint}</p>
+                            <ChipSelect
+                              options={panel.options}
+                              value={panel.value}
+                              onChange={(v) => setValue(panel.id, v, { shouldDirty: true })}
+                              max={50}
+                              placeholder={panel.placeholder}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="hidden">
                   <div className="rounded-input border border-[var(--color-border)] bg-[var(--color-card)] p-4">
                     <p className="text-sm font-medium text-[var(--color-text)]">
                       {t('skillsSectionTitle', 'Skills')}
@@ -1859,6 +1919,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                     />
                   </div>
                 </div>
+                </>
               )}
             </>
           )}

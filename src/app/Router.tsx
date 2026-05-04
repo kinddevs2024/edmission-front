@@ -90,6 +90,8 @@ const CounsellorJoinRequests = lazy(() => import('@/pages/admin/CounsellorJoinRe
 const CounsellorStudentInterests = lazy(() => import('@/pages/school/CounsellorStudentInterests').then((m) => ({ default: m.CounsellorStudentInterests })))
 const CounsellorApplications = lazy(() => import('@/pages/school/CounsellorApplications').then((m) => ({ default: m.CounsellorApplications })))
 const CounsellorOffers = lazy(() => import('@/pages/school/CounsellorOffers').then((m) => ({ default: m.CounsellorOffers })))
+const CounsellorOfferDetail = lazy(() => import('@/pages/school/CounsellorOfferDetail').then((m) => ({ default: m.CounsellorOfferDetail })))
+const CounsellorChats = lazy(() => import('@/pages/school/CounsellorChats').then((m) => ({ default: m.CounsellorChats })))
 const SchoolDashboard = lazy(() => import('@/pages/school/SchoolDashboard').then((m) => ({ default: m.SchoolDashboard })))
 const CounsellorStudentProfile = lazy(() => import('@/pages/school/CounsellorStudentProfile').then((m) => ({ default: m.CounsellorStudentProfile })))
 const CounsellorStudentDocuments = lazy(() => import('@/pages/school/CounsellorStudentDocuments').then((m) => ({ default: m.CounsellorStudentDocuments })))
@@ -361,6 +363,8 @@ export function Router() {
           <Route path="student-interests" element={<CounsellorStudentInterests />} />
           <Route path="applications" element={<CounsellorApplications />} />
           <Route path="offers" element={<CounsellorOffers />} />
+          <Route path="offers/:id" element={<CounsellorOfferDetail />} />
+          <Route path="chats" element={<CounsellorChats />} />
           <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
           <Route path="students/:studentId/documents" element={<CounsellorStudentDocuments />} />
           <Route path="join-requests" element={<CounsellorJoinRequests />} />

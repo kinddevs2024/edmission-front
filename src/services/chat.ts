@@ -71,7 +71,9 @@ type RawChat = {
   universityProfileId?: string
 }
 
-function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university', viewerUserId?: string | null): Chat {
+export type ChatViewerRole = 'student' | 'university' | 'counsellor'
+
+function normalizeChat(raw: RawChat, currentUserRole: ChatViewerRole, viewerUserId?: string | null): Chat {
   const uniLike = raw.universityId ?? raw.university
   const stuLike = raw.studentId ?? raw.student
   /** Counterparty in the thread only — never fall back to "self" or the wrong side for profile links. */
@@ -88,9 +90,20 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university', 
   const participantId = currentUserRole === 'student' ? (uniPid ?? '') : (stuPid ?? '')
 
   let name = '—'
+  if (currentUserRole === 'counsellor') {
+    const studentName = stuLike && typeof stuLike === 'object'
+      ? [stuLike.firstName ?? '', stuLike.lastName ?? ''].filter(Boolean).join(' ') || stuLike.name || stuLike.userEmail || 'Student'
+      : 'Student'
+    const universityName = uniLike && typeof uniLike === 'object'
+      ? uniLike.universityName || uniLike.name || uniLike.userEmail || 'University'
+      : 'University'
+    name = `${studentName} - ${universityName}`
+  }
   if (partyRef && typeof partyRef === 'object') {
     const o = partyRef as { universityName?: string; firstName?: string; lastName?: string; name?: string; userEmail?: string }
-    if (o.universityName) {
+    if (currentUserRole === 'counsellor') {
+      // Counsellor rows already include both student and university names.
+    } else if (o.universityName) {
       name = String(o.universityName)
     } else {
       const combined = [o.firstName ?? '', o.lastName ?? ''].filter(Boolean).join(' ')
@@ -133,7 +146,7 @@ function normalizeChat(raw: RawChat, currentUserRole: 'student' | 'university', 
   }
 }
 
-export async function getChats(currentUserRole: 'student' | 'university', viewerUserId?: string | null): Promise<Chat[]> {
+export async function getChats(currentUserRole: ChatViewerRole, viewerUserId?: string | null): Promise<Chat[]> {
   const { data } = await api.get<RawChat[]>('/chat')
   const list = Array.isArray(data) ? data : []
   return list.map((c) => normalizeChat(c, currentUserRole, viewerUserId))

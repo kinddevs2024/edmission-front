@@ -24,7 +24,7 @@ function isSidebarPath(pathname: string) {
 
 export function MainLayout() {
   const { isAuthenticated, role, user } = useAuth()
-  const { t } = useTranslation(['student', 'university', 'admin'])
+  const { t } = useTranslation(['student', 'university', 'admin', 'common'])
   const { t: tSchool } = useTranslation('school')
   const location = useLocation()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -36,7 +36,7 @@ export function MainLayout() {
   }, [location.pathname])
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
   const showSidebar = isAuthenticated && isSidebarPath(location.pathname)
-  const isChatPage = location.pathname === '/student/chat' || location.pathname === '/university/chat'
+  const isChatPage = location.pathname === '/student/chat' || location.pathname === '/university/chat' || location.pathname === '/school/chats'
 
   useAutoReadNotifications(role ?? null, isAuthenticated)
 
@@ -62,10 +62,10 @@ export function MainLayout() {
         navItems: [
           { to: '/university-multi-manager', label: t('university:multiManagerTitle', 'Your universities'), icon: 'Building2' },
           { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
-          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
+          { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
         ],
         navBottomItems: [
-          { to: '/support', label: 'Support', icon: 'HelpCircle' },
+          { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
           { to: '/profile', label: t('university:navProfile', 'Profile'), icon: 'Settings' },
         ],
       }
@@ -91,7 +91,7 @@ export function MainLayout() {
           { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
           {
             to: '/university/documents',
-            label: 'Documents',
+            label: t('university:navDocuments', 'Documents'),
             icon: 'FileText',
             section: t('university:navSectionCatalog', 'Programs & catalog'),
           },
@@ -105,10 +105,10 @@ export function MainLayout() {
             icon: 'Bell',
             section: t('university:navSectionMore', 'More'),
           },
-          { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
+          { to: '/university/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
         ],
         navBottomItems: [
-        { to: '/support', label: 'Support', icon: 'HelpCircle' },
+          { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
           { to: '/profile', label: t('university:navProfile', 'Profile'), icon: 'Settings' },
         ],
       }
@@ -133,13 +133,13 @@ export function MainLayout() {
               { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
               { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
               { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
-              { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' },
+              { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
             ]
           : [
               { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
               { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
-              { to: '/admin/ai', label: 'Edmission AI', icon: 'Bot' },
+              { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
             ],
         navBottomItems: [
           { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
@@ -151,13 +151,14 @@ export function MainLayout() {
       return {
         navItems: [
           { to: '/school/dashboard', label: tSchool('dashboard'), icon: 'LayoutDashboard' },
-          { to: '/ai', label: 'Edmission AI', icon: 'Bot' },
+          { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
           { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
           { to: '/school/my-students/map', label: tSchool('studentMap', 'Student map'), icon: 'Map' },
           { to: '/school/student-interests', label: tSchool('studentInterestsNav', 'Student interests'), icon: 'HeartHandshake' },
           { to: '/school/applications', label: tSchool('applications', 'Applications'), icon: 'Heart' },
           { to: '/school/offers', label: tSchool('offers', 'Offers'), icon: 'Gift' },
+          { to: '/school/chats', label: tSchool('chats', 'Chats'), icon: 'MessageCircle' },
           { to: '/school/join-requests', label: tSchool('joinRequests'), icon: 'Users' },
           { to: '/notifications', label: tSchool('notifications'), icon: 'Bell' },
         ],
@@ -213,6 +214,7 @@ export function MainLayout() {
         { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
         { to: '/school/applications', label: tSchool('applications', 'Applications'), icon: 'Heart' },
         { to: '/school/offers', label: tSchool('offers', 'Offers'), icon: 'Gift' },
+        { to: '/school/chats', label: tSchool('chats', 'Chats'), icon: 'MessageCircle' },
         { to: '/school/join-requests', label: tSchool('joinRequests'), icon: 'Users' },
       ]
     }

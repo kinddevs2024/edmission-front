@@ -19,10 +19,11 @@ import { toastApiError } from '@/utils/toastError'
 import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
 import { newPasswordValueSchema } from '@/utils/authPasswordZod'
 import { notifySuccess } from '@/utils/notify'
+import { cn } from '@/utils/cn'
 import type { NotificationPreferences } from '@/types/user'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { CheckCircle, CircleAlert, Lock } from 'lucide-react'
+import { CheckCircle, ChevronDown, CircleAlert, Lock } from 'lucide-react'
 import { getStudentProfile, updateStudentProfile } from '@/services/student'
 
 type ChangePasswordForm = { currentPassword: string; newPassword: string; confirmPassword: string }
@@ -51,7 +52,7 @@ export function Profile() {
       .catch(() => setUniversityLogoUrl(''))
   }, [user?.role, user?.avatar])
 
-  const prefs = user?.notificationPreferences ?? { emailApplicationUpdates: true, emailTrialReminder: true }
+  const prefs = user?.notificationPreferences ?? { emailApplicationUpdates: true, emailTrialReminder: true, smsApplicationUpdates: false }
 
   const handlePrefChange = (key: keyof NotificationPreferences, value: boolean) => {
     const next = { ...prefs, [key]: value }
@@ -75,6 +76,7 @@ export function Profile() {
   const [linkedin, setLinkedin] = useState(user?.socialLinks?.linkedin ?? '')
   const [facebook, setFacebook] = useState(user?.socialLinks?.facebook ?? '')
   const [whatsapp, setWhatsapp] = useState(user?.socialLinks?.whatsapp ?? '')
+  const [openSocialLink, setOpenSocialLink] = useState<'telegram' | 'instagram' | 'linkedin' | 'facebook' | 'whatsapp' | null>('telegram')
   const [accountSaving, setAccountSaving] = useState(false)
   const [studentProfileVisibility, setStudentProfileVisibility] = useState<'private' | 'public' | null>(null)
 
@@ -237,6 +239,48 @@ export function Profile() {
     [t, user?.email, user?.linkedProviders?.email, user?.linkedProviders?.google, user?.linkedProviders?.phone, user?.linkedProviders?.telegram, user?.linkedProviders?.yandex, user?.phone, user?.socialLinks?.telegram]
   )
   const shouldShowLoginMethods = loginMethods.filter((item) => item.connected).length < 2
+  const socialAccounts = [
+    {
+      key: 'telegram' as const,
+      label: 'Telegram',
+      value: telegram,
+      setValue: setTelegram,
+      placeholder: '@username',
+      verified: Boolean(user?.linkedProviders?.telegram),
+    },
+    {
+      key: 'instagram' as const,
+      label: 'Instagram',
+      value: instagram,
+      setValue: setInstagram,
+      placeholder: 'instagram.com/username',
+      verified: false,
+    },
+    {
+      key: 'linkedin' as const,
+      label: 'LinkedIn',
+      value: linkedin,
+      setValue: setLinkedin,
+      placeholder: 'linkedin.com/in/username',
+      verified: false,
+    },
+    {
+      key: 'facebook' as const,
+      label: 'Facebook',
+      value: facebook,
+      setValue: setFacebook,
+      placeholder: 'facebook.com/username',
+      verified: false,
+    },
+    {
+      key: 'whatsapp' as const,
+      label: 'WhatsApp',
+      value: whatsapp,
+      setValue: setWhatsapp,
+      placeholder: '+998 90 123 45 67',
+      verified: Boolean(user?.linkedProviders?.phone),
+    },
+  ]
 
   return (
     <div className="w-full space-y-4 pb-page-bottom-cta">
@@ -275,11 +319,52 @@ export function Profile() {
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <Input label={t('name')} value={name} onChange={(e) => setName(e.target.value)} />
           <Input label={t('phone', 'Phone')} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998 90 123 45 67" />
-          <Input label="Telegram" value={telegram} onChange={(e) => setTelegram(e.target.value)} placeholder="@username" />
-          <Input label="Instagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="instagram.com/username" />
-          <Input label="LinkedIn" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/username" />
-          <Input label="Facebook" value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/username" />
-          <Input label="WhatsApp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+998 90 123 45 67" />
+        </div>
+        <div className="mt-4 rounded-card border border-[var(--color-border)] bg-[var(--color-bg)]/55">
+          {socialAccounts.map((account, index) => {
+            const open = openSocialLink === account.key
+            const connected = Boolean(account.value.trim())
+            return (
+              <div key={account.key} className={cn(index > 0 && 'border-t border-[var(--color-border)]')}>
+                <button
+                  type="button"
+                  onClick={() => setOpenSocialLink(open ? null : account.key)}
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left"
+                  aria-expanded={open}
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium text-[var(--color-text)]">{account.label}</span>
+                    <span className="mt-0.5 block text-xs text-[var(--color-text-muted)]">
+                      {account.verified
+                        ? t('auth:connected', 'Connected')
+                        : connected
+                          ? t('common:filled', 'Filled')
+                          : t('auth:notConnected', 'Not connected')}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    {account.verified ? <CheckCircle className="h-4 w-4 text-green-600" aria-hidden /> : null}
+                    <ChevronDown className={cn('h-4 w-4 text-[var(--color-text-muted)] transition-transform', open && 'rotate-180')} aria-hidden />
+                  </span>
+                </button>
+                {open ? (
+                  <div className="px-3 pb-3">
+                    <Input
+                      label={account.label}
+                      value={account.value}
+                      onChange={(e) => account.setValue(e.target.value)}
+                      placeholder={account.placeholder}
+                      hint={
+                        account.verified
+                          ? t('auth:connectedLoginMethodsHint', 'Verified through a connected login method.')
+                          : t('common:optional', 'optional')
+                      }
+                    />
+                  </div>
+                ) : null}
+              </div>
+            )
+          })}
         </div>
         <div className="mt-4 flex w-full min-w-0 items-center justify-between gap-3">
           {canChangePassword ? (
@@ -479,6 +564,18 @@ export function Profile() {
             label={t('emailTrialReminder')}
             aria-label={t('emailTrialReminder')}
           />
+          <Checkbox
+            checked={!!prefs.smsApplicationUpdates}
+            onChange={(e) => handlePrefChange('smsApplicationUpdates', e.target.checked)}
+            disabled={!user?.phone}
+            label={t('smsApplicationUpdates', 'Send important updates to my phone')}
+            aria-label={t('smsApplicationUpdates', 'Send important updates to my phone')}
+          />
+          {!user?.phone && (
+            <p className="-mt-3 text-xs text-[var(--color-text-muted)]">
+              {t('smsApplicationUpdatesPhoneHint', 'Add your phone number above to enable phone notifications.')}
+            </p>
+          )}
           {typeof window !== 'undefined' && 'Notification' in window && (
             <div className="pt-2 border-t border-[var(--color-border)] flex items-center justify-between gap-2">
               <span className="text-sm text-[var(--color-text-muted)]">

@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/Button'
 export function UniversityLayout() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { t } = useTranslation('university')
+  const { t } = useTranslation(['university', 'common'])
   const location = useLocation()
   const actingUniversityUserId = typeof sessionStorage !== 'undefined' ? getActAsUniversityUserId() : null
   const isDelegatedSession = user?.role === 'university_multi_manager' && Boolean(actingUniversityUserId)
@@ -54,7 +54,7 @@ export function UniversityLayout() {
             { to: '/university/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
             {
               to: '/university/documents',
-              label: 'Documents',
+              label: t('university:navDocuments', 'Documents'),
               icon: 'FileText',
               section: t('navSectionCatalog', 'Programs & catalog'),
             },
@@ -68,16 +68,16 @@ export function UniversityLayout() {
               icon: 'Bell',
               section: t('navSectionMore', 'More'),
             },
-            { to: '/university/ai', label: 'Edmission AI', icon: 'Bot' },
+            { to: '/university/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
           ],
     [t, isSelect, isPending]
   )
   const navBottomItems = useMemo(
     () =>
       isSelect || isPending
-        ? [{ to: '/support', label: 'Support', icon: 'HelpCircle' }]
+        ? [{ to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' }]
         : [
-            { to: '/support', label: 'Support', icon: 'HelpCircle' },
+            { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
             { to: '/profile', label: t('navProfile', 'Profile'), icon: 'Settings' },
           ],
     [t, isSelect, isPending]

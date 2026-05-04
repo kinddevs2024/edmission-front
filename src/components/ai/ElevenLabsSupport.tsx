@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import type { ReactNode, RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
-import { Bot, Loader2, Maximize2, MessageCircle, Mic, MicOff, Phone, PhoneOff, Send, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Bot, Loader2, Maximize2, MessageCircle, Mic, MicOff, Minimize2, Phone, PhoneOff, Send, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 
@@ -59,6 +60,7 @@ export function useElevenLabsSupport() {
 
 function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
   const { role, user } = useAuth()
+  const { t } = useTranslation('common')
   const [messages, setMessages] = useState<TranscriptMessage[]>([])
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -131,11 +133,11 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
     setError(null)
     if (isConnected || isConnecting) return
     if (!ELEVENLABS_AGENT_ID) {
-      setError('ElevenLabs agent ID is not configured.')
+      setError(t('aiSupportAgentMissing', 'ElevenLabs agent ID is not configured.'))
       return
     }
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError('Microphone access is not available in this browser.')
+      setError(t('aiSupportMicrophoneUnavailable', 'Microphone access is not available in this browser.'))
       return
     }
 
@@ -155,7 +157,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
         },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not start the call.')
+      setError(err instanceof Error ? err.message : t('aiSupportStartFailed', 'Could not start the call.'))
     }
   }
 
@@ -174,7 +176,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
     const trimmed = text.trim()
     if (!trimmed) return
     if (!isConnected) {
-      setError('Start the call before sending a message.')
+      setError(t('aiSupportStartBeforeMessage', 'Start the call before sending a message.'))
       return
     }
 
@@ -184,7 +186,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
       setText('')
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send the message.')
+      setError(err instanceof Error ? err.message : t('aiSupportSendFailed', 'Could not send the message.'))
     }
   }
 
@@ -222,6 +224,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
       outputLevel,
       startConversation,
       sendTextMessage,
+      t,
     ]
   )
 
@@ -230,6 +233,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
 
 export function ElevenLabsSupportPage() {
   const support = useElevenLabsSupport()
+  const { t } = useTranslation('common')
 
   return (
     <div className="flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] min-h-[400px] flex-col overflow-hidden sm:h-[calc(100dvh-5.5rem)] sm:max-h-[calc(100dvh-5.5rem)]">
@@ -241,10 +245,12 @@ export function ElevenLabsSupportPage() {
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-base font-semibold text-[var(--color-text)] sm:text-lg">
-                Edmission.uz Support
+                {t('aiSupportTitle', 'Edmission.uz Support')}
               </h1>
               <p className="truncate text-xs text-[var(--color-text-muted)]">
-                {support.isConnected ? (support.isSpeaking ? 'Speaking' : 'Listening') : support.isConnecting ? 'Connecting' : 'Ready'}
+                {support.isConnected
+                  ? (support.isSpeaking ? t('aiSupportSpeaking', 'Speaking') : t('aiSupportListening', 'Listening'))
+                  : support.isConnecting ? t('aiSupportConnecting', 'Connecting') : t('aiSupportReady', 'Ready')}
               </p>
             </div>
           </div>
@@ -261,7 +267,7 @@ export function ElevenLabsSupportPage() {
               <IconButton label="End call" danger onClick={support.endConversation}>
                 {support.isConnecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <PhoneOff className="h-5 w-5" />}
               </IconButton>
-              <IconButton label="Open chat" active={support.chatOpen} onClick={support.openChat}>
+              <IconButton label={t('aiSupportOpenChat', 'Open chat')} active={support.chatOpen} onClick={support.openChat}>
                 <MessageCircle className="h-5 w-5" />
               </IconButton>
             </div>
@@ -274,10 +280,10 @@ export function ElevenLabsSupportPage() {
               type="button"
               onClick={support.startConversation}
               className="flex h-32 w-32 flex-col items-center justify-center gap-3 rounded-full bg-primary-accent text-primary-dark shadow-[0_18px_44px_-18px_rgba(132,204,22,0.75)] transition-transform hover:scale-105 focus-visible:scale-105"
-              aria-label="Start call"
+              aria-label={t('aiSupportStartCall', 'Start call')}
             >
               <Phone className="h-10 w-10" aria-hidden />
-              <span className="text-base font-semibold">Call</span>
+              <span className="text-base font-semibold">{t('aiSupportCall', 'Call')}</span>
             </button>
           ) : (
             <VoiceOrb
@@ -316,7 +322,9 @@ export function ElevenLabsSupportPage() {
 export function ElevenLabsFloatingSupport() {
   const support = useElevenLabsSupport()
   const { role } = useAuth()
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
+  const [expanded, setExpanded] = useState(false)
   const aiPath =
     role === 'admin' || role === 'manager' || role === 'counsellor_coordinator'
       ? '/admin/ai'
@@ -337,37 +345,74 @@ export function ElevenLabsFloatingSupport() {
           support.hasStarted ? 'pointer-events-auto scale-100 opacity-100' : 'pointer-events-none scale-90 opacity-0'
         )}
       >
-        <div className="relative flex w-[min(13.5rem,calc(100vw-2rem))] flex-col items-center gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-2xl">
-          <button
-            type="button"
-            onClick={openFullMode}
-            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 hover:text-[var(--color-text)]"
-            aria-label="Open full AI chat"
-            title="Open full AI chat"
-          >
-            <Maximize2 className="h-4 w-4" aria-hidden />
-          </button>
-          <VoiceOrb
-            isConnected={support.isConnected}
-            isConnecting={support.isConnecting}
-            isSpeaking={support.isSpeaking}
-            outputLevel={support.outputLevel}
-            size="small"
-          />
-          {support.error && <p className="max-w-full text-center text-xs text-red-500">{support.error}</p>}
-          <div className="flex items-center gap-2">
+        {expanded ? (
+          <div className="relative flex w-[min(18rem,calc(100vw-2rem))] flex-col items-center gap-3 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-2xl">
+            <div className="absolute right-2 top-2 flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 hover:text-[var(--color-text)]"
+                aria-label={t('aiSupportMinimize', 'Minimize AI call')}
+                title={t('aiSupportMinimize', 'Minimize AI call')}
+              >
+                <Minimize2 className="h-4 w-4" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={openFullMode}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 hover:text-[var(--color-text)]"
+                aria-label={t('aiSupportOpenFull', 'Open full AI chat')}
+                title={t('aiSupportOpenFull', 'Open full AI chat')}
+              >
+                <Maximize2 className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+            <VoiceOrb
+              isConnected={support.isConnected}
+              isConnecting={support.isConnecting}
+              isSpeaking={support.isSpeaking}
+              outputLevel={support.outputLevel}
+              size="small"
+            />
+            <p className="text-center text-xs font-medium text-[var(--color-text-muted)]">
+              {support.isSpeaking
+                ? t('aiSupportSpeaking', 'Speaking')
+                : support.isConnected ? t('aiSupportListening', 'Listening') : t('aiSupportConnecting', 'Connecting')}
+            </p>
+            {support.error && <p className="max-w-full text-center text-xs text-red-500">{support.error}</p>}
+            <div className="flex items-center gap-2">
+              <IconButton
+                label={support.isMuted ? t('aiSupportMicOn', 'Turn microphone on') : t('aiSupportMicOff', 'Turn microphone off')}
+                disabled={!support.isConnected}
+                onClick={support.toggleMute}
+              >
+                {support.isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </IconButton>
+              <IconButton label={t('aiSupportEndCall', 'End call')} danger onClick={support.endConversation}>
+                {support.isConnecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <PhoneOff className="h-5 w-5" />}
+              </IconButton>
+              <IconButton label={t('aiSupportOpenChat', 'Open chat')} active={support.chatOpen} onClick={openFullMode}>
+                <MessageCircle className="h-5 w-5" />
+              </IconButton>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-2 shadow-2xl">
             <IconButton
-              label={support.isMuted ? 'Turn microphone on' : 'Turn microphone off'}
+              label={support.isMuted ? t('aiSupportMicOn', 'Turn microphone on') : t('aiSupportMicOff', 'Turn microphone off')}
               disabled={!support.isConnected}
               onClick={support.toggleMute}
             >
               {support.isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </IconButton>
-            <IconButton label="End call" danger onClick={support.endConversation}>
+            <IconButton label={t('aiSupportEndCall', 'End call')} danger onClick={support.endConversation}>
               {support.isConnecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <PhoneOff className="h-5 w-5" />}
             </IconButton>
+            <IconButton label={t('aiSupportExpand', 'Expand AI call')} onClick={() => setExpanded(true)}>
+              <Maximize2 className="h-5 w-5" />
+            </IconButton>
           </div>
-        </div>
+        )}
       </div>
 
       <button
@@ -378,7 +423,7 @@ export function ElevenLabsFloatingSupport() {
           'absolute bottom-0 right-0 flex h-14 w-14 items-center justify-center rounded-full bg-primary-accent text-primary-dark shadow-lg transition-all duration-200 ease-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2',
           support.hasStarted ? 'pointer-events-none scale-90 opacity-0' : 'pointer-events-auto scale-100 opacity-100'
         )}
-        aria-label="Start Edmission support call"
+        aria-label={t('aiSupportStartSupportCall', 'Start Edmission support call')}
       >
         <Phone className="h-6 w-6" aria-hidden />
       </button>
@@ -405,15 +450,17 @@ function ChatPanel({
   onTextChange: (value: string) => void
   onSubmit: () => void
 }) {
+  const { t } = useTranslation('common')
+
   return (
     <aside className="absolute inset-y-0 right-0 z-10 flex w-full max-w-xl flex-col border-l border-[var(--color-border)] bg-[var(--color-card)] shadow-2xl sm:w-[28rem]">
       <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
-        <p className="text-sm font-semibold text-[var(--color-text)]">Chat</p>
+        <p className="text-sm font-semibold text-[var(--color-text)]">{t('aiSupportChat', 'Chat')}</p>
         <button
           type="button"
           onClick={onClose}
           className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/30 hover:text-[var(--color-text)]"
-          aria-label="Close chat"
+          aria-label={t('aiSupportCloseChat', 'Close chat')}
         >
           <X className="h-5 w-5" aria-hidden />
         </button>
@@ -422,7 +469,7 @@ function ChatPanel({
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex h-full min-h-[12rem] items-center justify-center text-center text-sm text-[var(--color-text-muted)]">
-            Chat messages will appear here.
+            {t('aiSupportEmptyChat', 'Chat messages will appear here.')}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -468,7 +515,7 @@ function ChatPanel({
                 onSubmit()
               }
             }}
-            placeholder={isConnected ? 'Message Edmission support...' : 'Start the call to type'}
+            placeholder={isConnected ? t('aiSupportMessagePlaceholder', 'Message Edmission support...') : t('aiSupportStartToType', 'Start the call to type')}
             rows={1}
             disabled={!isConnected}
             className="min-h-[36px] max-h-28 flex-1 resize-none bg-transparent py-1.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none disabled:cursor-not-allowed"
@@ -477,7 +524,7 @@ function ChatPanel({
             type="submit"
             disabled={!isConnected || !text.trim()}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-accent text-primary-dark transition-colors hover:bg-primary-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Send message"
+            aria-label={t('aiSupportSendMessage', 'Send message')}
           >
             <Send className="h-5 w-5" aria-hidden />
           </button>
@@ -506,9 +553,9 @@ function VoiceOrb({
 
   return (
     <div className={cn('ai-support-orb relative flex items-center justify-center rounded-full', dimension)}>
-      <span className={cn('ai-support-wave', isConnected && 'is-active')} />
-      <span className={cn('ai-support-wave ai-support-wave-delay-1', isConnected && 'is-active')} />
-      <span className={cn('ai-support-wave ai-support-wave-delay-2', isConnected && 'is-active')} />
+      <span className={cn('ai-support-wave', isSpeaking && 'is-active')} />
+      <span className={cn('ai-support-wave ai-support-wave-delay-1', isSpeaking && 'is-active')} />
+      <span className={cn('ai-support-wave ai-support-wave-delay-2', isSpeaking && 'is-active')} />
       <div
         className={cn(
           'relative z-10 flex h-[64%] w-[64%] items-center justify-center rounded-full border border-primary-accent/30 bg-primary-accent/15 text-primary-accent shadow-[0_18px_50px_-28px_rgba(132,204,22,0.85)]',
@@ -522,7 +569,7 @@ function VoiceOrb({
             {[0.55, 0.85, 1.2, 0.95, 0.65].map((multiplier, index) => (
               <span
                 key={index}
-                className="ai-support-frequency-bar w-2 rounded-full bg-primary-accent"
+                className={cn('ai-support-frequency-bar w-2 rounded-full bg-primary-accent', isSpeaking && 'is-active')}
                 style={{
                   height: `${Math.max(8, barBase * level * multiplier)}px`,
                   animationDelay: `${index * 90}ms`,

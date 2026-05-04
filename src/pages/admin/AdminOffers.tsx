@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -9,14 +10,8 @@ import { getOffers, updateOfferStatus, type AdminOffer } from '@/services/admin'
 import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'accepted', label: 'Accepted' },
-  { value: 'declined', label: 'Declined' },
-]
-
 export function AdminOffers() {
+  const { t } = useTranslation(['admin', 'common'])
   const [items, setItems] = useState<AdminOffer[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -24,6 +19,12 @@ export function AdminOffers() {
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const limit = 20
+  const statusOptions = [
+    { value: '', label: t('admin:allStatuses', 'All statuses') },
+    { value: 'pending', label: t('admin:pending', 'Pending') },
+    { value: 'accepted', label: t('admin:accepted', 'Accepted') },
+    { value: 'declined', label: t('admin:declined', 'Declined') },
+  ]
 
   useEffect(() => {
     setLoading(true)
@@ -50,18 +51,21 @@ export function AdminOffers() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="Offers" icon="Gift" />
+      <PageTitle title={t('admin:offersTitle', 'Offers')} icon="Gift" />
 
       <Card>
-        <div className="flex flex-wrap gap-4 mb-4">
-          <Select
-            label="Status"
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-          />
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <CardTitle>{t('admin:allOffers', 'All offers')}</CardTitle>
+          <div className="w-full md:w-52">
+            <Select
+              label={t('common:status', 'Status')}
+              options={statusOptions}
+              value={statusFilter}
+              className="min-h-10 py-2"
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+            />
+          </div>
         </div>
-        <CardTitle>All offers</CardTitle>
         {loading ? (
           <TableSkeleton rows={8} cols={7} />
         ) : (
@@ -69,13 +73,13 @@ export function AdminOffers() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>ID</TableTh>
-                  <TableTh>StudentProfile</TableTh>
-                  <TableTh>UniversityProfile</TableTh>
-                  <TableTh>Coverage %</TableTh>
-                  <TableTh>Status</TableTh>
-                  <TableTh>Created</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('common:id', 'ID')}</TableTh>
+                  <TableTh>{t('admin:studentProfile', 'Student profile')}</TableTh>
+                  <TableTh>{t('admin:universityProfile', 'University profile')}</TableTh>
+                  <TableTh>{t('admin:coveragePercent', 'Coverage %')}</TableTh>
+                  <TableTh>{t('common:status', 'Status')}</TableTh>
+                  <TableTh>{t('admin:createdLabel', 'Created')}</TableTh>
+                  <TableTh>{t('common:actions', 'Actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -85,15 +89,15 @@ export function AdminOffers() {
                     <TableTd className="font-mono text-xs">{String(o.studentId)}</TableTd>
                     <TableTd className="font-mono text-xs">{String(o.universityId)}</TableTd>
                     <TableTd>{o.coveragePercent}</TableTd>
-                    <TableTd>{o.status}</TableTd>
+                    <TableTd>{t(`admin:${o.status}`, o.status)}</TableTd>
                     <TableTd>{o.createdAt ? formatDateTime(o.createdAt) : '—'}</TableTd>
                     <TableTd>
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === o.id} onClick={() => changeStatus(o.id, 'accepted')}>
-                          Accept
+                          {t('admin:accept', 'Accept')}
                         </Button>
                         <Button size="sm" variant="danger" disabled={!!actionId} loading={actionId === o.id} onClick={() => changeStatus(o.id, 'declined')}>
-                          Decline
+                          {t('admin:decline', 'Decline')}
                         </Button>
                       </div>
                     </TableTd>

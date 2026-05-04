@@ -14,7 +14,7 @@ import type { UniversityListItem } from '@/types/university'
 import type { Application, Offer } from '@/types/student'
 import { toastApiError } from '@/utils/toastError'
 import { cn } from '@/utils/cn'
-import { ArrowRight, Bell, Building2, CheckCircle, Circle, FileText, Gift, GraduationCap, SearchCheck, UserCircle } from 'lucide-react'
+import { ArrowRight, Bell, Building2, CheckCircle, Circle, FileText, Gift, GraduationCap, Phone, SearchCheck, UserCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { trackStudentFunnel } from '@/analytics/studentFunnel'
 import { useAuth } from '@/hooks/useAuth'
@@ -261,6 +261,11 @@ export function StudentDashboard() {
   const onboardingSteps = useMemo(
     () => [
       { label: t('stepMinimalProfile'), to: '/student/profile', done: minimalComplete },
+      {
+        label: t('student:stepAddPhone', 'Add your phone number for important updates'),
+        to: '/profile',
+        done: Boolean(user?.phone),
+      },
       { label: t('stepUploadDocument'), to: '/student/documents', done: docCount > 0 },
       {
         label: t('student:stepConnectTelegram', 'Connect Telegram for reminders'),
@@ -278,7 +283,7 @@ export function StudentDashboard() {
         done: offers.length > 0,
       },
     ],
-    [t, minimalComplete, docCount, applications.length, offers.length, user?.linkedProviders?.telegram, user?.socialLinks?.telegram]
+    [t, minimalComplete, docCount, applications.length, offers.length, user?.linkedProviders?.telegram, user?.phone, user?.socialLinks?.telegram]
   )
   const onboardingDone = onboardingSteps.every((s) => s.done)
   const nextIncomplete = onboardingSteps.find((s) => !s.done)
@@ -404,6 +409,27 @@ export function StudentDashboard() {
           to="/student/documents"
         />
       </div>
+
+      {!user?.phone ? (
+        <Card className="border-primary-accent/25 bg-[var(--color-card)]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-accent/12 text-primary-accent">
+                <Phone className="h-5 w-5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <CardTitle className="text-base">{t('student:addPhoneTitle', 'Add your phone number')}</CardTitle>
+                <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
+                  {t('student:addPhoneHint', 'We can use it for urgent reminders about offers, messages, and documents.')}
+                </p>
+              </div>
+            </div>
+            <Button to="/profile" variant="secondary" className="w-full sm:w-auto">
+              {t('student:addPhoneCta', 'Add phone')}
+            </Button>
+          </div>
+        </Card>
+      ) : null}
 
       <Link
         to="/student/profile"

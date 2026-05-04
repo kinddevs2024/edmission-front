@@ -80,22 +80,18 @@ export function AdminDocuments() {
 
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
-          <button
+          <Button
             key={f}
             type="button"
+            size="sm"
+            variant={filter === f ? 'primary' : 'secondary'}
             onClick={() => setFilter(f)}
-            className={cn(
-              'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-              filter === f
-                ? 'border-primary-accent bg-primary-accent/15 text-primary-accent'
-                : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-text-muted)]/40'
-            )}
           >
             {f === 'pending' && t('admin:documentsFilterPending', 'Awaiting review')}
             {f === 'all' && t('admin:documentsFilterAll', 'All')}
             {f === 'approved' && t('admin:documentsFilterApproved', 'Approved')}
             {f === 'rejected' && t('admin:documentsFilterRejected', 'Rejected')}
-          </button>
+          </Button>
         ))}
       </div>
 

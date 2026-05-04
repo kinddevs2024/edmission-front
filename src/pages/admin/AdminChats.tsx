@@ -230,17 +230,19 @@ export function AdminChats() {
       <PageTitle title={t('admin:chats')} icon="MessageCircle" />
 
       <Card>
-        <div className="flex flex-wrap gap-4 mb-4">
-          <Select
-            label={t('admin:universityProfile', 'University')}
-            value={selectedUniversityId}
-            onChange={(e) => { setSelectedUniversityId(e.target.value); setPage(1) }}
-            placeholder={t('admin:allUniversities', 'All universities')}
-            options={[{ value: '', label: t('admin:allUniversities', 'All universities') }, ...universities.map((u) => ({ value: u.id, label: u.name || u.id }))]}
-            className="min-w-[200px]"
-          />
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <CardTitle>{t('admin:allChats', 'All chats')}</CardTitle>
+          <div className="w-full md:w-64">
+            <Select
+              label={t('admin:universityProfile', 'University')}
+              value={selectedUniversityId}
+              onChange={(e) => { setSelectedUniversityId(e.target.value); setPage(1) }}
+              placeholder={t('admin:allUniversities', 'All universities')}
+              options={[{ value: '', label: t('admin:allUniversities', 'All universities') }, ...universities.map((u) => ({ value: u.id, label: u.name || u.id }))]}
+              className="min-h-10 py-2"
+            />
+          </div>
         </div>
-        <CardTitle>{t('admin:allChats', 'All chats')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={8} cols={5} />
         ) : (

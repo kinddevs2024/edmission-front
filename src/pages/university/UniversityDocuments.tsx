@@ -30,7 +30,7 @@ import {
   revokeIssuedDocument,
   updateDocumentTemplate,
 } from '@/services/documents'
-import { uploadFile } from '@/services/upload'
+import { MAX_UPLOAD_SIZE_MB, assertMaxUploadSize, uploadFile } from '@/services/upload'
 import { useDocumentEditorStore } from '@/store/documentEditorStore'
 import { createBlankScene, parseScene, stringifyScene } from '@/utils/documentScene'
 import { toastApiError } from '@/utils/toastError'
@@ -520,6 +520,15 @@ export function UniversityDocuments() {
           className="hidden"
           onChange={(event) => {
             const file = event.target.files?.[0] ?? null
+            if (file) {
+              try {
+                assertMaxUploadSize(file)
+              } catch {
+                toastApiError(new Error(t('common:maxFileSizeError', 'Maximum file size is {{size}} MB.', { size: MAX_UPLOAD_SIZE_MB })))
+                event.target.value = ''
+                return
+              }
+            }
             setTemplateUploadFile(file)
             if (templateUploadPreview) URL.revokeObjectURL(templateUploadPreview)
             setTemplateUploadPreview(file ? URL.createObjectURL(file) : '')
@@ -538,6 +547,9 @@ export function UniversityDocuments() {
             </p>
             <p className="text-xs text-[var(--color-text-muted)]">
               {t('documents:universityDocuments.uploadDropzoneHint', 'Image or PDF works best as template background')}
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {t('common:maxFileSize', 'Maximum file size: {{size}} MB', { size: MAX_UPLOAD_SIZE_MB })}
             </p>
           </div>
         </button>

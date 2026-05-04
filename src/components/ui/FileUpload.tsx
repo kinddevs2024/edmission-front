@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type Ref } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
-import { DEFAULT_USER_AVATAR, IMAGE_UPLOAD_ACCEPT, uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
+import { useTranslation } from 'react-i18next'
+import { DEFAULT_USER_AVATAR, IMAGE_UPLOAD_ACCEPT, MAX_UPLOAD_SIZE_MB, assertMaxUploadSize, uploadFile, uploadAvatarForRegister, getImageUrl } from '@/services/upload'
 import { getApiError } from '@/services/auth'
 import { cn } from '@/utils/cn'
 import { AvatarCropModal } from '@/components/ui/AvatarCropModal'
@@ -33,6 +34,7 @@ export function FileUpload({
   publicUpload = false,
   headless = false,
 }: FileUploadProps) {
+  const { t } = useTranslation('common')
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [imgLoadError, setImgLoadError] = useState(false)
@@ -93,6 +95,12 @@ export function FileUpload({
     if (!file) return
     input.value = ''
     setError('')
+    try {
+      assertMaxUploadSize(file)
+    } catch {
+      setError(t('maxFileSizeError', 'Maximum file size is {{size}} MB.', { size: MAX_UPLOAD_SIZE_MB }))
+      return
+    }
 
     if (isAvatar && !isHeicLikeImage(file)) {
       if (cropObjectUrlRef.current) URL.revokeObjectURL(cropObjectUrlRef.current)
@@ -132,7 +140,7 @@ export function FileUpload({
           onChange={handleFile}
           className="sr-only"
           disabled={uploading || cropOpen}
-          aria-label={label ?? 'Upload avatar'}
+          aria-label={label ?? t('uploadAvatar', 'Upload avatar')}
         />
         {error ? (
           <p role="alert" className="sr-only">
@@ -172,7 +180,7 @@ export function FileUpload({
           onChange={handleFile}
           className="absolute inset-0 cursor-pointer opacity-0 z-10"
           disabled={uploading || cropOpen}
-          aria-label={label ?? 'Upload file'}
+          aria-label={label ?? t('uploadFile', 'Upload file')}
         />
         {uploading ? (
           <Loader2 className={cn('animate-spin text-[var(--color-text-muted)]', isAvatar ? 'w-10 h-10' : 'w-8 h-8')} aria-hidden />
@@ -186,10 +194,10 @@ export function FileUpload({
                 onError={() => setImgLoadError(true)}
               />
             ) : value && (accept.includes('image') && imgLoadError) ? (
-              <span className="text-sm text-[var(--color-text-muted)]">Preview unavailable</span>
+              <span className="text-sm text-[var(--color-text-muted)]">{t('previewUnavailable', 'Preview unavailable')}</span>
             ) : (
               <span className="text-sm text-[var(--color-text-muted)] truncate max-w-full px-2">
-                {value.split('/').pop() ?? 'File'}
+                {value.split('/').pop() ?? t('file', 'File')}
               </span>
             )}
             <button
@@ -200,7 +208,7 @@ export function FileUpload({
                 onChange('')
               }}
               className="absolute top-1 right-1 p-1 rounded-full bg-black/50 text-white hover:bg-black/70 z-20"
-              aria-label="Remove"
+              aria-label={t('remove', 'Remove')}
             >
               <X className="w-4 h-4" />
             </button>
@@ -211,12 +219,14 @@ export function FileUpload({
           <div className="flex flex-col items-center gap-1 text-center text-[var(--color-text-muted)]">
             <Upload className={isAvatar ? 'w-8 h-8' : 'w-10 h-10'} aria-hidden />
             <span className="text-xs">
-              {isAvatar ? 'Add photo' : 'Click or drag to upload'}
+              {isAvatar ? t('addPhoto', 'Add photo') : t('clickOrDragToUpload', 'Click or drag to upload')}
             </span>
           </div>
         )}
       </div>
-      {hint && <p className="text-xs text-[var(--color-text-muted)]">{hint}</p>}
+      <p className="text-xs text-[var(--color-text-muted)]">
+        {hint ? `${hint} · ` : ''}{t('maxFileSize', 'Maximum file size: {{size}} MB', { size: MAX_UPLOAD_SIZE_MB })}
+      </p>
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )

@@ -45,9 +45,24 @@ export function buildNotificationLink(
   _metadata?: Record<string, unknown>,
   role?: Role | null
 ): string | undefined {
+  if (role === 'school_counsellor') {
+    switch (type) {
+      case 'message':
+        return referenceId ? `/school/chats?chatId=${referenceId}` : '/school/chats'
+      case 'offer':
+      case 'document':
+        return '/school/offers'
+      case 'school_join_request':
+        return '/school/join-requests'
+      case 'school_invitation_accepted':
+      case 'school_invitation_declined':
+        return '/school/my-students'
+      default:
+        return '/school/dashboard'
+    }
+  }
   const isAdmin =
     role === 'admin'
-    || role === 'school_counsellor'
     || role === 'manager'
     || role === 'counsellor_coordinator'
   if (isAdmin) {
@@ -75,8 +90,10 @@ export function buildNotificationLink(
     case 'message':
       return referenceId ? `${chatPath}?chatId=${referenceId}` : chatPath
     case 'offer':
+      if (role === 'university' || role === 'university_multi_manager') return '/university/documents'
       return '/student/offers'
     case 'document':
+      if (role === 'university' || role === 'university_multi_manager') return referenceId ? `/university/documents?documentId=${referenceId}` : '/university/documents'
       return referenceId ? `/student/received-documents/${referenceId}` : '/student/offers'
     case 'document_viewed':
     case 'document_accepted':

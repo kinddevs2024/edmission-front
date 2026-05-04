@@ -51,15 +51,18 @@ export function StudentApplications() {
       <PageTitle title={t('student:navApplications', 'My interests')} icon="Heart" />
 
       <Card className="animate-card-enter">
-        <div className="flex flex-wrap gap-4 mb-4">
-          <Select
-            label={t('common:status')}
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-          />
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <CardTitle>{t('student:myApplications', 'My interests')}</CardTitle>
+          <div className="w-full md:w-56">
+            <Select
+              label={t('common:status')}
+              options={STATUS_OPTIONS}
+              value={statusFilter}
+              className="min-h-10 py-2"
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+            />
+          </div>
         </div>
-        <CardTitle className="mb-2">{t('student:myApplications', 'My interests')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={5} cols={5} />
         ) : applications.length === 0 ? (

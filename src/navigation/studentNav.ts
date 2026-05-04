@@ -17,9 +17,9 @@ export function buildStudentNavigation(
   const core: NavItem[] = [
     { to: '/student/dashboard', label: t('navHome', 'Home'), icon: 'LayoutDashboard' },
     { to: '/student/universities', label: t('navExplore', 'Explore'), icon: 'GraduationCap' },
+    { to: '/student/profile', label: t('navProfile', 'Profile'), icon: 'User' },
     { to: '/student/interests', label: t('navApplications', 'Applications'), icon: 'Heart' },
     { to: '/student/chat', label: t('navChat', 'Chat'), icon: 'MessageCircle' },
-    { to: '/student/profile', label: t('navProfile', 'Profile'), icon: 'User' },
   ]
 
   const more: NavItem[] = [

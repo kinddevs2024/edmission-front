@@ -70,7 +70,27 @@
     "nameRequired": "Saqlashdan oldin hujjat nomini kiriting.",
     "saveRequiresName": "Avval hujjat nomini kiriting, keyin yana saqlang.",
     "templateNameHelp": "Shablonni keyin ro'yxatda tez topish va saqlash uchun unga aniq nom bering.",
-    "documentNameHelp": "Hujjatni keyin profil va hujjatlar ro'yxatida tez topish uchun unga aniq nom bering."
+    "documentNameHelp": "Hujjatni keyin profil va hujjatlar ro'yxatida tez topish uchun unga aniq nom bering.",
+    "uploadImage": "Rasm yuklash",
+    "uploadLogo": "Logo yuklash",
+    "signature": "Imzo",
+    "background": "Fon",
+    "templateGuideStep1": "1. Chap tomonda matn, rasm yoki fondan boshlang.",
+    "templateGuideStep2": "2. O'lcham, joylashuv, bloklash yoki uslubni o'zgartirish uchun blokni bosing.",
+    "templateGuideStep3": "3. Talaba ma'lumotlari kerak bo'lsa, merge teglarni faqat matn bloklarida ishlating.",
+    "profileGuideStep1": "1. Sahifa bo'sh qolmasligi uchun avval sarlavha yoki rasm qo'shing.",
+    "profileGuideStep2": "2. O'zgartirish, ko'chirish, nusxalash yoki o'chirish uchun blokni bosing.",
+    "profileGuideStep3": "3. Hujjatni saqlang, u talaba profilida ko'rinadi.",
+    "quickStart": "Tez boshlash",
+    "templateGuideTitle": "Bu redaktor qanday ishlaydi",
+    "profileGuideTitle": "Profil hujjatini 3 qadamda yarating",
+    "hideGuide": "Qo'llanmani yashirish",
+    "width": "Kenglik",
+    "height": "Balandlik",
+    "lock": "Bloklash",
+    "unlock": "Blokdan chiqarish",
+    "noSelectionHint": "Tahrirlash uchun sahifadagi istalgan blokni bosing. Hech narsa tanlanmagan bo'lsa, chap panelda matn yoki rasm qo'shishdan boshlang.",
+    "blankPageHint": "Bo'sh sahifa. Chap panelda matn, rasm yoki fondan boshlang."
   },
   "celebration": {
     "receivedOfferTitle": "Siz taklif oldingiz",
@@ -94,7 +114,11 @@
     "accept": "Qabul qilish",
     "decideLater": "Keyinroq qaror qilish",
     "decline": "Rad etish",
-    "postponeDays": "{{count}} kunga kechiktirish"
+    "postponeDays": "{{count}} kunga kechiktirish",
+    "postponeDays_one": "{{count}} kunga kechiktirish",
+    "postponeDays_few": "{{count}} kunga kechiktirish",
+    "postponeDays_many": "{{count}} kunga kechiktirish",
+    "postponeDays_other": "{{count}} kunga kechiktirish"
   },
   "studentOffers": {
     "pageTitle": "Takliflar va stipendiyalar",

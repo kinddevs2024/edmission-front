@@ -83,21 +83,23 @@ export function CounsellorJoinRequests() {
       <PageTitle title={t('admin:joinRequests', 'Join requests')} icon="Users" />
 
       <Card>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <Select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-            placeholder={t('admin:allStatuses')}
-            options={[
-              { value: '', label: t('admin:allStatuses') },
-              { value: 'pending', label: t('admin:pending', 'Pending') },
-              { value: 'accepted', label: t('admin:accepted', 'Accepted') },
-              { value: 'rejected', label: t('admin:rejected', 'Rejected') },
-            ]}
-            className="min-w-[140px]"
-          />
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <CardTitle>{t('admin:requestsList', 'Requests')}</CardTitle>
+          <div className="w-full md:w-52">
+            <Select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+              placeholder={t('admin:allStatuses')}
+              options={[
+                { value: '', label: t('admin:allStatuses') },
+                { value: 'pending', label: t('admin:pending', 'Pending') },
+                { value: 'accepted', label: t('admin:accepted', 'Accepted') },
+                { value: 'rejected', label: t('admin:rejected', 'Rejected') },
+              ]}
+              className="min-h-10 py-2"
+            />
+          </div>
         </div>
-        <CardTitle>{t('admin:requestsList', 'Requests')}</CardTitle>
         {loading ? (
           <p className="text-[var(--color-text-muted)] py-6">{t('common:loading', 'Loading...')}</p>
         ) : list.length === 0 ? (

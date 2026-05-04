@@ -12,18 +12,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'interested', label: 'Interested' },
-  { value: 'under_review', label: 'Under review' },
-  { value: 'chat_opened', label: 'Chat opened' },
-  { value: 'offer_sent', label: 'Offer sent' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'accepted', label: 'Accepted' },
-]
-
 export function AdminInterests() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const navigate = useNavigate()
   const { role } = useAuth()
   const canOpenChat = role === 'admin'
@@ -34,6 +24,15 @@ export function AdminInterests() {
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const limit = 20
+  const statusOptions = [
+    { value: '', label: t('admin:allStatuses', 'All statuses') },
+    { value: 'interested', label: t('admin:interestedStatus', 'Interested') },
+    { value: 'under_review', label: t('admin:underReview', 'Under review') },
+    { value: 'chat_opened', label: t('admin:chatOpened', 'Chat opened') },
+    { value: 'offer_sent', label: t('admin:offerSent', 'Offer sent') },
+    { value: 'rejected', label: t('admin:rejected', 'Rejected') },
+    { value: 'accepted', label: t('admin:accepted', 'Accepted') },
+  ]
 
   useEffect(() => {
     setLoading(true)
@@ -73,15 +72,18 @@ export function AdminInterests() {
       <PageTitle title={t('admin:interests')} icon="Heart" />
 
       <Card>
-        <div className="flex flex-wrap gap-4 mb-4">
-          <Select
-            label="Status"
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-          />
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <CardTitle>{t('admin:allInterests', 'All interests')}</CardTitle>
+          <div className="w-full md:w-56">
+            <Select
+              label={t('common:status', 'Status')}
+              options={statusOptions}
+              value={statusFilter}
+              className="min-h-10 py-2"
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+            />
+          </div>
         </div>
-        <CardTitle>All interests</CardTitle>
         {loading ? (
           <TableSkeleton rows={8} cols={7} />
         ) : (
@@ -89,13 +91,13 @@ export function AdminInterests() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableTh>Student</TableTh>
-                  <TableTh>University</TableTh>
-                  <TableTh>Source</TableTh>
-                  <TableTh>Status</TableTh>
-                  <TableTh>Chat created</TableTh>
-                  <TableTh>Interest created</TableTh>
-                  <TableTh>Actions</TableTh>
+                  <TableTh>{t('admin:studentLabel', 'Student')}</TableTh>
+                  <TableTh>{t('common:university', 'University')}</TableTh>
+                  <TableTh>{t('admin:sourceLabel', 'Source')}</TableTh>
+                  <TableTh>{t('common:status', 'Status')}</TableTh>
+                  <TableTh>{t('admin:chatCreated', 'Chat created')}</TableTh>
+                  <TableTh>{t('admin:interestCreated', 'Interest created')}</TableTh>
+                  <TableTh>{t('common:actions', 'Actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -104,7 +106,7 @@ export function AdminInterests() {
                     <TableTd>{x.studentName?.trim() || String(x.studentId || '-')}</TableTd>
                     <TableTd>{x.universityName?.trim() || String(x.universityId || '-')}</TableTd>
                     <TableTd>{(x as { source?: string }).source === 'catalog' ? t('admin:catalogUniversity', 'Catalog') : t('admin:verifiedUniversity', 'Verified')}</TableTd>
-                    <TableTd>{x.status}</TableTd>
+                    <TableTd>{t(`admin:${x.status}`, x.status)}</TableTd>
                     <TableTd>{x.chatCreatedAt ? formatDateTime(x.chatCreatedAt) : '-'}</TableTd>
                     <TableTd>{x.createdAt ? formatDateTime(x.createdAt) : '-'}</TableTd>
                     <TableTd>

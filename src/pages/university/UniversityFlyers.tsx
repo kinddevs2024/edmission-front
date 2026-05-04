@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { uploadFile } from '@/services/upload'
+import { MAX_UPLOAD_SIZE_MB, assertMaxUploadSize, uploadFile } from '@/services/upload'
 import { deleteUniversityFlyer, getUniversityFlyers, createUniversityFlyer } from '@/services/university'
 import { toastApiError } from '@/utils/toastError'
 import type { UniversityFlyer } from '@/types/university'
 import { UploadCloud } from 'lucide-react'
 import { FlyerMediaPreview } from '@/components/university/FlyerMediaPreview'
+import { toast } from 'sonner'
 
 type FlyerDraft = {
   id: string
@@ -33,7 +34,7 @@ function toDraft(item: UniversityFlyer): FlyerDraft {
 }
 
 export function UniversityFlyers() {
-  const { t } = useTranslation('university')
+  const { t } = useTranslation(['university', 'common'])
   const navigate = useNavigate()
   const [flyers, setFlyers] = useState<FlyerDraft[]>([])
   const [loading, setLoading] = useState(true)
@@ -121,6 +122,15 @@ export function UniversityFlyers() {
               className="hidden"
               onChange={(event) => {
                 const file = event.target.files?.[0] ?? null
+                if (file) {
+                  try {
+                    assertMaxUploadSize(file)
+                  } catch {
+                    toast.error(t('common:maxFileSizeError', 'Maximum file size is {{size}} MB.', { size: MAX_UPLOAD_SIZE_MB }))
+                    event.target.value = ''
+                    return
+                  }
+                }
                 setSelectedFile(file)
                 if (selectedPreviewUrl) URL.revokeObjectURL(selectedPreviewUrl)
                 setSelectedPreviewUrl(file ? URL.createObjectURL(file) : '')
@@ -139,6 +149,9 @@ export function UniversityFlyers() {
                 </p>
                 <p className="text-xs text-[var(--color-text-muted)]">
                   {t('flyers.dropzoneHint', 'Images, videos and documents are supported')}
+                </p>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {t('common:maxFileSize', 'Maximum file size: {{size}} MB', { size: MAX_UPLOAD_SIZE_MB })}
                 </p>
               </div>
             </button>

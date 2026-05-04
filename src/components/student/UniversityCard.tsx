@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn'
 import { useTranslation } from 'react-i18next'
 import { getLocalizedCountryName } from '@/utils/localeDisplay'
 import type { UniversityListItem } from '@/types/university'
+import { Star } from 'lucide-react'
 
 interface UniversityCardProps {
   university: UniversityListItem
@@ -99,8 +100,13 @@ export function UniversityCard({
       <div className="mb-3 grid grid-cols-1 gap-2 rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-bg)]/50 px-3 py-2.5 text-xs sm:grid-cols-3">
         <div>
           <p className="font-medium text-[var(--color-text)]">{t('student:compareRating', 'Rating')}</p>
-          <p className="mt-0.5 text-[var(--color-text-muted)] tabular-nums">
-            {rating != null && Number.isFinite(rating) ? `${Number(rating).toFixed(1)} ★` : '—'}
+          <p className="mt-0.5 inline-flex items-center gap-1 text-[var(--color-text-muted)] tabular-nums">
+            {rating != null && Number.isFinite(rating) ? (
+              <>
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" aria-hidden />
+                {Number(rating).toFixed(1)}
+              </>
+            ) : '—'}
           </p>
         </div>
         <div>

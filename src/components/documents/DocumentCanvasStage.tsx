@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Stage, Layer, Rect, Text, Line, Image as KonvaImage, Transformer } from 'react-konva'
+import { useTranslation } from 'react-i18next'
 import type Konva from 'konva'
 import { getImageUrl } from '@/services/upload'
 import type { DocumentScene, DocumentSceneElement } from '@/types/documentModule'
@@ -22,6 +23,7 @@ export function DocumentCanvasStage({
   onSelectElement,
   onChangeElement,
 }: DocumentCanvasStageProps) {
+  const { t } = useTranslation('documents')
   const transformerRef = useRef<Konva.Transformer | null>(null)
   const nodeRefs = useRef<Record<string, Konva.Node | null>>({})
   const sortedElements = useMemo(
@@ -85,7 +87,7 @@ export function DocumentCanvasStage({
                   x={84}
                   y={104}
                   width={scene.page.width - 168}
-                  text="Blank page. Start with Add text, Upload image, or Background from the left panel."
+                  text={t('editor.blankPageHint', 'Blank page. Start with Add text, Upload image, or Background from the left panel.')}
                   fontSize={20}
                   lineHeight={1.35}
                   fill="#0f172a"

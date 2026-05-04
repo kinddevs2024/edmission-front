@@ -40,7 +40,7 @@ interface MessageThreadProps {
   onDeleteMessage?: (messageId: string, scope: 'me' | 'everyone') => void | Promise<unknown>
   onMarkRead?: () => void
   isTyping?: boolean
-  role?: 'student' | 'university'
+  role?: 'student' | 'university' | 'counsellor'
   onAcceptStudent?: (params: { positionType: 'budget' | 'grant' | 'other'; positionLabel?: string; congratulatoryMessage: string }) => void | Promise<unknown>
   /** Mobile split view: back to conversation list */
   onMobileBack?: () => void

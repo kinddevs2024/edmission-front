@@ -1,4 +1,5 @@
 import { api } from './api'
+import { assertMaxUploadSize } from '@/services/upload'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type {
   DocumentPageFormat,
@@ -415,6 +416,7 @@ export interface UsersImportResult {
 }
 
 export async function previewUsersExcel(file: File): Promise<UsersImportPreviewResult> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<UsersImportPreviewResult>('/admin/users/import/preview', formData)
@@ -422,6 +424,7 @@ export async function previewUsersExcel(file: File): Promise<UsersImportPreviewR
 }
 
 export async function uploadUsersExcel(file: File): Promise<UsersImportResult> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<UsersImportResult>('/admin/users/import', formData)
@@ -556,6 +559,7 @@ export async function downloadCounsellorStudentsExcelByUser(userId: string): Pro
 }
 
 export async function uploadCounsellorStudentsExcelByUser(userId: string, file: File): Promise<AdminCounsellorStudentsImportResult> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<AdminCounsellorStudentsImportResult>(`/admin/users/${userId}/counsellor-students/import`, formData)
@@ -1031,6 +1035,7 @@ export interface UniversitiesImportResult {
 }
 
 export async function previewUniversitiesExcel(file: File): Promise<UniversitiesImportPreviewResult> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<UniversitiesImportPreviewResult>('/admin/universities/import/preview', formData)
@@ -1039,6 +1044,7 @@ export async function previewUniversitiesExcel(file: File): Promise<Universities
 
 /** Upload Excel file to import universities after preview confirmation. */
 export async function uploadUniversitiesExcel(file: File): Promise<UniversitiesImportResult> {
+  assertMaxUploadSize(file)
   const formData = new FormData()
   formData.append('file', file)
   const { data } = await api.post<UniversitiesImportResult>('/admin/universities/import', formData)

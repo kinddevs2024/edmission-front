@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Select } from '@/components/ui/Select'
@@ -89,28 +90,33 @@ export function CounsellorOffers() {
       <PageTitle title={t('school:offers', 'Offers')} icon="Gift" />
 
       <Card>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-4">
-          <Select
-            label={t('school:student', 'Student')}
-            options={studentOptions}
-            value={studentUserId}
-            onChange={(event) => { setStudentUserId(event.target.value); setPage(1) }}
-          />
-          <Select
-            label={t('documents:common.type', 'Type')}
-            options={typeOptions}
-            value={type}
-            onChange={(event) => { setType(event.target.value); setPage(1) }}
-          />
-          <Select
-            label={t('common:status', 'Status')}
-            options={statusOptions}
-            value={status}
-            onChange={(event) => { setStatus(event.target.value); setPage(1) }}
-          />
+        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+          <CardTitle>{t('school:studentOffers', 'Student offers')}</CardTitle>
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 xl:w-auto xl:grid-cols-[220px_180px_200px]">
+            <Select
+              label={t('school:student', 'Student')}
+              options={studentOptions}
+              value={studentUserId}
+              className="min-h-10 py-2"
+              onChange={(event) => { setStudentUserId(event.target.value); setPage(1) }}
+            />
+            <Select
+              label={t('documents:common.type', 'Type')}
+              options={typeOptions}
+              value={type}
+              className="min-h-10 py-2"
+              onChange={(event) => { setType(event.target.value); setPage(1) }}
+            />
+            <Select
+              label={t('common:status', 'Status')}
+              options={statusOptions}
+              value={status}
+              className="min-h-10 py-2"
+              onChange={(event) => { setStatus(event.target.value); setPage(1) }}
+            />
+          </div>
         </div>
 
-        <CardTitle className="mb-2">{t('school:studentOffers', 'Student offers')}</CardTitle>
         {loading ? (
           <TableSkeleton rows={6} cols={7} />
         ) : items.length === 0 ? (
@@ -131,6 +137,7 @@ export function CounsellorOffers() {
                   <TableTh>{t('common:status', 'Status')}</TableTh>
                   <TableTh>{t('documents:studentOffers.sent', 'Sent')}</TableTh>
                   <TableTh>{t('documents:studentOffers.deadline', 'Deadline')}</TableTh>
+                  <TableTh className="text-right">{t('common:actions', 'Actions')}</TableTh>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -151,6 +158,11 @@ export function CounsellorOffers() {
                     <TableTd><DocumentStatusBadge status={item.status as StudentDocumentStatus} /></TableTd>
                     <TableTd>{formatMaybeDate(item.sentAt)}</TableTd>
                     <TableTd>{item.expiresAt ? formatDate(item.expiresAt) : t('documents:summary.openEnded', 'Open ended')}</TableTd>
+                    <TableTd className="text-right">
+                      <Button to={`/school/offers/${item.id}`} variant="secondary" size="sm">
+                        {t('common:open', 'Open')}
+                      </Button>
+                    </TableTd>
                   </TableRow>
                 ))}
               </TableBody>

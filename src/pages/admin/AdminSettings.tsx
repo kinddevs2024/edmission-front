@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { Switch } from '@/components/ui/Switch'
 import { getSettings, updateSettings, type SystemSettings } from '@/services/admin'
 import { toastApiError } from '@/utils/toastError'
 import { toast } from 'sonner'
@@ -64,22 +65,12 @@ export function AdminSettings() {
                 {t('settings.requireAccountConfirmationDesc', 'Universities must be verified by admin before they can use the platform.')}
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.requireAccountConfirmation}
+            <Switch
+              checked={settings.requireAccountConfirmation}
+              label={t('settings.requireAccountConfirmation', 'Require account confirmation')}
               disabled={saving === 'requireAccountConfirmation'}
               onClick={() => handleToggle('requireAccountConfirmation', !settings.requireAccountConfirmation)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:opacity-50 ${
-                settings.requireAccountConfirmation ? 'bg-primary-accent' : 'bg-[var(--color-border)]'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
-                  settings.requireAccountConfirmation ? 'translate-x-5' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] p-4">
@@ -91,22 +82,12 @@ export function AdminSettings() {
                 {t('settings.requireEmailVerificationDesc', 'Users must verify their email before they can sign in.')}
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.requireEmailVerification}
+            <Switch
+              checked={settings.requireEmailVerification}
+              label={t('settings.requireEmailVerification', 'Require email verification')}
               disabled={saving === 'requireEmailVerification'}
               onClick={() => handleToggle('requireEmailVerification', !settings.requireEmailVerification)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:opacity-50 ${
-                settings.requireEmailVerification ? 'bg-primary-accent' : 'bg-[var(--color-border)]'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
-                  settings.requireEmailVerification ? 'translate-x-5' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] p-4">
@@ -118,22 +99,13 @@ export function AdminSettings() {
                 {t('settings.maintenanceModeDesc', 'Close the site for non-admins. Only admins can access the platform.')}
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.maintenanceMode}
+            <Switch
+              checked={settings.maintenanceMode}
+              tone="warning"
+              label={t('settings.maintenanceMode', 'Maintenance mode')}
               disabled={saving === 'maintenanceMode'}
               onClick={() => handleToggle('maintenanceMode', !settings.maintenanceMode)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:opacity-50 ${
-                settings.maintenanceMode ? 'bg-amber-500' : 'bg-[var(--color-border)]'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
-                  settings.maintenanceMode ? 'translate-x-5' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            />
           </div>
         </div>
       </Card>

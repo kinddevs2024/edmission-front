@@ -124,7 +124,7 @@ export function AdminFaculties() {
                       {faculty.items.map((item) => (
                         <span
                           key={item}
-                          className="rounded-full bg-[var(--color-bg)] px-2.5 py-1 text-xs text-[var(--color-text-muted)]"
+                          className="rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1 text-xs text-[var(--color-text-muted)]"
                         >
                           {item}
                         </span>

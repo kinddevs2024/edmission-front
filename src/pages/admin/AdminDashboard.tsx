@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { Button } from '@/components/ui/Button'
+import { Table, TableBody, TableHead, TableRow, TableTh, TableTd } from '@/components/ui/Table'
 import { getAdminStats, getVerificationQueue, getUniversityInterestAnalytics } from '@/services/admin'
 import type { AdminStats as AdminStatsType, UniversityInterestAnalyticsItem } from '@/services/admin'
 import { toastApiError } from '@/utils/toastError'
 
 export function AdminDashboard() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [stats, setStats] = useState<AdminStatsType | null>(null)
   const [verificationCount, setVerificationCount] = useState(0)
   const [universityInterests, setUniversityInterests] = useState<UniversityInterestAnalyticsItem[]>([])
@@ -86,40 +87,40 @@ export function AdminDashboard() {
         {universityInterests.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)] mt-2">{t('noDataYet', 'No data yet.')}</p>
         ) : (
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--color-border)]">
-                  <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">#</th>
-                  <th className="text-left py-2 font-medium text-[var(--color-text-muted)]">{t('universityProfile', 'University')}</th>
-                  <th className="text-right py-2 font-medium text-[var(--color-text-muted)]">{t('interests')}</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="mt-3">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableTh>{t('rank', '#')}</TableTh>
+                  <TableTh>{t('universityProfile', 'University')}</TableTh>
+                  <TableTh className="text-right">{t('interests')}</TableTh>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {universityInterests.map((row, i) => (
-                  <tr key={`${row.source}-${row.universityId}`} className="border-b border-[var(--color-border)]/50">
-                    <td className="py-2 text-[var(--color-text-muted)]">{i + 1}</td>
-                    <td className="py-2">
+                  <TableRow key={`${row.source}-${row.universityId}`}>
+                    <TableTd className="text-[var(--color-text-muted)]">{i + 1}</TableTd>
+                    <TableTd>
                       <span className="font-medium">{row.universityName}</span>
                       {row.source === 'catalog' && (
-                        <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">(catalog)</span>
+                        <span className="ml-1.5 text-xs text-[var(--color-text-muted)]">({t('catalogUniversity', 'catalog')})</span>
                       )}
-                    </td>
-                    <td className="py-2 text-right font-medium">{row.interestCount}</td>
-                  </tr>
+                    </TableTd>
+                    <TableTd className="text-right font-medium">{row.interestCount}</TableTd>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </Card>
 
       {(stats?.mrr != null || (stats?.subscriptionsByPlan && Object.keys(stats.subscriptionsByPlan).length > 0)) && (
         <Card>
-          <CardTitle>Subscriptions & MRR</CardTitle>
+          <CardTitle>{t('subscriptionsMrr', 'Subscriptions & MRR')}</CardTitle>
           <div className="flex flex-wrap gap-4 mt-2">
             {stats?.mrr != null && (
-              <p className="text-xl font-semibold text-primary-accent">MRR: ${stats.mrr.toFixed(2)}</p>
+              <p className="text-xl font-semibold text-primary-accent">{t('mrrLabel', 'MRR')}: ${stats.mrr.toFixed(2)}</p>
             )}
             {stats?.subscriptionsByPlan && Object.entries(stats.subscriptionsByPlan).map(([plan, count]) => (
               <span key={plan} className="text-sm text-[var(--color-text-muted)]">
@@ -146,8 +147,8 @@ export function AdminDashboard() {
           <CardTitle>{t('quickLinks')}</CardTitle>
           <div className="flex flex-wrap gap-2 mt-2">
             <Button to="/admin/users" variant="secondary" size="sm">{t('users')}</Button>
-            <Button to="/admin/verification" variant="secondary" size="sm">Universities (verify)</Button>
-            <Button to="/admin/support" variant="secondary" size="sm">Support</Button>
+            <Button to="/admin/verification" variant="secondary" size="sm">{t('universitiesVerify', 'Universities (verify)')}</Button>
+            <Button to="/admin/support" variant="secondary" size="sm">{t('common:support', 'Support')}</Button>
             <Button to="/admin/logs" variant="secondary" size="sm">{t('auditLogs')}</Button>
             <Button to="/admin/health" variant="secondary" size="sm">{t('systemHealth')}</Button>
             <Button to="/admin/scholarships" variant="secondary" size="sm">{t('scholarships')}</Button>

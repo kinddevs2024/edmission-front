@@ -607,13 +607,13 @@ export function Discovery() {
           {totalPages > 1 ? (
             <div className="flex items-center justify-center gap-2 pt-2">
               <Button size="sm" variant="secondary" disabled={page <= 1} onClick={() => setPage((current) => current - 1)}>
-                Previous
+                {t('common:prev', 'Previous')}
               </Button>
               <span className="text-sm text-[var(--color-text-muted)]">
                 {page} / {totalPages}
               </span>
               <Button size="sm" variant="secondary" disabled={page >= totalPages} onClick={() => setPage((current) => current + 1)}>
-                Next
+                {t('common:next', 'Next')}
               </Button>
             </div>
           ) : null}

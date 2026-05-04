@@ -58,16 +58,16 @@ export function Verification() {
 
   return (
     <div className="space-y-4">
-      <PageTitle title="University Verification" icon="ShieldCheck" />
+      <PageTitle title={t('admin:universityVerification', 'University verification')} icon="ShieldCheck" />
 
       <Card>
-        <CardTitle>Queue</CardTitle>
+        <CardTitle>{t('admin:queue', 'Queue')}</CardTitle>
         {loading ? (
-          <p className="text-[var(--color-text-muted)] py-6">Loading...</p>
+          <p className="text-[var(--color-text-muted)] py-6">{t('common:loading', 'Loading...')}</p>
         ) : list.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] py-8 text-center">No universities pending verification.</p>
+          <p className="text-[var(--color-text-muted)] py-8 text-center">{t('admin:noUniversitiesPendingVerification', 'No universities pending verification.')}</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+          <div className="mt-2 grid grid-cols-1 gap-3 lg:grid-cols-2">
             {list.map((item, index) => (
               <div
                 key={item.id}
@@ -75,22 +75,24 @@ export function Verification() {
                 style={{ animationDelay: `${Math.min(index, 6) * 0.06}s`, animationFillMode: 'forwards' }}
               >
                 <Card className="p-4" interactive>
-                <div className="flex justify-between items-start gap-2">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-[var(--color-text-muted)]">{item.email}</p>
                     {item.country && <p className="text-sm text-[var(--color-text-muted)]">{item.country}</p>}
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">Submitted: {formatDate(item.submittedAt)}</p>
+                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      {t('admin:submittedLabel', 'Submitted')}: {formatDate(item.submittedAt)}
+                    </p>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
+                  <div className="flex shrink-0 gap-2">
                     <Button size="sm" onClick={() => setActionModal({ type: 'approve', item })}>{t('admin:approve')}</Button>
                     <Button size="sm" variant="danger" onClick={() => setActionModal({ type: 'reject', item })}>{t('admin:reject')}</Button>
                   </div>
                 </div>
                 {item.documents && item.documents.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-[var(--color-border)]">
-                    <p className="text-xs text-[var(--color-text-muted)]">Documents:</p>
-                    <ul className="text-sm">
+                  <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{t('admin:documents', 'Documents')}</p>
+                    <ul className="mt-2 space-y-1 text-sm">
                       {item.documents.map((d, i) => (
                         <li key={i}>
                           <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-primary-accent hover:underline">{d.name}</a>
@@ -127,7 +129,7 @@ export function Verification() {
           <div className="space-y-3">
             <p className="text-sm text-[var(--color-text-muted)]">{actionModal.item.name}</p>
             <Textarea
-              label="Comment (optional)"
+              label={t('admin:commentOptional', 'Comment (optional)')}
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}

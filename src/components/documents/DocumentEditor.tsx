@@ -6,7 +6,7 @@ import { HelpTooltip } from '@/components/ui/HelpTooltip'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import { uploadFile } from '@/services/upload'
+import { MAX_UPLOAD_SIZE_MB, uploadFile } from '@/services/upload'
 import { useDocumentEditorStore } from '@/store/documentEditorStore'
 import { DocumentCanvasStage } from './DocumentCanvasStage'
 import { MERGE_TAG_GROUPS, coerceCanvasString, createSamplePayload, resolveScene, stringifyScene } from '@/utils/documentScene'
@@ -223,14 +223,14 @@ export function DocumentEditor({
 
   const guideSteps = isTemplateMode
     ? [
-      '1. Start with Add text, Upload image, or Background on the left.',
-      '2. Click any block on the page to resize, move, lock, or style it.',
-      '3. Use merge tags only inside text blocks when you need student data.',
+      t('documents:editor.templateGuideStep1', '1. Start with Add text, Upload image, or Background on the left.'),
+      t('documents:editor.templateGuideStep2', '2. Click any block on the page to resize, move, lock, or style it.'),
+      t('documents:editor.templateGuideStep3', '3. Use merge tags only inside text blocks when you need student data.'),
     ]
     : [
-      '1. Add a title or image first so the page is not empty.',
-      '2. Click any block to resize, move, duplicate, or delete it.',
-      '3. Save the document and it will appear in the student profile.',
+      t('documents:editor.profileGuideStep1', '1. Add a title or image first so the page is not empty.'),
+      t('documents:editor.profileGuideStep2', '2. Click any block to resize, move, duplicate, or delete it.'),
+      t('documents:editor.profileGuideStep3', '3. Save the document and it will appear in the student profile.'),
     ]
 
   return (
@@ -239,15 +239,19 @@ export function DocumentEditor({
         <Card className="border border-primary-accent/30 bg-primary-accent/5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">Quick start</p>
-              <h3 className="text-lg font-semibold">{isTemplateMode ? 'How this editor works' : 'Build a profile document in 3 steps'}</h3>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-text-muted)]">{t('documents:editor.quickStart', 'Quick start')}</p>
+              <h3 className="text-lg font-semibold">
+                {isTemplateMode
+                  ? t('documents:editor.templateGuideTitle', 'How this editor works')
+                  : t('documents:editor.profileGuideTitle', 'Build a profile document in 3 steps')}
+              </h3>
               <div className="space-y-1 text-sm text-[var(--color-text-muted)]">
                 {guideSteps.map((step) => (
                   <p key={step}>{step}</p>
                 ))}
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={dismissGuide}>Hide guide</Button>
+            <Button variant="ghost" size="sm" onClick={dismissGuide}>{t('documents:editor.hideGuide', 'Hide guide')}</Button>
           </div>
         </Card>
       ) : null}
@@ -268,15 +272,18 @@ export function DocumentEditor({
             <Button variant="secondary" size="sm" onClick={handleAddText}>Add text</Button>
             <Button variant="secondary" size="sm" onClick={handleAddShape}>Add shape</Button>
             <Button variant="secondary" size="sm" onClick={handleAddLine}>Add line</Button>
-            <Button variant="secondary" size="sm" onClick={() => imageInputRef.current?.click()}>Upload image</Button>
-            <Button variant="secondary" size="sm" onClick={() => logoInputRef.current?.click()}>Upload logo</Button>
-            <Button variant="secondary" size="sm" onClick={() => signatureInputRef.current?.click()}>Signature</Button>
-            <Button variant="secondary" size="sm" onClick={() => backgroundInputRef.current?.click()}>Background</Button>
-            <Button variant="secondary" size="sm" onClick={undo}>Undo</Button>
-            <Button variant="secondary" size="sm" onClick={redo}>Redo</Button>
-            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom + 0.1)}>Zoom +</Button>
-            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom - 0.1)}>Zoom -</Button>
+            <Button variant="secondary" size="sm" onClick={() => imageInputRef.current?.click()}>{t('documents:editor.uploadImage', 'Upload image')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => logoInputRef.current?.click()}>{t('documents:editor.uploadLogo', 'Upload logo')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => signatureInputRef.current?.click()}>{t('documents:editor.signature', 'Signature')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => backgroundInputRef.current?.click()}>{t('documents:editor.background', 'Background')}</Button>
+            <Button variant="secondary" size="sm" onClick={undo}>{t('common:undo', 'Undo')}</Button>
+            <Button variant="secondary" size="sm" onClick={redo}>{t('common:redo', 'Redo')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom + 0.1)}>{t('common:zoomIn', 'Zoom +')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => setStageZoom(stageZoom - 0.1)}>{t('common:zoomOut', 'Zoom -')}</Button>
           </div>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            {t('common:maxFileSize', 'Maximum file size: {{size}} MB', { size: MAX_UPLOAD_SIZE_MB })}
+          </p>
 
           <input
             ref={imageInputRef}
@@ -480,18 +487,20 @@ export function DocumentEditor({
                 />
               ) : null}
               <div className="grid grid-cols-2 gap-2">
-                <Input label="Width" type="number" value={selectedElement.width} onChange={(event) => updateElement(selectedElement.id, { width: Number(event.target.value) || selectedElement.width }, true)} />
-                <Input label="Height" type="number" value={selectedElement.height} onChange={(event) => updateElement(selectedElement.id, { height: Number(event.target.value) || selectedElement.height }, true)} />
+                <Input label={t('documents:editor.width', 'Width')} type="number" value={selectedElement.width} onChange={(event) => updateElement(selectedElement.id, { width: Number(event.target.value) || selectedElement.width }, true)} />
+                <Input label={t('documents:editor.height', 'Height')} type="number" value={selectedElement.height} onChange={(event) => updateElement(selectedElement.id, { height: Number(event.target.value) || selectedElement.height }, true)} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" onClick={() => toggleLock(selectedElement.id)}>{selectedElement.locked ? 'Unlock' : 'Lock'}</Button>
-                <Button size="sm" variant="secondary" onClick={() => duplicateElement(selectedElement.id)}>Duplicate</Button>
-                <Button size="sm" variant="danger" onClick={() => removeElement(selectedElement.id)}>Delete</Button>
+                <Button size="sm" variant="secondary" onClick={() => toggleLock(selectedElement.id)}>
+                  {selectedElement.locked ? t('documents:editor.unlock', 'Unlock') : t('documents:editor.lock', 'Lock')}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => duplicateElement(selectedElement.id)}>{t('common:duplicate', 'Duplicate')}</Button>
+                <Button size="sm" variant="danger" onClick={() => removeElement(selectedElement.id)}>{t('common:delete', 'Delete')}</Button>
               </div>
             </div>
           ) : (
             <div className="rounded-[22px] border border-dashed border-[var(--color-border)] p-4 text-sm text-[var(--color-text-muted)]">
-              Click any block on the page to edit it. If nothing is selected, start with Add text or Upload image from the left panel.
+              {t('documents:editor.noSelectionHint', 'Click any block on the page to edit it. If nothing is selected, start with Add text or Upload image from the left panel.')}
             </div>
           )}
         </Card>

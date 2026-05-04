@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 interface TableProps {
@@ -50,44 +51,51 @@ interface PaginationProps {
 }
 
 export function Pagination({ page, total, limit, onPageChange }: PaginationProps) {
+  const { t } = useTranslation('common')
   const totalPages = Math.max(1, Math.ceil(total / limit))
+  const currentPage = Math.min(Math.max(1, page), totalPages)
+  const goToPage = (targetPage: number) => {
+    const nextPage = Math.min(Math.max(1, targetPage), totalPages)
+    if (nextPage !== page) onPageChange(nextPage)
+  }
+
   return (
     <div className="flex items-center justify-between gap-4 mt-4">
       <p className="text-sm text-[var(--color-text-muted)]">
-        Page {page} of {totalPages} ({total} total)
+        {t('pageOfTotal', { page: currentPage, totalPages, total })}
       </p>
       <div className="flex flex-wrap justify-end gap-2">
         <button
           type="button"
-          onClick={() => onPageChange(1)}
-          disabled={page <= 1}
+          onClick={() => goToPage(1)}
+          disabled={currentPage <= 1}
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
-          First
+          {t('first', 'First')}
         </button>
         <button
           type="button"
-          onClick={() => onPageChange(page - 1)}
-          disabled={page <= 1}
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage <= 1}
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
-          Previous
+          {t('prev', 'Previous')}
         </button>
         <button
           type="button"
-          onClick={() => onPageChange(page + 1)}
-          disabled={page >= totalPages}
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage >= totalPages}
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
-          Next
+          {t('next', 'Next')}
         </button>
         <button
           type="button"
-          onClick={() => onPageChange(totalPages)}
-          disabled={page >= totalPages}
+          onClick={() => goToPage(totalPages)}
+          disabled={currentPage >= totalPages}
           className="px-3 py-1 rounded-input border border-[var(--color-border)] disabled:opacity-50"
         >
-          End
+          {t('end', 'End')}
         </button>
       </div>
     </div>

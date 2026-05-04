@@ -70,7 +70,27 @@
     "nameRequired": "Enter a document name before saving.",
     "saveRequiresName": "Add a document name first, then save again.",
     "templateNameHelp": "Name the template so it is easy to find in your documents list and ready to save.",
-    "documentNameHelp": "Name the document so it is easy to find later in the profile and documents list."
+    "documentNameHelp": "Name the document so it is easy to find later in the profile and documents list.",
+    "uploadImage": "Upload image",
+    "uploadLogo": "Upload logo",
+    "signature": "Signature",
+    "background": "Background",
+    "templateGuideStep1": "1. Start with Add text, Upload image, or Background on the left.",
+    "templateGuideStep2": "2. Click any block on the page to resize, move, lock, or style it.",
+    "templateGuideStep3": "3. Use merge tags only inside text blocks when you need student data.",
+    "profileGuideStep1": "1. Add a title or image first so the page is not empty.",
+    "profileGuideStep2": "2. Click any block to resize, move, duplicate, or delete it.",
+    "profileGuideStep3": "3. Save the document and it will appear in the student profile.",
+    "quickStart": "Quick start",
+    "templateGuideTitle": "How this editor works",
+    "profileGuideTitle": "Build a profile document in 3 steps",
+    "hideGuide": "Hide guide",
+    "width": "Width",
+    "height": "Height",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "noSelectionHint": "Click any block on the page to edit it. If nothing is selected, start with Add text or Upload image from the left panel.",
+    "blankPageHint": "Blank page. Start with Add text, Upload image, or Background from the left panel."
   },
   "celebration": {
     "receivedOfferTitle": "You received an Offer",
@@ -95,7 +115,10 @@
     "decideLater": "Decide later",
     "decline": "Decline",
     "postponeDays_one": "Postpone {{count}} day",
-    "postponeDays_other": "Postpone {{count}} days"
+    "postponeDays_other": "Postpone {{count}} days",
+    "postponeDays_few": "Postpone {{count}} days",
+    "postponeDays_many": "Postpone {{count}} days",
+    "postponeDays": "Postpone {{count}} days"
   },
   "studentOffers": {
     "pageTitle": "Offers & Scholarships",

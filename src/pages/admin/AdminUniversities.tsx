@@ -29,7 +29,7 @@ import { toast } from 'sonner'
 import { toastApiError } from '@/utils/toastError'
 import { useAuth } from '@/hooks/useAuth'
 import { getLocalizedCountryName } from '@/utils/localeDisplay'
-import { Plus, Trash2, Download, Upload } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Trash2, Download, Upload } from 'lucide-react'
 
 const TARGET_COUNTRY_CODES = ['UZ', 'KZ', 'TJ', 'KG', 'TM', 'TR', 'AE', 'CN'] as const
 
@@ -345,12 +345,12 @@ export function AdminUniversities() {
       </PageTitle>
 
       <Card>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <Input
             placeholder={t('common:search', 'Search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
+            className="w-full max-w-sm"
           />
         </div>
         <CardTitle>{t('admin:universitiesList', 'Universities')}</CardTitle>
@@ -521,9 +521,7 @@ export function AdminUniversities() {
                           className="p-1 rounded text-[var(--color-text-muted)] hover:bg-[var(--color-border)]"
                           aria-expanded={open}
                         >
-                          <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
                         </button>
                       )}
                     </div>
@@ -574,9 +572,7 @@ export function AdminUniversities() {
               onClick={() => setShowPrograms(!showPrograms)}
               className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)]"
             >
-              <svg className={`w-4 h-4 transition-transform ${showPrograms ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
+              <ChevronRight className={`h-4 w-4 transition-transform ${showPrograms ? 'rotate-90' : ''}`} aria-hidden />
               {t('university:programs', 'Programs')} ({formPrograms.length})
             </button>
             {showPrograms && (
@@ -609,9 +605,7 @@ export function AdminUniversities() {
               onClick={() => setShowScholarships(!showScholarships)}
               className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)]"
             >
-              <svg className={`w-4 h-4 transition-transform ${showScholarships ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
+              <ChevronRight className={`h-4 w-4 transition-transform ${showScholarships ? 'rotate-90' : ''}`} aria-hidden />
               {t('university:scholarships', 'Scholarships')} ({formScholarships.length})
             </button>
             {showScholarships && (
