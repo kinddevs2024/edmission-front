@@ -3,11 +3,33 @@ import type { ReactNode, RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import { useTranslation } from 'react-i18next'
-import { Bot, Loader2, Maximize2, MessageCircle, Mic, MicOff, Minimize2, Phone, PhoneOff, Send, X } from 'lucide-react'
+import { Bot, Languages, Loader2, Maximize2, MessageCircle, Mic, MicOff, Minimize2, Phone, PhoneOff, Send, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 
-const ELEVENLABS_AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID?.trim() ?? ''
+type SupportAgentLanguage = 'en' | 'ru' | 'uz'
+
+const ELEVENLABS_AGENT_IDS: Record<SupportAgentLanguage, string> = {
+  en: import.meta.env.VITE_ELEVENLABS_AGENT_ID_EN?.trim() || import.meta.env.VITE_ELEVENLABS_AGENT_ID?.trim() || '',
+  ru: import.meta.env.VITE_ELEVENLABS_AGENT_ID_RU?.trim() || import.meta.env.VITE_ELEVENLABS_AGENT_ID?.trim() || '',
+  uz: import.meta.env.VITE_ELEVENLABS_AGENT_ID_UZ?.trim() || import.meta.env.VITE_ELEVENLABS_AGENT_ID?.trim() || '',
+}
+
+function normalizeAgentLanguage(language?: string): SupportAgentLanguage {
+  const code = language?.split('-')[0]?.toLowerCase()
+  if (code === 'ru' || code === 'uz') return code
+  return 'en'
+}
+
+function getSupportAgentId(language?: string) {
+  return ELEVENLABS_AGENT_IDS[normalizeAgentLanguage(language)]
+}
+
+function getSupportAgentLanguageLabel(language: SupportAgentLanguage) {
+  if (language === 'ru') return 'Русский'
+  if (language === 'uz') return "O'zbek"
+  return 'English'
+}
 
 type TranscriptRole = 'user' | 'agent'
 
@@ -29,6 +51,8 @@ interface ElevenLabsSupportContextValue {
   isMuted: boolean
   isSpeaking: boolean
   outputLevel: number
+  agentLanguage: SupportAgentLanguage
+  agentLanguageLabel: string
   inputRef: RefObject<HTMLTextAreaElement>
   messagesEndRef: RefObject<HTMLDivElement>
   setText: (value: string) => void
@@ -43,9 +67,15 @@ interface ElevenLabsSupportContextValue {
 const ElevenLabsSupportContext = createContext<ElevenLabsSupportContextValue | null>(null)
 
 export function ElevenLabsSupportProvider({ children }: { children: ReactNode }) {
+  const { i18n } = useTranslation()
+  const agentLanguage = normalizeAgentLanguage(i18n.resolvedLanguage || i18n.language)
+  const agentId = ELEVENLABS_AGENT_IDS[agentLanguage]
+
   return (
-    <ConversationProvider agentId={ELEVENLABS_AGENT_ID}>
-      <ElevenLabsSupportSession>{children}</ElevenLabsSupportSession>
+    <ConversationProvider agentId={agentId}>
+      <ElevenLabsSupportSession agentId={agentId} agentLanguage={agentLanguage}>
+        {children}
+      </ElevenLabsSupportSession>
     </ConversationProvider>
   )
 }
@@ -58,9 +88,17 @@ export function useElevenLabsSupport() {
   return context
 }
 
-function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
+function ElevenLabsSupportSession({
+  children,
+  agentId,
+  agentLanguage,
+}: {
+  children: ReactNode
+  agentId: string
+  agentLanguage: SupportAgentLanguage
+}) {
   const { role, user } = useAuth()
-  const { t } = useTranslation('common')
+  const { t, i18n } = useTranslation('common')
   const [messages, setMessages] = useState<TranscriptMessage[]>([])
   const [text, setText] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -73,9 +111,11 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
     () => ({
       user_name: user?.name ?? user?.email ?? 'Edmission user',
       user_role: role ?? 'guest',
+      interface_language: normalizeAgentLanguage(i18n.resolvedLanguage || i18n.language),
+      support_agent_language: agentLanguage,
       current_page: typeof window === 'undefined' ? '/ai' : window.location.pathname,
     }),
-    [role, user?.email, user?.name]
+    [agentLanguage, i18n.language, i18n.resolvedLanguage, role, user?.email, user?.name]
   )
 
   const addTranscript = (role: TranscriptRole, text: string) => {
@@ -132,7 +172,8 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
   const startConversation = async () => {
     setError(null)
     if (isConnected || isConnecting) return
-    if (!ELEVENLABS_AGENT_ID) {
+    const nextAgentId = agentId || getSupportAgentId(i18n.resolvedLanguage || i18n.language)
+    if (!nextAgentId) {
       setError(t('aiSupportAgentMissing', 'ElevenLabs agent ID is not configured.'))
       return
     }
@@ -145,7 +186,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       stream.getTracks().forEach((track) => track.stop())
       await conversation.startSession({
-        agentId: ELEVENLABS_AGENT_ID,
+        agentId: nextAgentId,
         connectionType: 'websocket',
         workletPaths: {
           rawAudioProcessor: '/elevenlabs-worklets/rawAudioProcessor.js',
@@ -153,6 +194,8 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
         },
         dynamicVariables: {
           ...dynamicVariables,
+          interface_language: normalizeAgentLanguage(i18n.resolvedLanguage || i18n.language),
+          support_agent_language: agentLanguage,
           current_page: typeof window === 'undefined' ? dynamicVariables.current_page : window.location.pathname,
         },
       })
@@ -202,6 +245,8 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
       isMuted: conversation.isMuted,
       isSpeaking: conversation.isSpeaking,
       outputLevel,
+      agentLanguage,
+      agentLanguageLabel: getSupportAgentLanguageLabel(agentLanguage),
       inputRef,
       messagesEndRef,
       setText,
@@ -221,6 +266,7 @@ function ElevenLabsSupportSession({ children }: { children: ReactNode }) {
       isConnecting,
       hasStarted,
       conversation,
+      agentLanguage,
       outputLevel,
       startConversation,
       sendTextMessage,
@@ -237,21 +283,28 @@ export function ElevenLabsSupportPage() {
 
   return (
     <div className="flex h-[calc(100dvh-5rem)] max-h-[calc(100dvh-5rem)] min-h-[400px] flex-col overflow-hidden sm:h-[calc(100dvh-5.5rem)] sm:max-h-[calc(100dvh-5.5rem)]">
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--color-border)] p-3 sm:p-4">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[0_22px_70px_-48px_rgba(15,23,42,0.7)]">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-card)]/95 p-3 backdrop-blur sm:p-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-accent/15 text-primary-accent">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary-accent/25 bg-primary-accent/15 text-primary-accent shadow-[0_14px_34px_-22px_rgba(132,204,22,0.85)]">
               <Bot className="h-5 w-5" aria-hidden />
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-base font-semibold text-[var(--color-text)] sm:text-lg">
                 {t('aiSupportTitle', 'Edmission.uz Support')}
               </h1>
-              <p className="truncate text-xs text-[var(--color-text-muted)]">
-                {support.isConnected
-                  ? (support.isSpeaking ? t('aiSupportSpeaking', 'Speaking') : t('aiSupportListening', 'Listening'))
-                  : support.isConnecting ? t('aiSupportConnecting', 'Connecting') : t('aiSupportReady', 'Ready')}
-              </p>
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-text-muted)]">
+                  <span className={cn('h-1.5 w-1.5 rounded-full', support.isConnected ? 'bg-primary-accent' : support.isConnecting ? 'bg-amber-400' : 'bg-[var(--color-text-muted)]/55')} />
+                  {support.isConnected
+                    ? (support.isSpeaking ? t('aiSupportSpeaking', 'Speaking') : t('aiSupportListening', 'Listening'))
+                    : support.isConnecting ? t('aiSupportConnecting', 'Connecting') : t('aiSupportReady', 'Ready')}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-text-muted)]">
+                  <Languages className="h-3 w-3" aria-hidden />
+                  {support.agentLanguageLabel}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -274,17 +327,23 @@ export function ElevenLabsSupportPage() {
           )}
         </header>
 
-        <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden p-4">
+        <main className="relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,rgba(132,204,22,0.13),transparent_42%)] p-4">
           {!support.hasStarted ? (
-            <button
-              type="button"
-              onClick={support.startConversation}
-              className="flex h-32 w-32 flex-col items-center justify-center gap-3 rounded-full bg-primary-accent text-primary-dark shadow-[0_18px_44px_-18px_rgba(132,204,22,0.75)] transition-transform hover:scale-105 focus-visible:scale-105"
-              aria-label={t('aiSupportStartCall', 'Start call')}
-            >
-              <Phone className="h-10 w-10" aria-hidden />
-              <span className="text-base font-semibold">{t('aiSupportCall', 'Call')}</span>
-            </button>
+            <div className="flex flex-col items-center gap-5 text-center">
+              <button
+                type="button"
+                onClick={support.startConversation}
+                className="flex h-36 w-36 flex-col items-center justify-center gap-3 rounded-full border border-primary-accent/35 bg-primary-accent text-primary-dark shadow-[0_24px_58px_-20px_rgba(132,204,22,0.85)] transition-transform hover:scale-105 focus-visible:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-card)]"
+                aria-label={t('aiSupportStartCall', 'Start call')}
+              >
+                <Phone className="h-10 w-10" aria-hidden />
+                <span className="text-base font-semibold">{t('aiSupportCall', 'Call')}</span>
+              </button>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/90 px-3 py-1.5 text-xs font-medium text-[var(--color-text-muted)] shadow-sm">
+                <Languages className="h-4 w-4 text-primary-accent" aria-hidden />
+                <span>{t('aiSupportAgentLanguage', 'Agent language')}: {support.agentLanguageLabel}</span>
+              </div>
+            </div>
           ) : (
             <VoiceOrb
               isConnected={support.isConnected}
@@ -378,6 +437,9 @@ export function ElevenLabsFloatingSupport() {
               {support.isSpeaking
                 ? t('aiSupportSpeaking', 'Speaking')
                 : support.isConnected ? t('aiSupportListening', 'Listening') : t('aiSupportConnecting', 'Connecting')}
+            </p>
+            <p className="text-center text-[11px] font-medium text-[var(--color-text-muted)]">
+              {support.agentLanguageLabel}
             </p>
             {support.error && <p className="max-w-full text-center text-xs text-red-500">{support.error}</p>}
             <div className="flex items-center gap-2">
