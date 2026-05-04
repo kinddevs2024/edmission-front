@@ -6,6 +6,7 @@
     "scholarshipDocument": "Stipendiya hujjati"
   },
   "status": {
+    "active": "Faol",
     "sent": "Yuborilgan",
     "viewed": "Ko'rilgan",
     "accepted": "Qabul qilingan",
@@ -120,13 +121,78 @@
     "postponeDays_many": "{{count}} kunga kechiktirish",
     "postponeDays_other": "{{count}} kunga kechiktirish"
   },
+  "actions": {
+    "accept": "Qabul qilish",
+    "reject": "Rad etish",
+    "postpone": "Kechiktirish"
+  },
+  "documentTypes": {
+    "passport": "Pasport",
+    "id_card": "ID karta",
+    "transcript": "Transkript",
+    "diploma": "Diplom / attestat",
+    "language_certificate": "Til sertifikati",
+    "course_certificate": "Kurs sertifikati",
+    "other": "Boshqa"
+  },
+  "studentDocumentStatus": {
+    "pending": "Tekshiruvda",
+    "approved": "Tasdiqlangan",
+    "rejected": "Rad etilgan"
+  },
+  "studentDocumentSource": {
+    "upload": "Yuklangan fayl",
+    "editor": "Editorda yaratilgan"
+  },
+  "studentDocuments": {
+    "uploadDocument": "Hujjat yuklash",
+    "editProfileDocument": "Profil hujjatini tahrirlash",
+    "createProfileDocument": "Profil hujjatini yaratish",
+    "uploadHint": "Tekshiruv uchun PDF yoki rasmlarni yuklang. Hujjatni platformada loyihalash uchun konstruktordan foydalaning.",
+    "editorHint": "Bu universitet hujjatlaridagi vizual editorning soddalashtirilgan, talaba profili fayllari uchun moslangan ko'rinishi.",
+    "uploadFile": "Fayl yuklash",
+    "useEditor": "Editordan foydalanish",
+    "documentType": "Hujjat turi",
+    "name": "Nomi",
+    "documentNameAria": "Hujjat nomi",
+    "namePlaceholder": "masalan, maktab attestati",
+    "languageNamePlaceholder": "Ixtiyoriy, sertifikat turidan avtomatik to'ldiriladi",
+    "certificateType": "Sertifikat turi",
+    "scoreLevel": "Ball / daraja",
+    "scoreAria": "Ball",
+    "levelAria": "Daraja",
+    "levelPlaceholder": "masalan, B1, B2, C1",
+    "levelFallbackPlaceholder": "masalan, B2, C1",
+    "fileImagePdf": "Fayl (rasm yoki PDF)",
+    "submitForReview": "Tekshiruvga yuborish",
+    "builderHint": "Konstruktor titul sahifalar, motivatsion xatlar, sertifikatlar va maxsus profil hujjatlari uchun qulay.",
+    "newBlankDocument": "Yangi bo'sh hujjat",
+    "backToUpload": "Yuklashga qaytish",
+    "updateDocument": "Hujjatni yangilash",
+    "saveDocument": "Hujjatni saqlash",
+    "myDocuments": "Mening hujjatlarim",
+    "noDocumentsYet": "Hozircha hujjatlar yo'q.",
+    "reason": "Sabab",
+    "preview": "Ko'rish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "documentFallback": "Hujjat",
+    "deleteConfirm": "\"{{name}}\" hujjati o'chirilsinmi?",
+    "uploadFileFirst": "Avval fayl yuklang.",
+    "enterDocumentName": "Hujjat nomini kiriting.",
+    "enterLanguageScore": "Til sertifikati balli yoki darajasini kiriting."
+  },
   "studentOffers": {
     "pageTitle": "Takliflar va stipendiyalar",
+    "decisionCenter": "Qaror markazi",
+    "decisionCenterHint": "Muddatlarni ko'ring, hujjatlarni oching va takliflarni bitta joyda qabul qiling, rad eting yoki kechiktiring.",
+    "howOffersWork": "Takliflar qanday ishlaydi",
     "emptyTitle": "Hali hujjatlar yo'q",
     "emptyDescription": "Universitet sizga taklif yoki stipendiya yuborganda, u shu yerda ko'rinadi.",
     "type": "Turi",
     "sent": "Yuborilgan",
     "deadline": "Muddat",
+    "deadlineSoon": "Qaror qilish uchun {{count}} kun qoldi",
     "openDocument": "Hujjatni ochish"
   },
   "studentDocument": {

@@ -6,6 +6,7 @@
     "scholarshipDocument": "Scholarship document"
   },
   "status": {
+    "active": "Active",
     "sent": "Sent",
     "viewed": "Viewed",
     "accepted": "Accepted",
@@ -120,13 +121,78 @@
     "postponeDays_many": "Postpone {{count}} days",
     "postponeDays": "Postpone {{count}} days"
   },
+  "actions": {
+    "accept": "Accept",
+    "reject": "Reject",
+    "postpone": "Postpone"
+  },
+  "documentTypes": {
+    "passport": "Passport",
+    "id_card": "ID card",
+    "transcript": "Transcript",
+    "diploma": "Diploma",
+    "language_certificate": "Language certificate",
+    "course_certificate": "Course certificate",
+    "other": "Other"
+  },
+  "studentDocumentStatus": {
+    "pending": "Pending review",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "studentDocumentSource": {
+    "upload": "Uploaded file",
+    "editor": "Built in editor"
+  },
+  "studentDocuments": {
+    "uploadDocument": "Upload document",
+    "editProfileDocument": "Edit profile document",
+    "createProfileDocument": "Create profile document",
+    "uploadHint": "Upload PDFs or images for review. Use the builder if you want to design a document directly in the platform.",
+    "editorHint": "This uses the same visual editor as university documents, but simplified for student profile files.",
+    "uploadFile": "Upload file",
+    "useEditor": "Use editor",
+    "documentType": "Document type",
+    "name": "Name",
+    "documentNameAria": "Document name",
+    "namePlaceholder": "e.g. High school diploma",
+    "languageNamePlaceholder": "Optional, auto-filled from certificate type",
+    "certificateType": "Certificate type",
+    "scoreLevel": "Score / level",
+    "scoreAria": "Score",
+    "levelAria": "Level",
+    "levelPlaceholder": "e.g. B1, B2, C1",
+    "levelFallbackPlaceholder": "e.g. B2, C1",
+    "fileImagePdf": "File (image or PDF)",
+    "submitForReview": "Submit for review",
+    "builderHint": "The builder is best for cover pages, personal statements, certificates, and custom profile documents.",
+    "newBlankDocument": "New blank document",
+    "backToUpload": "Back to upload",
+    "updateDocument": "Update document",
+    "saveDocument": "Save document",
+    "myDocuments": "My documents",
+    "noDocumentsYet": "No documents yet.",
+    "reason": "Reason",
+    "preview": "Preview",
+    "edit": "Edit",
+    "delete": "Delete",
+    "documentFallback": "Document",
+    "deleteConfirm": "Delete \"{{name}}\"?",
+    "uploadFileFirst": "Please upload a file first.",
+    "enterDocumentName": "Please enter a document name.",
+    "enterLanguageScore": "Please enter the score or level for the language certificate."
+  },
   "studentOffers": {
     "pageTitle": "Offers & Scholarships",
+    "decisionCenter": "Decision center",
+    "decisionCenterHint": "Review deadlines, open documents, and accept, reject, or postpone offers from one place.",
+    "howOffersWork": "How offers work",
     "emptyTitle": "No documents yet",
     "emptyDescription": "When a university sends you an offer or scholarship, it will appear here.",
     "type": "Type",
     "sent": "Sent",
     "deadline": "Deadline",
+    "deadlineSoon": "{{count}} day(s) left to decide",
     "openDocument": "Open document"
   },
   "studentDocument": {

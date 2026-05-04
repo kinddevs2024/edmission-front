@@ -6,6 +6,7 @@
     "scholarshipDocument": "Документ о стипендии"
   },
   "status": {
+    "active": "Активно",
     "sent": "Отправлен",
     "viewed": "Просмотрен",
     "accepted": "Принят",
@@ -120,13 +121,78 @@
     "postponeDays_other": "Отложить на {{count}} дня",
     "postponeDays": "Отложить на {{count}} дней"
   },
+  "actions": {
+    "accept": "Принять",
+    "reject": "Отклонить",
+    "postpone": "Отложить"
+  },
+  "documentTypes": {
+    "passport": "Паспорт",
+    "id_card": "ID-карта",
+    "transcript": "Транскрипт",
+    "diploma": "Диплом / аттестат",
+    "language_certificate": "Языковой сертификат",
+    "course_certificate": "Сертификат курса",
+    "other": "Другое"
+  },
+  "studentDocumentStatus": {
+    "pending": "На проверке",
+    "approved": "Одобрено",
+    "rejected": "Отклонено"
+  },
+  "studentDocumentSource": {
+    "upload": "Загруженный файл",
+    "editor": "Создано в редакторе"
+  },
+  "studentDocuments": {
+    "uploadDocument": "Загрузить документ",
+    "editProfileDocument": "Редактировать документ профиля",
+    "createProfileDocument": "Создать документ профиля",
+    "uploadHint": "Загрузите PDF или изображения на проверку. Используйте конструктор, если хотите оформить документ прямо на платформе.",
+    "editorHint": "Здесь используется тот же визуальный редактор, что и для документов университетов, но упрощённый для файлов профиля студента.",
+    "uploadFile": "Загрузить файл",
+    "useEditor": "Использовать редактор",
+    "documentType": "Тип документа",
+    "name": "Название",
+    "documentNameAria": "Название документа",
+    "namePlaceholder": "например, аттестат о среднем образовании",
+    "languageNamePlaceholder": "Необязательно, заполнится по типу сертификата",
+    "certificateType": "Тип сертификата",
+    "scoreLevel": "Балл / уровень",
+    "scoreAria": "Балл",
+    "levelAria": "Уровень",
+    "levelPlaceholder": "например, B1, B2, C1",
+    "levelFallbackPlaceholder": "например, B2, C1",
+    "fileImagePdf": "Файл (изображение или PDF)",
+    "submitForReview": "Отправить на проверку",
+    "builderHint": "Конструктор лучше подходит для титульных страниц, мотивационных писем, сертификатов и пользовательских документов профиля.",
+    "newBlankDocument": "Новый пустой документ",
+    "backToUpload": "Назад к загрузке",
+    "updateDocument": "Обновить документ",
+    "saveDocument": "Сохранить документ",
+    "myDocuments": "Мои документы",
+    "noDocumentsYet": "Документов пока нет.",
+    "reason": "Причина",
+    "preview": "Предпросмотр",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "documentFallback": "Документ",
+    "deleteConfirm": "Удалить «{{name}}»?",
+    "uploadFileFirst": "Сначала загрузите файл.",
+    "enterDocumentName": "Введите название документа.",
+    "enterLanguageScore": "Введите балл или уровень языкового сертификата."
+  },
   "studentOffers": {
     "pageTitle": "Офферы и стипендии",
+    "decisionCenter": "Центр решений",
+    "decisionCenterHint": "Проверяйте дедлайны, открывайте документы и принимайте, отклоняйте или откладывайте офферы в одном месте.",
+    "howOffersWork": "Как работают офферы",
     "emptyTitle": "Документов пока нет",
     "emptyDescription": "Когда университет отправит вам оффер или стипендию, документ появится здесь.",
     "type": "Тип",
     "sent": "Отправлен",
     "deadline": "Дедлайн",
+    "deadlineSoon": "Осталось {{count}} дн. на решение",
     "openDocument": "Открыть документ"
   },
   "studentDocument": {
