@@ -172,17 +172,19 @@ export function UserManagement() {
     if (!editUserTarget || editUserRole !== 'university_multi_manager' || !isAdmin) return
     const handle = window.setTimeout(() => {
       setUniversityPickerLoading(true)
-      getUsers({
-        role: 'university',
+      getAdminCatalogUniversities({
         search: universityPickerSearch.trim() || undefined,
         page: 1,
         limit: 50,
       })
         .then((res) => {
           setUniversityPickerOptions((prev) => {
-            const byId = new Map<string, AdminUser>()
+            const byId = new Map<string, UniversityPickerOption>()
             for (const row of prev) if (editManagerUniversityIds.includes(row.id)) byId.set(row.id, row)
-            for (const row of res.data ?? []) byId.set(row.id, row)
+            for (const row of res.data ?? []) {
+              const option = catalogUniversityPickerOption(row)
+              byId.set(option.id, option)
+            }
             return [...byId.values()]
           })
         })
@@ -290,11 +292,8 @@ export function UserManagement() {
               if (!id) continue
               byId.set(id, {
                 id,
-                email: id,
-                role: 'university',
-                name: typeof uni.universityName === 'string' ? uni.universityName : undefined,
-                createdAt: '',
-                status: 'active',
+                name: typeof uni.universityName === 'string' ? uni.universityName : id,
+                subtitle: id,
               })
             }
             return [...byId.values()]
@@ -302,6 +301,29 @@ export function UserManagement() {
           setEditManagerApproved(Boolean(raw.universityMultiManagerApproved))
         })
         .catch(() => {})
+    }
+  }
+
+  const selectAllCatalogUniversitiesForManager = async () => {
+    setUniversityPickerLoading(true)
+    try {
+      const first = await getAdminCatalogUniversities({ page: 1, limit: 100 })
+      const totalPages = Math.max(1, first.totalPages || 1)
+      const pages = [first]
+      for (let pageNo = 2; pageNo <= totalPages; pageNo += 1) {
+        pages.push(await getAdminCatalogUniversities({ page: pageNo, limit: 100 }))
+      }
+      const options = pages.flatMap((pageResult) => pageResult.data ?? []).map(catalogUniversityPickerOption)
+      setUniversityPickerOptions((prev) => {
+        const byId = new Map(prev.map((row) => [row.id, row]))
+        for (const option of options) byId.set(option.id, option)
+        return [...byId.values()]
+      })
+      setEditManagerUniversityIds([...new Set(options.map((option) => option.id))])
+    } catch (e) {
+      toastApiError(e)
+    } finally {
+      setUniversityPickerLoading(false)
     }
   }
 
@@ -829,8 +851,28 @@ export function UserManagement() {
                     label={t('admin:managedUniversities', 'Managed universities')}
                     value={universityPickerSearch}
                     onChange={(e) => setUniversityPickerSearch(e.target.value)}
-                    placeholder={t('admin:searchUniversities', 'Search university account')}
+                    placeholder={t('admin:searchUniversities', 'Search university')}
                   />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={selectAllCatalogUniversitiesForManager}
+                      disabled={universityPickerLoading}
+                    >
+                      {t('admin:selectAllUniversities', 'Select all universities')}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditManagerUniversityIds([])}
+                      disabled={editManagerUniversityIds.length === 0}
+                    >
+                      {t('common:clear', 'Clear')}
+                    </Button>
+                  </div>
                   <div className="max-h-52 space-y-2 overflow-y-auto rounded-input border border-[var(--color-border)] p-2">
                     {universityPickerLoading ? (
                       <p className="text-xs text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
@@ -858,8 +900,10 @@ export function UserManagement() {
                             }}
                           />
                           <span className="min-w-0">
-                            <span className="block truncate font-medium">{uni.name || uni.email}</span>
-                            <span className="block truncate text-xs text-[var(--color-text-muted)]">{uni.email}</span>
+                            <span className="block truncate font-medium">{uni.name}</span>
+                            {uni.subtitle ? (
+                              <span className="block truncate text-xs text-[var(--color-text-muted)]">{uni.subtitle}</span>
+                            ) : null}
                           </span>
                         </label>
                       )
