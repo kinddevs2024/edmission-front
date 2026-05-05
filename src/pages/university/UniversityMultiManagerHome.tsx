@@ -4,8 +4,13 @@ import { useTranslation } from "react-i18next";
 import { PageTitle } from "@/components/ui/PageTitle";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { getProfile } from "@/services/auth";
+import {
+  getAdminCatalogUniversities,
+  type AdminCatalogUniversity,
+} from "@/services/admin";
 import { setActAsUniversityUserId } from "@/constants/actAsUniversity";
 import { getImageUrl } from "@/services/upload";
 import type { User } from "@/types/user";
@@ -15,7 +20,12 @@ export function UniversityMultiManagerHome() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
   const [me, setMe] = useState<User | null>(user);
+  const [universities, setUniversities] = useState<AdminCatalogUniversity[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -30,12 +40,25 @@ export function UniversityMultiManagerHome() {
       .finally(() => setLoading(false));
   }, [setUser]);
 
-  const list = me?.managedUniversities ?? [];
+  useEffect(() => {
+    setCatalogLoading(true);
+    getAdminCatalogUniversities({
+      limit: 100,
+      search: search.trim() || undefined,
+    })
+      .then((res) => {
+        setUniversities(res.data);
+      })
+      .catch(() => setUniversities([]))
+      .finally(() => setCatalogLoading(false));
+  }, [search]);
 
-  const enterAs = (universityUserId: string) => {
-    setActAsUniversityUserId(universityUserId);
+  const enterAs = (universityId: string) => {
+    setActAsUniversityUserId(universityId);
     navigate("/university/dashboard");
   };
+
+  const list = universities;
 
   return (
     <div className="mx-auto max-w-content w-full space-y-6 px-2 py-6 sm:px-4">
@@ -50,22 +73,26 @@ export function UniversityMultiManagerHome() {
         )}
       </p>
 
-      {loading ? (
+      <Input
+        placeholder={t("common:search", "Search universities...")}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="max-w-sm"
+      />
+
+      {loading || catalogLoading ? (
         <p className="text-sm text-[var(--color-text-muted)]">
           {t("common:loading", "Loading…")}
         </p>
       ) : list.length === 0 ? (
         <Card className="border border-dashed border-[var(--color-border)] p-6 text-sm text-[var(--color-text-muted)]">
-          {t(
-            "university:multiManagerNoUniversities",
-            "No universities are assigned to your account yet. Ask an administrator to link university accounts.",
-          )}
+          {t("university:multiManagerNoUniversities", "No universities found.")}
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((u) => (
             <Card
-              key={u.userId}
+              key={u.id}
               className="flex flex-col gap-3 border border-[var(--color-border)] p-4"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -84,19 +111,15 @@ export function UniversityMultiManagerHome() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold truncate">
-                    {u.universityName || u.userId}
+                    {u.name || u.universityName}
                   </p>
                   <p className="text-xs text-[var(--color-text-muted)]">
-                    {u.verified
-                      ? t("university:verified", "Verified")
-                      : t(
-                          "university:pendingVerification",
-                          "Pending verification",
-                        )}
+                    {(u.city || u.country) &&
+                      `${u.city ? u.city + ", " : ""}${u.country || ""}`}
                   </p>
                 </div>
               </div>
-              <Button onClick={() => enterAs(u.userId)}>
+              <Button onClick={() => enterAs(u.id)}>
                 {t("university:multiManagerOpen", "Open as this university")}
               </Button>
             </Card>
