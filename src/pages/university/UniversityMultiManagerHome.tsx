@@ -19,7 +19,7 @@ export function UniversityMultiManagerHome() {
   const { t } = useTranslation(["university", "common"]);
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-  const [me, setMe] = useState<User | null>(user);
+  const [, setMe] = useState<User | null>(user); // unused
   const [universities, setUniversities] = useState<AdminCatalogUniversity[]>(
     [],
   );
