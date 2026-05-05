@@ -23,8 +23,13 @@ function clearAuthSessionOnly(): void {
   useAuthStore.getState().logout()
 }
 
+function isNativeShell(): boolean {
+  return Boolean((window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView)
+}
+
 function forceLogout(): void {
   clearAuthSessionOnly()
+  if (isNativeShell()) return
   if (window.location.pathname !== '/login') {
     window.location.href = '/login'
   }

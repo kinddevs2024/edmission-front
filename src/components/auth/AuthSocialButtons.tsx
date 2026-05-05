@@ -35,6 +35,12 @@ export function AuthSocialButtons({
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Yandex_icon.svg/1280px-Yandex_icon.svg.png";
   const telegramLogo =
     "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/250px-Telegram_2019_Logo.svg.png";
+  const googleLabel = t("auth:continueWithGoogle", "Continue with Google");
+  const yandexLabel =
+    mode === "register"
+      ? t("auth:registerWithYandexId", "Register with Yandex ID")
+      : t("auth:signInWithYandexId", "Sign in with Yandex ID");
+  const telegramLabel = t("auth:continueWithTelegram", "Continue with Telegram");
   const handleTelegram = async () => {
     if (loading) return;
     setSubmitError("");
@@ -56,11 +62,13 @@ export function AuthSocialButtons({
       {showGoogleAuth && (
         <div
           className={`relative inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 ${loading ? "opacity-50" : ""}`}
+          aria-label={googleLabel}
           aria-hidden={loading ? "true" : undefined}
+          title={googleLabel}
         >
           <img
             src={googleLogo}
-            alt={t("auth:continueWithGoogle", "Continue with Google")}
+            alt={googleLabel}
             className="pointer-events-none h-5 w-5 object-contain"
             loading="lazy"
             decoding="async"
@@ -69,36 +77,40 @@ export function AuthSocialButtons({
             disabled={loading}
             autoPrompt={googleAutoPrompt}
             compact
+            title={googleLabel}
             className="absolute inset-0 h-11 w-11 min-w-[44px] rounded-full p-0 opacity-0"
             onCredential={(c) => void onGoogleCredential(c)}
           />
         </div>
       )}
       {showYandexAuth && (
-        <YandexSignInButton
-          disabled={loading}
-          role={role}
-          acceptTerms={yandexAcceptTerms}
-          flow={mode}
-          logoUrl={yandexLogo}
-          compact
-          className="h-11 w-11 min-w-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0"
-          onBusyChange={setLoading}
-          onError={(msg) => setSubmitError(msg)}
-          onSuccess={() => void onYandexSuccess()}
-        />
+        <div title={yandexLabel} aria-label={yandexLabel}>
+          <YandexSignInButton
+            disabled={loading}
+            role={role}
+            acceptTerms={yandexAcceptTerms}
+            flow={mode}
+            logoUrl={yandexLogo}
+            compact
+            title={yandexLabel}
+            className="h-11 w-11 min-w-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0"
+            onBusyChange={setLoading}
+            onError={(msg) => setSubmitError(msg)}
+            onSuccess={() => void onYandexSuccess()}
+          />
+        </div>
       )}
       <button
         type="button"
         onClick={() => void handleTelegram()}
         disabled={loading}
         className="inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 transition-[opacity,transform] duration-150 hover:opacity-95 active:scale-[0.99] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-        aria-label={t("auth:continueWithTelegram", "Continue with Telegram")}
-        title={t("auth:continueWithTelegram", "Continue with Telegram")}
+        aria-label={telegramLabel}
+        title={telegramLabel}
       >
         <img
           src={telegramLogo}
-          alt={t("auth:continueWithTelegram", "Continue with Telegram")}
+          alt={telegramLabel}
           className="h-5 w-5 object-contain"
           loading="lazy"
           decoding="async"

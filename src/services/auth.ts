@@ -5,6 +5,19 @@ import { useAIChatStore } from '@/store/aiChatStore'
 import { saveAuth, clearAuth, getStoredRefreshToken } from './authPersistence'
 import { queryClient } from '@/app/queryClient'
 
+function isNativeShell(): boolean {
+  return Boolean((window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView)
+}
+
+function postNativeLogout(): void {
+  try {
+    const bridge = (window as unknown as { ReactNativeWebView?: { postMessage?: (message: string) => void } }).ReactNativeWebView
+    bridge?.postMessage?.(JSON.stringify({ type: 'edmission.logout' }))
+  } catch {
+    /* ignore */
+  }
+}
+
 export interface LoginPayload {
   email: string
   password: string
@@ -217,6 +230,16 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return data
 }
 
+export async function exchangeMobileWebAuthSession(token: string): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/mobile-web/exchange', { token })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
 export async function startTelegramAuth(payload?: { role?: 'student' | 'university' }): Promise<TelegramAuthStartResult> {
   const { data } = await api.post<TelegramAuthStartResult>('/auth/telegram/start', payload ?? {})
   return data
@@ -356,7 +379,11 @@ export async function logout(): Promise<void> {
     queryClient.clear()
     useAuthStore.getState().logout()
     useAIChatStore.getState().resetSession()
-    window.location.href = '/'
+    if (isNativeShell()) {
+      postNativeLogout()
+    } else {
+      window.location.href = '/'
+    }
   }
 }
 

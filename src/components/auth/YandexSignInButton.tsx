@@ -23,6 +23,7 @@ export type YandexSignInButtonProps = {
   compact?: boolean
   forceFallback?: boolean
   logoUrl?: string
+  title?: string
   onSuccess: () => void | Promise<void>
   onError: (message: string) => void
   onBusyChange?: (busy: boolean) => void
@@ -41,6 +42,7 @@ export function YandexSignInButton({
   compact = false,
   forceFallback = false,
   logoUrl,
+  title,
   onSuccess,
   onError,
   onBusyChange,
@@ -194,6 +196,7 @@ export function YandexSignInButton({
         type="button"
         onClick={handleFallbackClick}
         disabled={disabled}
+        title={title}
         className={cn(
           compact
             ? 'mx-auto inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-0'
@@ -236,6 +239,7 @@ export function YandexSignInButton({
 
   return (
     <div
+      title={title}
       className={cn(
         compact
           ? 'mx-auto h-11 w-11 min-h-[44px] min-w-[44px] flex items-center justify-center overflow-hidden rounded-full'

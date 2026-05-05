@@ -23,6 +23,7 @@ const ChooseLanguage = lazy(() => import('@/pages/auth/ChooseLanguage').then((m)
 const YandexCallback = lazy(() => import('@/pages/auth/YandexCallback').then((m) => ({ default: m.YandexCallback })))
 const GoogleMobileCallback = lazy(() => import('@/pages/auth/GoogleMobileCallback').then((m) => ({ default: m.GoogleMobileCallback })))
 const TelegramAuth = lazy(() => import('@/pages/auth/TelegramAuth').then((m) => ({ default: m.TelegramAuth })))
+const MobileAppAuth = lazy(() => import('@/pages/auth/MobileAppAuth').then((m) => ({ default: m.MobileAppAuth })))
 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
@@ -227,10 +228,11 @@ export function Router() {
     <Suspense fallback={<PageFallback />}>
     <DocumentTitle />
     <ScrollToTop />
-    <AuthSessionVerifier />
-    <SiteVisitTracker />
-    <Routes>
+      <AuthSessionVerifier />
+      <SiteVisitTracker />
+      <Routes>
       <Route path="/maintenance" element={<Maintenance />} />
+      <Route path="/mobile-app-auth" element={<MobileAppAuth />} />
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/login-phone" element={<Navigate to="/login" replace />} />

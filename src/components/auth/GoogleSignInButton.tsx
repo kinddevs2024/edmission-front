@@ -25,6 +25,7 @@ type GoogleSignInButtonProps = {
   className?: string
   autoPrompt?: boolean
   compact?: boolean
+  title?: string
 }
 
 /**
@@ -36,6 +37,7 @@ export function GoogleSignInButton({
   className,
   autoPrompt = false,
   compact = false,
+  title,
 }: GoogleSignInButtonProps) {
   const { pathname } = useLocation()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -99,7 +101,7 @@ export function GoogleSignInButton({
   if (!clientId) return null
 
   return (
-    <div className={className}>
+    <div className={className} title={title}>
       <div
         ref={containerRef}
         className={
