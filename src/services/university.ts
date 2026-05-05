@@ -433,6 +433,8 @@ export async function createOffer(payload: {
   scholarshipId?: string
   coveragePercent: number
   deadline?: string
+  certificateTemplateId?: string
+  certificateData?: Record<string, string>
 }): Promise<unknown> {
   const { data } = await api.post('/university/offers', payload)
   return data

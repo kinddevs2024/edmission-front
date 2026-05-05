@@ -129,7 +129,10 @@ export function UserManagement() {
   const [editUserRole, setEditUserRole] = useState<Role>('student')
   const [editUserName, setEditUserName] = useState('')
   const [editUserSaving, setEditUserSaving] = useState(false)
-  const [editManagerUniversityIdsText, setEditManagerUniversityIdsText] = useState('')
+  const [editManagerUniversityIds, setEditManagerUniversityIds] = useState<string[]>([])
+  const [universityPickerSearch, setUniversityPickerSearch] = useState('')
+  const [universityPickerLoading, setUniversityPickerLoading] = useState(false)
+  const [universityPickerOptions, setUniversityPickerOptions] = useState<AdminUser[]>([])
   const [editManagerApproved, setEditManagerApproved] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
@@ -148,6 +151,30 @@ export function UserManagement() {
     if (assignableRoles.length === 0) return
     if (!assignableRoles.includes(createRole)) setCreateRole(assignableRoles[0])
   }, [assignableRoles, createRole])
+
+  useEffect(() => {
+    if (!editUserTarget || editUserRole !== 'university_multi_manager' || !isAdmin) return
+    const handle = window.setTimeout(() => {
+      setUniversityPickerLoading(true)
+      getUsers({
+        role: 'university',
+        search: universityPickerSearch.trim() || undefined,
+        page: 1,
+        limit: 50,
+      })
+        .then((res) => {
+          setUniversityPickerOptions((prev) => {
+            const byId = new Map<string, AdminUser>()
+            for (const row of prev) if (editManagerUniversityIds.includes(row.id)) byId.set(row.id, row)
+            for (const row of res.data ?? []) byId.set(row.id, row)
+            return [...byId.values()]
+          })
+        })
+        .catch(() => setUniversityPickerOptions([]))
+        .finally(() => setUniversityPickerLoading(false))
+    }, 250)
+    return () => window.clearTimeout(handle)
+  }, [editUserTarget, editUserRole, editManagerUniversityIds, isAdmin, universityPickerSearch])
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -229,14 +256,33 @@ export function UserManagement() {
     setEditUserTarget(user)
     setEditUserRole((user.role as Role) || 'student')
     setEditUserName(user.name ?? '')
-    setEditManagerUniversityIdsText('')
+    setEditManagerUniversityIds([])
+    setUniversityPickerSearch('')
+    setUniversityPickerOptions([])
     setEditManagerApproved(false)
     if (isAdmin) {
       getAdminUser(user.id)
         .then((raw) => {
           if (String(raw.role ?? '') !== 'university_multi_manager') return
           const ids = (raw.managedUniversityUserIds as unknown[] | undefined) ?? []
-          setEditManagerUniversityIdsText(ids.map((x) => String(x)).filter(Boolean).join('\n'))
+          setEditManagerUniversityIds(ids.map((x) => String(x)).filter(Boolean))
+          const managed = (raw.managedUniversities as Array<{ userId?: unknown; universityName?: unknown }> | undefined) ?? []
+          setUniversityPickerOptions((prev) => {
+            const byId = new Map(prev.map((row) => [row.id, row]))
+            for (const uni of managed) {
+              const id = String(uni.userId ?? '').trim()
+              if (!id) continue
+              byId.set(id, {
+                id,
+                email: id,
+                role: 'university',
+                name: typeof uni.universityName === 'string' ? uni.universityName : undefined,
+                createdAt: '',
+                status: 'active',
+              })
+            }
+            return [...byId.values()]
+          })
           setEditManagerApproved(Boolean(raw.universityMultiManagerApproved))
         })
         .catch(() => {})
@@ -248,11 +294,7 @@ export function UserManagement() {
     setEditUserSaving(true)
     const payload: Parameters<typeof updateUser>[1] = { role: editUserRole, name: editUserName.trim() || undefined }
     if (isAdmin && editUserRole === 'university_multi_manager') {
-      const ids = editManagerUniversityIdsText
-        .split(/[\n,;\s]+/)
-        .map((x) => x.trim())
-        .filter(Boolean)
-      payload.managedUniversityUserIds = [...new Set(ids)]
+      payload.managedUniversityUserIds = [...new Set(editManagerUniversityIds)]
       payload.universityMultiManagerApproved = editManagerApproved
     }
     updateUser(editUserTarget.id, payload)
@@ -766,16 +808,50 @@ export function UserManagement() {
               />
               <Input label={t('common:name')} value={editUserName} onChange={(e) => setEditUserName(e.target.value)} />
               {isAdmin && editUserRole === 'university_multi_manager' ? (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-[var(--color-text)]">
-                    {t('admin:managedUniversityUserIds', 'Managed university account IDs (one User id per line)')}
-                  </label>
-                  <textarea
-                    className="w-full min-h-[100px] rounded-input border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm"
-                    value={editManagerUniversityIdsText}
-                    onChange={(e) => setEditManagerUniversityIdsText(e.target.value)}
-                    spellCheck={false}
+                <div className="space-y-3 rounded-card border border-[var(--color-border)] p-3">
+                  <Input
+                    label={t('admin:managedUniversities', 'Managed universities')}
+                    value={universityPickerSearch}
+                    onChange={(e) => setUniversityPickerSearch(e.target.value)}
+                    placeholder={t('admin:searchUniversities', 'Search university account')}
                   />
+                  <div className="max-h-52 space-y-2 overflow-y-auto rounded-input border border-[var(--color-border)] p-2">
+                    {universityPickerLoading ? (
+                      <p className="text-xs text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
+                    ) : null}
+                    {universityPickerOptions.length === 0 && !universityPickerLoading ? (
+                      <p className="text-xs text-[var(--color-text-muted)]">
+                        {t('admin:noUniversitiesFound', 'No university accounts found.')}
+                      </p>
+                    ) : null}
+                    {universityPickerOptions.map((uni) => {
+                      const checked = editManagerUniversityIds.includes(uni.id)
+                      return (
+                        <label
+                          key={uni.id}
+                          className="flex cursor-pointer items-start gap-2 rounded-input px-2 py-1.5 text-sm hover:bg-[var(--color-border)]/50"
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={checked}
+                            onChange={(e) => {
+                              setEditManagerUniversityIds((prev) =>
+                                e.target.checked ? [...new Set([...prev, uni.id])] : prev.filter((id) => id !== uni.id)
+                              )
+                            }}
+                          />
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium">{uni.name || uni.email}</span>
+                            <span className="block truncate text-xs text-[var(--color-text-muted)]">{uni.email}</span>
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    {t('admin:selectedUniversitiesCount', '{{count}} selected', { count: editManagerUniversityIds.length })}
+                  </p>
                   <Checkbox
                     checked={editManagerApproved}
                     onChange={(e) => setEditManagerApproved(e.target.checked)}

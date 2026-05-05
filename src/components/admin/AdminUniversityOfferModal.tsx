@@ -12,6 +12,7 @@ import {
   getStudentProfileByUser,
   getUsers,
 } from '@/services/admin'
+import { createOffer, getOfferTemplates, getScholarships, getStudents } from '@/services/university'
 import { notifySuccess } from '@/utils/notify'
 import { toastApiError } from '@/utils/toastError'
 
@@ -21,6 +22,8 @@ type Props = {
   open: boolean
   onClose: () => void
   universityUserId: string
+  /** Admin proxy uses /admin/university-accounts. Delegated uses normal university APIs with X-Act-As-University. */
+  apiMode?: 'admin' | 'delegated'
   /** Student profile Mongo id */
   initialStudentProfileId?: string
   initialStudentLabel?: string
@@ -31,6 +34,7 @@ export function AdminUniversityOfferModal({
   open,
   onClose,
   universityUserId,
+  apiMode = 'admin',
   initialStudentProfileId,
   initialStudentLabel,
   initialChatId,
@@ -68,28 +72,40 @@ export function AdminUniversityOfferModal({
 
   useEffect(() => {
     if (!open || !universityUserId) return
-    adminUniversityGetScholarshipsForAccount(universityUserId)
+    const scholarshipsReq = apiMode === 'delegated'
+      ? getScholarships({ page: 1, limit: 100 }).then((res) => res.data ?? [])
+      : adminUniversityGetScholarshipsForAccount(universityUserId)
+    scholarshipsReq
       .then((list) =>
         setScholarships(
-          (list ?? []).map((s) => ({
+          (list ?? []).map((item) => {
+            const s = item as { id?: unknown; _id?: unknown; name?: unknown; coveragePercent?: unknown }
+            return {
             id: String(s.id ?? s._id ?? ''),
-            name: (s.name as string | undefined) ?? undefined,
+            name: typeof s.name === 'string' ? s.name : undefined,
             coveragePercent: s.coveragePercent != null ? Number(s.coveragePercent) : undefined,
-          }))
+            }
+          })
         )
       )
       .catch(() => setScholarships([]))
-    adminUniversityListOfferTemplates(universityUserId)
+    const templatesReq = apiMode === 'delegated'
+      ? getOfferTemplates()
+      : adminUniversityListOfferTemplates(universityUserId)
+    templatesReq
       .then((list) =>
         setOfferTemplates(
-          (list ?? []).map((row) => ({
+          (list ?? []).map((item) => {
+            const row = item as { id?: unknown; _id?: unknown; name?: unknown }
+            return {
             id: String(row.id ?? row._id ?? ''),
-            name: (row.name as string | undefined) ?? undefined,
-          }))
+            name: typeof row.name === 'string' ? row.name : undefined,
+            }
+          })
         )
       )
       .catch(() => setOfferTemplates([]))
-  }, [open, universityUserId])
+  }, [apiMode, open, universityUserId])
 
   useEffect(() => {
     if (!open) return
@@ -100,8 +116,22 @@ export function AdminUniversityOfferModal({
     }
     const handle = window.setTimeout(() => {
       setSearching(true)
-      getUsers({ role: 'student', search: q, limit: 15, page: 1 })
-        .then((res) => setCandidates(res.data ?? []))
+      const req = apiMode === 'delegated'
+        ? getStudents({ search: q, limit: 15, page: 1, useProfileFilters: false }).then((res) =>
+            (res.data ?? []).map((item) => {
+              const first = item.student.firstName?.trim() ?? ''
+              const last = item.student.lastName?.trim() ?? ''
+              const full = [first, last].filter(Boolean).join(' ').trim()
+              return {
+                id: item.id,
+                email: item.student.userEmail ?? '',
+                name: full || item.student.name,
+              }
+            })
+          )
+        : getUsers({ role: 'student', search: q, limit: 15, page: 1 }).then((res) => res.data ?? [])
+      req
+        .then((rows) => setCandidates(rows))
         .catch((e) => {
           toastApiError(e)
           setCandidates([])
@@ -109,9 +139,15 @@ export function AdminUniversityOfferModal({
         .finally(() => setSearching(false))
     }, 300)
     return () => window.clearTimeout(handle)
-  }, [search, open])
+  }, [apiMode, search, open])
 
   const pickStudent = (userId: string) => {
+    if (apiMode === 'delegated') {
+      const picked = candidates.find((candidate) => candidate.id === userId)
+      setStudentProfileId(userId)
+      setStudentLabel(picked?.name || picked?.email || userId)
+      return
+    }
     setProfileLoading(true)
     getStudentProfileByUser(userId)
       .then((profile) => {
@@ -138,7 +174,8 @@ export function AdminUniversityOfferModal({
       return
     }
     setSendingOffer(true)
-    adminUniversityCreateOffer(universityUserId, {
+    const req = apiMode === 'delegated' ? createOffer : (payload: Parameters<typeof createOffer>[0]) => adminUniversityCreateOffer(universityUserId, payload)
+    req({
       studentId: studentProfileId,
       scholarshipId: scholarshipId || undefined,
       coveragePercent: cov,
@@ -263,7 +300,7 @@ export function AdminUniversityOfferModal({
           studentId={studentProfileId}
           chatId={initialChatId}
           studentName={studentLabel}
-          actingUniversityUserId={universityUserId}
+          actingUniversityUserId={apiMode === 'admin' ? universityUserId : undefined}
           onSent={() => {
             setDocumentModalOpen(false)
             notifySuccess(t('admin:documentSent', 'Document sent'))

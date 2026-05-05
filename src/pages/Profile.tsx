@@ -13,8 +13,10 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ThemeSwitch } from '@/components/ui/ThemeSwitch'
+import { AdminUniversityOfferModal } from '@/components/admin/AdminUniversityOfferModal'
 import { toastApiError } from '@/utils/toastError'
 import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
 import { newPasswordValueSchema } from '@/utils/authPasswordZod'
@@ -23,6 +25,7 @@ import { cn } from '@/utils/cn'
 import type { NotificationPreferences } from '@/types/user'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { Checkbox } from '@/components/ui/Checkbox'
+import { setActAsUniversityUserId } from '@/constants/actAsUniversity'
 import { CheckCircle, ChevronDown, CircleAlert, Lock } from 'lucide-react'
 import { getStudentProfile, updateStudentProfile } from '@/services/student'
 
@@ -79,6 +82,8 @@ export function Profile() {
   const [openSocialLink, setOpenSocialLink] = useState<'telegram' | 'instagram' | 'linkedin' | 'facebook' | 'whatsapp' | null>('telegram')
   const [accountSaving, setAccountSaving] = useState(false)
   const [studentProfileVisibility, setStudentProfileVisibility] = useState<'private' | 'public' | null>(null)
+  const [multiManagerOfferUniversityId, setMultiManagerOfferUniversityId] = useState(user?.managedUniversities?.[0]?.userId ?? '')
+  const [multiManagerOfferOpen, setMultiManagerOfferOpen] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'student') {
@@ -99,6 +104,17 @@ export function Profile() {
     setFacebook(user?.socialLinks?.facebook ?? '')
     setWhatsapp(user?.socialLinks?.whatsapp ?? '')
   }, [user?.name, user?.phone, user?.socialLinks?.telegram, user?.socialLinks?.instagram, user?.socialLinks?.linkedin, user?.socialLinks?.facebook, user?.socialLinks?.whatsapp])
+
+  useEffect(() => {
+    if (user?.role !== 'university_multi_manager') {
+      setMultiManagerOfferUniversityId('')
+      return
+    }
+    setMultiManagerOfferUniversityId((current) => {
+      if (current && user.managedUniversities?.some((u) => u.userId === current)) return current
+      return user.managedUniversities?.[0]?.userId ?? ''
+    })
+  }, [user?.managedUniversities, user?.role])
 
   const handleSetup2FA = () => {
     setTwoFaError('')
@@ -381,6 +397,52 @@ export function Profile() {
           </Button>
         </div>
       </Card>
+
+      {user?.role === 'university_multi_manager' ? (
+        <Card>
+          <CardTitle>{t('university:sendOfferAsManagedUniversity', 'Send offer as a university')}</CardTitle>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {t('university:multiManagerOfferHint', 'Choose one of your assigned universities, then choose any student and send an offer.')}
+          </p>
+          {user.universityMultiManagerApproved !== true ? (
+            <p className="mt-3 rounded-input border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
+              {t('university:multiManagerPendingApproval', 'Your access is not approved yet. An administrator must confirm your assignment before you can open a university.')}
+            </p>
+          ) : null}
+          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <Select
+              label={t('common:university', 'University')}
+              value={multiManagerOfferUniversityId}
+              onChange={(e) => setMultiManagerOfferUniversityId(e.target.value)}
+              options={[
+                { value: '', label: t('university:selectUniversity', 'Select university') },
+                ...(user.managedUniversities ?? []).map((u) => ({
+                  value: u.userId,
+                  label: u.universityName || u.userId,
+                })),
+              ]}
+            />
+            <Button
+              type="button"
+              disabled={user.universityMultiManagerApproved !== true || !multiManagerOfferUniversityId}
+              onClick={() => {
+                setActAsUniversityUserId(multiManagerOfferUniversityId)
+                setMultiManagerOfferOpen(true)
+              }}
+            >
+              {t('common:send', 'Send')}
+            </Button>
+          </div>
+          {multiManagerOfferUniversityId ? (
+            <AdminUniversityOfferModal
+              open={multiManagerOfferOpen}
+              onClose={() => setMultiManagerOfferOpen(false)}
+              universityUserId={multiManagerOfferUniversityId}
+              apiMode="delegated"
+            />
+          ) : null}
+        </Card>
+      ) : null}
 
       {shouldShowLoginMethods ? (
         <Card>
