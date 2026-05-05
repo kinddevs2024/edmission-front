@@ -10,6 +10,7 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import {
   createUser,
+  getAdminCatalogUniversities,
   getUsers,
   getAdminUser,
   updateUser,
@@ -22,6 +23,7 @@ import {
   previewUsersExcel,
   uploadUsersExcel,
   type UsersImportPreviewResult,
+  type AdminCatalogUniversity,
 } from '@/services/admin'
 import { formatDate } from '@/utils/format'
 import type { AdminUser } from '@/services/admin'
@@ -43,6 +45,20 @@ function formatPreviewValue(value: unknown): string {
     return JSON.stringify(value)
   }
   return String(value)
+}
+
+type UniversityPickerOption = {
+  id: string
+  name: string
+  subtitle?: string
+}
+
+function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityPickerOption {
+  return {
+    id: uni.linkedUniversityUserId || uni.id,
+    name: uni.universityName || uni.name || uni.id,
+    subtitle: [uni.city, uni.country].filter(Boolean).join(', ') || uni.id,
+  }
 }
 
 export function UserManagement() {
@@ -132,7 +148,7 @@ export function UserManagement() {
   const [editManagerUniversityIds, setEditManagerUniversityIds] = useState<string[]>([])
   const [universityPickerSearch, setUniversityPickerSearch] = useState('')
   const [universityPickerLoading, setUniversityPickerLoading] = useState(false)
-  const [universityPickerOptions, setUniversityPickerOptions] = useState<AdminUser[]>([])
+  const [universityPickerOptions, setUniversityPickerOptions] = useState<UniversityPickerOption[]>([])
   const [editManagerApproved, setEditManagerApproved] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')

@@ -864,6 +864,8 @@ export interface AdminCatalogUniversity {
   tagline?: string
   establishedYear?: number
   studentCount?: number
+  linkedUniversityUserId?: string
+  linkedUniversityProfileId?: string
   facultyCodes?: string[]
   facultyItems?: Record<string, string[]>
   targetStudentCountries?: string[]
