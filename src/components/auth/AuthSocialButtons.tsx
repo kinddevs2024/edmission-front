@@ -48,8 +48,7 @@ export function AuthSocialButtons({
     try {
       const data = await startTelegramAuth({ role });
       savePendingTelegramAuthSession({ sessionId: data.sessionId, role });
-      const params = new URLSearchParams({ sessionId: data.sessionId, deepLink: data.deepLink, role });
-      window.location.href = `/auth/telegram?${params.toString()}`;
+      window.location.href = data.deepLink;
     } catch {
       setSubmitError(t("errors:default"));
     } finally {

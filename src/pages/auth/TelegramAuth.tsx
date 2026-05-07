@@ -73,9 +73,19 @@ export function TelegramAuth() {
       .then(({ user }) => {
         navigateAfterLogin(navigate, user)
       })
-      .catch((err) => {
-        const key = getApiErrorKey(err)
-        setSubmitError(t(`errors:${key}`))
+      .catch(() => {
+        setSearchParams(
+          {
+            ...(role ? { role } : {}),
+          },
+          { replace: true }
+        )
+        setSubmitError(
+          t(
+            'auth:telegramLinkExpiredStartNew',
+            'This Telegram link has expired or was already used. Start a new Telegram session.'
+          )
+        )
       })
       .finally(() => {
         setLoadingLink(false)
@@ -163,7 +173,7 @@ export function TelegramAuth() {
       <p className="mb-4 text-sm text-[var(--color-text-muted)]">
         {t(
           'auth:telegramNoCodeHint',
-          'Open the Telegram bot, share your phone number, then return to the website. You will be signed in automatically.'
+          'Open the Telegram bot, choose a language, send your name and phone number. You will be signed in automatically.'
         )}
       </p>
 
