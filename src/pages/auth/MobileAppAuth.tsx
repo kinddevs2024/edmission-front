@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { exchangeMobileWebAuthSession, getApiError } from '@/services/auth'
 
 let exchangeCache: { token: string; promise: Promise<unknown> } | null = null
@@ -22,7 +21,6 @@ function postNativeAuthError(message: string): void {
 }
 
 export function MobileAppAuth() {
-  const navigate = useNavigate()
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -47,7 +45,7 @@ export function MobileAppAuth() {
     exchangePromise
       .then(() => {
         if (cancelled) return
-        navigate(next, { replace: true })
+        window.location.replace(next)
       })
       .catch((err) => {
         if (cancelled) return
@@ -59,7 +57,7 @@ export function MobileAppAuth() {
     return () => {
       cancelled = true
     }
-  }, [navigate])
+  }, [])
 
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center bg-[var(--color-bg)] px-6 text-center">

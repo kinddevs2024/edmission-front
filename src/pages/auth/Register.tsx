@@ -8,6 +8,7 @@ import { z } from "zod";
 import { Building2, GraduationCap, UserRoundCheck } from "lucide-react";
 import {
   completePhoneRegistration,
+  getPhoneRegistrationStatus,
   loginWithGoogle,
   register as registerApi,
   resendVerificationCode,
@@ -74,10 +75,12 @@ export function Register() {
     phone: string;
     code?: string;
     expiresAt?: string;
+    deepLink?: string;
+    password: string;
   } | null>(null);
-  const [phoneCode, setPhoneCode] = useState("");
   const [phonePassword, setPhonePassword] = useState("");
   const [phoneConfirmPassword, setPhoneConfirmPassword] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
 
   const passwordSchema = useMemo(
     () =>
@@ -145,6 +148,36 @@ export function Register() {
     const timer = window.setInterval(() => setResendCooldown((c) => Math.max(0, c - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [step, resendCooldown]);
+
+  useEffect(() => {
+    if (method !== "phone" || phoneStep !== "code" || !pendingPhone || phoneVerified || loading) return;
+    let cancelled = false;
+    const timer = window.setInterval(() => {
+      void (async () => {
+        try {
+          const status = await getPhoneRegistrationStatus(pendingPhone.registrationId);
+          if (cancelled || !status.verifiedViaTelegram) return;
+          setPhoneVerified(true);
+          setLoading(true);
+          const result = await completePhoneRegistration({
+            registrationId: pendingPhone.registrationId,
+            password: pendingPhone.password,
+          });
+          await navigateAfterRegistration(navigate, result.user, i18n);
+        } catch (err) {
+          if (!cancelled) {
+            const apiErr = getApiError(err);
+            setSubmitError(apiErr.message || t("errors:default"));
+            setLoading(false);
+          }
+        }
+      })();
+    }, 2000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [i18n, loading, method, navigate, pendingPhone, phoneStep, phoneVerified, t]);
 
   const handleGoogleCredential = async (credential: string) => {
     setSubmitError("");
@@ -242,6 +275,15 @@ export function Register() {
 
   const onStartPhoneRegistration = async (data: PhoneFormData) => {
     setSubmitError("");
+    const parsedPassword = passwordSchema.safeParse(phonePassword);
+    if (!parsedPassword.success) {
+      setSubmitError(parsedPassword.error.issues[0]?.message ?? t("auth:passwordRequirements"));
+      return;
+    }
+    if (phonePassword !== phoneConfirmPassword) {
+      setSubmitError(t("auth:passwordsMustMatch"));
+      return;
+    }
     setLoading(true);
     try {
       const result = await startPhoneRegistration({
@@ -254,45 +296,14 @@ export function Register() {
         phone: result.phone,
         code: result.verification.code,
         expiresAt: result.verification.expiresAt,
-      });
-      setPhoneCode("");
-      setPhonePassword("");
-      setPhoneConfirmPassword("");
-      setPhoneStep("code");
-    } catch (err) {
-      const apiErr = getApiError(err);
-      const key = getApiErrorKey(err);
-      setSubmitError(key !== "default" ? t(`errors:${key}`) : apiErr.message || t("errors:default"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onCompletePhoneRegistration = async () => {
-    if (!pendingPhone) return;
-    setSubmitError("");
-    const normalizedCode = phoneCode.replace(/\D/g, "").slice(0, 6);
-    if (normalizedCode.length !== 6) {
-      setSubmitError(t("auth:codeInvalid", "Enter the full 6-digit code."));
-      return;
-    }
-    const parsedPassword = passwordSchema.safeParse(phonePassword);
-    if (!parsedPassword.success) {
-      setSubmitError(parsedPassword.error.issues[0]?.message ?? t("auth:passwordRequirements"));
-      return;
-    }
-    if (phonePassword !== phoneConfirmPassword) {
-      setSubmitError(t("auth:passwordsMustMatch"));
-      return;
-    }
-    setLoading(true);
-    try {
-      const result = await completePhoneRegistration({
-        registrationId: pendingPhone.registrationId,
-        code: normalizedCode,
+        deepLink: result.verification.deepLink,
         password: phonePassword,
       });
-      await navigateAfterRegistration(navigate, result.user, i18n);
+      setPhoneVerified(false);
+      setPhoneStep("code");
+      if (result.verification.deepLink) {
+        window.open(result.verification.deepLink, "_blank", "noopener,noreferrer");
+      }
     } catch (err) {
       const apiErr = getApiError(err);
       const key = getApiErrorKey(err);
@@ -532,6 +543,33 @@ export function Register() {
                   error={phoneErrors.phone?.message}
                   {...registerPhoneField("phone")}
                 />
+                <Input
+                  label={t("auth:password", "New password")}
+                  type="password"
+                  autoComplete="new-password"
+                  hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
+                  value={phonePassword}
+                  passwordVisible={showPassword}
+                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+                  showPasswordToggle
+                  onChange={(e) => {
+                    setPhonePassword(e.target.value);
+                    setSubmitError("");
+                  }}
+                />
+                <Input
+                  label={t("auth:confirmPassword")}
+                  type="password"
+                  autoComplete="new-password"
+                  value={phoneConfirmPassword}
+                  passwordVisible={showPassword}
+                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+                  showPasswordToggle
+                  onChange={(e) => {
+                    setPhoneConfirmPassword(e.target.value);
+                    setSubmitError("");
+                  }}
+                />
                 <div className="grid grid-cols-2 gap-2">
                   {(["student", "university"] as SocialAuthRole[]).map((role) => (
                     <button
@@ -562,7 +600,7 @@ export function Register() {
                 {phoneErrors.acceptTerms && <p className="text-sm text-red-500">{phoneErrors.acceptTerms.message}</p>}
                 {submitError && <p className="text-sm text-red-500">{submitError}</p>}
                 <Button type="submit" className="w-full" loading={loading} disabled={loading}>
-                  {t("auth:sendCode", "Send code")}
+                  {t("auth:sendCode", "Open Telegram")}
                 </Button>
               </form>
             ) : (
@@ -570,46 +608,22 @@ export function Register() {
                 <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
                   <p className="text-sm font-medium text-[var(--color-text)]">{pendingPhone?.phone}</p>
                   <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                    {t("auth:phoneCodeSentHint", "Enter the code, then create the temporary password for this generated account.")}
+                    {t("auth:phoneCodeSentHint", "Open Telegram, share the same phone number, then this page will continue automatically.")}
                   </p>
                   {pendingPhone?.code ? (
                     <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                      {t("auth:testCodeHint", "Testing code")}: <span className="font-mono">{pendingPhone.code}</span>
+                      {t("auth:testCodeHint", "Testing link")}: <span className="font-mono">{pendingPhone.code}</span>
                     </p>
                   ) : null}
                 </div>
-                <Input
-                  label={t("auth:enterCode", "Enter code")}
-                  placeholder="000000"
-                  autoComplete="one-time-code"
-                  value={phoneCode}
-                  maxLength={6}
-                  onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                />
-                <Input
-                  label={t("auth:password")}
-                  type="password"
-                  autoComplete="new-password"
-                  hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
-                  value={phonePassword}
-                  passwordVisible={showPassword}
-                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-                  showPasswordToggle
-                  onChange={(e) => setPhonePassword(e.target.value)}
-                />
-                <Input
-                  label={t("auth:confirmPassword")}
-                  type="password"
-                  autoComplete="new-password"
-                  value={phoneConfirmPassword}
-                  passwordVisible={showPassword}
-                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-                  showPasswordToggle
-                  onChange={(e) => setPhoneConfirmPassword(e.target.value)}
-                />
                 {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-                <Button type="button" className="w-full" loading={loading} disabled={loading} onClick={() => void onCompletePhoneRegistration()}>
-                  {t("auth:verifyAndContinue", "Verify and continue")}
+                {pendingPhone?.deepLink ? (
+                  <Button type="button" className="w-full" disabled={loading} onClick={() => window.open(pendingPhone.deepLink, "_blank", "noopener,noreferrer")}>
+                    {t("auth:openTelegram", "Open Telegram")}
+                  </Button>
+                ) : null}
+                <Button type="button" className="w-full" loading={loading} disabled>
+                  {loading ? t("common:loading") : t("auth:verifyAndContinue", "Waiting for Telegram confirmation")}
                 </Button>
                 <button
                   type="button"

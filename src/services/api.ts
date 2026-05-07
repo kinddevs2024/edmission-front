@@ -59,7 +59,12 @@ api.interceptors.response.use(
     const originalRequest = error.config as typeof error.config & { _retry?: boolean }
     const isRefreshRequest = isAuthEndpoint(originalRequest?.url, '/auth/refresh')
     const isLogoutRequest = isAuthEndpoint(originalRequest?.url, '/auth/logout')
+    const isMobileWebAuthExchangeRequest = isAuthEndpoint(originalRequest?.url, '/auth/mobile-web/exchange')
     if (error.response?.status === 401) {
+      if (isMobileWebAuthExchangeRequest) {
+        clearAuthSessionOnly()
+        return Promise.reject(error)
+      }
       /** `POST /auth/logout` is followed by `logout()` in auth.ts, which navigates. Avoid a second redirect here (e.g. /login then /) which flashes the login page. */
       if (isLogoutRequest) {
         clearAuthSessionOnly()

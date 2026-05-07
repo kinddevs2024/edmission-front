@@ -77,7 +77,7 @@ export interface PhoneRegisterStartResult {
   registrationId: string
   phone: string
   verification: {
-    method: 'code'
+    method: 'code' | 'telegram'
     code: string
     expiresAt: string
     deepLink: string
@@ -346,7 +346,7 @@ export async function getPhoneRegistrationStatus(registrationId: string): Promis
 
 export async function completePhoneRegistration(payload: {
   registrationId: string
-  code: string
+  code?: string
   password: string
 }): Promise<LoginResponse> {
   const { data } = await api.post<LoginResponse>('/auth/register-phone/complete', payload)
@@ -390,6 +390,9 @@ export async function logout(): Promise<void> {
 export interface ForgotPasswordResponse {
   success: true
   resetLink?: string
+  mode?: 'email' | 'telegram_code'
+  phone?: string
+  expiresAt?: string
 }
 
 export async function forgotPassword(identifier: string): Promise<ForgotPasswordResponse> {
@@ -404,6 +407,14 @@ export async function verifyEmailByLink(token: string): Promise<void> {
 
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
   await api.post('/auth/reset-password', { token, newPassword })
+}
+
+export async function resetPasswordWithTelegramCode(payload: {
+  phone: string
+  code: string
+  newPassword: string
+}): Promise<void> {
+  await api.post('/auth/reset-password/telegram-code', payload)
 }
 
 /** Set new password (for user with temp password from school counsellor). Clears mustChangePassword. */
