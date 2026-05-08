@@ -2,6 +2,7 @@ import axios, { type AxiosError } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
 import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
+import { getInitialLanguage, getSavedLanguageIfSupported, supportedLngs } from '@/i18n/config'
 
 // Локально (dev): запросы сразу на бэкенд (порт 4000), без прокси. На проде — тот же домен /api (проксирует nginx).
 const baseURL =
@@ -38,8 +39,12 @@ function forceLogout(): void {
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
   const user = useAuthStore.getState().user
+  const savedLanguage = getSavedLanguageIfSupported() ?? getInitialLanguage()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  if (supportedLngs.includes(savedLanguage)) {
+    ;(config.headers as Record<string, string>)['X-User-Language'] = savedLanguage
   }
   if (user?.role === 'university_multi_manager' && config.headers) {
     const actAs = getActAsUniversityUserId()

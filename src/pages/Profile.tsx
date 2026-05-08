@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { getProfile as getUniversityProfile, updateProfile as updateUniversityProfile } from '@/services/university'
 import { useAuth } from '@/hooks/useAuth'
-import { getProfile, updateProfile, getApiError, logout as logoutApi, changePassword } from '@/services/auth'
+import { getProfile, updateProfile, getApiError, logout as logoutApi, changePassword, startLinkEmail, verifyLinkEmail } from '@/services/auth'
 import { useAuthStore } from '@/store/authStore'
 import { setup2FA, verifyAndEnable2FA, disable2FA } from '@/services/twoFactor'
 import { PageTitle } from '@/components/ui/PageTitle'
@@ -81,6 +81,11 @@ export function Profile() {
   const [whatsapp, setWhatsapp] = useState(user?.socialLinks?.whatsapp ?? '')
   const [openSocialLink, setOpenSocialLink] = useState<'telegram' | 'instagram' | 'linkedin' | 'facebook' | 'whatsapp' | null>('telegram')
   const [accountSaving, setAccountSaving] = useState(false)
+  const [emailLinkStep, setEmailLinkStep] = useState<'input' | 'code'>('input')
+  const [emailLinkValue, setEmailLinkValue] = useState('')
+  const [emailLinkCode, setEmailLinkCode] = useState('')
+  const [emailLinkError, setEmailLinkError] = useState('')
+  const [emailLinkLoading, setEmailLinkLoading] = useState(false)
   const [studentProfileVisibility, setStudentProfileVisibility] = useState<'private' | 'public' | null>(null)
   const [multiManagerOfferUniversityId, setMultiManagerOfferUniversityId] = useState(user?.managedUniversities?.[0]?.userId ?? '')
   const [multiManagerOfferOpen, setMultiManagerOfferOpen] = useState(false)
@@ -187,6 +192,63 @@ export function Profile() {
     (facebook ?? '') !== (user?.socialLinks?.facebook ?? '') ||
     (whatsapp ?? '') !== (user?.socialLinks?.whatsapp ?? '')
 
+  const publicEmail = useMemo(() => {
+    const email = (user?.email ?? '').trim()
+    if (!email || email.endsWith('.local') || email.includes('@telegram.local') || email.includes('@phone.local')) return ''
+    return email
+  }, [user?.email])
+  const emailConnected = Boolean(publicEmail)
+
+  useEffect(() => {
+    if (!emailConnected) return
+    setEmailLinkStep('input')
+    setEmailLinkValue('')
+    setEmailLinkCode('')
+    setEmailLinkError('')
+  }, [emailConnected])
+
+  const handleStartEmailLink = async () => {
+    const nextEmail = emailLinkValue.trim()
+    if (!nextEmail) {
+      setEmailLinkError(t('auth:invalidEmail', 'Enter a valid email'))
+      return
+    }
+    setEmailLinkError('')
+    setEmailLinkLoading(true)
+    try {
+      await startLinkEmail(nextEmail)
+      setEmailLinkValue(nextEmail)
+      setEmailLinkCode('')
+      setEmailLinkStep('code')
+      notifySuccess(t('auth:verificationCodeSentShort', 'Verification code sent'))
+    } catch (err) {
+      setEmailLinkError(getApiError(err).message || t('errors:unknown'))
+    } finally {
+      setEmailLinkLoading(false)
+    }
+  }
+
+  const handleVerifyEmailLink = async () => {
+    const code = emailLinkCode.trim().replace(/\D/g, '').slice(0, 6)
+    if (code.length !== 6) {
+      setEmailLinkError(t('auth:enterCode', 'Enter code'))
+      return
+    }
+    setEmailLinkError('')
+    setEmailLinkLoading(true)
+    try {
+      await verifyLinkEmail({ email: emailLinkValue.trim(), code })
+      await getProfile()
+      setEmailLinkStep('input')
+      setEmailLinkCode('')
+      notifySuccess(t('auth:emailConnected', 'Email connected'))
+    } catch (err) {
+      setEmailLinkError(getApiError(err).message || t('errors:unknown'))
+    } finally {
+      setEmailLinkLoading(false)
+    }
+  }
+
   const canChangePassword = user?.localPasswordConfigured !== false
   const changePasswordSchema = useMemo(
     () =>
@@ -246,13 +308,14 @@ export function Profile() {
 
   const loginMethods = useMemo(
     () => [
-      { key: 'email', label: t('auth:email', 'Email'), connected: user?.linkedProviders?.email ?? Boolean(user?.email) },
+      { key: 'email', label: t('auth:email', 'Email'), connected: user?.linkedProviders?.email ?? Boolean(publicEmail) },
       { key: 'phone', label: t('auth:phone', 'Phone'), connected: user?.linkedProviders?.phone ?? Boolean(user?.phone) },
       { key: 'telegram', label: 'Telegram', connected: user?.linkedProviders?.telegram ?? Boolean(user?.socialLinks?.telegram) },
       { key: 'google', label: 'Google', connected: Boolean(user?.linkedProviders?.google) },
+      { key: 'apple', label: 'Apple', connected: Boolean(user?.linkedProviders?.apple) },
       { key: 'yandex', label: 'Yandex', connected: Boolean(user?.linkedProviders?.yandex) },
     ],
-    [t, user?.email, user?.linkedProviders?.email, user?.linkedProviders?.google, user?.linkedProviders?.phone, user?.linkedProviders?.telegram, user?.linkedProviders?.yandex, user?.phone, user?.socialLinks?.telegram]
+    [t, publicEmail, user?.linkedProviders?.apple, user?.linkedProviders?.email, user?.linkedProviders?.google, user?.linkedProviders?.phone, user?.linkedProviders?.telegram, user?.linkedProviders?.yandex, user?.phone, user?.socialLinks?.telegram]
   )
   const shouldShowLoginMethods = loginMethods.filter((item) => item.connected).length < 2
   const socialAccounts = [
@@ -328,7 +391,54 @@ export function Profile() {
         )}
         <dl className="grid grid-cols-1 gap-2 mt-4">
           <dt className="text-[var(--color-text-muted)]">{t('email')}</dt>
-          <dd>{user?.email}</dd>
+          <dd className="min-w-0">
+            {emailConnected ? (
+              <span className="break-all">{publicEmail}</span>
+            ) : (
+              <div className="space-y-3 rounded-card border border-[var(--color-border)] bg-[var(--color-bg)]/55 p-3">
+                <p className="text-sm text-[var(--color-text-muted)]">{t('auth:noEmailConnected', 'No email connected')}</p>
+                <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                  <Input
+                    label={t('auth:connectEmail', 'Connect email')}
+                    type="email"
+                    autoComplete="email"
+                    value={emailLinkValue}
+                    onChange={(e) => {
+                      setEmailLinkValue(e.target.value)
+                      setEmailLinkError('')
+                    }}
+                    placeholder={t('auth:emailPlaceholder', 'you@example.com')}
+                    disabled={emailLinkLoading || emailLinkStep === 'code'}
+                  />
+                  <Button type="button" onClick={handleStartEmailLink} loading={emailLinkLoading && emailLinkStep === 'input'} disabled={emailLinkLoading}>
+                    {t('auth:confirm', 'Confirm')}
+                  </Button>
+                </div>
+                {emailLinkStep === 'code' ? (
+                  <div className="grid gap-2 md:grid-cols-[minmax(0,180px)_auto] md:items-end">
+                    <Input
+                      label={t('auth:enterCode', 'Enter code')}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={emailLinkCode}
+                      onChange={(e) => {
+                        setEmailLinkCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                        setEmailLinkError('')
+                      }}
+                      placeholder={t('auth:codePlaceholder', '000000')}
+                    />
+                    <Button type="button" onClick={handleVerifyEmailLink} loading={emailLinkLoading && emailLinkStep === 'code'} disabled={emailLinkLoading}>
+                      {t('auth:verifyAndContinue', 'Verify')}
+                    </Button>
+                  </div>
+                ) : null}
+                {emailLinkError ? <p className="text-sm text-red-500">{emailLinkError}</p> : null}
+              </div>
+            )}
+          </dd>
+          <dt className="text-[var(--color-text-muted)]">{t('phone', 'Phone')}</dt>
+          <dd>{user?.phone || '-'}</dd>
           <dt className="text-[var(--color-text-muted)]">{t('name')}</dt>
           <dd>{user?.name ?? '—'}</dd>
         </dl>

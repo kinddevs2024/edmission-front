@@ -135,6 +135,19 @@ export function Login() {
           setLoading={setLoading}
           setSubmitError={setSubmitError}
           onGoogleCredential={handleGoogleCredential}
+          onAppleSuccess={() => {
+            setSubmitError("");
+            const user = useAuthStore.getState().user;
+            if (user) {
+              if (user.mustSetLocalPassword) {
+                showOAuthPasswordReminder(
+                  t("auth:oauthPasswordToastTitle"),
+                  t("auth:oauthPasswordToastDesc"),
+                );
+              }
+              navigateAfterLogin(navigate, user);
+            }
+          }}
           onYandexSuccess={() => {
             setSubmitError("");
             const user = useAuthStore.getState().user;

@@ -200,6 +200,36 @@ export async function loginWithYandex(payload: {
   return data
 }
 
+export async function loginWithApple(payload: {
+  code: string
+  redirectUri: string
+  idToken?: string
+  user?: {
+    name?: {
+      firstName?: string
+      lastName?: string
+    }
+    email?: string
+  }
+  role?: 'student' | 'university'
+  acceptTerms: boolean
+}): Promise<LoginResponse> {
+  clearAuth()
+  useAuthStore.getState().logout()
+  useAIChatStore.getState().resetSession()
+  const { data } = await api.post<LoginResponse>('/auth/apple', {
+    code: payload.code,
+    redirectUri: payload.redirectUri,
+    ...(payload.idToken != null ? { idToken: payload.idToken } : {}),
+    ...(payload.user != null ? { user: payload.user } : {}),
+    ...(payload.role != null ? { role: payload.role } : {}),
+    acceptTerms: payload.acceptTerms,
+  })
+  useAuthStore.getState().setAuth(data.user, data.accessToken)
+  saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
+  return data
+}
+
 /** Yandex Passport SDK (YaAuthSuggest) — после получения OAuth access_token на клиенте. */
 export async function loginWithYandexAccessToken(payload: {
   accessToken: string
@@ -367,6 +397,21 @@ export async function verifyEmailByCode(email: string, code: string): Promise<Lo
 /** Resend 6-digit verification code. Available after 60s cooldown. */
 export async function resendVerificationCode(email: string): Promise<void> {
   await api.post('/auth/verify-email/resend', { email })
+}
+
+export async function startLinkEmail(email: string): Promise<{ success: true; email: string; expiresAt: string }> {
+  const { data } = await api.post<{ success: true; email: string; expiresAt: string }>('/auth/link-email/start', { email })
+  return data
+}
+
+export async function verifyLinkEmail(payload: { email: string; code: string }): Promise<User> {
+  const { data } = await api.post<User>('/auth/link-email/verify', payload)
+  useAuthStore.getState().setUser(data)
+  const token = useAuthStore.getState().accessToken
+  if (token) {
+    saveAuth(data, token, getStoredRefreshToken())
+  }
+  return data
 }
 
 export async function logout(): Promise<void> {

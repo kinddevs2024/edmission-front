@@ -1,18 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Building2, GraduationCap, UserRoundCheck } from "lucide-react";
 import {
-  completePhoneRegistration,
-  getPhoneRegistrationStatus,
   loginWithGoogle,
   register as registerApi,
   resendVerificationCode,
-  startPhoneRegistration,
   verifyEmailByCode,
 } from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
@@ -27,7 +23,6 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { BrandMark } from "@/components/layout/BrandLogo";
 
-type RegisterMethod = "email" | "phone";
 type RegisterRole = "student" | "university" | "school_counsellor";
 type SocialAuthRole = "student" | "university";
 type EmailFormData = {
@@ -37,28 +32,15 @@ type EmailFormData = {
   role: RegisterRole;
   acceptTerms: boolean;
 };
-type PhoneFormData = {
-  phone: string;
-  acceptTerms: boolean;
-};
 
 function toSocialAuthRole(role: RegisterRole): SocialAuthRole {
   return role === "university" ? "university" : "student";
 }
 
-const panelMotion = {
-  initial: { opacity: 0, y: 8, filter: "blur(2px)" },
-  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-  exit: { opacity: 0, y: -8, filter: "blur(2px)" },
-  transition: { duration: 0.18, ease: "easeOut" },
-} as const;
-
 export function Register() {
   const { t, i18n } = useTranslation(["common", "auth", "errors"]);
   const navigate = useNavigate();
-  const [method, setMethod] = useState<RegisterMethod>("email");
   const [selectedRole, setSelectedRole] = useState<RegisterRole>("student");
-  const [phoneRole, setPhoneRole] = useState<SocialAuthRole>("student");
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -69,18 +51,6 @@ export function Register() {
   const [codeLoading, setCodeLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
   const [resendLoading, setResendLoading] = useState(false);
-  const [phoneStep, setPhoneStep] = useState<"phone" | "code">("phone");
-  const [pendingPhone, setPendingPhone] = useState<{
-    registrationId: string;
-    phone: string;
-    code?: string;
-    expiresAt?: string;
-    deepLink?: string;
-    password: string;
-  } | null>(null);
-  const [phonePassword, setPhonePassword] = useState("");
-  const [phoneConfirmPassword, setPhoneConfirmPassword] = useState("");
-  const [phoneVerified, setPhoneVerified] = useState(false);
 
   const passwordSchema = useMemo(
     () =>
@@ -112,17 +82,6 @@ export function Register() {
     [passwordSchema, t],
   );
 
-  const phoneSchema = useMemo(
-    () =>
-      z.object({
-        phone: z.string().min(7, t("auth:phoneRequired", "Enter your phone number.")),
-        acceptTerms: z.boolean().refine((v) => v === true, {
-          message: t("auth:acceptTermsRequired"),
-        }),
-      }),
-    [t],
-  );
-
   const {
     register: registerEmailField,
     handleSubmit: handleEmailSubmit,
@@ -134,50 +93,12 @@ export function Register() {
     defaultValues: { role: "student", acceptTerms: false },
   });
 
-  const {
-    register: registerPhoneField,
-    handleSubmit: handlePhoneSubmit,
-    formState: { errors: phoneErrors },
-  } = useForm<PhoneFormData>({
-    resolver: zodResolver(phoneSchema),
-    defaultValues: { acceptTerms: false },
-  });
-
   useEffect(() => {
     if (step !== "code" || resendCooldown <= 0) return;
     const timer = window.setInterval(() => setResendCooldown((c) => Math.max(0, c - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [step, resendCooldown]);
 
-  useEffect(() => {
-    if (method !== "phone" || phoneStep !== "code" || !pendingPhone || phoneVerified || loading) return;
-    let cancelled = false;
-    const timer = window.setInterval(() => {
-      void (async () => {
-        try {
-          const status = await getPhoneRegistrationStatus(pendingPhone.registrationId);
-          if (cancelled || !status.verifiedViaTelegram) return;
-          setPhoneVerified(true);
-          setLoading(true);
-          const result = await completePhoneRegistration({
-            registrationId: pendingPhone.registrationId,
-            password: pendingPhone.password,
-          });
-          await navigateAfterRegistration(navigate, result.user, i18n);
-        } catch (err) {
-          if (!cancelled) {
-            const apiErr = getApiError(err);
-            setSubmitError(apiErr.message || t("errors:default"));
-            setLoading(false);
-          }
-        }
-      })();
-    }, 2000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, [i18n, loading, method, navigate, pendingPhone, phoneStep, phoneVerified, t]);
 
   const handleGoogleCredential = async (credential: string) => {
     setSubmitError("");
@@ -273,45 +194,6 @@ export function Register() {
     }
   };
 
-  const onStartPhoneRegistration = async (data: PhoneFormData) => {
-    setSubmitError("");
-    const parsedPassword = passwordSchema.safeParse(phonePassword);
-    if (!parsedPassword.success) {
-      setSubmitError(parsedPassword.error.issues[0]?.message ?? t("auth:passwordRequirements"));
-      return;
-    }
-    if (phonePassword !== phoneConfirmPassword) {
-      setSubmitError(t("auth:passwordsMustMatch"));
-      return;
-    }
-    setLoading(true);
-    try {
-      const result = await startPhoneRegistration({
-        phone: data.phone,
-        role: phoneRole,
-        acceptTerms: true,
-      });
-      setPendingPhone({
-        registrationId: result.registrationId,
-        phone: result.phone,
-        code: result.verification.code,
-        expiresAt: result.verification.expiresAt,
-        deepLink: result.verification.deepLink,
-        password: phonePassword,
-      });
-      setPhoneVerified(false);
-      setPhoneStep("code");
-      if (result.verification.deepLink) {
-        window.open(result.verification.deepLink, "_blank", "noopener,noreferrer");
-      }
-    } catch (err) {
-      const apiErr = getApiError(err);
-      const key = getApiErrorKey(err);
-      setSubmitError(key !== "default" ? t(`errors:${key}`) : apiErr.message || t("errors:default"));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (step === "code") {
     return (
@@ -428,215 +310,88 @@ export function Register() {
         <CardTitle>{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] p-1">
-        {(["email", "phone"] as RegisterMethod[]).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => {
-              setMethod(value);
-              setSubmitError("");
-            }}
-            className={`relative min-h-[40px] overflow-hidden rounded-input text-sm font-medium transition-colors duration-200 ${
-              method === value ? "text-primary-accent" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            }`}
-          >
-            {method === value && (
-              <motion.span
-                layoutId="register-method-switch"
-                className="absolute inset-0 rounded-input bg-[var(--color-card)] shadow-sm"
-                transition={{ type: "spring", stiffness: 480, damping: 34 }}
-              />
-            )}
-            <span className="relative z-[1]">
-              {value === "email" ? t("auth:email", "Email") : t("auth:phone", "Phone")}
+      <form onSubmit={handleEmailSubmit(onSubmitEmail)} className="space-y-4">
+        <Input
+          label={t("auth:email")}
+          type="email"
+          autoComplete="email"
+          placeholder={t("auth:emailPlaceholder")}
+          error={errors.email?.message}
+          {...registerEmailField("email")}
+        />
+        <Input
+          label={t("auth:password")}
+          type="password"
+          autoComplete="new-password"
+          hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
+          error={errors.password?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
+          {...registerEmailField("password")}
+        />
+        <Input
+          label={t("auth:confirmPassword")}
+          type="password"
+          autoComplete="new-password"
+          error={errors.confirmPassword?.message}
+          passwordVisible={showPassword}
+          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+          showPasswordToggle
+          {...registerEmailField("confirmPassword")}
+        />
+        <input type="hidden" {...registerEmailField("role")} />
+        <Checkbox
+          {...registerEmailField("acceptTerms")}
+          label={
+            <span className="text-sm text-[var(--color-text)]">
+              {t("auth:acceptTerms")}{" "}
+              <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
+                {t("common:privacy")}
+              </Link>
             </span>
-          </button>
-        ))}
-      </div>
+          }
+        />
+        {errors.acceptTerms && <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>}
+        {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+        <Button type="submit" className="w-full" loading={loading} disabled={loading}>
+          {t("common:register")}
+        </Button>
+      </form>
 
-      <AnimatePresence mode="wait" initial={false}>
-        {method === "email" ? (
-          <motion.div key="email" {...panelMotion}>
-            <form onSubmit={handleEmailSubmit(onSubmitEmail)} className="space-y-4">
-              <Input
-                label={t("auth:email")}
-                type="email"
-                autoComplete="email"
-                placeholder={t("auth:emailPlaceholder")}
-                error={errors.email?.message}
-                {...registerEmailField("email")}
-              />
-              <Input
-                label={t("auth:password")}
-                type="password"
-                autoComplete="new-password"
-                hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
-                error={errors.password?.message}
-                passwordVisible={showPassword}
-                onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-                showPasswordToggle
-                {...registerEmailField("password")}
-              />
-              <Input
-                label={t("auth:confirmPassword")}
-                type="password"
-                autoComplete="new-password"
-                error={errors.confirmPassword?.message}
-                passwordVisible={showPassword}
-                onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-                showPasswordToggle
-                {...registerEmailField("confirmPassword")}
-              />
-              <input type="hidden" {...registerEmailField("role")} />
-              <Checkbox
-                {...registerEmailField("acceptTerms")}
-                label={
-                  <span className="text-sm text-[var(--color-text)]">
-                    {t("auth:acceptTerms")}{" "}
-                    <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
-                      {t("common:privacy")}
-                    </Link>
-                  </span>
+      {(selectedRole === "student" || selectedRole === "university") && (
+        <div className="mt-6 space-y-4">
+          <AuthSocialButtons
+            mode="register"
+            loading={loading}
+            role={selectedRole}
+            yandexAcceptTerms
+            setLoading={setLoading}
+            setSubmitError={setSubmitError}
+            onGoogleCredential={handleGoogleCredential}
+            onAppleSuccess={async () => {
+              setSubmitError("");
+              const user = useAuthStore.getState().user;
+              if (user) {
+                if (user.mustSetLocalPassword) {
+                  showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
                 }
-              />
-              {errors.acceptTerms && <p className="text-sm text-red-500">{errors.acceptTerms.message}</p>}
-              {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-              <Button type="submit" className="w-full" loading={loading} disabled={loading}>
-                {t("common:register")}
-              </Button>
-            </form>
-
-            {(selectedRole === "student" || selectedRole === "university") && (
-              <div className="mt-6 space-y-4">
-                <AuthSocialButtons
-                  mode="register"
-                  loading={loading}
-                  role={selectedRole}
-                  yandexAcceptTerms
-                  setLoading={setLoading}
-                  setSubmitError={setSubmitError}
-                  onGoogleCredential={handleGoogleCredential}
-                  onYandexSuccess={async () => {
-                    setSubmitError("");
-                    const user = useAuthStore.getState().user;
-                    if (user) {
-                      if (user.mustSetLocalPassword) {
-                        showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
-                      }
-                      await navigateAfterRegistration(navigate, user, i18n);
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div key="phone" className="space-y-4" {...panelMotion}>
-            {phoneStep === "phone" ? (
-              <form onSubmit={handlePhoneSubmit(onStartPhoneRegistration)} className="space-y-4">
-                <Input
-                  label={t("auth:phone", "Phone number")}
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="+998..."
-                  error={phoneErrors.phone?.message}
-                  {...registerPhoneField("phone")}
-                />
-                <Input
-                  label={t("auth:password", "New password")}
-                  type="password"
-                  autoComplete="new-password"
-                  hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
-                  value={phonePassword}
-                  passwordVisible={showPassword}
-                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-                  showPasswordToggle
-                  onChange={(e) => {
-                    setPhonePassword(e.target.value);
-                    setSubmitError("");
-                  }}
-                />
-                <Input
-                  label={t("auth:confirmPassword")}
-                  type="password"
-                  autoComplete="new-password"
-                  value={phoneConfirmPassword}
-                  passwordVisible={showPassword}
-                  onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-                  showPasswordToggle
-                  onChange={(e) => {
-                    setPhoneConfirmPassword(e.target.value);
-                    setSubmitError("");
-                  }}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  {(["student", "university"] as SocialAuthRole[]).map((role) => (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => setPhoneRole(role)}
-                      className={
-                        phoneRole === role
-                          ? "min-h-[40px] rounded-card border-2 border-primary-accent px-3 py-2 text-sm font-medium text-primary-accent"
-                          : "min-h-[40px] rounded-card border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:border-primary-accent/50 hover:text-[var(--color-text)]"
-                      }
-                    >
-                      {role === "student" ? t("auth:roleStudent", "Student") : t("auth:roleUniversity", "University")}
-                    </button>
-                  ))}
-                </div>
-                <Checkbox
-                  {...registerPhoneField("acceptTerms")}
-                  label={
-                    <span className="text-sm text-[var(--color-text)]">
-                      {t("auth:acceptTerms")}{" "}
-                      <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
-                        {t("common:privacy")}
-                      </Link>
-                    </span>
-                  }
-                />
-                {phoneErrors.acceptTerms && <p className="text-sm text-red-500">{phoneErrors.acceptTerms.message}</p>}
-                {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-                <Button type="submit" className="w-full" loading={loading} disabled={loading}>
-                  {t("auth:sendCode", "Open Telegram")}
-                </Button>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
-                  <p className="text-sm font-medium text-[var(--color-text)]">{pendingPhone?.phone}</p>
-                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                    {t("auth:phoneCodeSentHint", "Open Telegram, share the same phone number, then this page will continue automatically.")}
-                  </p>
-                  {pendingPhone?.code ? (
-                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                      {t("auth:testCodeHint", "Testing link")}: <span className="font-mono">{pendingPhone.code}</span>
-                    </p>
-                  ) : null}
-                </div>
-                {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-                {pendingPhone?.deepLink ? (
-                  <Button type="button" className="w-full" disabled={loading} onClick={() => window.open(pendingPhone.deepLink, "_blank", "noopener,noreferrer")}>
-                    {t("auth:openTelegram", "Open Telegram")}
-                  </Button>
-                ) : null}
-                <Button type="button" className="w-full" loading={loading} disabled>
-                  {loading ? t("common:loading") : t("auth:verifyAndContinue", "Waiting for Telegram confirmation")}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => setPhoneStep("phone")}
-                  className="block w-full text-center text-sm text-[var(--color-text-muted)] hover:underline"
-                >
-                  {t("common:back", "Back")}
-                </button>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                await navigateAfterRegistration(navigate, user, i18n);
+              }
+            }}
+            onYandexSuccess={async () => {
+              setSubmitError("");
+              const user = useAuthStore.getState().user;
+              if (user) {
+                if (user.mustSetLocalPassword) {
+                  showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
+                }
+                await navigateAfterRegistration(navigate, user, i18n);
+              }
+            }}
+          />
+        </div>
+      )}
 
       <Link to="/login" className="mt-4 block text-center text-sm text-[var(--color-text-muted)] hover:underline">
         {t("auth:haveAccount")} {t("common:signIn", "Sign in")}

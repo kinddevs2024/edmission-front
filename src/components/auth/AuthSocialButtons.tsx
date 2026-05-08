@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { YandexSignInButton } from "@/components/auth/YandexSignInButton";
+import { AppleSignInButton } from "@/components/auth/AppleSignInButton";
 import { savePendingTelegramAuthSession, startTelegramAuth } from "@/services/auth";
 
 type AuthSocialButtonsProps = {
@@ -12,6 +13,7 @@ type AuthSocialButtonsProps = {
   setLoading: (value: boolean) => void;
   setSubmitError: (message: string) => void;
   onGoogleCredential: (credential: string) => void | Promise<void>;
+  onAppleSuccess: () => void | Promise<void>;
   onYandexSuccess: () => void | Promise<void>;
 };
 
@@ -24,10 +26,12 @@ export function AuthSocialButtons({
   setLoading,
   setSubmitError,
   onGoogleCredential,
+  onAppleSuccess,
   onYandexSuccess,
 }: AuthSocialButtonsProps) {
   const { t } = useTranslation(["auth", "errors"]);
   const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
+  const showAppleAuth = Boolean(import.meta.env.VITE_APPLE_CLIENT_ID?.trim());
   const showYandexAuth = Boolean(import.meta.env.VITE_YANDEX_CLIENT_ID?.trim());
   const googleLogo =
     "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Search_logo.width-500.format-webp.webp";
@@ -40,6 +44,10 @@ export function AuthSocialButtons({
     mode === "register"
       ? t("auth:registerWithYandexId", "Register with Yandex ID")
       : t("auth:signInWithYandexId", "Sign in with Yandex ID");
+  const appleLabel =
+    mode === "register"
+      ? t("auth:registerWithAppleId", "Register with Apple ID")
+      : t("auth:signInWithAppleId", "Sign in with Apple ID");
   const telegramLabel = t("auth:continueWithTelegram", "Continue with Telegram");
   const handleTelegram = async () => {
     if (loading) return;
@@ -96,6 +104,22 @@ export function AuthSocialButtons({
             onBusyChange={setLoading}
             onError={(msg) => setSubmitError(msg)}
             onSuccess={() => void onYandexSuccess()}
+          />
+        </div>
+      )}
+      {showAppleAuth && (
+        <div title={appleLabel} aria-label={appleLabel}>
+          <AppleSignInButton
+            disabled={loading}
+            role={role}
+            acceptTerms={mode === "login" ? true : yandexAcceptTerms}
+            flow={mode}
+            compact
+            title={appleLabel}
+            className="h-11 w-11 min-w-[44px] rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0"
+            onBusyChange={setLoading}
+            onError={(msg) => setSubmitError(msg)}
+            onSuccess={() => void onAppleSuccess()}
           />
         </div>
       )}
