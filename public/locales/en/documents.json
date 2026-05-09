@@ -152,6 +152,17 @@
     "editorHint": "This uses the same visual editor as university documents, but simplified for student profile files.",
     "uploadFile": "Upload file",
     "useEditor": "Use editor",
+    "categoryTitle": "Choose document category",
+    "categoryHint": "Start with the category so the file is reviewed and matched correctly.",
+    "typeHints": {
+      "passport": "Passport scan or photo page",
+      "id_card": "National ID, residence card, or similar ID",
+      "transcript": "Grades, academic record, or school report",
+      "diploma": "Diploma, certificate of graduation, or degree",
+      "language_certificate": "IELTS, TOEFL, CEFR, Duolingo, or similar",
+      "course_certificate": "Extra courses, awards, or certificates",
+      "other": "Any other document universities may request"
+    },
     "documentType": "Document type",
     "name": "Name",
     "documentNameAria": "Document name",

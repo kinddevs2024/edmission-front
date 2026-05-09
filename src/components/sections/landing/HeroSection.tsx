@@ -149,8 +149,8 @@ export function HeroSection() {
               </motion.div>
             </TiltCard>
 
-            <FloatingPanel className="absolute left-0 top-0 w-56" title={t('hero.panels.studentProfile.title')} value={t('hero.panels.studentProfile.value')} icon={GraduationCap} />
-            <FloatingPanel className="absolute right-0 top-8 w-52" title={t('hero.panels.scholarship.title')} value={t('hero.panels.scholarship.value')} icon={ShieldCheck} />
+            <FloatingPanel className="absolute left-0 -top-3 w-56" title={t('hero.panels.studentProfile.title')} value={t('hero.panels.studentProfile.value')} icon={GraduationCap} />
+            <FloatingPanel className="absolute right-0 top-1 w-52" title={t('hero.panels.scholarship.title')} value={t('hero.panels.scholarship.value')} icon={ShieldCheck} />
             <FloatingPanel className="absolute left-8 bottom-8 w-52" title={t('hero.panels.match.title')} value={t('hero.panels.match.value')} icon={Target} />
             <FloatingPanel className="absolute right-6 bottom-2 w-56" title={t('hero.panels.university.title')} value={t('hero.panels.university.value')} icon={Building2} />
           </div>

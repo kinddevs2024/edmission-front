@@ -26,6 +26,10 @@ export function getApiErrorKey(error: unknown): string {
   if (axios.isAxiosError(error) && error.response?.data) {
     const code = (error.response.data as { code?: string }).code
     if (code === 'OAUTH_SIGNUP_REQUIRED') return 'oauthSignUpRequired'
+    if (error.response.status === 401) return 'invalidCredentials'
+    if (error.response.status === 403) return 'forbidden'
+    if (error.response.status === 429) return 'rateLimit'
+    if (error.response.status >= 500) return 'serverError'
   }
   const msg = getMessage(error).toLowerCase()
   if (!msg) return 'default'
@@ -58,4 +62,3 @@ function getMessage(error: unknown): string {
   if (error instanceof Error) return error.message
   return ''
 }
-

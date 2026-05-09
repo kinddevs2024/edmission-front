@@ -1,11 +1,11 @@
 {
   "hero": {
     "eyebrow": "Akademik infratuzilma platformasi",
-    "title": "Universitetlar siz uchun raqobatlashsin",
-    "valueLine": "Universitetlar va stipendiyalar bitta joyda. Agentliklar va yashirin to'lovlar yo'q.",
+    "title": "Universitetlar sizni topishiga imkon bering",
+    "valueLine": "Universitetlar va stipendiyalar bilan bitta platformada moslashing. Vaqt va pulingizni tejang.",
     "subtitle": "Talabalar va universitetlarni vositachilarsiz bog'laymiz",
-    "description": "Edmission — AI asosidagi matching va bevosita muloqot orqali talabalar hamda universitetlar o'rtasida shaffof qabul jarayonini ta'minlaydigan milliy raqamli platforma.",
-    "primaryCta": "Hisob yaratish",
+    "description": "Edmission — AI asosidagi moslashtirish va to'g'ridan-to'g'ri muloqot orqali talabalar hamda universitetlar o'rtasida shaffof qabul jarayonini ta'minlaydigan milliy raqamli platforma.",
+    "primaryCta": "Bepul hisob yaratish",
     "secondaryCta": "Men universitetman",
     "exploreBtn": "Universitetlarni ko'rish",
     "registerUniversityBtn": "Universitetni ro'yxatdan o'tkazish",

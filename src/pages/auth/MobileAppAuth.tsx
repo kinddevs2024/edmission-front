@@ -36,7 +36,7 @@ export function MobileAppAuth() {
       return
     }
 
-    const exchangePromise =
+    const exchangePromise: Promise<unknown> =
       exchangeCache?.token === token
         ? exchangeCache.promise
         : exchangeMobileWebAuthSession(token)

@@ -459,7 +459,7 @@ export function UserManagement() {
             className="min-h-10 py-2"
             placeholder={t(
               'admin:userSearchPlaceholder',
-              'Email, name, or student first/last nameвЂ¦'
+              'Поиск все'
             )}
           />
           <Select
@@ -953,7 +953,7 @@ export function UserManagement() {
               autoFocus
               value={resetPassword}
               onChange={(e) => setResetPassword(e.target.value)}
-              placeholder={t('auth:passwordRequirements', '8+ chars, uppercase, lowercase, number')}
+              placeholder={t('auth:passwordRequirements', '8+ chars, lowercase, number')}
             />
           </div>
         )}

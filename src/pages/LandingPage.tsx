@@ -8,7 +8,6 @@ import { CertificationsSection } from '@/components/sections/landing/Certificati
 import { StudentTestimonialsSection } from '@/components/sections/landing/StudentTestimonialsSection'
 import { CtaBlock } from '@/components/sections/landing/CtaBlock'
 import { FAQSection } from '@/components/sections/landing/FAQSection'
-import { FinalCtaSection } from '@/components/sections/landing/FinalCtaSection'
 import { FooterSection } from '@/components/sections/landing/FooterSection'
 import { LandingHeader } from '@/components/sections/landing/LandingHeader'
 
@@ -32,7 +31,6 @@ export function LandingPage() {
         <LandingBelowFold />
       </Suspense>
       <FAQSection />
-      <FinalCtaSection />
       <FooterSection />
     </main>
   )

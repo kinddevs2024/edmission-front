@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { setPassword, getProfile } from '@/services/auth'
@@ -10,7 +10,7 @@ import { navigateAfterLogin } from '@/utils/navigateAfterAuth'
 import { getFormSubmitErrorMessage } from '@/utils/apiErrorI18n'
 import { newPasswordValueSchema } from '@/utils/authPasswordZod'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { Card, CardTitle } from '@/components/ui/Card'
 
 type FormData = { newPassword: string; confirmPassword: string }
@@ -48,8 +48,9 @@ export function SetPassword() {
     [t]
   )
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: { newPassword: '', confirmPassword: '' },
   })
 
   const onSubmit = async (data: FormData) => {
@@ -103,26 +104,44 @@ export function SetPassword() {
         </div>
       ) : null}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label={t('auth:newPassword')}
-          type="password"
-          autoComplete="new-password"
-          hint={t('auth:passwordRequirements')}
-          error={errors.newPassword?.message}
-          passwordVisible={showPassword}
-          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle
-          {...register('newPassword')}
+        <Controller
+          name="newPassword"
+          control={control}
+          render={({ field }) => (
+            <PasswordInput
+              label={t('auth:newPassword')}
+              autoComplete="new-password"
+              hint={t('auth:passwordRequirements')}
+              error={errors.newPassword?.message}
+              passwordVisible={showPassword}
+              onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+              showPasswordToggle
+              value={field.value}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+            />
+          )}
         />
-        <Input
-          label={t('auth:confirmPassword')}
-          type="password"
-          autoComplete="new-password"
-          error={errors.confirmPassword?.message}
-          passwordVisible={showPassword}
-          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle
-          {...register('confirmPassword')}
+        <Controller
+          name="confirmPassword"
+          control={control}
+          render={({ field }) => (
+            <PasswordInput
+              label={t('auth:confirmPassword')}
+              autoComplete="new-password"
+              error={errors.confirmPassword?.message}
+              passwordVisible={showPassword}
+              onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+              showPasswordToggle
+              value={field.value}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+            />
+          )}
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         <Button type="submit" className="w-full" loading={loading} disabled={loading}>

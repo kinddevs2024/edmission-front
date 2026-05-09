@@ -15,7 +15,7 @@ export function AIAssistantSection() {
     { icon: WandSparkles, text: t('ai.features.3') },
   ]
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 md:px-6 lg:px-8">
+    <section id="ai-matching" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-20 md:px-6 lg:scroll-mt-28 lg:px-8">
       <div className="grid gap-8 md:grid-cols-2 md:items-center">
         <Reveal>
           <SectionHeading

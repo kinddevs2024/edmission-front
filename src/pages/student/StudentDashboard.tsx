@@ -19,13 +19,13 @@ import type { LucideIcon } from 'lucide-react'
 import { trackStudentFunnel } from '@/analytics/studentFunnel'
 import { useAuth } from '@/hooks/useAuth'
 import {
-  StudentMacroOnboarding,
   hasCompletedMacroOnboarding,
   markMacroOnboardingDone,
-  resetMacroOnboardingForReplay,
 } from '@/components/onboarding/StudentMacroOnboarding'
+import { getTutorialStorageKey } from '@/components/onboarding/OnboardingTutorialModal'
 import { useStudentOnboardingFlowStore } from '@/store/studentOnboardingFlowStore'
 import { shouldShowWelcomeMacroOnboarding } from '@/utils/studentOnboardingEligibility'
+import { updateProfile } from '@/services/auth'
 
 const DASHBOARD_RECOMMENDATIONS = 3
 
@@ -129,7 +129,6 @@ export function StudentDashboard() {
   const [recommendations, setRecommendations] = useState<UniversityListItem[]>([])
   const [loadingRecs, setLoadingRecs] = useState(true)
   const [docCount, setDocCount] = useState(0)
-  const [macroOpen, setMacroOpen] = useState(false)
   const [digest, setDigest] = useState<{ id: string; title: string; link?: string }[]>([])
   const recTracked = useRef(false)
 
@@ -143,24 +142,24 @@ export function StudentDashboard() {
       return
     }
     let cancelled = false
-    let timer: number | undefined
     shouldShowWelcomeMacroOnboarding()
       .then((showWelcome) => {
         if (cancelled) return
-        if (!showWelcome) {
+        if (showWelcome) {
           markMacroOnboardingDone()
           useStudentOnboardingFlowStore.getState().setMacroOnboardingDone()
           return
         }
-        timer = window.setTimeout(() => setMacroOpen(true), 400)
+        markMacroOnboardingDone()
+        useStudentOnboardingFlowStore.getState().setMacroOnboardingDone()
       })
       .catch(() => {
         if (cancelled) return
-        timer = window.setTimeout(() => setMacroOpen(true), 400)
+        markMacroOnboardingDone()
+        useStudentOnboardingFlowStore.getState().setMacroOnboardingDone()
       })
     return () => {
       cancelled = true
-      if (timer != null) window.clearTimeout(timer)
     }
   }, [])
 
@@ -198,10 +197,11 @@ export function StudentDashboard() {
         : v && typeof v === 'object' && ('id' in v || '_id' in v)
           ? String((v as { id?: unknown; _id?: unknown }).id ?? (v as { _id?: unknown })._id ?? '')
           : ''
-    const mapRecommendationToUniversity = (item: any): UniversityListItem | null => {
-      const source = item?.university && typeof item.university === 'object' ? item.university : item
+    const mapRecommendationToUniversity = (item: unknown): UniversityListItem | null => {
+      const row = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
+      const source = row.university && typeof row.university === 'object' ? (row.university as Record<string, unknown>) : row
       const id =
-        recommendationRowToUniversityId(item) || toId(item?.universityId) || toId(source?._id) || toId(source?.id) || toId(item?.id)
+        recommendationRowToUniversityId(item) || toId(row.universityId) || toId(source._id) || toId(source.id) || toId(row.id)
       const name = String(source?.name ?? source?.universityName ?? '').trim()
       if (!id || !name) return null
       return {
@@ -212,7 +212,7 @@ export function StudentDashboard() {
         description: source?.description,
         logo: source?.logo ?? source?.logoUrl,
         logoUrl: source?.logoUrl ?? source?.logo,
-        matchScore: typeof item?.matchScore === 'number' ? item.matchScore : undefined,
+        matchScore: typeof row.matchScore === 'number' ? row.matchScore : undefined,
       } as UniversityListItem
     }
     getRecommendations({ limit: 12 })
@@ -300,8 +300,6 @@ export function StudentDashboard() {
 
   return (
     <div className="space-y-8 pb-page-bottom-cta">
-      <StudentMacroOnboarding open={macroOpen} onClose={() => setMacroOpen(false)} />
-
       <section
         className="relative overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(236,252,203,0.55))] p-5 shadow-[var(--shadow-card)] dark:bg-[linear-gradient(135deg,rgba(17,24,39,0.98),rgba(24,39,8,0.96))] sm:p-8"
         data-onboarding="student-home-mission"
@@ -494,8 +492,13 @@ export function StudentDashboard() {
           <button
             type="button"
             onClick={() => {
-              resetMacroOnboardingForReplay()
-              setMacroOpen(true)
+              try {
+                localStorage.removeItem(getTutorialStorageKey('student'))
+              } catch {
+                /* ignore */
+              }
+              updateProfile({ onboardingTutorialSeen: { student: false } })
+                .finally(() => window.location.assign('/student/dashboard'))
             }}
             className="text-xs font-medium text-primary-accent hover:underline min-h-[44px] px-1"
           >

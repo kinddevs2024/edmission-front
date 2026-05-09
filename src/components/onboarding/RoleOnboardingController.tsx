@@ -29,11 +29,11 @@ export function RoleOnboardingController({ role }: { role: OnboardingRole }) {
   const navigate = useNavigate()
   const { t } = useTranslation(['common', role])
   const { user } = useAuth()
-  const macroOnboardingDone = useStudentOnboardingFlowStore((s) => s.macroOnboardingDone)
   const [showLanguageChoice, setShowLanguageChoice] = useState(false)
   const [tourReady, setTourReady] = useState(false)
   const checkingRef = useRef(false)
   const dashboardPath = DASHBOARD_PATHS[role]
+  const currentRoute = `${location.pathname}${location.search}`
 
   const handleComplete = useCallback(() => {
     updateProfile({
@@ -46,7 +46,6 @@ export function RoleOnboardingController({ role }: { role: OnboardingRole }) {
 
   useEffect(() => {
     if (user?.role !== role) return
-    if (role === 'student' && !macroOnboardingDone) return
     if (location.pathname !== dashboardPath) return
     if (tourReady || showLanguageChoice || isRoleOnboardingTourActive(role) || checkingRef.current) return
     if (hasSeenTutorial(role, user)) return
@@ -108,7 +107,7 @@ export function RoleOnboardingController({ role }: { role: OnboardingRole }) {
     return () => {
       cancelled = true
     }
-  }, [dashboardPath, location.pathname, macroOnboardingDone, role, showLanguageChoice, tourReady, user])
+  }, [dashboardPath, location.pathname, role, showLanguageChoice, tourReady, user])
 
   useEffect(() => {
     if (!tourReady || location.pathname !== dashboardPath || isRoleOnboardingTourActive(role)) return
@@ -120,16 +119,16 @@ export function RoleOnboardingController({ role }: { role: OnboardingRole }) {
 
     startRoleOnboardingTour({
       role,
-      pathname: location.pathname,
+      pathname: currentRoute,
       navigate,
       t: tWithNs,
       onComplete: handleComplete,
     })
-  }, [dashboardPath, handleComplete, location.pathname, navigate, role, t, tourReady])
+  }, [currentRoute, dashboardPath, handleComplete, location.pathname, navigate, role, t, tourReady])
 
   useEffect(() => {
-    syncRoleOnboardingTour(role, location.pathname)
-  }, [location.pathname, role])
+    syncRoleOnboardingTour(role, currentRoute)
+  }, [currentRoute, role])
 
   useEffect(() => {
     return () => {

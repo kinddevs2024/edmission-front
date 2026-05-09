@@ -280,10 +280,10 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function exchangeMobileWebAuthSession(token: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/mobile-web/exchange', { token })
   clearAuth()
   useAuthStore.getState().logout()
   useAIChatStore.getState().resetSession()
-  const { data } = await api.post<LoginResponse>('/auth/mobile-web/exchange', { token })
   await applyAuthLanguage(data.user)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)

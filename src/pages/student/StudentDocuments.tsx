@@ -27,17 +27,18 @@ import { DocumentEditor } from '@/components/documents/DocumentEditor'
 import { DocumentPreviewModal } from '@/components/documents/DocumentPreviewModal'
 import { toastApiError } from '@/utils/toastError'
 import { useDocumentEditorStore } from '@/store/documentEditorStore'
-import { ShieldCheck, FileText, Loader2, Pencil, Sparkles, Trash2, Upload } from 'lucide-react'
+import { Award, FileQuestion, FileText, GraduationCap, IdCard, Languages, Loader2, Pencil, ShieldCheck, Sparkles, Trash2, Upload } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { EditableSceneDocument, StudentProfileDocumentType } from '@/types/documentModule'
 
-const DOC_TYPES: { value: DocumentType; defaultLabel: string }[] = [
-  { value: 'passport', defaultLabel: 'Passport' },
-  { value: 'id_card', defaultLabel: 'ID card' },
-  { value: 'transcript', defaultLabel: 'Transcript' },
-  { value: 'diploma', defaultLabel: 'Diploma' },
-  { value: 'language_certificate', defaultLabel: 'Language certificate' },
-  { value: 'course_certificate', defaultLabel: 'Course certificate' },
-  { value: 'other', defaultLabel: 'Other' },
+const DOC_TYPES: { value: DocumentType; defaultLabel: string; hint: string; icon: LucideIcon }[] = [
+  { value: 'passport', defaultLabel: 'Passport', hint: 'Passport scan or photo page', icon: ShieldCheck },
+  { value: 'id_card', defaultLabel: 'ID card', hint: 'National ID, residence card, or similar ID', icon: IdCard },
+  { value: 'transcript', defaultLabel: 'Transcript', hint: 'Grades, academic record, or school report', icon: FileText },
+  { value: 'diploma', defaultLabel: 'Diploma', hint: 'Diploma, certificate of graduation, or degree', icon: GraduationCap },
+  { value: 'language_certificate', defaultLabel: 'Language certificate', hint: 'IELTS, TOEFL, CEFR, Duolingo, or similar', icon: Languages },
+  { value: 'course_certificate', defaultLabel: 'Course certificate', hint: 'Extra courses, awards, or certificates', icon: Award },
+  { value: 'other', defaultLabel: 'Other', hint: 'Any other document universities may request', icon: FileQuestion },
 ]
 
 const LANGUAGE_CERT_TYPES: { value: string; label: string; scores?: { min: number; max: number } }[] = [
@@ -342,18 +343,52 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
 
         {composerMode === 'upload' ? (
           <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div data-onboarding="student-documents-category" className="space-y-2">
               <div>
-                <Select
-                  label={t('documents:studentDocuments.documentType', 'Document type')}
-                  value={type}
-                  onChange={(event) => {
-                    setType(event.target.value as DocumentType)
-                    if (event.target.value !== 'language_certificate') setScore('')
-                  }}
-                  options={documentTypeOptions}
-                />
+                <p className="text-sm font-medium text-[var(--color-text)]">
+                  {t('documents:studentDocuments.categoryTitle', 'Choose document category')}
+                </p>
+                <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                  {t('documents:studentDocuments.categoryHint', 'Start with the category so the file is reviewed and matched correctly.')}
+                </p>
               </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {DOC_TYPES.map((option) => {
+                  const Icon = option.icon
+                  const selected = type === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setType(option.value)
+                        if (option.value !== 'language_certificate') setScore('')
+                      }}
+                      className={`flex min-h-[86px] items-start gap-3 rounded-card border p-3 text-left transition-colors ${
+                        selected
+                          ? 'border-primary-accent bg-primary-accent/8 ring-1 ring-primary-accent/20'
+                          : 'border-[var(--color-border)] bg-[var(--color-bg)] hover:border-primary-accent/45'
+                      }`}
+                      aria-pressed={selected}
+                    >
+                      <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${selected ? 'bg-primary-accent text-[var(--color-primary-dark)]' : 'bg-[var(--color-card)] text-primary-accent'}`}>
+                        <Icon className="h-4.5 w-4.5" aria-hidden />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-[var(--color-text)]">
+                          {t(`documents:documentTypes.${option.value}`, option.defaultLabel)}
+                        </span>
+                        <span className="mt-1 block text-xs leading-relaxed text-[var(--color-text-muted)]">
+                          {t(`documents:studentDocuments.typeHints.${option.value}`, option.hint)}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   {isLanguageCert ? t('documents:studentDocuments.name', 'Name') : <>{t('documents:studentDocuments.name', 'Name')} <span className="text-red-500">*</span></>}
@@ -410,13 +445,15 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
               </div>
             ) : null}
 
-            <FileUpload
-              value={fileUrl}
-              onChange={setFileUrl}
-              inputRef={uploadInputRef}
-              accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,application/pdf,.pdf"
-              label={t('documents:studentDocuments.fileImagePdf', 'File (image or PDF)')}
-            />
+            <div data-onboarding="student-documents-upload">
+              <FileUpload
+                value={fileUrl}
+                onChange={setFileUrl}
+                inputRef={uploadInputRef}
+                accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,application/pdf,.pdf"
+                label={t('documents:studentDocuments.fileImagePdf', 'File (image or PDF)')}
+              />
+            </div>
 
             <Button className="mt-1" size="sm" onClick={handleAddUpload} disabled={adding || !fileUrl.trim() || (!name.trim() && !isLanguageCert) || (isLanguageCert && !score.trim())} loading={adding}>
               {t('documents:studentDocuments.submitForReview', 'Submit for review')}

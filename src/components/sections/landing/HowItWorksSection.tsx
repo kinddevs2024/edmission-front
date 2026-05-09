@@ -132,7 +132,7 @@ export function HowItWorksSection() {
         ordinalText: 'text-sky-600 dark:text-sky-300',
         panel: 'border-sky-500/15 bg-[linear-gradient(145deg,rgba(14,165,233,0.12),rgba(59,130,246,0.07)_42%,rgba(99,102,241,0.03)_72%)]',
         accent: 'bg-gradient-to-b from-sky-500 via-blue-500/80 to-transparent',
-        beam: 'bg-gradient-to-r from-transparent via-sky-500/75 to-transparent',
+        beam: 'bg-gradient-to-r from-transparent via-sky-500 to-transparent',
         orbA: 'bg-sky-500/20',
         orbB: 'bg-indigo-500/16',
       },

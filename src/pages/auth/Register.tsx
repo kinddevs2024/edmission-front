@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Building2, GraduationCap, UserRoundCheck } from "lucide-react";
@@ -18,6 +18,7 @@ import { navigateAfterRegistration } from "@/utils/navigateAfterAuth";
 import { showOAuthPasswordReminder } from "@/utils/oauthPasswordToast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
@@ -57,7 +58,6 @@ export function Register() {
       z
         .string()
         .min(8, t("auth:passwordMinLength"))
-        .refine((p) => /[A-Z]/.test(p), t("auth:passwordUppercase", "At least one uppercase letter"))
         .refine((p) => /[a-z]/.test(p), t("auth:passwordLowercase", "At least one lowercase letter"))
         .refine((p) => /\d/.test(p), t("auth:passwordNumber", "At least one number")),
     [t],
@@ -84,6 +84,7 @@ export function Register() {
 
   const {
     register: registerEmailField,
+    control,
     handleSubmit: handleEmailSubmit,
     getValues,
     setValue,
@@ -319,26 +320,44 @@ export function Register() {
           error={errors.email?.message}
           {...registerEmailField("email")}
         />
-        <Input
-          label={t("auth:password")}
-          type="password"
-          autoComplete="new-password"
-          hint={t("auth:passwordRequirements", "8+ chars, uppercase, lowercase, number")}
-          error={errors.password?.message}
-          passwordVisible={showPassword}
-          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle
-          {...registerEmailField("password")}
+        <Controller
+          name="password"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <PasswordInput
+              label={t("auth:password")}
+              autoComplete="new-password"
+                        hint={t("auth:passwordRequirements", "8+ chars, lowercase, number")}
+              error={errors.password?.message}
+              passwordVisible={showPassword}
+              onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+              value={field.value ?? ""}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+            />
+          )}
         />
-        <Input
-          label={t("auth:confirmPassword")}
-          type="password"
-          autoComplete="new-password"
-          error={errors.confirmPassword?.message}
-          passwordVisible={showPassword}
-          onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
-          showPasswordToggle
-          {...registerEmailField("confirmPassword")}
+        <Controller
+          name="confirmPassword"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <PasswordInput
+              label={t("auth:confirmPassword")}
+              autoComplete="new-password"
+              error={errors.confirmPassword?.message}
+              passwordVisible={showPassword}
+              onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
+              value={field.value ?? ""}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+            />
+          )}
         />
         <input type="hidden" {...registerEmailField("role")} />
         <Checkbox

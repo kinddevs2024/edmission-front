@@ -19,6 +19,22 @@ function isAuthEndpoint(url: string | undefined, endpoint: string): boolean {
   return (url ?? '').toLowerCase().includes(endpoint)
 }
 
+function isAuthAttemptEndpoint(url: string | undefined): boolean {
+  const normalized = (url ?? '').toLowerCase()
+  return [
+    '/auth/login',
+    '/auth/login-phone',
+    '/auth/google',
+    '/auth/yandex',
+    '/auth/yandex/access-token',
+    '/auth/apple',
+    '/auth/telegram/verify',
+    '/auth/telegram/verify-link',
+    '/auth/telegram/verify-ready',
+    '/auth/phone/verify',
+  ].some((endpoint) => normalized.includes(endpoint))
+}
+
 function clearAuthSessionOnly(): void {
   clearAuth()
   useAuthStore.getState().logout()
@@ -65,9 +81,12 @@ api.interceptors.response.use(
     const isRefreshRequest = isAuthEndpoint(originalRequest?.url, '/auth/refresh')
     const isLogoutRequest = isAuthEndpoint(originalRequest?.url, '/auth/logout')
     const isMobileWebAuthExchangeRequest = isAuthEndpoint(originalRequest?.url, '/auth/mobile-web/exchange')
+    const isAuthAttemptRequest = isAuthAttemptEndpoint(originalRequest?.url)
     if (error.response?.status === 401) {
+      if (isAuthAttemptRequest) {
+        return Promise.reject(error)
+      }
       if (isMobileWebAuthExchangeRequest) {
-        clearAuthSessionOnly()
         return Promise.reject(error)
       }
       /** `POST /auth/logout` is followed by `logout()` in auth.ts, which navigates. Avoid a second redirect here (e.g. /login then /) which flashes the login page. */

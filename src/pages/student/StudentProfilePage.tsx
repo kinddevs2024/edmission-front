@@ -303,15 +303,18 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
         (profile.gradeLevel != null && String(profile.gradeLevel).trim() !== '') ||
         Number.isFinite(gpaNum) ||
         schools.some((s) => s.educationLevel != null && String(s.educationLevel).trim() !== '')
+      const hasLanguage =
+        (Array.isArray(profile.languages) && profile.languages.length > 0) ||
+        (profile.languageLevel != null && String(profile.languageLevel).trim() !== '')
+      const hasSchool =
+        (profile.schoolName != null && String(profile.schoolName).trim() !== '') || hasSchoolDetail
+      const hasTargetDegree = profile.targetDegreeLevel != null && String(profile.targetDegreeLevel).trim() !== ''
       const checks = [
         status !== '',
-        needsTargetDegree
-          ? profile.targetDegreeLevel != null && String(profile.targetDegreeLevel).trim() !== ''
-          : true,
+        needsTargetDegree ? hasTargetDegree : status !== '',
         hasGradeOrGpa,
-        (Array.isArray(profile.languages) && profile.languages.length > 0) ||
-          (profile.languageLevel != null && String(profile.languageLevel).trim() !== ''),
-        (profile.schoolName != null && String(profile.schoolName).trim() !== '') || hasSchoolDetail,
+        hasLanguage,
+        hasSchool,
       ]
       return Math.round((checks.filter(Boolean).length / 5) * 100)
     }
@@ -584,7 +587,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
     setAutoFocusField(options?.focusField ?? null)
     if (typeof window !== 'undefined') {
       const nextUrl = buildProfileSectionUrl(section)
-      window.history.pushState({ ...(window.history.state ?? {}), profileSection: section }, '', nextUrl)
+      navigate(nextUrl)
     }
     setOpenSection(section)
   }
@@ -1329,6 +1332,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
             <button
               key={sec.id}
               type="button"
+              data-onboarding={`student-profile-section-${sec.id}`}
               onClick={() => {
                 if (isDocuments && isCounsellorStudent) {
                   navigate(`/school/students/${studentUserId}/documents`)
@@ -1428,22 +1432,22 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
       >
         <div className="space-y-4">
           {openSection === 'personal' && (
-            <>
+            <div className="space-y-4" data-onboarding="student-profile-personal-fields">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label={t('firstName')} error={errors.firstName?.message} autoFocus={autoFocusField === 'firstName'} {...register('firstName')} />
                 <Input label={t('lastName')} error={errors.lastName?.message} autoFocus={autoFocusField === 'lastName'} {...register('lastName')} />
               </div>
               <Input label={t('birthDate')} type="date" error={errors.birthDate?.message} {...register('birthDate')} />
-            </>
+            </div>
           )}
 
           {openSection === 'location' && (
-            <>
+            <div className="space-y-4" data-onboarding="student-profile-location-fields">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select label={t('country')} error={errors.country?.message} options={countrySelectOptions} placeholder={t('student:countryResidencePlaceholder', 'Select your country')} {...register('country')} />
                 <Input label={t('city')} error={errors.city?.message} autoFocus={autoFocusField === 'city'} {...register('city')} placeholder={t('city')} />
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="space-y-3">
                 <div>
                   <div className="mb-1 flex items-center gap-2">
                     <p className="block text-sm font-medium text-[var(--color-text)]">{t('student:preferredStudyCountriesHeading', 'Preferred study countries')}</p>
@@ -1476,7 +1480,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                   />
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {openSection === 'education' && (
@@ -1768,7 +1772,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
           )}
 
           {openSection === 'about' && (
-            <>
+            <div className="space-y-4" data-onboarding="student-profile-budget-fields">
               <Textarea
                 label={t('bio')}
                 placeholder={t('bioPlaceholder')}
@@ -1804,7 +1808,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                 onChange={onAvatarFileUrlChange}
                 hint={t('uploadPhotoOrLink')}
               />
-            </>
+            </div>
           )}
 
           {openSection === 'skills' && (
@@ -1925,7 +1929,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
           )}
 
           {openSection === 'faculties' && (
-            <>
+            <div data-onboarding="student-profile-faculty-fields">
               <p className="text-xs text-[var(--color-text-muted)] mb-3">
                 {t('student:interestedFacultiesHint', 'Choose faculties you are interested in. You can open each faculty to see what it includes.')}
               </p>
@@ -1983,7 +1987,7 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                   )
                 })}
               </div>
-            </>
+            </div>
           )}
 
           {openSection === 'experience' && (

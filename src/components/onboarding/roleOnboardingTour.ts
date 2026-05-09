@@ -233,22 +233,103 @@ function getStudentTourSteps(t: TourT): RouteAwareTourStep[] {
     },
     {
       route: '/student/dashboard',
-      target: '[data-onboarding="dashboard-profile-meter"]',
-      title: t('tourStep2Title', 'Profile strength'),
+      target: '[data-onboarding="dashboard-get-started"]',
+      title: t('tourStep2Title', 'Your required checklist'),
       description: t(
         'tourStep2Body',
         'A complete profile unlocks better matches. Tap the meter anytime to continue where you left off.'
+      ),
+      side: 'top',
+      align: 'start',
+    },
+    {
+      route: '/student/dashboard',
+      target: '[data-onboarding="nav-profile"]',
+      title: t('tourStep3Title', 'Open your profile'),
+      description: t(
+        'tourStep3Body',
+        'Follow these steps once — then use Home and Explore for everything else. You can replay the intro from here.'
+      ),
+      side: 'right',
+      align: 'center',
+      interactive: true,
+      advanceOnPathname: '/student/profile',
+    },
+    {
+      route: '/student/profile',
+      target: '[data-onboarding="student-profile-overview"]',
+      title: t('tourProfileOverviewTitle', 'Student profile'),
+      description: t(
+        'tourProfileOverviewBody',
+        'Fill the core sections first. Optional portfolio details can wait until later.'
       ),
       side: 'bottom',
       align: 'start',
     },
     {
-      route: '/student/dashboard',
-      target: '[data-onboarding="dashboard-get-started"]',
-      title: t('tourStep3Title', 'Your checklist'),
+      route: '/student/profile?profileSection=personal',
+      target: '[data-onboarding="student-profile-personal-fields"]',
+      title: t('tourPersonalTitle', 'Personal details'),
+      description: t('tourPersonalBody', 'Add your name and date of birth so universities can identify your application correctly.'),
+      side: 'bottom',
+      align: 'start',
+      interactive: true,
+    },
+    {
+      route: '/student/profile?profileSection=location',
+      target: '[data-onboarding="student-profile-location-fields"]',
+      title: t('tourLocationTitle', 'Current and target countries'),
       description: t(
-        'tourStep3Body',
-        'Follow these steps once — then use Home and Explore for everything else. You can replay the intro from here.'
+        'tourLocationBody',
+        'Tell us where you live now and which countries you want to study in. This controls country-based matches.'
+      ),
+      side: 'bottom',
+      align: 'start',
+      interactive: true,
+    },
+    {
+      route: '/student/profile?profileSection=faculties',
+      target: '[data-onboarding="student-profile-faculty-fields"]',
+      title: t('tourFacultyTitle', 'Faculty or study direction'),
+      description: t(
+        'tourFacultyBody',
+        'Choose the faculties or fields you are interested in. This is one of the strongest matching signals.'
+      ),
+      side: 'bottom',
+      align: 'start',
+      interactive: true,
+    },
+    {
+      route: '/student/profile?profileSection=about',
+      target: '[data-onboarding="student-profile-budget-fields"]',
+      title: t('tourBudgetTitle', 'Study budget'),
+      description: t(
+        'tourBudgetBody',
+        'Add your budget so Edmission can avoid universities that do not fit your financial range.'
+      ),
+      side: 'bottom',
+      align: 'start',
+      interactive: true,
+    },
+    {
+      route: '/student/documents',
+      target: '[data-onboarding="student-documents-category"]',
+      title: t('tourDocumentsTitle', 'Document category'),
+      description: t(
+        'tourDocumentsBody',
+        'Pick the document type first: passport, transcript, diploma, language certificate, or another file.'
+      ),
+      side: 'bottom',
+      align: 'start',
+      interactive: true,
+    },
+    {
+      route: '/student/documents',
+      target: '[data-onboarding="student-documents-upload"]',
+      title: t('tourUploadTitle', 'Upload the file'),
+      description: t(
+        'tourUploadBody',
+        'Upload the document image or PDF, then submit it for review. You can add more documents later.'
       ),
       side: 'top',
       align: 'start',

@@ -56,16 +56,6 @@ export function ExploreSection() {
               'explore.description',
               'Open the full university catalog with no profile filters.'
             )}
-            actions={(
-              <>
-                <Button to="/explore" size="lg" icon={<Compass />}>
-                  {t('explore.primaryCta', 'Explore more')}
-                </Button>
-                <Button to="/register" variant="secondary" size="lg">
-                  {t('explore.secondaryCta', 'Create account')}
-                </Button>
-              </>
-            )}
           />
         </Reveal>
 
@@ -103,6 +93,16 @@ export function ExploreSection() {
             ))}
           </div>
         )}
+        <Reveal>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button to="/explore" size="lg" icon={<Compass />}>
+              {t('explore.primaryCta', 'Explore more')}
+            </Button>
+            <Button to="/register" variant="secondary" size="lg">
+              {t('explore.secondaryCta', 'Create account')}
+            </Button>
+          </div>
+        </Reveal>
       </div>
     </section>
   )
