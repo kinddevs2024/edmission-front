@@ -12,6 +12,8 @@ import { navigateAfterLogin } from '@/utils/navigateAfterAuth'
 import { Button } from '@/components/ui/Button'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { BrandMark } from '@/components/layout/BrandLogo'
+import { ContentFallback } from '@/components/layout/ContentFallback'
+
 
 const SESSION_ID_REGEX = /^[a-f0-9]{32}$/i
 const TOKEN_REGEX = /^[a-f0-9]{48}$/i
@@ -163,6 +165,51 @@ export function TelegramAuth() {
     }
   }
 
+  if (loadingLink || (checkingReady && !submitError)) {
+    return (
+      <Card className="p-6">
+        <div className="flex flex-col items-center gap-4 py-8 text-center">
+          <BrandMark className="h-14 w-14" />
+          <ContentFallback />
+          <p className="text-sm text-[var(--color-text-muted)]">
+            {t('auth:telegramWaitingConfirm', 'Waiting for Telegram confirmation...')}
+          </p>
+        </div>
+      </Card>
+    )
+  }
+
+  if (submitError) {
+    return (
+      <Card className="p-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <BrandMark className="h-14 w-14" />
+          <CardTitle className="text-red-500">
+            {t('errors:somethingWentWrong', 'Something went wrong')}
+          </CardTitle>
+          <p className="text-sm text-red-500">{submitError}</p>
+          <div className="flex w-full flex-col gap-2">
+            <Button type="button" className="w-full" onClick={openTelegramBot} disabled={!deepLink}>
+              {t('auth:openTelegramBot', 'Open Telegram Bot')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() => void startSession()}
+              loading={starting}
+            >
+              {t('auth:startNewTelegramSession', 'Start new Telegram session')}
+            </Button>
+            <Link to="/login" className="mt-2 block text-sm text-[var(--color-text-muted)] hover:underline">
+              {t('common:back', 'Back')}
+            </Link>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-6">
       <div className="mb-4 flex flex-col items-center gap-2 text-center">
@@ -209,16 +256,10 @@ export function TelegramAuth() {
         </Button>
       </div>
 
-      {checkingReady && hasValidSession && !hasValidToken && (
-        <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-          {t('auth:telegramWaitingConfirm', 'Waiting for Telegram confirmation...')}
-        </p>
-      )}
-      {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-
       <Link to="/login" className="mt-4 block text-center text-sm text-[var(--color-text-muted)] hover:underline">
         {t('common:back', 'Back')}
       </Link>
     </Card>
   )
 }
+
