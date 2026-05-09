@@ -4,6 +4,8 @@ import { useAuthStore } from '@/store/authStore'
 import { useAIChatStore } from '@/store/aiChatStore'
 import { saveAuth, clearAuth, getStoredRefreshToken } from './authPersistence'
 import { queryClient } from '@/app/queryClient'
+import i18n, { loadLanguage } from '@/i18n'
+import { STORAGE_KEY, type SupportedLng } from '@/i18n/config'
 
 function isNativeShell(): boolean {
   return Boolean((window as unknown as { ReactNativeWebView?: unknown }).ReactNativeWebView)
@@ -16,6 +18,23 @@ function postNativeLogout(): void {
   } catch {
     /* ignore */
   }
+}
+
+function normalizeUserLanguage(raw: unknown): SupportedLng | null {
+  const value = String(raw ?? '').trim().toLowerCase()
+  return value === 'en' || value === 'ru' || value === 'uz' ? value : null
+}
+
+async function applyAuthLanguage(user: User): Promise<void> {
+  const language = normalizeUserLanguage(user.language)
+  if (!language) return
+  try {
+    localStorage.setItem(STORAGE_KEY, language)
+  } catch {
+    /* ignore */
+  }
+  await loadLanguage(language)
+  await i18n.changeLanguage(language)
 }
 
 export interface LoginPayload {
@@ -265,6 +284,7 @@ export async function exchangeMobileWebAuthSession(token: string): Promise<Login
   useAuthStore.getState().logout()
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/mobile-web/exchange', { token })
+  await applyAuthLanguage(data.user)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
@@ -281,6 +301,7 @@ export async function verifyTelegramAuth(payload: TelegramAuthVerifyPayload): Pr
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/telegram/verify', payload)
   clearPendingTelegramAuthSession()
+  await applyAuthLanguage(data.user)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
@@ -292,6 +313,7 @@ export async function verifyTelegramAuthLink(payload: TelegramAuthVerifyLinkPayl
   useAIChatStore.getState().resetSession()
   const { data } = await api.post<LoginResponse>('/auth/telegram/verify-link', payload)
   clearPendingTelegramAuthSession()
+  await applyAuthLanguage(data.user)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data
@@ -313,6 +335,7 @@ export async function verifyTelegramAuthReady(payload: TelegramAuthVerifyReadyPa
   useAuthStore.getState().logout()
   useAIChatStore.getState().resetSession()
   clearPendingTelegramAuthSession()
+  await applyAuthLanguage(data.user)
   useAuthStore.getState().setAuth(data.user, data.accessToken)
   saveAuth(data.user, data.accessToken, data.refreshToken ?? null)
   return data

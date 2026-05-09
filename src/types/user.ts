@@ -37,6 +37,7 @@ export interface User {
   id: string
   email: string
   role: Role
+  language?: 'en' | 'ru' | 'uz'
   name?: string
   phone?: string
   socialLinks?: SocialLinks

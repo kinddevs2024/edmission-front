@@ -4,6 +4,8 @@ import { YandexSignInButton } from "@/components/auth/YandexSignInButton";
 import { AppleSignInButton } from "@/components/auth/AppleSignInButton";
 import { savePendingTelegramAuthSession, startTelegramAuth } from "@/services/auth";
 
+const TELEGRAM_BOT_URL = "https://t.me/Edmission_bot";
+
 type AuthSocialButtonsProps = {
   mode: "login" | "register";
   loading: boolean;
@@ -56,9 +58,9 @@ export function AuthSocialButtons({
     try {
       const data = await startTelegramAuth({ role });
       savePendingTelegramAuthSession({ sessionId: data.sessionId, role });
-      window.location.href = data.deepLink;
+      window.location.href = data.deepLink || TELEGRAM_BOT_URL;
     } catch {
-      setSubmitError(t("errors:default"));
+      window.location.href = TELEGRAM_BOT_URL;
     } finally {
       setLoading(false);
     }
