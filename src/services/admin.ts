@@ -17,7 +17,14 @@ export interface AdminDashboardResponse {
   pendingVerification: number
   pendingDocuments?: number
   subscriptionsByPlan?: Record<string, number>
-  mrr?: number
+  mrr?: number;
+  telegramBot?: {
+    isActive: boolean;
+    lastPollTime: string | null;
+    version: string;
+    pollingInProgress: boolean;
+  };
+
 }
 
 export interface AdminStats {
