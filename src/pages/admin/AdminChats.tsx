@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { AdminUniversityOfferModal } from '@/components/admin/AdminUniversityOfferModal'
 import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
+import { getImageUrl } from '@/services/upload'
 
 export function AdminChats() {
   const { t } = useTranslation(['common', 'admin'])
@@ -116,6 +117,19 @@ export function AdminChats() {
     return String(value)
   }
 
+  const attachmentLabel = (message: AdminChatMessage) => {
+    const metadata = message.metadata ?? {}
+    const fileName = typeof metadata.fileName === 'string' && metadata.fileName.trim()
+      ? metadata.fileName.trim()
+      : t('common:file', 'File')
+    const size = typeof metadata.fileSize === 'number' && Number.isFinite(metadata.fileSize)
+      ? metadata.fileSize < 1024 * 1024
+        ? `${Math.max(1, Math.round(metadata.fileSize / 1024))} KB`
+        : `${(metadata.fileSize / (1024 * 1024)).toFixed(1)} MB`
+      : ''
+    return size ? `${fileName} (${size})` : fileName
+  }
+
   const openMessages = useCallback((chatId: string, chat?: AdminChat) => {
     setModalChatId(chatId)
     setActiveChat(chat ?? null)
@@ -131,6 +145,8 @@ export function AdminChats() {
             ...msg,
             senderId: toDisplayText(raw.senderId ?? ''),
             message: toMessageText(raw.message ?? raw.text),
+            attachmentUrl: raw.attachmentUrl,
+            metadata: raw.metadata,
             senderName: cleanText(raw.senderName),
             senderEmail: cleanText(raw.senderEmail),
             senderRole: cleanText(raw.senderRole),
@@ -195,6 +211,8 @@ export function AdminChats() {
           chatId: modalChatId,
           type: msg.type ?? 'text',
           message: toMessageText(msg.message ?? msg.text ?? ''),
+          attachmentUrl: msg.attachmentUrl,
+          metadata: msg.metadata,
           senderId: toDisplayText(msg.senderId ?? ''),
           senderName: cleanText(msg.senderName),
           senderEmail: cleanText(msg.senderEmail),
@@ -348,6 +366,16 @@ export function AdminChats() {
                   <span>{displayDate(m.createdAt)}</span>
                 </div>
                 <p className="text-sm mt-1 whitespace-pre-wrap">{toMessageText(m.message)}</p>
+                {m.attachmentUrl ? (
+                  <a
+                    href={getImageUrl(m.attachmentUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center rounded-input border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-primary-accent hover:bg-primary-accent/10"
+                  >
+                    {attachmentLabel(m)}
+                  </a>
+                ) : null}
               </li>
             ))}
           </ul>

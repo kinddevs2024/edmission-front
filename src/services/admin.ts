@@ -682,6 +682,8 @@ export interface AdminChatMessage {
   senderEmail?: string
   senderRole?: string
   sentByAdmin?: boolean
+  attachmentUrl?: string
+  metadata?: Record<string, unknown>
   type: string
   message: string
   createdAt: string
@@ -827,8 +829,17 @@ export async function adminUniversityCreateOffer(
   return data
 }
 
-export async function sendAdminChatMessage(chatId: string, text: string): Promise<AdminChatMessage> {
-  const { data } = await api.post<AdminChatMessage>(`/admin/chats/${chatId}/messages`, { text })
+export async function sendAdminChatMessage(
+  chatId: string,
+  payload: string | {
+    text: string
+    attachmentUrl?: string
+    metadata?: Record<string, unknown>
+    actingUniversityUserId?: string
+  }
+): Promise<AdminChatMessage> {
+  const body = typeof payload === 'string' ? { text: payload } : payload
+  const { data } = await api.post<AdminChatMessage>(`/admin/chats/${chatId}/messages`, body)
   return data
 }
 

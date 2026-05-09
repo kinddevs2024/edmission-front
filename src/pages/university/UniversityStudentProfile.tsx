@@ -72,6 +72,7 @@ export function UniversityStudentProfile() {
 
   const isPrivate = profile.profileVisibility === 'private'
   const name = getStudentDisplayName(profile, t('university:studentLabel'))
+  const documents = profile.documents ?? []
 
   const handleShareStudent = async () => {
     const shareUrl = buildStudentShareLink(profile.id)
@@ -234,6 +235,44 @@ export function UniversityStudentProfile() {
         ) : null}
       </Card>
 
+      <Card className="border-primary-accent/25 bg-[var(--color-card)]">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary-accent" aria-hidden />
+              {t('university:studentDocuments', 'Student documents')}
+            </CardTitle>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              {t('university:studentDocumentsHint', 'Approved student uploads are shown here for university review.')}
+            </p>
+          </div>
+          <span className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs font-medium text-[var(--color-text-muted)]">
+            {documents.length}
+          </span>
+        </div>
+        {documents.length ? (
+          <ul className="mt-4 grid gap-2">
+            {documents.map((d) => (
+              <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-input border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{d.name ?? d.type}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">
+                    {[d.certificateType, d.score ? `${t('university:scoreLabel', 'Score')}: ${d.score}` : null].filter(Boolean).join(' · ') || d.type}
+                  </p>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => setFilePreview(d)}>
+                  {t('common:preview', 'Preview')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="mt-4 rounded-input border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-5 text-sm text-[var(--color-text-muted)]">
+            {t('university:noStudentDocuments', 'No approved student documents yet.')}
+          </div>
+        )}
+      </Card>
+
       <Card>
         <CardTitle>{t('university:languages', 'Languages')}</CardTitle>
         <div className="mt-2 text-sm">
@@ -328,28 +367,6 @@ export function UniversityStudentProfile() {
         </Card>
       ) : null}
 
-      {profile.documents?.length ? (
-        <Card>
-          <CardTitle>{t('university:documentsApproved', 'Documents (approved)')}</CardTitle>
-          <ul className="mt-2 space-y-2">
-            {profile.documents.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center gap-2 text-sm">
-                <FileText className="w-4 h-4 text-[var(--color-text-muted)] shrink-0" />
-                <span className="font-medium">{d.name ?? d.type}</span>
-                {d.certificateType && <span className="text-[var(--color-text-muted)]">{d.certificateType}</span>}
-                {d.score && <span className="text-[var(--color-text-muted)]">{t('university:scoreLabel', 'Score')}: {d.score}</span>}
-                <button
-                  type="button"
-                  onClick={() => setFilePreview(d)}
-                  className="text-primary-accent hover:underline"
-                >
-                  {t('common:preview', 'Preview')}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
         </div>
       </div>
 

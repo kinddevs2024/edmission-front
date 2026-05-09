@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { formatDateTime, formatChatMessageTime } from '@/utils/format'
-import { Check, CheckCheck } from 'lucide-react'
+import { getImageUrl } from '@/services/upload'
+import { Check, CheckCheck, ExternalLink, FileText } from 'lucide-react'
 import type { Message } from '@/types/chat'
 
 interface MessageBubbleProps {
@@ -9,6 +10,42 @@ interface MessageBubbleProps {
 }
 
 const EMOJI_SIZE = 'text-4xl'
+
+function formatAttachmentSize(value: unknown) {
+  const bytes = typeof value === 'number' && Number.isFinite(value) ? value : 0
+  if (bytes <= 0) return ''
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function AttachmentLink({ message, isFromMe }: { message: Message; isFromMe: boolean }) {
+  if (!message.attachmentUrl) return null
+  const href = getImageUrl(message.attachmentUrl)
+  const fileName = message.metadata?.fileName || 'Attached file'
+  const fileSize = formatAttachmentSize(message.metadata?.fileSize)
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        'mt-2 flex max-w-full items-center gap-3 rounded-card border px-3 py-2 text-left transition',
+        isFromMe
+          ? 'border-primary-dark/20 bg-primary-dark/10 hover:bg-primary-dark/15'
+          : 'border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-border)]/20'
+      )}
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-input bg-[var(--color-card)] text-primary-accent">
+        <FileText className="h-4 w-4" aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold">{fileName}</span>
+        {fileSize ? <span className="block text-xs opacity-75">{fileSize}</span> : null}
+      </span>
+      <ExternalLink className="h-4 w-4 shrink-0 opacity-75" aria-hidden />
+    </a>
+  )
+}
 
 function OutgoingStatusFooter({
   createdAt,
@@ -176,6 +213,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {replyBlock}
         {isAdminMessage ? <p className="mb-1 text-xs font-semibold text-[var(--color-text-muted)]">{adminLabel}</p> : null}
         <p className="whitespace-pre-wrap break-words">{displayText}</p>
+        <AttachmentLink message={message} isFromMe={isFromMe} />
         {isFromMe ? (
           <OutgoingStatusFooter
             createdAt={message.createdAt}

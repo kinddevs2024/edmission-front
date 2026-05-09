@@ -8,11 +8,17 @@ import { Card } from '@/components/ui/Card'
 import { TemplateCard } from './TemplateCard'
 import { DocumentCanvasStage } from './DocumentCanvasStage'
 import { DocumentSummaryPanel } from './DocumentSummaryPanel'
-import { adminUniversityGetDocumentTemplates, adminUniversityRenderDocumentTemplatePreview, adminUniversitySendIssuedDocument } from '@/services/admin'
+import { adminUniversityGetDocumentTemplates, adminUniversityRenderDocumentTemplatePreview, adminUniversitySendIssuedDocument, sendAdminChatMessage } from '@/services/admin'
 import { getDocumentTemplates, renderDocumentTemplatePreview, sendIssuedDocument } from '@/services/documents'
+import { sendMessage } from '@/services/chat'
+import { IMAGE_OR_PDF_UPLOAD_ACCEPT, uploadFile } from '@/services/upload'
 import { parseScene } from '@/utils/documentScene'
 import { toastApiError } from '@/utils/toastError'
+import { FileText, UploadCloud, X } from 'lucide-react'
+import type { SendMessageParams } from '@/services/chat'
 import type { DocumentTemplate, DocumentType, RenderedTemplatePreview, UniversityDocumentSummary } from '@/types/documentModule'
+
+type SendMode = 'template' | 'upload'
 
 type SendDocumentFormState = {
   acceptDeadline: string
@@ -71,9 +77,15 @@ export function SendDocumentModal({
   const [previewData, setPreviewData] = useState<RenderedTemplatePreview | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [sending, setSending] = useState(false)
+  const [mode, setMode] = useState<SendMode>('template')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [fileMessage, setFileMessage] = useState('')
 
   useEffect(() => {
     if (!open) return
+    setMode('template')
+    setSelectedFile(null)
+    setFileMessage('')
     setLoadingTemplates(true)
     const req = actingUniversityUserId
       ? adminUniversityGetDocumentTemplates(actingUniversityUserId, { type })
@@ -159,32 +171,103 @@ export function SendDocumentModal({
       .finally(() => setSending(false))
   }
 
+  const handleSendFile = async () => {
+    if (!selectedFile || !chatId) return
+    setSending(true)
+    try {
+      const attachmentUrl = await uploadFile(selectedFile)
+      const trimmedMessage = fileMessage.trim()
+      const text = trimmedMessage || t('documents:sendModal.fileMessageFallback', 'University shared a document file.')
+      const metadata: NonNullable<SendMessageParams['metadata']> = {
+        subtype: 'file_attachment',
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+        mimeType: selectedFile.type,
+      }
+      if (actingUniversityUserId) {
+        await sendAdminChatMessage(chatId, {
+          text,
+          attachmentUrl,
+          metadata,
+          actingUniversityUserId,
+        })
+      } else {
+        await sendMessage(chatId, {
+          text,
+          attachmentUrl,
+          metadata,
+        })
+      }
+      setSelectedFile(null)
+      setFileMessage('')
+      onClose()
+    } catch (error) {
+      toastApiError(error)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const canSendFile = Boolean(chatId && selectedFile)
+
   return (
     <Modal
       open={open}
       onClose={onClose}
+      panelClassName="max-w-3xl"
+      contentClassName="bg-[var(--color-bg)]/35"
+      footerClassName="bg-[var(--color-card)]"
       title={studentName
         ? t('documents:sendModal.titleWithName', { name: studentName, defaultValue: 'Send document to {{name}}' })
         : t('documents:sendModal.title', 'Send document')}
       footer={(
         <>
           <Button variant="secondary" onClick={onClose}>{t('common:cancel', 'Cancel')}</Button>
-          <Button variant="secondary" onClick={handlePreview} disabled={!selectedTemplateId || previewLoading} loading={previewLoading}>
-            {t('documents:sendModal.previewFinalDocument', 'Preview final document')}
-          </Button>
-          <Button onClick={handleSend} disabled={!selectedTemplateId || sending} loading={sending}>
-            {t('common:send', 'Send')}
-          </Button>
+          {mode === 'template' ? (
+            <>
+              <Button variant="secondary" onClick={handlePreview} disabled={!selectedTemplateId || previewLoading} loading={previewLoading}>
+                {t('documents:sendModal.previewFinalDocument', 'Preview final document')}
+              </Button>
+              <Button onClick={handleSend} disabled={!selectedTemplateId || sending} loading={sending}>
+                {t('common:send', 'Send')}
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handleSendFile} disabled={!canSendFile || sending} loading={sending} icon={<UploadCloud className="w-4 h-4" />}>
+              {t('documents:sendModal.uploadAndSend', 'Upload and send')}
+            </Button>
+          )}
         </>
       )}
     >
       <div className="space-y-5">
+        <div className="grid grid-cols-2 gap-2 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-1.5">
+          <Button
+            variant={mode === 'template' ? 'primary' : 'ghost'}
+            className="min-h-11"
+            onClick={() => setMode('template')}
+            icon={<FileText className="w-4 h-4" />}
+          >
+            {t('documents:sendModal.templateMode', 'Template')}
+          </Button>
+          <Button
+            variant={mode === 'upload' ? 'primary' : 'ghost'}
+            className="min-h-11"
+            onClick={() => setMode('upload')}
+            icon={<UploadCloud className="w-4 h-4" />}
+          >
+            {t('documents:sendModal.uploadMode', 'Upload file')}
+          </Button>
+        </div>
+
+        {mode === 'template' ? (
+          <>
         <div className="grid grid-cols-2 gap-2">
           <Button variant={type === 'offer' ? 'primary' : 'secondary'} onClick={() => setType('offer')}>{t('documents:type.offer', 'Offer')}</Button>
           <Button variant={type === 'scholarship' ? 'primary' : 'secondary'} onClick={() => setType('scholarship')}>{t('documents:type.scholarship', 'Scholarship')}</Button>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold">{t('documents:sendModal.templates', 'Templates')}</h3>
             {loadingTemplates ? <span className="text-xs text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</span> : null}
@@ -291,6 +374,63 @@ export function SendDocumentModal({
             />
           </div>
         ) : null}
+          </>
+        ) : (
+          <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4">
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
+              <label className="flex min-h-[178px] cursor-pointer flex-col items-center justify-center rounded-card border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-6 text-center transition hover:border-primary-accent hover:bg-primary-accent/5">
+                <UploadCloud className="h-9 w-9 text-primary-accent" aria-hidden />
+                <span className="mt-3 text-sm font-semibold text-[var(--color-text)]">
+                  {selectedFile ? selectedFile.name : t('documents:sendModal.chooseFile', 'Choose a PDF or image')}
+                </span>
+                <span className="mt-1 text-xs text-[var(--color-text-muted)]">
+                  {selectedFile ? formatFileSize(selectedFile.size) : t('documents:sendModal.fileLimit', 'PDF, JPG, PNG, WebP up to 10 MB')}
+                </span>
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept={IMAGE_OR_PDF_UPLOAD_ACCEPT}
+                  onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+                />
+              </label>
+
+              <div className="space-y-3">
+                <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+                  <p className="text-sm font-semibold">{t('documents:sendModal.fileStatus', 'File')}</p>
+                  {selectedFile ? (
+                    <div className="mt-2 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium" title={selectedFile.name}>{selectedFile.name}</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">{formatFileSize(selectedFile.size)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-red-500/40 hover:text-red-500"
+                        onClick={() => setSelectedFile(null)}
+                        aria-label={t('common:remove', 'Remove')}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                      {chatId
+                        ? t('documents:sendModal.noFileSelected', 'No file selected yet.')
+                        : t('documents:sendModal.chatRequiredForUpload', 'Open a chat first to send uploaded files.')}
+                    </p>
+                  )}
+                </div>
+                <Textarea
+                  label={t('documents:sendModal.fileMessage', 'Message')}
+                  rows={4}
+                  value={fileMessage}
+                  onChange={(event) => setFileMessage(event.target.value)}
+                  placeholder={t('documents:sendModal.fileMessagePlaceholder', 'Add a short note for the student')}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   )
@@ -313,4 +453,10 @@ function buildDocumentData(form: SendDocumentFormState) {
       type: form.scholarshipKind,
     },
   }
+}
+
+function formatFileSize(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 KB'
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }

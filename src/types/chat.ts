@@ -47,6 +47,9 @@ export interface Message {
     documentType?: 'offer' | 'scholarship'
     title?: string
     link?: string
+    fileName?: string
+    fileSize?: number
+    mimeType?: string
     postponeUntil?: string
     replyToMessageId?: string
     replyToPreview?: string
