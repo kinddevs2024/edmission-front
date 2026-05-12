@@ -161,6 +161,7 @@ export function UserManagement() {
   const hasVisibleValue = (value: unknown) => String(value ?? '').trim().length > 0
   const showNameColumn = users.some((user) => hasVisibleValue(user.name))
   const showPhoneColumn = users.some((user) => hasVisibleValue(user.phone))
+  const showSchoolColumn = users.some((user) => hasVisibleValue(user.schoolName))
   const showOneTimePasswordColumn = users.some((user) => Boolean(user.temporaryPassword))
 
   useEffect(() => {
@@ -494,6 +495,7 @@ export function UserManagement() {
                   <TableTh>{t('common:email')}</TableTh>
                   {showNameColumn && <TableTh>{t('common:name')}</TableTh>}
                   {showPhoneColumn && <TableTh>{t('admin:phone', 'Phone')}</TableTh>}
+                  {showSchoolColumn && <TableTh>{t('admin:school', 'School')}</TableTh>}
                   <TableTh>{t('common:role')}</TableTh>
                   <TableTh>{t('admin:registered')}</TableTh>
                   {showOneTimePasswordColumn && (
@@ -509,6 +511,7 @@ export function UserManagement() {
                     <TableTd>{u.email}</TableTd>
                     {showNameColumn && <TableTd>{u.name ?? '--'}</TableTd>}
                     {showPhoneColumn && <TableTd>{u.phone || '-'}</TableTd>}
+                    {showSchoolColumn && <TableTd>{u.schoolName || '-'}</TableTd>}
                     <TableTd>{roleLabels[u.role as keyof typeof roleLabels] ?? u.role}</TableTd>
                     <TableTd>{formatDate(u.createdAt)}</TableTd>
                     {showOneTimePasswordColumn && (

@@ -43,6 +43,7 @@ export interface AdminUser {
   role: string
   name?: string
   phone?: string
+  schoolName?: string
   mustChangePassword?: boolean
   temporaryPassword?: string
   /** ISO date or empty when unknown */
@@ -114,6 +115,7 @@ export async function createUser(payload: CreateAdminUserPayload): Promise<Admin
     role: String(raw.role ?? ''),
     name: (raw.name as string | undefined) ?? undefined,
     phone: raw.phone != null ? String(raw.phone) : undefined,
+    schoolName: raw.schoolName != null ? String(raw.schoolName) : undefined,
     mustChangePassword: Boolean(raw.mustChangePassword),
     temporaryPassword: raw.temporaryPassword != null ? String(raw.temporaryPassword) : undefined,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
@@ -288,6 +290,7 @@ export async function getUsers(params?: PaginationParams & { status?: string; ro
       role: String(rec.role ?? ''),
       name: (rec.name as string | undefined) ?? undefined,
       phone: rec.phone != null ? String(rec.phone) : undefined,
+      schoolName: rec.schoolName != null ? String(rec.schoolName) : undefined,
       mustChangePassword: Boolean(rec.mustChangePassword),
       temporaryPassword: rec.temporaryPassword != null ? String(rec.temporaryPassword) : undefined,
       createdAt: normalizeAdminCreatedAt(rec),
@@ -325,6 +328,7 @@ export async function updateUser(userId: string, payload: UpdateUserPayload): Pr
     role: String(raw.role ?? ''),
     name: (raw.name as string | undefined) ?? undefined,
     phone: raw.phone != null ? String(raw.phone) : undefined,
+    schoolName: raw.schoolName != null ? String(raw.schoolName) : undefined,
     mustChangePassword: Boolean(raw.mustChangePassword),
     temporaryPassword: raw.temporaryPassword != null ? String(raw.temporaryPassword) : undefined,
     createdAt: normalizeAdminCreatedAt(raw),

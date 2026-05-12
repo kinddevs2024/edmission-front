@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { login, loginWithGoogle } from "@/services/auth";
@@ -12,6 +12,7 @@ import { getApiError } from "@/services/api";
 import { getApiErrorKey } from "@/utils/apiErrorI18n";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { BrandMark } from "@/components/layout/BrandLogo";
@@ -30,6 +31,7 @@ export function Login() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
@@ -94,12 +96,22 @@ export function Login() {
           error={errors.email?.message}
           {...register("email")}
         />
-        <Input
-          label={t("auth:password")}
-          type="password"
-          autoComplete="current-password"
-          error={errors.password?.message}
-          {...register("password")}
+        <Controller
+          name="password"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <PasswordInput
+              label={t("auth:password")}
+              autoComplete="current-password"
+              error={errors.password?.message}
+              value={field.value ?? ""}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              name={field.name}
+              ref={field.ref}
+            />
+          )}
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         <Button type="submit" className="w-full" loading={loading} disabled={loading}>

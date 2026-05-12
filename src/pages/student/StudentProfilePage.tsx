@@ -35,7 +35,7 @@ import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Circle, ExternalLink, Lock, FileStack } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Circle, ExternalLink, Lock, FileStack, DollarSign, type LucideIcon } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
@@ -134,27 +134,28 @@ function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormD
   }
 }
 
-type SectionId = 'personal' | 'location' | 'education' | 'about' | 'skills' | 'faculties' | 'experience' | 'works' | 'documents'
+type SectionId = 'personal' | 'location' | 'education' | 'about' | 'budget' | 'skills' | 'faculties' | 'experience' | 'works' | 'documents'
 type ProfileFocusField = 'firstName' | 'lastName' | 'city' | 'schoolName' | 'gradeLevel' | 'graduationYear'
 
-/** Same order for self-edit and admin/counsellor edit; `documents` is last so staff tools do not reorder the core portfolio flow. */
-const SECTIONS: { id: SectionId; titleKey: string; icon: typeof User | typeof FileStack }[] = [
+const SECTIONS: { id: SectionId; titleKey: string; icon: LucideIcon }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
+  { id: 'faculties', titleKey: 'stepFaculties', icon: BookOpen },
   { id: 'location', titleKey: 'stepLocation', icon: MapPin },
+  { id: 'budget', titleKey: 'student:budgetAmount', icon: DollarSign },
+  { id: 'documents', titleKey: 'common:documents', icon: FileStack },
   { id: 'education', titleKey: 'stepEducation', icon: GraduationCap },
   { id: 'about', titleKey: 'stepAbout', icon: FileText },
   { id: 'skills', titleKey: 'stepSkills', icon: Sparkles },
-  { id: 'faculties', titleKey: 'stepFaculties', icon: BookOpen },
   { id: 'experience', titleKey: 'stepExperience', icon: Briefcase },
   { id: 'works', titleKey: 'stepWorks', icon: FolderOpen },
-  { id: 'documents', titleKey: 'common:documents', icon: FileStack },
 ]
 
-const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Record<SectionId, string>> = {
+const SECTION_TITLE_FALLBACKS: Record<'en' | 'ru' | 'uz', Partial<Record<SectionId, string>>> = {
   en: {
     personal: 'Personal details',
     location: 'Location',
     education: 'Education',
+    budget: 'Budget for studies',
     documents: 'Documents',
     about: 'About me',
     skills: 'Skills',
@@ -261,11 +262,17 @@ function normalizeAvatarUrlForDirtyCheck(u: string | undefined | null): string {
 }
 
 function aboutSectionMatchesProfile(
-  values: { bio?: string; budgetAmount?: unknown; budgetCurrency?: string; avatarUrl?: string },
+  values: { bio?: string; avatarUrl?: string },
   profile: StudentProfileData
 ): boolean {
   if (String(values.bio ?? '').trim() !== String(profile.bio ?? '').trim()) return false
-  if (normalizeAvatarUrlForDirtyCheck(values.avatarUrl) !== normalizeAvatarUrlForDirtyCheck(profile.avatarUrl)) return false
+  return normalizeAvatarUrlForDirtyCheck(values.avatarUrl) === normalizeAvatarUrlForDirtyCheck(profile.avatarUrl)
+}
+
+function budgetSectionMatchesProfile(
+  values: { budgetAmount?: unknown; budgetCurrency?: string },
+  profile: StudentProfileData
+): boolean {
   if (finiteBudgetAmount(values.budgetAmount) !== finiteBudgetAmount(profile.budgetAmount)) return false
   const vc = String(values.budgetCurrency ?? 'USD').trim()
   const pc = String(profile.budgetCurrency ?? 'USD').trim()
@@ -320,11 +327,15 @@ function getSectionPercent(profile: StudentProfileData | null, sectionId: Sectio
     }
     case 'about': {
       const bio = profile.bio != null && String(profile.bio).trim() !== ''
+      const avatar = profile.avatarUrl != null && String(profile.avatarUrl).trim() !== ''
+      return Math.round(([bio, avatar].filter(Boolean).length / 2) * 100)
+    }
+    case 'budget': {
       const budget =
         profile.budgetAmount != null &&
         Number.isFinite(Number(profile.budgetAmount)) &&
         Number(profile.budgetAmount) >= 0
-      return Math.round(([bio, budget].filter(Boolean).length / 2) * 100)
+      return budget ? 100 : 0
     }
     case 'skills': {
       const hasItems = (arr: unknown) =>
@@ -534,8 +545,8 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   const avatarUrl = watch('avatarUrl')
   const headerAvatarInputRef = useRef<HTMLInputElement>(null)
   const aboutBioWatch = watch('bio')
-  const aboutBudgetWatch = watch('budgetAmount')
-  const aboutCurrencyWatch = watch('budgetCurrency')
+  const budgetAmountWatch = watch('budgetAmount')
+  const budgetCurrencyWatch = watch('budgetCurrency')
   const educationStatus = watch('educationStatus')
   const targetDegreeLevel = watch('targetDegreeLevel')
   const educationStepOneDone = Boolean(educationStatus)
@@ -571,14 +582,11 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   ]
   const languageOptions = LANGUAGE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
   const levelOptions = LEVEL_OPTIONS.map((opt) => ({ value: opt, label: opt }))
-  const displayedSections = useMemo(
-    () => (isExternalStudent ? SECTIONS : SECTIONS.filter((section) => section.id !== 'documents')),
-    [isExternalStudent]
-  )
+  const displayedSections = SECTIONS
   const getSectionTitle = (section: { id: SectionId; titleKey: string }) => {
     const langCode = (i18n.resolvedLanguage ?? i18n.language ?? 'en').slice(0, 2) as 'en' | 'ru' | 'uz'
     const langPack = SECTION_TITLE_FALLBACKS[langCode] ?? SECTION_TITLE_FALLBACKS.en
-    const fallback = langPack[section.id]
+    const fallback = langPack[section.id] ?? SECTION_TITLE_FALLBACKS.en[section.id] ?? section.id
     return normalizeBrokenTranslation(t(section.titleKey, fallback), fallback)
   }
   const visibleSectionIds = useMemo(() => new Set(displayedSections.map((section) => section.id)), [displayedSections])
@@ -857,13 +865,19 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
         ? !aboutSectionMatchesProfile(
             {
               bio: aboutBioWatch,
-              budgetAmount: aboutBudgetWatch,
-              budgetCurrency: aboutCurrencyWatch,
               avatarUrl,
             },
             profile
           )
-        : isDirty)
+        : openSection === 'budget' && profile
+          ? !budgetSectionMatchesProfile(
+              {
+                budgetAmount: budgetAmountWatch,
+                budgetCurrency: budgetCurrencyWatch,
+              },
+              profile
+            )
+          : isDirty)
   )
 
   useEffect(() => {
@@ -1338,6 +1352,10 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                   navigate(`/school/students/${studentUserId}/documents`)
                   return
                 }
+                if (isDocuments && !isExternalStudent) {
+                  navigate('/student/documents')
+                  return
+                }
                 openEditableSection(sec.id)
               }}
               className={cn(
@@ -1772,35 +1790,13 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
           )}
 
           {openSection === 'about' && (
-            <div className="space-y-4" data-onboarding="student-profile-budget-fields">
+            <div className="space-y-4" data-onboarding="student-profile-about-fields">
               <Textarea
                 label={t('bio')}
                 placeholder={t('bioPlaceholder')}
                 rows={4}
                 {...register('bio')}
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetAmount', 'Budget for studies')}</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={100}
-                    placeholder={t('student:budgetPlaceholder', 'e.g. 10000')}
-                    {...register('budgetAmount', {
-                      setValueAs: (v) => {
-                        if (v === '' || v == null) return undefined
-                        if (typeof v === 'number' && Number.isNaN(v)) return undefined
-                        const n = Number(v)
-                        return Number.isFinite(n) ? n : undefined
-                      },
-                    })}
-                  />
-                </div>
-                <div>
-                  <Select label={t('student:budgetCurrency', 'Currency')} options={currencyOptions} {...register('budgetCurrency')} />
-                </div>
-              </div>
               <FileUpload
                 label={t('avatarUrl')}
                 variant="avatar"
@@ -1808,6 +1804,31 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                 onChange={onAvatarFileUrlChange}
                 hint={t('uploadPhotoOrLink')}
               />
+            </div>
+          )}
+
+          {openSection === 'budget' && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-onboarding="student-profile-budget-fields">
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">{t('student:budgetAmount', 'Budget for studies')}</label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={100}
+                  placeholder={t('student:budgetPlaceholder', 'e.g. 10000')}
+                  {...register('budgetAmount', {
+                    setValueAs: (v) => {
+                      if (v === '' || v == null) return undefined
+                      if (typeof v === 'number' && Number.isNaN(v)) return undefined
+                      const n = Number(v)
+                      return Number.isFinite(n) ? n : undefined
+                    },
+                  })}
+                />
+              </div>
+              <div>
+                <Select label={t('student:budgetCurrency', 'Currency')} options={currencyOptions} {...register('budgetCurrency')} />
+              </div>
             </div>
           )}
 
