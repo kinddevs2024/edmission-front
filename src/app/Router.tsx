@@ -363,6 +363,7 @@ export function Router() {
           <Route path="my-students/map" element={<CounsellorStudentsMap />} />
           <Route path="my-students" element={<CounsellorStudents />} />
           <Route path="student-interests" element={<CounsellorStudentInterests />} />
+          <Route path="student-interests/:studentId/universities/:id" element={<UniversityDetail />} />
           <Route path="applications" element={<CounsellorApplications />} />
           <Route path="offers" element={<CounsellorOffers />} />
           <Route path="offers/:id" element={<CounsellorOfferDetail />} />

@@ -246,6 +246,7 @@ export function CounsellorStudentInterests() {
                       onInterest={() => handleSendInterest(u.id)}
                       interested={false}
                       interestDisabled={interestMutation.isPending}
+                      detailsTo={`/school/student-interests/${selectedStudentId}/universities/${u.id}`}
                     />
                   </div>
                 ))}

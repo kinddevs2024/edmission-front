@@ -204,6 +204,16 @@ export async function addInterestForStudent(studentUserId: string, universityId:
   return data
 }
 
+export async function getStudentUniversityById<T = unknown>(studentUserId: string, universityId: string): Promise<T> {
+  const { data } = await api.get<T>(`/counsellor/students/${studentUserId}/universities/${universityId}`)
+  return data as T
+}
+
+export async function getStudentUniversityFlyers(studentUserId: string, universityId: string): Promise<import('@/types/university').UniversityFlyer[]> {
+  const { data } = await api.get<import('@/types/university').UniversityFlyer[]>(`/counsellor/students/${studentUserId}/universities/${universityId}/flyers`)
+  return data ?? []
+}
+
 export interface CounsellorStudentUniversitiesParams extends PaginationParams {
   country?: string
   city?: string

@@ -9,6 +9,7 @@ import { AccountShareMenu } from '@/components/ui/AccountShareMenu'
 import { MatchScore } from '@/components/student/MatchScore'
 import { api } from '@/services/api'
 import { showInterest, getApplications, getInterestLimit } from '@/services/student'
+import { addInterestForStudent, getStudentUniversityById, getStudentUniversityFlyers } from '@/services/counsellor'
 import { getImageUrl } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
 import { getLocalizedCountryName, getLocalizedLanguageName } from '@/utils/localeDisplay'
@@ -22,8 +23,10 @@ import { getEffectiveIeltsMinBand } from '@/utils/admissionRequirements'
 import { buildUniversityShareLink, shareAccountLink } from '@/utils/shareAccount'
 import { FlyerMediaPreview } from '@/components/university/FlyerMediaPreview'
 export function UniversityDetail() {
-  const { id } = useParams<{ id: string }>()
+  const { id, studentId } = useParams<{ id: string; studentId?: string }>()
   const { t, i18n } = useTranslation(['common', 'student', 'university'])
+  const isCounsellorView = Boolean(studentId)
+  const backToList = isCounsellorView ? '/school/student-interests' : '/student/universities'
   const [uni, setUni] = useState<UniversityProfile | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [scholarships, setScholarships] = useState<Scholarship[]>([])
@@ -39,10 +42,14 @@ export function UniversityDetail() {
   const hasRating = typeof ratingValue === 'number' && Number.isFinite(ratingValue)
 
   useEffect(() => {
+    if (isCounsellorView) {
+      setDocuments([])
+      return
+    }
     getMyDocuments()
       .then(setDocuments)
       .catch(() => setDocuments([]))
-  }, [])
+  }, [isCounsellorView])
 
   const ieltsMinEffective = useMemo(
     () =>
@@ -65,6 +72,7 @@ export function UniversityDetail() {
   )
 
   const interestBlockedByIelts =
+    !isCounsellorView &&
     !interested && ieltsMinEffective != null && ieltsMinEffective > 0 && !hasIeltsCertificateUpload
 
   const formatDegree = (value?: string | null) => {
@@ -93,6 +101,11 @@ export function UniversityDetail() {
   useEffect(() => {
     const appUniversityId = uni?.id ?? id
     if (!appUniversityId) return
+    if (isCounsellorView) {
+      setInterested(Boolean((uni as unknown as { interest?: unknown })?.interest))
+      setInterestLimit({ allowed: true, limit: null })
+      return
+    }
     getApplications({ limit: 500 }).then((res) => {
       const hasId = (res.data ?? []).some((a) => (a as { universityId?: string }).universityId === appUniversityId)
       setInterested(hasId)
@@ -100,16 +113,20 @@ export function UniversityDetail() {
     getInterestLimit()
       .then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit }))
       .catch(() => setInterestLimit({ allowed: false, limit: 3 }))
-  }, [id, uni?.id])
+  }, [id, isCounsellorView, uni])
 
   useEffect(() => {
     if (!id) return
     let cancelled = false
     setLoading(true)
-    api.get<UniversityProfile & { programs?: Program[]; scholarships?: Scholarship[]; faculties?: Faculty[]; matchScore?: number; breakdown?: Record<string, number> }>(`/student/universities/${id}`)
-      .then((res) => {
+    type DetailResponse = UniversityProfile & { programs?: Program[]; scholarships?: Scholarship[]; faculties?: Faculty[]; matchScore?: number; breakdown?: Record<string, number> }
+    const detailPromise: Promise<DetailResponse> = isCounsellorView && studentId
+      ? getStudentUniversityById<DetailResponse>(studentId, id)
+      : api.get<DetailResponse>(`/student/universities/${id}`).then((res) => res.data)
+
+    detailPromise
+      .then((u) => {
         if (cancelled) return
-        const u = res.data
         setUni(u)
         setPrograms(u.programs ?? [])
         setScholarships(u.scholarships ?? [])
@@ -119,7 +136,10 @@ export function UniversityDetail() {
           setMatchBreakdown(u.breakdown ?? null)
         }
         const flyerUniversityId = String(u.id ?? id)
-        getPublicUniversityFlyers(flyerUniversityId)
+        const flyersPromise = isCounsellorView && studentId
+          ? getStudentUniversityFlyers(studentId, flyerUniversityId)
+          : getPublicUniversityFlyers(flyerUniversityId)
+        flyersPromise
           .then((items) => {
             if (!cancelled) setFlyers(items)
           })
@@ -134,18 +154,23 @@ export function UniversityDetail() {
         if (!cancelled) setLoading(false)
       })
     return () => { cancelled = true }
-  }, [id])
+  }, [id, isCounsellorView, studentId])
 
   const interestLimitReady = interestLimit !== null
   const handleInterest = () => {
     if (!id || interested || !interestLimitReady || !interestLimit.allowed) return
-    showInterest(id)
+    const request = isCounsellorView && studentId
+      ? addInterestForStudent(studentId, id)
+      : showInterest(id)
+    request
       .then(() => {
         setInterested(true)
         notifySuccess(t('student:interestedButton', 'Interested'))
-        getInterestLimit()
-          .then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit }))
-          .catch(() => setInterestLimit({ allowed: false, limit: 3 }))
+        if (!isCounsellorView) {
+          getInterestLimit()
+            .then((l) => setInterestLimit({ allowed: l.allowed, limit: l.limit }))
+            .catch(() => setInterestLimit({ allowed: false, limit: 3 }))
+        }
       })
       .catch(toastApiError)
   }
@@ -170,7 +195,7 @@ export function UniversityDetail() {
   if (loading && !uni) {
     return (
       <div className="space-y-4">
-        <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
+        <BackLink to={backToList}>{t('common:backToList', 'Back to list')}</BackLink>
         <Card><div className="h-8 w-48 rounded bg-[var(--color-border)] animate-pulse" /></Card>
       </div>
     )
@@ -179,7 +204,7 @@ export function UniversityDetail() {
   if (!uni) {
     return (
       <div className="space-y-4">
-        <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
+        <BackLink to={backToList}>{t('common:backToList', 'Back to list')}</BackLink>
         <Card><p className="text-[var(--color-text-muted)]">University not found.</p></Card>
       </div>
     )
@@ -187,7 +212,7 @@ export function UniversityDetail() {
 
   return (
     <div className="space-y-6">
-      <BackLink to="/student/universities">{t('common:backToList', 'Back to list')}</BackLink>
+      <BackLink to={backToList}>{t('common:backToList', 'Back to list')}</BackLink>
 
       <div className="space-y-3">
         {(uni as { coverImage?: string; coverImageUrl?: string }).coverImageUrl ||
@@ -436,7 +461,7 @@ export function UniversityDetail() {
         </Card>
       )}
 
-      {interestBlockedByIelts ? (
+      {!isCounsellorView && interestBlockedByIelts ? (
         <p className="text-sm text-amber-700 dark:text-amber-400/90 max-w-xl">
           {t(
             'student:interestBlockedIelts',
@@ -463,8 +488,12 @@ export function UniversityDetail() {
                   ? t('student:interestNeedsIelts', 'Upload IELTS certificate')
                   : t('student:showInterest')}
         </Button>
-        <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>{t('common:messageButton')}</Button>
-        <Button to="/student/compare" variant="ghost">{t('common:addToCompare')}</Button>
+        {!isCounsellorView ? (
+          <>
+            <Button to={`/student/chat?universityId=${encodeURIComponent(id ?? '')}`} variant="secondary" icon={<MessageCircle size={16} />}>{t('common:messageButton')}</Button>
+            <Button to="/student/compare" variant="ghost">{t('common:addToCompare')}</Button>
+          </>
+        ) : null}
       </div>
     </div>
   )

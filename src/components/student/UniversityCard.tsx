@@ -17,6 +17,7 @@ interface UniversityCardProps {
   onInterest?: (id: string) => void
   interested?: boolean
   interestDisabled?: boolean
+  detailsTo?: string
 }
 
 export function UniversityCard({
@@ -25,6 +26,7 @@ export function UniversityCard({
   onInterest,
   interested,
   interestDisabled,
+  detailsTo,
 }: UniversityCardProps) {
   const { t, i18n } = useTranslation(['student', 'common'])
   const {
@@ -147,7 +149,7 @@ export function UniversityCard({
               {interested ? t('student:interestedButton', 'Interested') : t('student:showInterest', 'Interest')}
             </Button>
           ) : null}
-          <Button to={`/student/universities/${id}`} variant="ghost" size="sm">
+          <Button to={detailsTo ?? `/student/universities/${id}`} variant="ghost" size="sm">
             {t('common:details', 'Details')}
           </Button>
         </div>
