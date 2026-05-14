@@ -62,7 +62,7 @@ api.interceptors.request.use((config) => {
   if (supportedLngs.includes(savedLanguage)) {
     ;(config.headers as Record<string, string>)['X-User-Language'] = savedLanguage
   }
-  if (user?.role === 'university_multi_manager' && config.headers) {
+  if ((user?.role === 'university_multi_manager' || user?.role === 'multi_university_admin') && config.headers) {
     const actAs = getActAsUniversityUserId()
     if (actAs) {
       ;(config.headers as Record<string, string>)['X-Act-As-University'] = actAs

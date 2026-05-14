@@ -125,6 +125,10 @@ function isAdminPanelRole(role: Role | null): boolean {
   return role === 'admin' || role === 'manager' || role === 'counsellor_coordinator'
 }
 
+function isMultiUniversityRole(role: Role | null): boolean {
+  return role === 'university_multi_manager' || role === 'multi_university_admin'
+}
+
 function AIPageOrRedirect() {
   const { role } = useAuth()
   if (isAdminPanelRole(role)) return <Navigate to="/admin/ai" replace />
@@ -147,7 +151,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
       ? '/student/dashboard'
       : role === 'university'
         ? '/university/dashboard'
-        : role === 'university_multi_manager'
+        : isMultiUniversityRole(role)
           ? '/university-multi-manager'
           : role === 'school_counsellor'
             ? '/school/dashboard'
@@ -166,7 +170,7 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   else if (role === 'university') {
     if (!user?.universityProfile) redirect = '/university/select'
     else redirect = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
-  } else if (role === 'university_multi_manager') {
+  } else if (isMultiUniversityRole(role)) {
     redirect = '/university-multi-manager'
   } else if (isAdminPanelRole(role)) redirect = '/admin'
   else if (role === 'school_counsellor') redirect = '/school/dashboard'
@@ -183,7 +187,7 @@ function LandingOrRedirect() {
   else if (role === 'university') {
     if (!user?.universityProfile) to = '/university/select'
     else to = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
-  } else if (role === 'university_multi_manager') {
+  } else if (isMultiUniversityRole(role)) {
     to = '/university-multi-manager'
   } else if (isAdminPanelRole(role)) to = '/admin'
   else if (role === 'school_counsellor') to = '/school/dashboard'
@@ -242,7 +246,7 @@ export function Router() {
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
-        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
+        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
         <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
         <Route path="/auth/yandex/callback" element={<YandexCallback />} />
         <Route path="/auth/google/mobile" element={<GoogleMobileCallback />} />
@@ -256,17 +260,17 @@ export function Router() {
         <Route path="cookies" element={<Cookies />} />
         <Route path="how-edmission-works" element={<HowEdmissionWorks />} />
         <Route path="help/tutorials" element={<HowEdmissionWorks />} />
-        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
-        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
+        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
+        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
         <Route
           path="search"
           element={
-            <ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
+            <ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
               <SearchPage />
             </ProtectedRoute>
           }
         />
-        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
+        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />
         <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentCancel /></ProtectedRoute>} />
@@ -295,13 +299,13 @@ export function Router() {
         <Route
           path="university-multi-manager"
           element={(
-            <ProtectedRoute allowedRoles={['university_multi_manager']}>
+            <ProtectedRoute allowedRoles={['university_multi_manager', 'multi_university_admin']}>
               <UniversityMultiManagerHome />
             </ProtectedRoute>
           )}
         />
 
-        <Route path="university" element={<ProtectedRoute allowedRoles={['university', 'university_multi_manager']}><UniversityLayout /></ProtectedRoute>}>
+        <Route path="university" element={<ProtectedRoute allowedRoles={['university', 'university_multi_manager', 'multi_university_admin']}><UniversityLayout /></ProtectedRoute>}>
           <Route path="select" element={<UniversitySelect />} />
           <Route path="pending" element={<UniversityPendingVerification />} />
           <Route path="onboarding" element={<UniversityOnboarding />} />

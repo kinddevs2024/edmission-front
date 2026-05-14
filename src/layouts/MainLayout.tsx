@@ -57,10 +57,10 @@ export function MainLayout() {
       )
       return { navItems: built.sidebarItems, navBottomItems: built.sidebarBottomItems }
     }
-    if (role === 'university_multi_manager') {
+    if (role === 'university_multi_manager' || role === 'multi_university_admin') {
       return {
         navItems: [
-          { to: '/university-multi-manager', label: t('university:multiManagerTitle', 'Your universities'), icon: 'Building2' },
+          { to: '/university-multi-manager', label: role === 'multi_university_admin' ? t('university:multiUniversityAdminTitle', 'All universities') : t('university:multiManagerTitle', 'Your universities'), icon: 'Building2' },
           { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
           { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
         ],
@@ -182,9 +182,9 @@ export function MainLayout() {
         { showMySchools }
       ).bottomNavItems
     }
-    if (role === 'university_multi_manager') {
+    if (role === 'university_multi_manager' || role === 'multi_university_admin') {
       return [
-        { to: '/university-multi-manager', label: t('university:multiManagerTitle', 'Universities'), icon: 'Building2' },
+        { to: '/university-multi-manager', label: role === 'multi_university_admin' ? t('university:multiUniversityAdminTitle', 'Universities') : t('university:multiManagerTitle', 'Universities'), icon: 'Building2' },
         { to: '/profile', label: t('university:navProfile', 'Profile'), icon: 'Settings' },
         { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
       ]

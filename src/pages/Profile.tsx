@@ -111,7 +111,7 @@ export function Profile() {
   }, [user?.name, user?.phone, user?.socialLinks?.telegram, user?.socialLinks?.instagram, user?.socialLinks?.linkedin, user?.socialLinks?.facebook, user?.socialLinks?.whatsapp])
 
   useEffect(() => {
-    if (user?.role !== 'university_multi_manager') {
+    if (user?.role !== 'university_multi_manager' && user?.role !== 'multi_university_admin') {
       setMultiManagerOfferUniversityId('')
       return
     }
@@ -508,13 +508,13 @@ export function Profile() {
         </div>
       </Card>
 
-      {user?.role === 'university_multi_manager' ? (
+      {(user?.role === 'university_multi_manager' || user?.role === 'multi_university_admin') ? (
         <Card>
           <CardTitle>{t('university:sendOfferAsManagedUniversity', 'Send offer as a university')}</CardTitle>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             {t('university:multiManagerOfferHint', 'Choose one of your assigned universities, then choose any student and send an offer.')}
           </p>
-          {user.universityMultiManagerApproved !== true ? (
+          {user.role !== 'multi_university_admin' && user.universityMultiManagerApproved !== true ? (
             <p className="mt-3 rounded-input border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
               {t('university:multiManagerPendingApproval', 'Your access is not approved yet. An administrator must confirm your assignment before you can open a university.')}
             </p>
@@ -534,7 +534,7 @@ export function Profile() {
             />
             <Button
               type="button"
-              disabled={user.universityMultiManagerApproved !== true || !multiManagerOfferUniversityId}
+              disabled={(user.role !== 'multi_university_admin' && user.universityMultiManagerApproved !== true) || !multiManagerOfferUniversityId}
               onClick={() => {
                 setActAsUniversityUserId(multiManagerOfferUniversityId)
                 setMultiManagerOfferOpen(true)

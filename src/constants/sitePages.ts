@@ -43,7 +43,7 @@ export const SITE_PAGES: SitePageItem[] = [
 
 function canAccess(path: string, role: string): boolean {
   if (path.startsWith('/student/') && role !== 'student') return false
-  if (path.startsWith('/university/') && role !== 'university') return false
+  if (path.startsWith('/university/') && role !== 'university' && role !== 'university_multi_manager' && role !== 'multi_university_admin') return false
   if (path.startsWith('/admin/') && role !== 'admin' && role !== 'manager' && role !== 'counsellor_coordinator') return false
   if (path.startsWith('/school/') && role !== 'school_counsellor') return false
   return true

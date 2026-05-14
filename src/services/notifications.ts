@@ -83,17 +83,17 @@ export function buildNotificationLink(
   const chatPath =
     role === 'student'
       ? '/student/chat'
-      : role === 'university' || role === 'university_multi_manager'
+      : role === 'university' || role === 'university_multi_manager' || role === 'multi_university_admin'
         ? '/university/chat'
         : '/student/chat'
   switch (type) {
     case 'message':
       return referenceId ? `${chatPath}?chatId=${referenceId}` : chatPath
     case 'offer':
-      if (role === 'university' || role === 'university_multi_manager') return '/university/documents'
+      if (role === 'university' || role === 'university_multi_manager' || role === 'multi_university_admin') return '/university/documents'
       return '/student/offers'
     case 'document':
-      if (role === 'university' || role === 'university_multi_manager') return referenceId ? `/university/documents?documentId=${referenceId}` : '/university/documents'
+      if (role === 'university' || role === 'university_multi_manager' || role === 'multi_university_admin') return referenceId ? `/university/documents?documentId=${referenceId}` : '/university/documents'
       return referenceId ? `/student/received-documents/${referenceId}` : '/student/offers'
     case 'document_viewed':
     case 'document_accepted':

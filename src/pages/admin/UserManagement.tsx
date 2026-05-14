@@ -74,6 +74,7 @@ export function UserManagement() {
     student: t('auth:student'),
     university: t('auth:university'),
     university_multi_manager: t('admin:universityMultiManagerRole', 'Multi-university manager'),
+    multi_university_admin: t('admin:multiUniversityAdminRole', 'Multi University Admin'),
     admin: t('common:admin'),
     manager: t('admin:managerRole', 'Manager'),
     counsellor_coordinator: t('admin:counsellorCoordinator', 'Counsellor coordinator'),
@@ -81,7 +82,7 @@ export function UserManagement() {
   }), [t])
 
   const assignableRoles = useMemo<Role[]>(() => {
-    if (isAdmin) return ['student', 'university', 'university_multi_manager', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+    if (isAdmin) return ['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
     if (isManager) return ['counsellor_coordinator', 'school_counsellor']
     if (isCoordinator) return ['school_counsellor']
     return []
@@ -102,7 +103,7 @@ export function UserManagement() {
   const ROLE_OPTIONS = useMemo(() => {
     const scoped =
       isAdmin
-        ? ['student', 'university', 'university_multi_manager', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+        ? ['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
         : isManager
           ? ['counsellor_coordinator', 'school_counsellor']
           : isCoordinator

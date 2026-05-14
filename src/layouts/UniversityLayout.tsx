@@ -19,7 +19,8 @@ export function UniversityLayout() {
   const { t } = useTranslation(['university', 'common'])
   const location = useLocation()
   const actingUniversityUserId = typeof sessionStorage !== 'undefined' ? getActAsUniversityUserId() : null
-  const isDelegatedSession = user?.role === 'university_multi_manager' && Boolean(actingUniversityUserId)
+  const isMultiUniversityRole = user?.role === 'university_multi_manager' || user?.role === 'multi_university_admin'
+  const isDelegatedSession = isMultiUniversityRole && Boolean(actingUniversityUserId)
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
   const isChatPage = location.pathname === '/university/chat'
@@ -108,7 +109,7 @@ export function UniversityLayout() {
     if (!user.universityProfile.verified) return <Navigate to="/university/pending" replace />
   }
 
-  if (user?.role === 'university_multi_manager' && !isSelect && !isPending && !actingUniversityUserId) {
+  if (isMultiUniversityRole && !isSelect && !isPending && !actingUniversityUserId) {
     return <Navigate to="/university-multi-manager" replace />
   }
 

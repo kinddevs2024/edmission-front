@@ -44,14 +44,14 @@ export function ChatView() {
   const [searchParams, setSearchParams] = useSearchParams()
   const authUser = useAuthStore((s) => s.user)
   const currentUserId =
-    authUser?.role === 'university_multi_manager'
+    authUser?.role === 'university_multi_manager' || authUser?.role === 'multi_university_admin'
       ? (getActAsUniversityUserId() ?? '')
       : (authUser?.id ?? '')
   const role = ((): 'student' | 'university' | 'counsellor' | undefined => {
     const r = authUser?.role
     if (r === 'student') return 'student'
     if (r === 'university') return 'university'
-    if (r === 'university_multi_manager' && getActAsUniversityUserId()) return 'university'
+    if ((r === 'university_multi_manager' || r === 'multi_university_admin') && getActAsUniversityUserId()) return 'university'
     if (r === 'school_counsellor') return 'counsellor'
     return undefined
   })()

@@ -16,6 +16,7 @@ export function UniversityMultiManagerHome() {
   const { user, setUser } = useAuth()
   const [me, setMe] = useState<User | null>(user)
   const [loading, setLoading] = useState(true)
+  const isMultiUniversityAdmin = me?.role === 'multi_university_admin'
 
   useEffect(() => {
     setLoading(true)
@@ -31,7 +32,7 @@ export function UniversityMultiManagerHome() {
   }, [setUser])
 
   const list = me?.managedUniversities ?? []
-  const approved = me?.universityMultiManagerApproved === true
+  const approved = isMultiUniversityAdmin || me?.universityMultiManagerApproved === true
 
   const enterAs = (universityUserId: string) => {
     setActAsUniversityUserId(universityUserId)
@@ -40,12 +41,17 @@ export function UniversityMultiManagerHome() {
 
   return (
     <div className="mx-auto max-w-content w-full space-y-6 px-2 py-6 sm:px-4">
-      <PageTitle title={t('university:multiManagerTitle', 'Your universities')} icon="Building2" />
+      <PageTitle title={isMultiUniversityAdmin ? t('university:multiUniversityAdminTitle', 'All universities') : t('university:multiManagerTitle', 'Your universities')} icon="Building2" />
       <p className="text-sm text-[var(--color-text-muted)]">
-        {t(
-          'university:multiManagerIntro',
-          'Choose a university to work in its dashboard. Your session uses that account until you leave the university area or clear the choice from your hub.'
-        )}
+        {isMultiUniversityAdmin
+          ? t(
+              'university:multiUniversityAdminIntro',
+              'Choose any university to work in its dashboard. Universities without a real account are opened through a technical delegated context.'
+            )
+          : t(
+              'university:multiManagerIntro',
+              'Choose a university to work in its dashboard. Your session uses that account until you leave the university area or clear the choice from your hub.'
+            )}
       </p>
 
       {!approved ? (
@@ -61,7 +67,9 @@ export function UniversityMultiManagerHome() {
         <p className="text-sm text-[var(--color-text-muted)]">{t('common:loading', 'Loading...')}</p>
       ) : list.length === 0 ? (
         <Card className="border border-dashed border-[var(--color-border)] p-6 text-sm text-[var(--color-text-muted)]">
-          {t('university:multiManagerNoUniversities', 'No universities are assigned to your account yet. Ask an administrator to link university accounts.')}
+          {isMultiUniversityAdmin
+            ? t('university:multiUniversityAdminNoUniversities', 'No universities are available yet.')
+            : t('university:multiManagerNoUniversities', 'No universities are assigned to your account yet. Ask an administrator to link university accounts.')}
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
