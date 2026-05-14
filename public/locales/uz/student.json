@@ -127,6 +127,7 @@
   "quickUniversityFilters": "Tez qidirish uchun qisqa filtrlar",
   "interestUsage": "Ishlatilgan qiziqishlar: {{current}}",
   "interestLimitReachedInline": "(limit tugadi, yana qo'shish uchun tarifni oshiring)",
+  "interestTrialExpiredInline": "(trial muddati tugadi, yana qo'shish uchun tarifni oshiring)",
   "activeFilters": "faol",
   "mapResults": "xaritada",
   "withScholarships": "stipendiya bilan",

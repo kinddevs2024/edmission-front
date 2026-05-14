@@ -25,7 +25,7 @@ export function CounsellorStudentInterests() {
   const [city, setCity] = useState<string>('')
   const [scholarshipFilter, setScholarshipFilter] = useState<'all' | 'with' | 'without'>('all')
   const [page, setPage] = useState(1)
-  const [useProfileFilters, setUseProfileFilters] = useState(true)
+  const [useProfileFilters, setUseProfileFilters] = useState(false)
 
   const { data: studentsRes, isLoading: studentsLoading } = useQuery({
     queryKey: ['counsellor', 'students', 'for-interests'],
@@ -80,7 +80,7 @@ export function CounsellorStudentInterests() {
 
   const handleFilterChange = () => {
     setPage(1)
-    setUseProfileFilters(true)
+    setUseProfileFilters(false)
   }
 
   const handleShowUniversities = () => {
@@ -89,7 +89,7 @@ export function CounsellorStudentInterests() {
     setCity('')
     setScholarshipFilter('all')
     setPage(1)
-    setUseProfileFilters(true)
+    setUseProfileFilters(false)
   }
 
   const isRu = i18n.resolvedLanguage?.startsWith('ru')

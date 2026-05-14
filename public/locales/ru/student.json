@@ -127,6 +127,7 @@
   "quickUniversityFilters": "Быстрые фильтры для поиска",
   "interestUsage": "Использовано интересов: {{current}}",
   "interestLimitReachedInline": "(лимит достигнут, обновите тариф, чтобы добавить ещё)",
+  "interestTrialExpiredInline": "(trial истёк, обновите тариф, чтобы добавить ещё)",
   "activeFilters": "активно",
   "mapResults": "на карте",
   "withScholarships": "со стипендиями",

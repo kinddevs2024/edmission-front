@@ -129,6 +129,7 @@
     "quickUniversityFilters": "Quick filters for fast discovery",
     "interestUsage": "Interests used: {{current}}",
     "interestLimitReachedInline": "(limit reached, upgrade to add more)",
+    "interestTrialExpiredInline": "(trial expired, upgrade to add more)",
     "activeFilters": "active",
     "mapResults": "on map",
     "withScholarships": "with scholarships",

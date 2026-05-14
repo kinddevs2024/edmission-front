@@ -302,6 +302,13 @@ export function ExploreUniversities() {
   const showClear = filterCount > 0 || !filters.useProfileFilters
   const canShowInterest = interestLimitReady && limitInfo.allowed
   const interestLabel = limitInfo.limit != null ? `${limitInfo.current}/${limitInfo.limit}` : `${limitInfo.current}`
+  const interestBlockedText = interestLimitReady && !canShowInterest
+    ? limitInfo.trialExpired
+      ? t('student:interestTrialExpiredInline', '(trial expired, upgrade to add more)')
+      : limitInfo.limit != null && limitInfo.current >= limitInfo.limit
+        ? t('student:interestLimitReachedInline', '(limit reached, upgrade to add more)')
+        : null
+    : null
 
   const syncQuickFilters = (patch: Partial<UniversityFilters>) => {
     setFilters((current) => ({ ...current, ...patch }))
@@ -366,8 +373,8 @@ export function ExploreUniversities() {
             {limitInfo.limit != null ? (
               <p className="max-w-[min(100%,22rem)] text-right text-xs text-[var(--color-text-muted)] sm:text-sm">
                 {t('student:interestUsage', { current: interestLabel, defaultValue: 'Interests used: {{current}}' })}
-                {!canShowInterest && limitInfo.limit != null && interestedIds.size >= limitInfo.limit
-                  ? ` ${t('student:interestLimitReachedInline', '(limit reached, upgrade to add more)')}`
+                {interestBlockedText
+                  ? ` ${interestBlockedText}`
                   : null}
               </p>
             ) : null}
