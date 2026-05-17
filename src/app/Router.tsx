@@ -161,6 +161,10 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   return <>{children}</>
 }
 
+function AdminOnly({ children }: { children: React.ReactNode }) {
+  return <ProtectedRoute allowedRoles={['admin']}>{children}</ProtectedRoute>
+}
+
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, user } = useAuth()
   if (!isAuthenticated) return <>{children}</>
@@ -271,11 +275,11 @@ export function Router() {
           }
         />
         <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
-        <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentPage /></ProtectedRoute>} />
-        <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentSuccess /></ProtectedRoute>} />
-        <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university']}><PaymentCancel /></ProtectedRoute>} />
-        <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
-        <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
+        <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentPage /></ProtectedRoute>} />
+        <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentSuccess /></ProtectedRoute>} />
+        <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentCancel /></ProtectedRoute>} />
+        <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
+        <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
 
         <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<StudentDashboard />} />
@@ -331,32 +335,32 @@ export function Router() {
         <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'counsellor_coordinator']}><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="analytics" element={<AdminOnly><AdminAnalytics /></AdminOnly>} />
           <Route path="users" element={<UserManagement />} />
-          <Route path="users/:userId/student-profile" element={<AdminStudentProfile />} />
-          <Route path="users/:userId/university-profile" element={<AdminUniversityProfile />} />
+          <Route path="users/:userId/student-profile" element={<AdminOnly><AdminStudentProfile /></AdminOnly>} />
+          <Route path="users/:userId/university-profile" element={<AdminOnly><AdminUniversityProfile /></AdminOnly>} />
           <Route path="users/:userId/counsellor-profile" element={<AdminCounsellorProfile />} />
-          <Route path="users/:userId/university-documents" element={<AdminUniversityDocumentsLayout />}>
+          <Route path="users/:userId/university-documents" element={<AdminOnly><AdminUniversityDocumentsLayout /></AdminOnly>}>
             <Route index element={<UniversityDocuments />} />
             <Route path="templates/new" element={<DocumentTemplateEditorPage />} />
             <Route path="templates/:id/edit" element={<DocumentTemplateEditorPage />} />
           </Route>
-          <Route path="verification" element={<Verification />} />
-          <Route path="universities" element={<AdminUniversities />} />
-          <Route path="faculties" element={<AdminFaculties />} />
-          <Route path="university-requests" element={<AdminUniversityRequests />} />
-          <Route path="investors" element={<AdminInvestors />} />
-          <Route path="landing-certificates" element={<AdminLandingCertificates />} />
-          <Route path="documents" element={<AdminDocuments />} />
-          <Route path="offers" element={<AdminOffers />} />
+          <Route path="verification" element={<AdminOnly><Verification /></AdminOnly>} />
+          <Route path="universities" element={<AdminOnly><AdminUniversities /></AdminOnly>} />
+          <Route path="faculties" element={<AdminOnly><AdminFaculties /></AdminOnly>} />
+          <Route path="university-requests" element={<AdminOnly><AdminUniversityRequests /></AdminOnly>} />
+          <Route path="investors" element={<AdminOnly><AdminInvestors /></AdminOnly>} />
+          <Route path="landing-certificates" element={<AdminOnly><AdminLandingCertificates /></AdminOnly>} />
+          <Route path="documents" element={<AdminOnly><AdminDocuments /></AdminOnly>} />
+          <Route path="offers" element={<AdminOnly><AdminOffers /></AdminOnly>} />
           <Route path="interests" element={<AdminInterests />} />
-          <Route path="chats" element={<AdminChats />} />
-          <Route path="scholarships" element={<AdminScholarships />} />
-          <Route path="support" element={<AdminSupport />} />
-          <Route path="support/:id" element={<AdminSupport />} />
-          <Route path="logs" element={<AdminLogs />} />
-          <Route path="health" element={<SystemHealth />} />
-          <Route path="settings" element={<AdminSettings />} />
+          <Route path="chats" element={<AdminOnly><AdminChats /></AdminOnly>} />
+          <Route path="scholarships" element={<AdminOnly><AdminScholarships /></AdminOnly>} />
+          <Route path="support" element={<AdminOnly><AdminSupport /></AdminOnly>} />
+          <Route path="support/:id" element={<AdminOnly><AdminSupport /></AdminOnly>} />
+          <Route path="logs" element={<AdminOnly><AdminLogs /></AdminOnly>} />
+          <Route path="health" element={<AdminOnly><SystemHealth /></AdminOnly>} />
+          <Route path="settings" element={<AdminOnly><AdminSettings /></AdminOnly>} />
           <Route path="ai" element={<AIChatPage />} />
         </Route>
 

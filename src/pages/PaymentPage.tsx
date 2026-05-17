@@ -10,6 +10,8 @@ import { PageTitle } from '@/components/ui/PageTitle'
 import { getNavIcon } from '@/components/icons/NavIcons'
 import { cn } from '@/utils/cn'
 import { formatDate } from '@/utils/format'
+import { isUniversityLikeRole } from '@/types/user'
+import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
 const STUDENT_PLANS = [
   { id: 'student_free_trial', name: 'Free Trial', apps: '3 applications', period: '14 days', chat: 'DeepSeek', highlight: false },
   { id: 'student_standard', name: 'Standard', apps: '15 applications', period: '—', chat: 'DeepSeek v16', highlight: true },
@@ -24,14 +26,16 @@ const UNIVERSITY_PLANS = [
 const getOrigin = () => typeof window !== 'undefined' ? window.location.origin : ''
 
 export function PaymentPage() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'university'])
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
   const [error, setError] = useState('')
-  const sub = user?.subscription
+  const isMultiUniversityRole = user?.role === 'university_multi_manager' || user?.role === 'multi_university_admin'
+  const actAsUniversityUserId = isMultiUniversityRole ? getActAsUniversityUserId() : null
+  const sub = isMultiUniversityRole ? undefined : user?.subscription
   const isStudent = user?.role === 'student'
-  const isUniversity = user?.role === 'university'
+  const isUniversity = isUniversityLikeRole(user?.role)
 
   useEffect(() => {
     if (user && !user.subscription) {
@@ -59,12 +63,29 @@ export function PaymentPage() {
     }
   }
 
-  if (!user || (user.role !== 'student' && user.role !== 'university')) {
+  if (!user || (user.role !== 'student' && !isUniversityLikeRole(user.role))) {
     return (
       <div className="w-full max-w-5xl mx-auto pb-page-bottom-cta">
         <PageTitle title={t('subscription')} icon="CreditCard" />
         <Card>
           <p className="text-[var(--color-text-muted)]">{t('subscriptionPlansHint')}</p>
+        </Card>
+      </div>
+    )
+  }
+
+  if (isMultiUniversityRole && !actAsUniversityUserId) {
+    return (
+      <div className="w-full max-w-5xl mx-auto space-y-4 pb-page-bottom-cta">
+        <PageTitle title={t('subscriptionAndPayment')} icon="CreditCard" />
+        <Card>
+          <CardTitle>{t('university:selectUniversity', 'Select university')}</CardTitle>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+            {t('university:selectUniversityBeforePayment', 'Choose a university before opening payment and subscription settings.')}
+          </p>
+          <Button to="/university-multi-manager" className="mt-4">
+            {t('university:multiManagerOpenHub', 'Open universities')}
+          </Button>
         </Card>
       </div>
     )

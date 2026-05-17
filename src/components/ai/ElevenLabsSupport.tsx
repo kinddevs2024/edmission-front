@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Bot, Languages, Loader2, Maximize2, MessageCircle, Mic, MicOff, Minimize2, Phone, PhoneOff, Send, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
+import { isUniversityLikeRole } from '@/types/user'
 
 type SupportAgentLanguage = 'en' | 'ru' | 'uz'
 
@@ -387,7 +388,7 @@ export function ElevenLabsFloatingSupport() {
   const aiPath =
     role === 'admin' || role === 'manager' || role === 'counsellor_coordinator'
       ? '/admin/ai'
-      : role === 'university'
+      : isUniversityLikeRole(role)
         ? '/university/ai'
         : '/ai'
 

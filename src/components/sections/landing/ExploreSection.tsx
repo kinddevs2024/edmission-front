@@ -26,10 +26,10 @@ function uniqueById(items: UniversityListItem[]): UniversityListItem[] {
 }
 
 export function ExploreSection() {
-  const { t } = useTranslation('landing')
+  const { t } = useTranslation(['landing', 'student', 'common'])
   const navigate = useNavigate()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['public', 'landing-explore-preview', PREVIEW_LIMIT],
     queryFn: () => getPublicUniversities({ page: 1, limit: PREVIEW_LIMIT }),
     staleTime: 60_000,
@@ -67,6 +67,16 @@ export function ExploreSection() {
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
+          </div>
+        ) : isError ? (
+          <div className="mt-8">
+            <EmptyState
+              icon={<Building2 className="h-10 w-10 text-[var(--color-text-muted)]" />}
+              title={t('exploreLoadErrorTitle', 'Could not load universities')}
+              description={t('exploreLoadErrorDescription', 'Refresh the page or try again later.')}
+              actionLabel={t('common:refresh', 'Refresh')}
+              onAction={() => window.location.reload()}
+            />
           </div>
         ) : universities.length === 0 ? (
           <div className="mt-8">

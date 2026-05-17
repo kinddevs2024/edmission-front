@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { search, type SearchResult } from '@/services/search'
 import { searchSitePages } from '@/constants/sitePages'
+import { isUniversityLikeRole, type Role } from '@/types/user'
 
 const DEBOUNCE_MS = 300
 
@@ -11,7 +12,7 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
   const { afterNavigate } = options ?? {}
   const { t } = useTranslation(['common', 'student', 'university', 'admin'])
   const { user } = useAuth()
-  const role = (user as { role?: string })?.role ?? 'student'
+  const role = ((user as { role?: string })?.role ?? 'student') as Role
   const navigate = useNavigate()
   const [value, setValue] = useState('')
   const [debounced, setDebounced] = useState('')
@@ -83,7 +84,7 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
       afterNavigate?.()
       setValue('')
       setResult(null)
-      if (role === 'university' || role === 'university_multi_manager' || role === 'multi_university_admin') navigate(`/university/students/${id}/profile`)
+      if (isUniversityLikeRole(role)) navigate(`/university/students/${id}`)
       else if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') navigate(`/admin/users`)
       else if (role === 'school_counsellor') navigate(`/school/students/${id}/profile`)
     },

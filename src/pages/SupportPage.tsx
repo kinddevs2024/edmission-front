@@ -5,6 +5,8 @@ import { Card, CardTitle } from '@/components/ui/Card'
 import { Textarea } from '@/components/ui/Textarea'
 import { Button } from '@/components/ui/Button'
 import { PageTitle } from '@/components/ui/PageTitle'
+import { useAuth } from '@/hooks/useAuth'
+import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
 import { createTicket, getMyTickets, getTicket, addTicketReply } from '@/services/tickets'
 import type { Ticket } from '@/services/tickets'
 import { getApiError } from '@/services/api'
@@ -19,8 +21,9 @@ const STATUS_KEYS: Record<string, string> = {
 }
 
 export function SupportPage() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'university'])
   const statusLabel = (status: string) => t(STATUS_KEYS[status] ?? status)
+  const { user } = useAuth()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -31,15 +34,22 @@ export function SupportPage() {
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [replyText, setReplyText] = useState('')
+  const isMultiUniversityRole = user?.role === 'university_multi_manager' || user?.role === 'multi_university_admin'
+  const needsUniversitySelection = isMultiUniversityRole && !getActAsUniversityUserId()
 
   useEffect(() => {
+    if (needsUniversitySelection) {
+      setLoading(false)
+      return
+    }
     getMyTickets({ limit: 50 })
       .then((res) => setTickets(res.data ?? []))
       .catch((e) => { toastApiError(e); setTickets([]) })
       .finally(() => setLoading(false))
-  }, [])
+  }, [needsUniversitySelection])
 
   useEffect(() => {
+    if (needsUniversitySelection) return
     if (id) {
       setLoading(true)
       getTicket(id)
@@ -49,7 +59,7 @@ export function SupportPage() {
     } else {
       setTicket(null)
     }
-  }, [id])
+  }, [id, needsUniversitySelection])
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,6 +91,23 @@ export function SupportPage() {
       })
       .catch((err) => setError(getApiError(err).message))
       .finally(() => setSubmitting(false))
+  }
+
+  if (needsUniversitySelection) {
+    return (
+      <div className="w-full max-w-5xl mx-auto space-y-4">
+        <PageTitle title={t('common:support', 'Support')} icon="HelpCircle" />
+        <Card>
+          <CardTitle>{t('university:selectUniversity', 'Select university')}</CardTitle>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+            {t('university:selectUniversityBeforeSupport', 'Choose a university before opening support tickets for a university account.')}
+          </p>
+          <Button to="/university-multi-manager" className="mt-4">
+            {t('university:multiManagerOpenHub', 'Open universities')}
+          </Button>
+        </Card>
+      </div>
+    )
   }
 
   if (id && ticket) {

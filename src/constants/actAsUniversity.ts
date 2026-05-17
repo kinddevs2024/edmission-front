@@ -1,4 +1,4 @@
-/** sessionStorage: delegated university account User id for `university_multi_manager`. */
+/** sessionStorage: delegated university account User id or catalog id for multi-university roles. */
 export const ACT_AS_UNIVERSITY_USER_ID_KEY = 'edmission_act_as_university_user_id'
 
 export function getActAsUniversityUserId(): string | null {

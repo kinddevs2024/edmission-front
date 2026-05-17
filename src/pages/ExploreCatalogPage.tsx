@@ -37,6 +37,7 @@ export function ExploreCatalogPage() {
     fetchNextPage,
     hasNextPage,
     isLoading,
+    isError,
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ['public', 'explore-catalog', PAGE_SIZE],
@@ -77,12 +78,14 @@ export function ExploreCatalogPage() {
             'Open the full university catalog with no profile filters.'
           )}
         </p>
-        <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-          {t('student:universitiesFound', {
-            count: total,
-            defaultValue: '{{count}} universities found',
-          })}
-        </p>
+        {!isLoading && !isError ? (
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+            {t('student:universitiesFound', {
+              count: total,
+              defaultValue: '{{count}} universities found',
+            })}
+          </p>
+        ) : null}
 
         {isLoading ? (
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -92,6 +95,19 @@ export function ExploreCatalogPage() {
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
+          </div>
+        ) : isError ? (
+          <div className="mt-8">
+            <EmptyState
+              icon={<Building2 className="h-10 w-10 text-[var(--color-text-muted)]" />}
+              title={t('landing:exploreLoadErrorTitle', 'Could not load universities')}
+              description={t(
+                'landing:exploreLoadErrorDescription',
+                'Refresh the page or try again later.'
+              )}
+              actionLabel={t('common:refresh', 'Refresh')}
+              onAction={() => window.location.reload()}
+            />
           </div>
         ) : universities.length === 0 ? (
           <div className="mt-8">

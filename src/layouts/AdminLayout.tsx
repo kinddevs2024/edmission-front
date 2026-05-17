@@ -51,22 +51,31 @@ export function AdminLayout() {
     [isFullAdmin, t]
   )
   const navBottomItems = useMemo(
-    () => [
-      { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
-      ...(isFullAdmin ? [{ to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const }] : []),
-    ],
+    () => isFullAdmin
+      ? [
+          { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
+          { to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const },
+        ]
+      : [],
     [isFullAdmin, t]
   )
 
   // Mobile bottom bar: no AI, no Support
   const bottomNavItems = useMemo(
-    () => [
-      { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
-      ...(isFullAdmin ? [{ to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const }] : [{ to: '/admin/interests', label: t('interests'), icon: 'Heart' as const }]),
-      { to: '/admin/users', label: t('users'), icon: 'Users' as const },
-      { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
-      { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
-    ],
+    () => isFullAdmin
+      ? [
+          { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+          { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
+          { to: '/admin/users', label: t('users'), icon: 'Users' as const },
+          { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
+          { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
+        ]
+      : [
+          { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
+          { to: '/admin/users', label: t('users'), icon: 'Users' as const },
+          { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
+          { to: '/admin/ai', label: t('common:edmissionAi', 'AI'), icon: 'Bot' as const },
+        ],
     [isFullAdmin, t]
   )
 

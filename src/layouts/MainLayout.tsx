@@ -140,10 +140,14 @@ export function MainLayout() {
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
               { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
               { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
-            ],
+        ],
         navBottomItems: [
-          { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
-          ...(isFullAdmin ? [{ to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' as const }] : []),
+          ...(isFullAdmin
+            ? [
+                { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' as const },
+                { to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' as const },
+              ]
+            : []),
         ],
       }
     }
@@ -199,13 +203,20 @@ export function MainLayout() {
     }
     if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') {
       const isFullAdmin = role === 'admin'
-      return [
-        { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
-        { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
-        ...(isFullAdmin ? [{ to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' as const }] : [{ to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' as const }]),
-        { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
-        { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
-      ]
+      return isFullAdmin
+        ? [
+            { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+            { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
+            { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' as const },
+            { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
+            { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
+          ]
+        : [
+            { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
+            { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
+            { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' as const },
+            { to: '/admin/ai', label: t('common:edmissionAi', 'AI'), icon: 'Bot' as const },
+          ]
     }
     if (role === 'school_counsellor') {
       return [
