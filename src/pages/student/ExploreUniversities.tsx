@@ -206,29 +206,6 @@ export function ExploreUniversities() {
     staleTime: 30 * 1000,
   })
 
-  const canLoadFallbackUniversities = minimalProfileComplete && filters.useProfileFilters && hasNextPage === false && !isFetching
-  const fallbackFilters = useMemo(() => ({ ...filters, useProfileFilters: false }), [filters])
-  const {
-    data: fallbackData,
-    fetchNextPage: fetchNextFallbackPage,
-    hasNextPage: hasNextFallbackPage,
-    isFetching: isFetchingFallback,
-    isFetchingNextPage: isFetchingNextFallbackPage,
-  } = useInfiniteQuery({
-    queryKey: ['student', 'universities', 'fallback', fallbackFilters],
-    queryFn: ({ pageParam }) => getUniversities(buildUniversitySearchParams(pageParam, UNIVERSITIES_PAGE_SIZE, fallbackFilters)),
-    initialPageParam: 1,
-    enabled: canLoadFallbackUniversities,
-    getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((sum, p) => sum + p.data.length, 0)
-      const serverTotal = lastPage.total
-      if (typeof serverTotal === 'number' && Number.isFinite(serverTotal) && loaded >= serverTotal) return undefined
-      if (lastPage.data.length < UNIVERSITIES_PAGE_SIZE) return undefined
-      return allPages.length + 1
-    },
-    staleTime: 30 * 1000,
-  })
-
   const list = useMemo(() => {
     const pages = data?.pages ?? []
     const seen = new Set<string>()
@@ -244,23 +221,7 @@ export function ExploreUniversities() {
     return out
   }, [data, interestedIds])
 
-  const fallbackList = useMemo(() => {
-    const pages = fallbackData?.pages ?? []
-    const seen = new Set(list.map((university) => university.id))
-    const out: UniversityListItem[] = []
-    for (const p of pages) {
-      for (const u of p.data) {
-        if (seen.has(u.id)) continue
-        if (interestedIds.has(u.id)) continue
-        seen.add(u.id)
-        out.push(u)
-      }
-    }
-    return out
-  }, [fallbackData, interestedIds, list])
-
   const total = typeof data?.pages?.[0]?.total === 'number' && Number.isFinite(data.pages[0].total) ? data.pages[0].total : list.length
-  const visibleTotal = fallbackData ? list.length + fallbackList.length : total
 
   const isInitialUniversitiesLoading = !data && isFetching
 
@@ -350,8 +311,7 @@ export function ExploreUniversities() {
   const draftTargetCountryLabels = draftFilters.targetStudentCountries.map(
     (code) => targetCountryOptions.find((item) => item.code === code)?.label ?? code
   )
-  const showFallbackDivider = filters.useProfileFilters && hasNextPage === false && (fallbackList.length > 0 || isFetchingFallback)
-  const hasAnyUniversities = list.length > 0 || fallbackList.length > 0
+  const hasAnyUniversities = list.length > 0
 
   return (
     <div className="space-y-5">
@@ -448,9 +408,9 @@ export function ExploreUniversities() {
       <div className="flex flex-wrap items-center gap-2">
         <Search size={16} className="text-[var(--color-text-muted)]" />
         <p className="text-[var(--color-text-muted)]">
-          {!hasAnyUniversities && !isInitialUniversitiesLoading && !isFetchingFallback
+          {!hasAnyUniversities && !isInitialUniversitiesLoading
             ? t('student:noUniversitiesFound', 'No universities found')
-            : t('student:universitiesFound', { count: visibleTotal, defaultValue: '{{count}} universities found' })}
+            : t('student:universitiesFound', { count: total, defaultValue: '{{count}} universities found' })}
         </p>
       </div>
       )}
@@ -699,7 +659,7 @@ export function ExploreUniversities() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
         </div>
-      ) : !hasAnyUniversities && !isFetchingFallback ? (
+      ) : !hasAnyUniversities ? (
         <Card>
           <EmptyState
             icon={<Building2 className="w-14 h-14 text-[var(--color-text-muted)] opacity-60" />}
@@ -725,34 +685,6 @@ export function ExploreUniversities() {
             </div>
           ) : null}
 
-          {showFallbackDivider ? (
-            <div className="my-6 flex items-center gap-3 text-sm text-[var(--color-text-muted)]">
-              <span className="h-px flex-1 bg-[var(--color-border)]" />
-              <span className="max-w-[min(100%,34rem)] text-center">
-                {t('student:lessSuitableUniversitiesDivider', 'These universities may not match your profile, but you can still explore them')}
-              </span>
-              <span className="h-px flex-1 bg-[var(--color-border)]" />
-            </div>
-          ) : null}
-
-          {fallbackList.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {fallbackList.map((university, index) => (
-                <div
-                  key={university.id}
-                  className="animate-card-enter opacity-0"
-                  style={{ animationDelay: `${Math.min(index, 9) * 0.05}s`, animationFillMode: 'forwards' }}
-                >
-                  <UniversityCard university={university} onInterest={handleInterest} interested={interestedIds.has(university.id)} interestDisabled={!canShowInterest} />
-                </div>
-              ))}
-            </div>
-          ) : isFetchingFallback ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <CardSkeleton /><CardSkeleton /><CardSkeleton />
-            </div>
-          ) : null}
-
           {hasNextPage ? (
             <div className="mt-8 flex justify-center">
               <Button
@@ -764,20 +696,6 @@ export function ExploreUniversities() {
               >
                 {isFetchingNextPage
                   ? t('common:loadingMoreUniversities', 'Loading…')
-                  : t('common:loadMoreUniversities', 'Show more')}
-              </Button>
-            </div>
-          ) : hasNextFallbackPage ? (
-            <div className="mt-8 flex justify-center">
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => fetchNextFallbackPage()}
-                disabled={isFetchingNextFallbackPage}
-                loading={isFetchingNextFallbackPage}
-              >
-                {isFetchingNextFallbackPage
-                  ? t('common:loadingMoreUniversities', 'LoadingвЂ¦')
                   : t('common:loadMoreUniversities', 'Show more')}
               </Button>
             </div>
