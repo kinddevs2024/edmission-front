@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { getLandingCertificates, type LandingCertificate } from '@/services/public'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
+import { STATIC_UNIVERSITY_CERTIFICATES } from './landingAssets'
 
 export function CertificationsSection() {
   const { t } = useTranslation('landing')
@@ -14,7 +15,7 @@ export function CertificationsSection() {
       .catch(() => {})
   }, [])
 
-  if (items.length === 0) return null
+  const visibleItems = items.length > 0 ? items : STATIC_UNIVERSITY_CERTIFICATES
 
   return (
     <section id="certifications" className="mx-auto max-w-7xl px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:px-8">
@@ -27,7 +28,7 @@ export function CertificationsSection() {
         />
       </Reveal>
       <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-3">
-        {items.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <Reveal key={item.id} delay={Math.min(index * 0.05, 0.4)}>
             <a
               href={item.imageUrl}

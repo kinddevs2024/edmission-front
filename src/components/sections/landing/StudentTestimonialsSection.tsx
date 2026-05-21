@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { getLandingCertificates, type LandingCertificate } from '@/services/public'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
+import { STATIC_STUDENT_TESTIMONIALS } from './landingAssets'
 
 export function StudentTestimonialsSection() {
   const { t } = useTranslation('landing')
@@ -14,16 +15,14 @@ export function StudentTestimonialsSection() {
       .catch(() => {})
   }, [])
 
+  const visibleItems = items.length > 0 ? items : STATIC_STUDENT_TESTIMONIALS
+
   return (
     <section
       id="student-testimonials"
-      className={
-        items.length === 0
-          ? 'scroll-mt-24 lg:scroll-mt-28'
-          : 'mx-auto max-w-7xl scroll-mt-24 px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:scroll-mt-28 lg:px-8'
-      }
+      className="mx-auto max-w-7xl scroll-mt-24 px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:scroll-mt-28 lg:px-8"
     >
-      {items.length > 0 ? (
+      {visibleItems.length > 0 ? (
         <>
           <Reveal>
             <SectionHeading
@@ -34,7 +33,7 @@ export function StudentTestimonialsSection() {
             />
           </Reveal>
           <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-3">
-            {items.map((item, index) => (
+            {visibleItems.map((item, index) => (
               <Reveal key={item.id} delay={Math.min(index * 0.05, 0.4)}>
                 <a
                   href={item.imageUrl}

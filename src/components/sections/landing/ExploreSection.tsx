@@ -11,8 +11,22 @@ import { getPublicUniversities } from '@/services/public'
 import type { UniversityListItem } from '@/types/university'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
+import { STATIC_TRUSTED_LOGOS } from './landingAssets'
 
 const PREVIEW_LIMIT = 6
+
+function getStaticExploreUniversities(): UniversityListItem[] {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  return STATIC_TRUSTED_LOGOS.slice(0, PREVIEW_LIMIT).map((logo) => ({
+    id: `static-${logo.id}`,
+    name: logo.name,
+    logo: logo.logoUrl.startsWith('/') ? `${origin}${logo.logoUrl}` : logo.logoUrl,
+    country: 'Partner university',
+    description: 'A partner institution available through the Edmission university network.',
+    hasScholarship: true,
+    scholarships: [{ coveragePercent: 50, name: 'Scholarship opportunities' }],
+  }))
+}
 
 function uniqueById(items: UniversityListItem[]): UniversityListItem[] {
   const seen = new Set<string>()
@@ -29,12 +43,16 @@ export function ExploreSection() {
   const { t } = useTranslation(['landing', 'student', 'common'])
   const navigate = useNavigate()
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['public', 'landing-explore-preview', PREVIEW_LIMIT],
     queryFn: () => getPublicUniversities({ page: 1, limit: PREVIEW_LIMIT }),
+    retry: false,
     staleTime: 60_000,
   })
-  const universities = useMemo(() => uniqueById(data?.data ?? []), [data?.data])
+  const universities = useMemo(() => {
+    const apiItems = uniqueById(data?.data ?? [])
+    return apiItems.length > 0 ? apiItems : getStaticExploreUniversities()
+  }, [data?.data])
 
   return (
     <section
@@ -59,7 +77,7 @@ export function ExploreSection() {
           />
         </Reveal>
 
-        {isLoading ? (
+        {isLoading && !data ? (
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <CardSkeleton />
             <CardSkeleton />
@@ -67,16 +85,6 @@ export function ExploreSection() {
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
-          </div>
-        ) : isError ? (
-          <div className="mt-8">
-            <EmptyState
-              icon={<Building2 className="h-10 w-10 text-[var(--color-text-muted)]" />}
-              title={t('exploreLoadErrorTitle', 'Could not load universities')}
-              description={t('exploreLoadErrorDescription', 'Refresh the page or try again later.')}
-              actionLabel={t('common:refresh', 'Refresh')}
-              onAction={() => window.location.reload()}
-            />
           </div>
         ) : universities.length === 0 ? (
           <div className="mt-8">

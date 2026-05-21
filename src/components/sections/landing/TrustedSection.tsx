@@ -6,6 +6,7 @@ import { getTrustedUniversityLogoPage } from '@/services/public'
 import { getImageUrl } from '@/services/upload'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
+import { STATIC_TRUSTED_LOGOS } from './landingAssets'
 
 const TRUSTED_LOGOS_PAGE_SIZE = 24
 
@@ -35,7 +36,7 @@ export function TrustedSection() {
   const logos = useMemo(() => {
     const pages = logosQuery.data?.pages ?? []
     const seen = new Set<string>()
-    return pages.flatMap((page) =>
+    const apiLogos = pages.flatMap((page) =>
       page.items.filter((logo) => {
         const key = `${logo.id}:${logo.logoUrl}`
         if (seen.has(key)) return false
@@ -43,6 +44,13 @@ export function TrustedSection() {
         return true
       })
     )
+    const staticLogos = STATIC_TRUSTED_LOGOS.filter((logo) => {
+      const key = `${logo.id}:${logo.logoUrl}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    return [...apiLogos, ...staticLogos]
   }, [logosQuery.data?.pages])
 
   const stats = [
@@ -83,7 +91,7 @@ export function TrustedSection() {
                 className="flex h-14 w-44 shrink-0 items-center justify-center px-2 sm:h-16 sm:w-48"
               >
                 <img
-                  src={getImageUrl(logo.logoUrl)}
+                  src={logo.logoUrl.startsWith('/') ? logo.logoUrl : getImageUrl(logo.logoUrl)}
                   alt={logo.name}
                   className="max-h-12 max-w-full object-contain object-center sm:max-h-14"
                   loading="lazy"
