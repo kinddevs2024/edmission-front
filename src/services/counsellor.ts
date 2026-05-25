@@ -229,6 +229,13 @@ export async function listStudentUniversities(
   return data ?? { data: [], total: 0, page: 1 }
 }
 
+export async function listAllStudentsUniversities(
+  params?: CounsellorStudentUniversitiesParams
+): Promise<PaginatedResponse<UniversityListItem>> {
+  const { data } = await api.get<PaginatedResponse<UniversityListItem>>(`/counsellor/students/all/universities`, { params })
+  return data ?? { data: [], total: 0, page: 1 }
+}
+
 /** Search existing students (not in my school) for invite. */
 export async function searchStudentsForInvite(params: { search: string; limit?: number }): Promise<{ data: Array<{ id: string; email: string; name: string }> }> {
   const { data } = await api.get('/counsellor/students/search-invite', { params })

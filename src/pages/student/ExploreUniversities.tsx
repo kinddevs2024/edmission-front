@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSessionStorage } from '@/hooks/useSessionStorage'
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -105,13 +106,13 @@ function parseSort(value: string | null): UniversitiesParams['sort'] {
 export function ExploreUniversities() {
   const { t, i18n } = useTranslation(['student', 'common', 'university'])
   const [searchParams, setSearchParams] = useSearchParams()
-  const [filters, setFilters] = useState<UniversityFilters>(() => ({
+  const [filters, setFilters] = useSessionStorage<UniversityFilters>('explore_universities_filters', () => ({
     ...createInitialFilters(true),
     search: searchParams.get('search') ?? '',
     country: searchParams.get('country') ?? '',
     sort: parseSort(searchParams.get('sort')),
   }))
-  const [draftFilters, setDraftFilters] = useState<UniversityFilters>(filters)
+  const [draftFilters, setDraftFilters] = useSessionStorage<UniversityFilters>('explore_universities_draft_filters', filters)
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const queryClient = useQueryClient()
 

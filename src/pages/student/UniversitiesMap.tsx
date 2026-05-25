@@ -329,7 +329,7 @@ export function UniversitiesMap() {
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['student', 'universities', 'map'],
-    queryFn: () => getUniversities({ page: 1, limit: MAP_PAGE_LIMIT, sort: 'name', useProfileFilters: false }),
+    queryFn: () => getUniversities({ page: 1, limit: MAP_PAGE_LIMIT, sort: 'name', useProfileFilters: true }),
     staleTime: 60 * 1000,
     enabled: minimalProfileComplete,
   })

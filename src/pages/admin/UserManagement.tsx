@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
 import { Table, TableHead, TableBody, TableRow, TableTh, TableTd, Pagination } from '@/components/ui/Table'
@@ -60,10 +60,11 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
     subtitle: [uni.city, uni.country].filter(Boolean).join(', ') || uni.id,
   }
 }
-
-export function UserManagement() {
+export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const querySearch = searchParams.get('search') || ''
   const { role } = useAuth()
   const isAdmin = role === 'admin'
   const isManager = role === 'manager'
@@ -151,8 +152,8 @@ export function UserManagement() {
   const [universityPickerLoading, setUniversityPickerLoading] = useState(false)
   const [universityPickerOptions, setUniversityPickerOptions] = useState<UniversityPickerOption[]>([])
   const [editManagerApproved, setEditManagerApproved] = useState(false)
-  const [searchInput, setSearchInput] = useState('')
-  const [appliedSearch, setAppliedSearch] = useState('')
+  const [searchInput, setSearchInput] = useState(querySearch)
+  const [appliedSearch, setAppliedSearch] = useState(querySearch)
   const [importingExcel, setImportingExcel] = useState(false)
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importPreview, setImportPreview] = useState<UsersImportPreviewResult | null>(null)
@@ -169,6 +170,11 @@ export function UserManagement() {
     if (assignableRoles.length === 0) return
     if (!assignableRoles.includes(createRole)) setCreateRole(assignableRoles[0])
   }, [assignableRoles, createRole])
+
+  useEffect(() => {
+    const q = searchParams.get('search') || ''
+    setSearchInput(q)
+  }, [searchParams])
 
   useEffect(() => {
     if (!editUserTarget || editUserRole !== 'university_multi_manager' || !isAdmin) return

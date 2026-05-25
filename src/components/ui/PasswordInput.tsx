@@ -1,6 +1,8 @@
-import { forwardRef, useRef, useState, type ChangeEvent, type FocusEvent, type InputHTMLAttributes, type MutableRefObject } from 'react'
+import { forwardRef, useRef, useState, type ChangeEvent, type InputHTMLAttributes, type MutableRefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff } from 'lucide-react'
+// @ts-ignore
+import ReactBetterPassword from 'react-better-password'
 import { cn } from '@/utils/cn'
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
@@ -46,36 +48,19 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
     const manuallyVisible = typeof passwordVisible === 'boolean' ? passwordVisible : internalVisible
     const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-')
 
-    const assignRef = (node: HTMLInputElement | null) => {
+    const assignRef = (instance: any) => {
+      const node = instance instanceof HTMLInputElement ? instance : (instance ? instance.input : null)
       inputRef.current = node
       if (typeof ref === 'function') ref(node)
       else if (ref) (ref as MutableRefObject<HTMLInputElement | null>).current = node
     }
 
-    const syncDomValue = () => {
-      const node = inputRef.current
-      if (!node) return
-      if (node.value !== value) onValueChange(node.value)
-    }
-
-    const scheduleAutofillSync = () => {
-      window.setTimeout(syncDomValue, 0)
-      window.setTimeout(syncDomValue, 100)
-      window.setTimeout(syncDomValue, 500)
-    }
-
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-      onValueChange(event.target.value)
-    }
-
-    const handleFocus = (event: FocusEvent<HTMLInputElement>) => {
-      scheduleAutofillSync()
-      onFocus?.(event)
-    }
-
-    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
-      syncDomValue()
-      onBlur?.(event)
+    const handleChange = (newValue: string | ChangeEvent<HTMLInputElement>) => {
+      if (typeof newValue === 'string') {
+        onValueChange(newValue)
+      } else {
+        onValueChange(newValue.target.value)
+      }
     }
 
     return (
@@ -86,11 +71,13 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           </label>
         ) : null}
         <div className="relative">
-          <input
+          <ReactBetterPassword
             ref={assignRef}
             id={inputId}
             name={name}
-            type={manuallyVisible ? 'text' : 'password'}
+            show={manuallyVisible}
+            timeout={1000}
+            mask="•"
             autoComplete={autoComplete}
             autoCapitalize="none"
             autoCorrect="off"
@@ -99,11 +86,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             value={value}
             placeholder={placeholder}
             onChange={handleChange}
-            onInput={syncDomValue}
-            onFocus={handleFocus}
-            onMouseDown={scheduleAutofillSync}
-            onKeyDown={scheduleAutofillSync}
-            onBlur={handleBlur}
+            onFocus={onFocus}
+            onBlur={onBlur}
             className={cn(
               'min-h-[44px] w-full rounded-input border bg-transparent px-3 py-2.5 pr-11 text-[var(--color-text)]',
               'placeholder:text-[var(--color-text-muted)]/60',

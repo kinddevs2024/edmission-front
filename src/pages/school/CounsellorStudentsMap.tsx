@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { listMyStudents, listStudentUniversities, type CounsellorStudent } from '@/services/counsellor'
+import { listMyStudents, listStudentUniversities, listAllStudentsUniversities, type CounsellorStudent } from '@/services/counsellor'
 import { getImageUrl } from '@/services/upload'
 import { useUIStore } from '@/store/uiStore'
 import type { UniversityListItem } from '@/types/university'
@@ -212,8 +212,8 @@ function studentUserId(student: CounsellorStudent) {
 export function CounsellorStudentsMap() {
   const { t, i18n } = useTranslation(['common', 'student', 'school', 'documents'])
   const theme = useUIStore((state) => state.theme)
-  const [draftStudentId, setDraftStudentId] = useState('')
-  const [selectedStudentId, setSelectedStudentId] = useState('')
+  const [draftStudentId, setDraftStudentId] = useState('all')
+  const [selectedStudentId, setSelectedStudentId] = useState('all')
   const [search, setSearch] = useState('')
   const [country, setCountry] = useState('')
   const [scholarshipFilter, setScholarshipFilter] = useState<'all' | 'with' | 'without'>('all')
@@ -239,12 +239,17 @@ export function CounsellorStudentsMap() {
 
   const { data: universitiesRes, isLoading: universitiesLoading, isFetching } = useQuery({
     queryKey: ['counsellor', 'student-universities-map', selectedStudentId, scholarshipFilter],
-    queryFn: () => listStudentUniversities(selectedStudentId, {
-      page: 1,
-      limit: MAP_PAGE_LIMIT,
-      hasScholarship: scholarshipFilter === 'with' ? true : undefined,
-      useProfileFilters: true,
-    }),
+    queryFn: () => {
+      const params = {
+        page: 1,
+        limit: MAP_PAGE_LIMIT,
+        hasScholarship: scholarshipFilter === 'with' ? true : undefined,
+        useProfileFilters: true,
+      }
+      return selectedStudentId === 'all'
+        ? listAllStudentsUniversities(params)
+        : listStudentUniversities(selectedStudentId, params)
+    },
     enabled: Boolean(selectedStudentId),
     staleTime: 30 * 1000,
   })
@@ -304,7 +309,7 @@ export function CounsellorStudentsMap() {
               value={draftStudentId}
               onChange={(event) => setDraftStudentId(event.target.value)}
               options={[
-                { value: '', label: t('school:selectStudent', 'Select a student') },
+                { value: 'all', label: t('school:allStudents', 'All students') },
                 ...studentOptions,
               ]}
               disabled={studentsLoading}
@@ -314,9 +319,11 @@ export function CounsellorStudentsMap() {
             </Button>
           </div>
         )}
-        {selectedStudent ? (
+        {selectedStudentId ? (
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="info">{studentLabel(selectedStudent)}</Badge>
+            <Badge variant="info">
+              {selectedStudent ? studentLabel(selectedStudent) : t('school:allStudents', 'All students')}
+            </Badge>
             <Badge>{filteredUniversities.length} {t('student:mapResults', 'on map')}</Badge>
             {isFetching && !universitiesLoading ? <Badge>{t('common:loading', 'Loading...')}</Badge> : null}
           </div>

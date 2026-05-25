@@ -16,6 +16,7 @@ import { getStudentAvatarUrl } from '@/services/upload'
 import { getStudents, type DiscoverStudentItem, type StudentSearchParams } from '@/services/university'
 import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDisplay'
 import { toastApiError } from '@/utils/toastError'
+import { useSessionStorage } from '@/hooks/useSessionStorage'
 import { Lock, Map, MessageCircle, Search, SlidersHorizontal, User } from 'lucide-react'
 
 const COUNTRY_OPTIONS = [
@@ -156,10 +157,10 @@ export function Discovery() {
   const [list, setList] = useState<DiscoverStudentItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useSessionStorage('discovery_page', 1)
   const [criteria, setCriteria] = useState<{ skills: string[]; interests: string[]; hobbies: string[] } | null>(null)
-  const [filters, setFilters] = useState<DiscoveryFilters>(() => createInitialFilters())
-  const [draftFilters, setDraftFilters] = useState<DiscoveryFilters>(() => createInitialFilters())
+  const [filters, setFilters] = useSessionStorage<DiscoveryFilters>('discovery_filters', () => createInitialFilters())
+  const [draftFilters, setDraftFilters] = useSessionStorage<DiscoveryFilters>('discovery_draft_filters', () => createInitialFilters())
   const [filterModalOpen, setFilterModalOpen] = useState(false)
   const limit = 20
 

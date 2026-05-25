@@ -16,6 +16,14 @@ export interface SearchStudentItem {
   city?: string
 }
 
+export interface SearchUserItem {
+  id: string
+  email: string
+  name?: string
+  role: string
+  phone?: string
+}
+
 export interface SearchChatMessageItem {
   id: string
   chatId: string
@@ -26,12 +34,13 @@ export interface SearchChatMessageItem {
 export interface SearchResult {
   universities: SearchUniversityItem[]
   students: SearchStudentItem[]
+  users?: SearchUserItem[]
   chatMessages?: SearchChatMessageItem[]
 }
 
 export async function search(q: string): Promise<SearchResult> {
   const trimmed = q?.trim()
-  if (!trimmed) return { universities: [], students: [] }
+  if (!trimmed) return { universities: [], students: [], users: [] }
   const { data } = await api.get<SearchResult>('/search', { params: { q: trimmed } })
-  return data ?? { universities: [], students: [], chatMessages: [] }
+  return data ?? { universities: [], students: [], users: [], chatMessages: [] }
 }

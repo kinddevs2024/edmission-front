@@ -31,6 +31,7 @@ export function SearchPage() {
     reset,
     handleSelectUniversity,
     handleSelectStudent,
+    handleSelectUser,
     handleSelectPage,
     handleSelectChatMessage,
     handleSearchWithAI,
@@ -137,6 +138,7 @@ export function SearchPage() {
           onSelectPage={handleSelectPage}
           onSelectUniversity={handleSelectUniversity}
           onSelectStudent={handleSelectStudent}
+          onSelectUser={handleSelectUser}
           onSelectChatMessage={handleSelectChatMessage}
           onSearchWithAI={handleSearchWithAI}
           variant="page"

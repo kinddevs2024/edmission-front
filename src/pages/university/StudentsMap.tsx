@@ -12,7 +12,7 @@ export function StudentsMap() {
     <StudentsMapView
       queryKey={['university', 'students', 'map']}
       queryFn={async () => {
-        const response = await getStudents({ page: 1, limit: MAP_PAGE_LIMIT, useProfileFilters: false })
+        const response = await getStudents({ page: 1, limit: MAP_PAGE_LIMIT, mapOnly: true })
         return (response.data ?? []).map<StudentMapItem>((item) => {
           const student = item.student ?? {}
           const name = getStudentDisplayName(student)

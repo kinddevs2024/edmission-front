@@ -29,6 +29,7 @@ export function GlobalSearch({ variant = 'default', onClose }: GlobalSearchProps
     reset,
     handleSelectUniversity,
     handleSelectStudent,
+    handleSelectUser,
     handleSelectPage,
     handleSelectChatMessage,
     handleSearchWithAI,
@@ -107,6 +108,7 @@ export function GlobalSearch({ variant = 'default', onClose }: GlobalSearchProps
             onSelectPage={handleSelectPage}
             onSelectUniversity={handleSelectUniversity}
             onSelectStudent={handleSelectStudent}
+            onSelectUser={handleSelectUser}
             onSelectChatMessage={handleSelectChatMessage}
             onSearchWithAI={handleSearchWithAI}
             variant="dropdown"

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useSessionStorage } from '@/hooks/useSessionStorage'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { PageTitle } from '@/components/ui/PageTitle'
@@ -19,13 +20,13 @@ export function CounsellorStudentInterests() {
   const { t, i18n } = useTranslation(['school', 'student', 'common'])
   const queryClient = useQueryClient()
 
-  const [draftStudentId, setDraftStudentId] = useState<string>('')
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('')
-  const [country, setCountry] = useState<string>('')
-  const [city, setCity] = useState<string>('')
-  const [scholarshipFilter, setScholarshipFilter] = useState<'all' | 'with' | 'without'>('all')
-  const [page, setPage] = useState(1)
-  const [useProfileFilters, setUseProfileFilters] = useState(false)
+  const [draftStudentId, setDraftStudentId] = useSessionStorage<string>('counsellor_draftStudentId', '')
+  const [selectedStudentId, setSelectedStudentId] = useSessionStorage<string>('counsellor_selectedStudentId', '')
+  const [country, setCountry] = useSessionStorage<string>('counsellor_country', '')
+  const [city, setCity] = useSessionStorage<string>('counsellor_city', '')
+  const [scholarshipFilter, setScholarshipFilter] = useSessionStorage<'all' | 'with' | 'without'>('counsellor_scholarshipFilter', 'all')
+  const [page, setPage] = useSessionStorage('counsellor_page', 1)
+  const [useProfileFilters, setUseProfileFilters] = useSessionStorage('counsellor_useProfileFilters', false)
 
   const { data: studentsRes, isLoading: studentsLoading } = useQuery({
     queryKey: ['counsellor', 'students', 'for-interests'],

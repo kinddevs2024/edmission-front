@@ -10,7 +10,7 @@ import { DocumentCanvasStage } from './DocumentCanvasStage'
 import { DocumentSummaryPanel } from './DocumentSummaryPanel'
 import { adminUniversityGetDocumentTemplates, adminUniversityRenderDocumentTemplatePreview, adminUniversitySendIssuedDocument, sendAdminChatMessage } from '@/services/admin'
 import { getDocumentTemplates, renderDocumentTemplatePreview, sendIssuedDocument } from '@/services/documents'
-import { sendMessage } from '@/services/chat'
+import { sendMessage, createChat } from '@/services/chat'
 import { IMAGE_OR_PDF_UPLOAD_ACCEPT, uploadFile } from '@/services/upload'
 import { parseScene } from '@/utils/documentScene'
 import { toastApiError } from '@/utils/toastError'
@@ -80,6 +80,44 @@ export function SendDocumentModal({
   const [mode, setMode] = useState<SendMode>('template')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileMessage, setFileMessage] = useState('')
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId)
+
+  useEffect(() => {
+    setCurrentChatId(chatId)
+  }, [chatId])
+
+  useEffect(() => {
+    if (open && !currentChatId && studentId) {
+      createChat({ studentId })
+        .then((chat) => {
+          setCurrentChatId(chat.id)
+        })
+        .catch((err) => {
+          console.error('Failed to create/get chat in SendDocumentModal:', err)
+        })
+    }
+  }, [open, currentChatId, studentId])
+
+  const filePreviewUrl = useMemo(() => {
+    if (!selectedFile) return null
+    if (selectedFile.type.startsWith('image/')) {
+      try {
+        return URL.createObjectURL(selectedFile)
+      } catch (e) {
+        console.error(e)
+        return null
+      }
+    }
+    return null
+  }, [selectedFile])
+
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) {
+        URL.revokeObjectURL(filePreviewUrl)
+      }
+    }
+  }, [filePreviewUrl])
 
   useEffect(() => {
     if (!open) return
@@ -172,7 +210,7 @@ export function SendDocumentModal({
   }
 
   const handleSendFile = async () => {
-    if (!selectedFile || !chatId) return
+    if (!selectedFile || !currentChatId) return
     setSending(true)
     try {
       const attachmentUrl = await uploadFile(selectedFile)
@@ -185,14 +223,14 @@ export function SendDocumentModal({
         mimeType: selectedFile.type,
       }
       if (actingUniversityUserId) {
-        await sendAdminChatMessage(chatId, {
+        await sendAdminChatMessage(currentChatId, {
           text,
           attachmentUrl,
           metadata,
           actingUniversityUserId,
         })
       } else {
-        await sendMessage(chatId, {
+        await sendMessage(currentChatId, {
           text,
           attachmentUrl,
           metadata,
@@ -208,7 +246,7 @@ export function SendDocumentModal({
     }
   }
 
-  const canSendFile = Boolean(chatId && selectedFile)
+  const canSendFile = Boolean(currentChatId && selectedFile)
 
   return (
     <Modal
@@ -379,7 +417,13 @@ export function SendDocumentModal({
           <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4">
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
               <label className="flex min-h-[178px] cursor-pointer flex-col items-center justify-center rounded-card border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-6 text-center transition hover:border-primary-accent hover:bg-primary-accent/5">
-                <UploadCloud className="h-9 w-9 text-primary-accent" aria-hidden />
+                {filePreviewUrl ? (
+                  <img src={filePreviewUrl} alt="" className="max-h-20 w-auto rounded-md object-contain mb-1" />
+                ) : selectedFile?.type === 'application/pdf' ? (
+                  <FileText className="h-9 w-9 text-primary-accent mb-1" aria-hidden />
+                ) : (
+                  <UploadCloud className="h-9 w-9 text-primary-accent" aria-hidden />
+                )}
                 <span className="mt-3 text-sm font-semibold text-[var(--color-text)]">
                   {selectedFile ? selectedFile.name : t('documents:sendModal.chooseFile', 'Choose a PDF or image')}
                 </span>
@@ -414,7 +458,7 @@ export function SendDocumentModal({
                     </div>
                   ) : (
                     <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                      {chatId
+                      {currentChatId
                         ? t('documents:sendModal.noFileSelected', 'No file selected yet.')
                         : t('documents:sendModal.chatRequiredForUpload', 'Open a chat first to send uploaded files.')}
                     </p>

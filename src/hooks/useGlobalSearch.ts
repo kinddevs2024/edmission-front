@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
-import { search, type SearchResult } from '@/services/search'
+import { search, type SearchResult, type SearchUserItem } from '@/services/search'
 import { searchSitePages } from '@/constants/sitePages'
 import { isUniversityLikeRole, type Role } from '@/types/user'
 
@@ -34,7 +34,7 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
       const data = await search(debounced)
       setResult(data)
     } catch {
-      setResult({ universities: [], students: [] })
+      setResult({ universities: [], students: [], users: [] })
     } finally {
       setLoading(false)
     }
@@ -50,16 +50,19 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
 
   const sitePages = useMemo(() => searchSitePages(debounced, role), [debounced, role])
   const chatMessages = result?.chatMessages ?? []
+  const users = result?.users ?? []
   const hasResults =
     result &&
     (result.universities.length > 0 ||
       result.students.length > 0 ||
+      users.length > 0 ||
       chatMessages.length > 0 ||
       sitePages.length > 0)
   const isEmpty =
     result &&
     result.universities.length === 0 &&
     result.students.length === 0 &&
+    users.length === 0 &&
     chatMessages.length === 0 &&
     sitePages.length === 0
 
@@ -89,6 +92,20 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
       else if (role === 'school_counsellor') navigate(`/school/students/${id}/profile`)
     },
     [afterNavigate, navigate, role]
+  )
+
+  const handleSelectUser = useCallback(
+    (u: SearchUserItem) => {
+      afterNavigate?.()
+      setValue('')
+      setResult(null)
+      if (u.role === 'student') {
+        navigate(`/admin/users/${u.id}/student-profile`)
+      } else {
+        navigate(`/admin/users?search=${encodeURIComponent(u.email)}`)
+      }
+    },
+    [afterNavigate, navigate]
   )
 
   const handleSelectPage = useCallback(
@@ -128,6 +145,7 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
     loading,
     sitePages,
     chatMessages,
+    users,
     hasResults,
     isEmpty,
     t,
@@ -135,6 +153,7 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
     reset,
     handleSelectUniversity,
     handleSelectStudent,
+    handleSelectUser,
     handleSelectPage,
     handleSelectChatMessage,
     handleSearchWithAI,

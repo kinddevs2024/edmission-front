@@ -238,6 +238,7 @@ export interface StudentSearchParams {
   hasPortfolio?: boolean
   /** When false, backend does not filter by profile (targetStudentCountries, facultyCodes). Use after "Clear". */
   useProfileFilters?: boolean
+  mapOnly?: boolean
 }
 
 export interface DiscoverStudentItem {
@@ -305,6 +306,7 @@ export async function getStudents(params?: StudentSearchParams): Promise<Student
   if (params?.verifiedOnly) query.verifiedOnly = '1'
   if (params?.hasPortfolio) query.hasPortfolio = '1'
   if (params?.useProfileFilters === false) query.useProfileFilters = '0'
+  if (params?.mapOnly) query.mapOnly = '1'
   const { data } = await api.get<StudentSearchResponse>('/university/students', { params: query })
   return data ?? { data: [], total: 0, page: 1, limit: 20, totalPages: 0 }
 }

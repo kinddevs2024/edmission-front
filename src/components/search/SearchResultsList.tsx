@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import type { SearchResult, SearchChatMessageItem } from '@/services/search'
+import type { SearchResult, SearchChatMessageItem, SearchUserItem } from '@/services/search'
 import { cn } from '@/utils/cn'
 
 interface SearchResultsListProps {
@@ -15,6 +15,7 @@ interface SearchResultsListProps {
   onSelectPage: (path: string) => void
   onSelectUniversity: (id: string) => void
   onSelectStudent: (id: string) => void
+  onSelectUser: (user: SearchUserItem) => void
   onSelectChatMessage: (chatId: string) => void
   onSearchWithAI: () => void
   variant?: 'dropdown' | 'page'
@@ -32,6 +33,7 @@ export function SearchResultsList({
   onSelectPage,
   onSelectUniversity,
   onSelectStudent,
+  onSelectUser,
   onSelectChatMessage,
   onSearchWithAI,
   variant = 'dropdown',
@@ -140,6 +142,42 @@ export function SearchResultsList({
                 <span className="font-medium">{[s.firstName, s.lastName].filter(Boolean).join(' ')}</span>
                 {(s.country || s.city) && (
                   <span className="text-xs text-[var(--color-text-muted)]">{[s.city, s.country].filter(Boolean).join(', ')}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+        {result.users && result.users.length > 0 && (
+          <div className="px-2 py-1">
+            <p
+              className={cn(
+                'text-xs font-semibold uppercase tracking-wide text-primary-accent px-3',
+                sectionHeadPy
+              )}
+            >
+              {t('searchSectionUsers')}
+            </p>
+            {result.users.map((u) => (
+              <button
+                key={u.id}
+                type="button"
+                onClick={() => onSelectUser(u)}
+                className={cn(
+                  'w-full text-left px-4 text-sm text-[var(--color-text)] hover:bg-[var(--color-border)]/25 rounded-lg flex flex-col gap-0.5 border-b border-[var(--color-border)]/40 last:border-0',
+                  rowPy
+                )}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-medium">{u.name || u.email}</span>
+                  <span className="text-[10px] font-semibold tracking-wider uppercase bg-primary-accent/15 text-primary-accent px-1.5 py-0.5 rounded">
+                    {u.role}
+                  </span>
+                </div>
+                {u.name && (
+                  <span className="text-xs text-[var(--color-text-muted)]">{u.email}</span>
+                )}
+                {u.phone && (
+                  <span className="text-xs text-[var(--color-text-muted)]">{u.phone}</span>
                 )}
               </button>
             ))}
