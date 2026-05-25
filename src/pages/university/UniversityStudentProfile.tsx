@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -14,13 +14,17 @@ import { formatDate } from '@/utils/format'
 import { MessageCircle, FileText, ExternalLink, Lock, Percent } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
+import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { getLocalizedCountryName } from '@/utils/localeDisplay'
+import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
+import { getLocalizedCountryName } from '@/utils/localeDisplay'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { buildStudentShareLink, shareAccountLink } from '@/utils/shareAccount'
 
 export function UniversityStudentProfile() {
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
-  const { t } = useTranslation(['common', 'university', 'student'])
+  const { t, i18n } = useTranslation(['common', 'university', 'student'])
   const [profile, setProfile] = useState<FullStudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -200,7 +204,7 @@ export function UniversityStudentProfile() {
             <><dt className="text-[var(--color-text-muted)]">{t('student:applyingForDegree', 'Applying for degree')}</dt><dd>{profile.targetDegreeLevel === 'master' ? t('student:degreeMaster', 'Master') : t('student:degreePhd', 'PhD')}</dd></>
           )}
           <dt className="text-[var(--color-text-muted)]">{t('student:gradeLevel', 'Grade / education level')}</dt><dd>{profile.gradeLevel ?? '--'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{t('student:gpa', 'GPA (0â€“4)')}</dt><dd>{profile.gpa != null ? profile.gpa : '--'}</dd>
+          <dt className="text-[var(--color-text-muted)]">{t('student:gpa', 'GPA (0–4)')}</dt><dd>{profile.gpa != null ? profile.gpa : '--'}</dd>
           <dt className="text-[var(--color-text-muted)]">
             {profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd'
               ? t('student:institutionCompleted', 'University completed')
@@ -227,13 +231,44 @@ export function UniversityStudentProfile() {
             <ul className="space-y-2">
               {profile.schoolsAttended.map((s, i) => (
                 <li key={i} className="text-sm">
-                  {s.institutionName ?? '--'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` Â· ${s.attendedFrom.slice(0, 4)}â€“${s.attendedTo.slice(0, 4)}`}
+                  {s.institutionName ?? '--'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` · ${s.attendedFrom.slice(0, 4)}–${s.attendedTo.slice(0, 4)}`}
                 </li>
               ))}
             </ul>
           </div>
         ) : null}
       </Card>
+
+      {((profile.preferredCountries && profile.preferredCountries.length > 0) || (profile.interestedFaculties && profile.interestedFaculties.length > 0)) && (
+        <Card>
+          <CardTitle>{t('student:studyPreferences', 'Study Preferences')}</CardTitle>
+          <div className="mt-3 space-y-4 text-sm">
+            {profile.preferredCountries && profile.preferredCountries.length > 0 && (
+              <div>
+                <p className="font-medium text-[var(--color-text-muted)] mb-2">{t('student:preferredStudyCountriesHeading', 'Preferred study countries')}</p>
+                <div className="flex flex-wrap gap-2">
+                  {profile.preferredCountries.map((c, i) => (
+                    <span key={i} className="px-3 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] font-medium">{getLocalizedCountryName(c, i18n.language)}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {profile.interestedFaculties && profile.interestedFaculties.length > 0 && (
+              <div>
+                <p className="font-medium text-[var(--color-text-muted)] mb-2">{t('student:interestedFacultiesHeading', 'Interested faculties')}</p>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interestedFaculties.map((f, i) => {
+                    const faculty = FIELD_OF_STUDY.find(item => item.id === f)
+                    return (
+                      <span key={i} className="px-3 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-muted)] font-medium">{faculty ? t(faculty.titleKey) : f}</span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
 
       <Card className="border-primary-accent/25 bg-[var(--color-card)]">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -257,7 +292,7 @@ export function UniversityStudentProfile() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{d.name ?? d.type}</p>
                   <p className="text-xs text-[var(--color-text-muted)]">
-                    {[d.certificateType, d.score ? `${t('university:scoreLabel', 'Score')}: ${d.score}` : null].filter(Boolean).join(' Â· ') || d.type}
+                    {[d.certificateType, d.score ? `${t('university:scoreLabel', 'Score')}: ${d.score}` : null].filter(Boolean).join(' · ') || d.type}
                   </p>
                 </div>
                 <Button size="sm" variant="secondary" onClick={() => setFilePreview(d)}>
