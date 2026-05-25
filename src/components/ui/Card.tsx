@@ -16,7 +16,7 @@ export function Card({ children, className, style, interactive, tilt }: CardProp
     <div
       style={style}
       className={cn(
-        'rounded-card bg-[var(--color-card)] border border-[var(--color-border)] p-4',
+        'rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
         interactive && 'card-interactive',
         tilt && 'card-3d',
         !interactive && !tilt && 'shadow-[var(--shadow-card)]',

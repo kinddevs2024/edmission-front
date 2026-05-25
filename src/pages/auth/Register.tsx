@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Building2, GraduationCap, UserRoundCheck } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, GraduationCap, MessageCircle } from "lucide-react";
 import {
   loginWithGoogle,
   register as registerApi,
@@ -24,8 +24,7 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { BrandMark } from "@/components/layout/BrandLogo";
 
-type RegisterRole = "student" | "university" | "school_counsellor";
-type SocialAuthRole = "student" | "university";
+type RegisterRole = "student" | "university";
 type EmailFormData = {
   email: string;
   password: string;
@@ -34,20 +33,32 @@ type EmailFormData = {
   acceptTerms: boolean;
 };
 
-function toSocialAuthRole(role: RegisterRole): SocialAuthRole {
-  return role === "university" ? "university" : "student";
+const roleConfig = {
+  student: {
+    icon: GraduationCap,
+    bullets: ["Find universities", "Scholarship offers", "Telegram updates"],
+  },
+  university: {
+    icon: Building2,
+    bullets: ["Student interests", "Direct chat", "Offers and scholarships"],
+  },
+} satisfies Record<RegisterRole, { icon: typeof GraduationCap; bullets: string[] }>;
+
+function initialRoleFromQuery(value: string | null): RegisterRole {
+  return value === "university" ? "university" : "student";
 }
 
 export function Register() {
   const { t, i18n } = useTranslation(["common", "auth", "errors"]);
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<RegisterRole>("student");
+  const [searchParams] = useSearchParams();
+  const initialRole = initialRoleFromQuery(searchParams.get("role"));
+  const [selectedRole, setSelectedRole] = useState<RegisterRole>(initialRole);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [step, setStep] = useState<"form" | "role" | "code">("form");
+  const [step, setStep] = useState<"role" | "form" | "code">("role");
   const [pendingEmail, setPendingEmail] = useState("");
-  const [pendingFormData, setPendingFormData] = useState<EmailFormData | null>(null);
   const [codeError, setCodeError] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
@@ -70,7 +81,7 @@ export function Register() {
           email: z.string().email(t("auth:invalidEmail")),
           password: passwordSchema,
           confirmPassword: z.string(),
-          role: z.enum(["student", "university", "school_counsellor"]),
+          role: z.enum(["student", "university"]),
           acceptTerms: z.boolean().refine((v) => v === true, {
             message: t("auth:acceptTermsRequired"),
           }),
@@ -91,8 +102,12 @@ export function Register() {
     formState: { errors },
   } = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
-    defaultValues: { role: "student", acceptTerms: false },
+    defaultValues: { role: initialRole, acceptTerms: false },
   });
+
+  useEffect(() => {
+    setValue("role", selectedRole, { shouldValidate: true });
+  }, [selectedRole, setValue]);
 
   useEffect(() => {
     if (step !== "code" || resendCooldown <= 0) return;
@@ -100,14 +115,13 @@ export function Register() {
     return () => window.clearInterval(timer);
   }, [step, resendCooldown]);
 
-
   const handleGoogleCredential = async (credential: string) => {
     setSubmitError("");
     setLoading(true);
     try {
       const data = await loginWithGoogle({
         idToken: credential,
-        role: toSocialAuthRole(getValues("role")),
+        role: getValues("role"),
         acceptTerms: true,
       });
       if (data.user.mustSetLocalPassword) {
@@ -124,36 +138,15 @@ export function Register() {
     }
   };
 
-  const onResend = async () => {
-    if (resendCooldown > 0 || resendLoading) return;
-    setResendLoading(true);
-    setCodeError("");
-    try {
-      await resendVerificationCode(pendingEmail);
-      setResendCooldown(60);
-    } catch (err) {
-      const apiErr = getApiError(err);
-      setCodeError(apiErr.message ?? t("errors:unknown"));
-    } finally {
-      setResendLoading(false);
-    }
-  };
-
-  const onSubmitEmail = async (data: EmailFormData) => {
-    setPendingFormData(data);
-    setSelectedRole(data.role);
-    setStep("role");
-  };
-
-  const onSubmitAfterRole = async () => {
-    if (!pendingFormData) return;
+  const submitRegistration = async (formData: EmailFormData) => {
+    const role = selectedRole;
     setSubmitError("");
     setLoading(true);
     try {
       const result = await registerApi({
-        email: pendingFormData.email,
-        password: pendingFormData.password,
-        role: selectedRole,
+        email: formData.email,
+        password: formData.password,
+        role,
         acceptTerms: true,
       });
       if ("needsVerification" in result && result.needsVerification) {
@@ -170,6 +163,25 @@ export function Register() {
       setSubmitError(firstMsg ?? t(`errors:${getApiErrorKey(err)}`));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onSubmitEmail = async (data: EmailFormData) => {
+    await submitRegistration({ ...data, role: selectedRole });
+  };
+
+  const onResend = async () => {
+    if (resendCooldown > 0 || resendLoading) return;
+    setResendLoading(true);
+    setCodeError("");
+    try {
+      await resendVerificationCode(pendingEmail);
+      setResendCooldown(60);
+    } catch (err) {
+      const apiErr = getApiError(err);
+      setCodeError(apiErr.message ?? t("errors:unknown"));
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -195,14 +207,18 @@ export function Register() {
     }
   };
 
-
   if (step === "code") {
     return (
       <Card className="p-6">
-        <CardTitle className="mb-2">{t("auth:verifyEmail")}</CardTitle>
-        <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-          {t("auth:verificationCodeSent", { email: pendingEmail })}
-        </p>
+        <div className="mb-5 flex items-center gap-3">
+          <BrandMark className="h-10 w-10" />
+          <div>
+            <CardTitle>{t("auth:verifyEmail")}</CardTitle>
+            <p className="text-sm text-[var(--color-text-muted)]">
+              {t("auth:verificationCodeSent", { email: pendingEmail })}
+            </p>
+          </div>
+        </div>
         <form onSubmit={onVerifyEmailCode} className="space-y-4">
           <Input
             label={t("auth:enterCode")}
@@ -223,7 +239,7 @@ export function Register() {
             <button
               type="button"
               onClick={() => setStep("form")}
-              className="text-sm text-[var(--color-text-muted)] hover:underline"
+              className="cursor-pointer text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             >
               {t("common:back", "Back")}
             </button>
@@ -236,7 +252,7 @@ export function Register() {
                 type="button"
                 onClick={onResend}
                 disabled={resendLoading}
-                className="text-sm text-primary-accent hover:underline disabled:opacity-50"
+                className="cursor-pointer text-sm font-medium text-primary-accent hover:opacity-80 disabled:opacity-50"
               >
                 {resendLoading ? t("common:loading") : t("auth:resendCode")}
               </button>
@@ -248,67 +264,96 @@ export function Register() {
   }
 
   if (step === "role") {
-    const roleOptions: Array<{ role: RegisterRole; label: string; icon: typeof GraduationCap }> = [
-      { role: "student", label: t("auth:roleStudent", "Student"), icon: GraduationCap },
-      { role: "university", label: t("auth:roleUniversity", "University"), icon: Building2 },
-      { role: "school_counsellor", label: t("auth:roleCounsellor", "Counsellor"), icon: UserRoundCheck },
-    ];
+    const roles: RegisterRole[] = ["student", "university"];
 
     return (
-      <Card className="p-6">
-        <div className="mb-4 flex flex-col items-center gap-2 text-center">
-          <BrandMark className="h-14 w-14" />
-          <CardTitle>{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
-          <p className="text-sm text-[var(--color-text-muted)]">
-            {t("auth:chooseRole", "Choose who you are registering as")}
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-[var(--color-border)] p-6 text-center">
+          <BrandMark className="mx-auto h-12 w-12" />
+          <CardTitle className="mt-4">{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {t("auth:chooseRole", "Choose your account type")}
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-2">
-          {roleOptions.map(({ role, label, icon: Icon }) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => setSelectedRole(role)}
-              className={
-                selectedRole === role
-                  ? "flex items-center gap-3 rounded-card border-2 border-primary-accent px-3 py-2 text-left"
-                  : "flex items-center gap-3 rounded-card border border-[var(--color-border)] px-3 py-2 text-left transition-colors hover:border-primary-accent/50"
-              }
-            >
-              <Icon className="h-4.5 w-4.5 shrink-0 text-primary-accent" />
-              {label}
-            </button>
-          ))}
+
+        <div className="space-y-3 p-4">
+          {roles.map((role) => {
+            const selected = selectedRole === role;
+            const Icon = roleConfig[role].icon;
+            return (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setSelectedRole(role)}
+                className={
+                  selected
+                    ? "flex w-full cursor-pointer items-start gap-3 rounded-xl border border-primary-accent bg-primary-accent/10 p-4 text-left ring-4 ring-primary-accent/10"
+                    : "flex w-full cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 text-left transition-colors duration-150 hover:border-primary-accent/60 hover:bg-[var(--color-bg)]"
+                }
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]">
+                  <Icon className="h-5 w-5 text-primary-accent" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-[var(--color-text)]">
+                      {role === "student"
+                        ? t("auth:roleStudent", "Student")
+                        : t("auth:roleUniversity", "University")}
+                    </span>
+                    {selected ? <CheckCircle2 className="h-5 w-5 text-primary-accent" /> : null}
+                  </span>
+                  <span className="mt-2 flex flex-wrap gap-1.5">
+                    {roleConfig[role].bullets.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-0.5 text-xs text-[var(--color-text-muted)]"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+
+          <Button type="button" className="w-full" size="lg" icon={<ArrowRight />} onClick={() => setStep("form")}>
+            {selectedRole === "student"
+              ? t("auth:continueAsStudent", "Continue as student")
+              : t("auth:continueAsUniversity", "Continue as university")}
+          </Button>
+          <Link to="/login" className="block text-center text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+            {t("auth:haveAccount")} {t("common:signIn", "Sign in")}
+          </Link>
         </div>
-        {submitError && <p className="mt-3 text-sm text-red-500">{submitError}</p>}
-        <Button
-          type="button"
-          className="mt-4 w-full"
-          loading={loading}
-          disabled={loading}
-          onClick={() => {
-            setValue("role", selectedRole, { shouldValidate: true });
-            void onSubmitAfterRole();
-          }}
-        >
-          {t("common:register", "Register")}
-        </Button>
-        <button
-          type="button"
-          onClick={() => setStep("form")}
-          className="mt-3 block w-full text-center text-sm text-[var(--color-text-muted)] hover:underline"
-        >
-          {t("common:back", "Back")}
-        </button>
       </Card>
     );
   }
 
   return (
     <Card className="p-6">
-      <div className="mb-4 flex flex-col items-center gap-2 text-center">
-        <BrandMark className="h-14 w-14" />
-        <CardTitle>{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
+      <div className="mb-5 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setStep("role")}
+          className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-primary-accent"
+          aria-label={t("common:back", "Back")}
+        >
+          {selectedRole === "student" ? <GraduationCap className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
+        </button>
+        <div className="min-w-0">
+          <CardTitle>
+            {selectedRole === "student"
+              ? t("auth:createStudentAccount", "Create student account")
+              : t("auth:createUniversityAccount", "Create university account")}
+          </CardTitle>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            {selectedRole === "student"
+              ? t("auth:studentSignupHint", "Find universities, offers, and scholarships.")
+              : t("auth:universitySignupHint", "Manage students, interests, and offers.")}
+          </p>
+        </div>
       </div>
 
       <form onSubmit={handleEmailSubmit(onSubmitEmail)} className="space-y-4">
@@ -328,7 +373,7 @@ export function Register() {
             <PasswordInput
               label={t("auth:password")}
               autoComplete="new-password"
-                        hint={t("auth:passwordRequirements", "8+ chars, lowercase, number")}
+              hint={t("auth:passwordRequirements", "8+ chars, lowercase, number")}
               error={errors.password?.message}
               passwordVisible={showPassword}
               onPasswordVisibilityToggle={() => setShowPassword((v) => !v)}
@@ -365,7 +410,7 @@ export function Register() {
           label={
             <span className="text-sm text-[var(--color-text)]">
               {t("auth:acceptTerms")}{" "}
-              <Link to="/privacy" className="text-primary-accent underline hover:no-underline">
+              <Link to="/privacy" className="font-medium text-primary-accent hover:opacity-80">
                 {t("common:privacy")}
               </Link>
             </span>
@@ -378,43 +423,52 @@ export function Register() {
         </Button>
       </form>
 
-      {(selectedRole === "student" || selectedRole === "university") && (
-        <div className="mt-6 space-y-4">
-          <AuthSocialButtons
-            mode="register"
-            loading={loading}
-            role={selectedRole}
-            yandexAcceptTerms
-            setLoading={setLoading}
-            setSubmitError={setSubmitError}
-            onGoogleCredential={handleGoogleCredential}
-            onAppleSuccess={async () => {
-              setSubmitError("");
-              const user = useAuthStore.getState().user;
-              if (user) {
-                if (user.mustSetLocalPassword) {
-                  showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
-                }
-                await navigateAfterRegistration(navigate, user, i18n);
-              }
-            }}
-            onYandexSuccess={async () => {
-              setSubmitError("");
-              const user = useAuthStore.getState().user;
-              if (user) {
-                if (user.mustSetLocalPassword) {
-                  showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
-                }
-                await navigateAfterRegistration(navigate, user, i18n);
-              }
-            }}
-          />
-        </div>
-      )}
+      <div className="my-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-[var(--color-border)]" />
+        <span className="text-xs font-medium uppercase text-[var(--color-text-muted)]">
+          {t("auth:orContinueWith", "Or continue with")}
+        </span>
+        <span className="h-px flex-1 bg-[var(--color-border)]" />
+      </div>
 
-      <Link to="/login" className="mt-4 block text-center text-sm text-[var(--color-text-muted)] hover:underline">
-        {t("auth:haveAccount")} {t("common:signIn", "Sign in")}
-      </Link>
+      <AuthSocialButtons
+        mode="register"
+        loading={loading}
+        role={selectedRole}
+        yandexAcceptTerms
+        setLoading={setLoading}
+        setSubmitError={setSubmitError}
+        onGoogleCredential={handleGoogleCredential}
+        onAppleSuccess={async () => {
+          setSubmitError("");
+          const user = useAuthStore.getState().user;
+          if (user) {
+            if (user.mustSetLocalPassword) {
+              showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
+            }
+            await navigateAfterRegistration(navigate, user, i18n);
+          }
+        }}
+        onYandexSuccess={async () => {
+          setSubmitError("");
+          const user = useAuthStore.getState().user;
+          if (user) {
+            if (user.mustSetLocalPassword) {
+              showOAuthPasswordReminder(t("auth:oauthPasswordToastTitle"), t("auth:oauthPasswordToastDesc"));
+            }
+            await navigateAfterRegistration(navigate, user, i18n);
+          }
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={() => setStep("role")}
+        className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+      >
+        <MessageCircle className="h-4 w-4" />
+        {t("auth:changeAccountType", "Change account type")}
+      </button>
     </Card>
   );
 }

@@ -27,17 +27,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
 }
 
-const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-input transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]'
+const baseClasses = 'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60'
 const variantClasses = {
-  primary: 'bg-primary-accent text-primary-dark hover:bg-primary-accent/90 shadow-[var(--shadow-button)] hover:shadow-[var(--shadow-button-hover)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)] disabled:shadow-none',
-  secondary: 'border-2 border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)] disabled:bg-[var(--color-border)]/40 disabled:text-[var(--color-text-muted)]',
-  ghost: 'bg-transparent hover:bg-[var(--color-border)]',
-  danger: 'bg-red-500 text-white hover:bg-red-600 hover:shadow-md',
+  primary: 'border border-primary-accent bg-primary-accent text-primary-dark hover:bg-primary-accent/90 disabled:border-[var(--color-border)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)]',
+  secondary: 'border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-bg)] disabled:bg-[var(--color-border)]/40 disabled:text-[var(--color-text-muted)]',
+  ghost: 'bg-transparent text-[var(--color-text)] hover:bg-[var(--color-border)]/70',
+  danger: 'border border-red-500 bg-red-500 text-white hover:bg-red-600',
 }
 const sizeClasses = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'min-h-9 px-3 py-1.5 text-sm',
+  md: 'min-h-10 px-4 py-2 text-sm',
+  lg: 'min-h-11 px-5 py-2.5 text-base',
 }
 
 export function Button({

@@ -9,8 +9,8 @@ type CheckboxProps = Omit<React.ComponentProps<'input'>, 'type' | 'size'> & {
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   function Checkbox({ label, color = 'green', className, ...props }, ref) {
     return (
-      <label className={cn('flex w-full max-w-full items-center gap-2 cursor-pointer group', className)}>
-        <span className="relative inline-flex shrink-0 w-5 h-5">
+      <label className={cn('group flex w-full max-w-full cursor-pointer items-start gap-2.5', className)}>
+        <span className="relative mt-0.5 inline-flex h-5 w-5 shrink-0">
           <input
             ref={ref}
             type="checkbox"
@@ -19,8 +19,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           />
           <span
             className={cn(
-              'absolute inset-0 rounded border-2 border-[var(--color-border)] bg-[var(--color-card)]',
-              'transition-colors duration-200',
+              'absolute inset-0 rounded-md border border-[var(--color-border)] bg-[var(--color-card)]',
+              'transition-colors duration-150',
               'group-hover:border-[var(--color-text-muted)]',
               'peer-checked:bg-primary-accent peer-checked:border-primary-accent',
               'peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary-accent peer-focus-visible:ring-offset-2',

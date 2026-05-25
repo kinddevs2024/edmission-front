@@ -82,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-[var(--color-text)] mb-1">
+          <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
             {label}
           </label>
         )}
@@ -93,9 +93,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={effectiveType}
             placeholder={placeholder}
             className={cn(
-              'min-h-[44px] w-full rounded-input border bg-transparent px-3 py-2.5 text-[var(--color-text)]',
+              'min-h-11 w-full rounded-lg border bg-[var(--color-card)] px-3.5 py-2.5 text-sm text-[var(--color-text)] shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
               'placeholder:text-[var(--color-text-muted)]/60',
-              'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0 focus:border-transparent',
+              'transition-colors duration-150 focus:border-primary-accent focus:outline-none focus:ring-4 focus:ring-primary-accent/15',
               error && 'border-red-500 focus:ring-red-500',
               success && 'border-green-500',
               !error && !success && 'border-[var(--color-border)]',
@@ -114,10 +114,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p id={`${inputId}-error`} className="mt-1 text-sm text-red-500">{error}</p>
+          <p id={`${inputId}-error`} className="mt-1.5 text-sm text-red-500">{error}</p>
         )}
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="mt-1 text-sm text-gray-500 dark:text-gray-400">{hint}</p>
+          <p id={`${inputId}-hint`} className="mt-1.5 text-sm text-[var(--color-text-muted)]">{hint}</p>
         )}
       </div>
     )
