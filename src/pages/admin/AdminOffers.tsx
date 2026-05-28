@@ -7,6 +7,8 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { getOffers, updateOfferStatus, type AdminOffer } from '@/services/admin'
+import { getMyDocuments } from '@/services/studentDocuments'
+import DocumentListModal from '@/components/ui/DocumentListModal'
 import { formatDateTime } from '@/utils/format'
 import { toastApiError } from '@/utils/toastError'
 
@@ -26,6 +28,7 @@ export function AdminOffers() {
     { value: 'declined', label: t('admin:declined', 'Declined') },
   ]
 
+  const [documentsModal, setDocumentsModal] = useState<{ open: boolean; studentId: string }>({ open: false, studentId: '' });
   useEffect(() => {
     setLoading(true)
     getOffers({ page, limit, status: statusFilter || undefined })
@@ -79,7 +82,12 @@ export function AdminOffers() {
                   <TableTh>{t('admin:coveragePercent', 'Coverage %')}</TableTh>
                   <TableTh>{t('common:status', 'Status')}</TableTh>
                   <TableTh>{t('admin:createdLabel', 'Created')}</TableTh>
+                <TableTh>{t('admin:documents', 'Documents')}</TableTh>
                   <TableTh>{t('common:actions', 'Actions')}</TableTh>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {items.map((o) => (
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -92,13 +100,15 @@ export function AdminOffers() {
                     <TableTd>{t(`admin:${o.status}`, o.status)}</TableTd>
                     <TableTd>{o.createdAt ? formatDateTime(o.createdAt) : '—'}</TableTd>
                     <TableTd>
+                      <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === o.id} onClick={() => setDocumentsModal({ open: true, studentId: o.studentId })}>Documents</Button>
+                    </TableTd>
+                    <TableTd>
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="secondary" disabled={!!actionId} loading={actionId === o.id} onClick={() => changeStatus(o.id, 'accepted')}>
                           {t('admin:accept', 'Accept')}
                         </Button>
                         <Button size="sm" variant="danger" disabled={!!actionId} loading={actionId === o.id} onClick={() => changeStatus(o.id, 'declined')}>
                           {t('admin:decline', 'Decline')}
-                        </Button>
                       </div>
                     </TableTd>
                   </TableRow>
@@ -106,6 +116,7 @@ export function AdminOffers() {
               </TableBody>
             </Table>
             <Pagination page={page} total={total} limit={limit} onPageChange={setPage} />
+        <DocumentListModal isOpen={documentsModal.open} onClose={() => setDocumentsModal({ open: false, studentId: '' })} studentId={documentsModal.studentId} />
           </>
         )}
       </Card>
