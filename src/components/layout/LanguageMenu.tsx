@@ -54,7 +54,13 @@ export function LanguageMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-10 shrink-0 items-center gap-2 px-3 rounded-input border border-[var(--color-border)] bg-transparent hover:bg-[var(--color-border)]/20 transition-colors text-sm text-[var(--color-text)]"
+        className={cn(
+          "inline-flex h-10 shrink-0 items-center gap-2 px-3 rounded-input text-sm font-semibold transition-all duration-100 ease-out transform active:translate-y-[3px]",
+          "border border-t-white/50 border-x-[var(--color-border)] border-b-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)]",
+          "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_3px_0_0_rgba(0,0,0,0.06),0_4px_6px_0_rgba(0,0,0,0.04)]",
+          "hover:bg-[var(--color-bg)] hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_4px_0_0_rgba(0,0,0,0.06),0_6px_10px_0_rgba(0,0,0,0.06)]",
+          "active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),0_0px_0_0_rgba(0,0,0,0.06),0_1px_3px_0_rgba(0,0,0,0.03)]"
+        )}
         aria-label={t("language")}
         aria-expanded={open}
         aria-haspopup="true"

@@ -1,8 +1,6 @@
-import { forwardRef, useRef, useState, type ChangeEvent, type InputHTMLAttributes, type MutableRefObject } from 'react'
+import { forwardRef, useRef, useState, useEffect, type ChangeEvent, type InputHTMLAttributes, type MutableRefObject, type UIEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff } from 'lucide-react'
-// @ts-ignore
-import ReactBetterPassword from 'react-better-password'
 import { cn } from '@/utils/cn'
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
@@ -28,14 +26,14 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       passwordVisible,
       onPasswordVisibilityToggle,
       showPasswordToggle = true,
-      revealDelayMs: _revealDelayMs = 2000,
+      revealDelayMs = 1000,
       className,
       id,
       placeholder,
       onBlur,
       onFocus,
       name,
-      autoComplete,
+      autoComplete = 'current-password',
       disabled,
       ...props
     },
@@ -43,25 +41,99 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ) {
     const { t } = useTranslation('common')
     const inputRef = useRef<HTMLInputElement | null>(null)
+    const overlayRef = useRef<HTMLInputElement | null>(null)
     const [internalVisible, setInternalVisible] = useState(false)
 
     const manuallyVisible = typeof passwordVisible === 'boolean' ? passwordVisible : internalVisible
     const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-')
 
-    const assignRef = (instance: any) => {
-      const node = instance instanceof HTMLInputElement ? instance : (instance ? instance.input : null)
+    const [lastTypedIndex, setLastTypedIndex] = useState<number | null>(null)
+    const [showLastChar, setShowLastChar] = useState(false)
+    const timeoutRef = useRef<number | null>(null)
+    const prevValueRef = useRef(value)
+
+    useEffect(() => {
+      const prevValue = prevValueRef.current
+      prevValueRef.current = value
+
+      if (!value) {
+        setShowLastChar(false)
+        setLastTypedIndex(null)
+        return
+      }
+
+      // If a single character was added (typing)
+      if (value.length === prevValue.length + 1) {
+        let index = value.length - 1
+        for (let i = 0; i < prevValue.length; i++) {
+          if (value[i] !== prevValue[i]) {
+            index = i
+            break
+          }
+        }
+        setLastTypedIndex(index)
+        setShowLastChar(true)
+
+        if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
+        timeoutRef.current = window.setTimeout(() => {
+          setShowLastChar(false)
+        }, revealDelayMs)
+      } else {
+        // If characters were deleted, pasted, or autofilled
+        setShowLastChar(false)
+        setLastTypedIndex(null)
+      }
+
+      return () => {
+        if (timeoutRef.current) window.clearTimeout(timeoutRef.current)
+      }
+    }, [value])
+
+    // Sync scroll position from real input to overlay input
+    const syncScroll = (target: HTMLInputElement) => {
+      if (overlayRef.current) {
+        overlayRef.current.scrollLeft = target.scrollLeft
+      }
+    }
+
+    const assignRef = (node: HTMLInputElement | null) => {
       inputRef.current = node
       if (typeof ref === 'function') ref(node)
       else if (ref) (ref as MutableRefObject<HTMLInputElement | null>).current = node
     }
 
-    const handleChange = (newValue: string | ChangeEvent<HTMLInputElement>) => {
-      if (typeof newValue === 'string') {
-        onValueChange(newValue)
-      } else {
-        onValueChange(newValue.target.value)
-      }
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+      onValueChange(e.target.value)
+      // Run in microtask/next-tick to ensure DOM state is updated before syncing
+      const target = e.target
+      setTimeout(() => syncScroll(target), 0)
     }
+
+    const handleScroll = (e: UIEvent<HTMLInputElement>) => {
+      syncScroll(e.currentTarget)
+    }
+
+    const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
+      syncScroll(e.currentTarget)
+    }
+
+    // Determine the text to display in our overlay
+    const getDisplayValue = () => {
+      if (manuallyVisible) {
+        return value
+      }
+      return value
+        .split('')
+        .map((char, index) => {
+          if (showLastChar && index === lastTypedIndex) {
+            return char
+          }
+          return '•'
+        })
+        .join('')
+    }
+
+    const displayValue = getDisplayValue()
 
     return (
       <div className="w-full">
@@ -71,35 +143,58 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           </label>
         ) : null}
         <div className="relative">
-          <ReactBetterPassword
+          {/* Native underlying input that receives typing, cursor, selection, and autofill */}
+          <input
             ref={assignRef}
+            type={manuallyVisible ? 'text' : 'password'}
             id={inputId}
             name={name}
-            show={manuallyVisible}
-            timeout={1000}
-            mask="•"
             autoComplete={autoComplete}
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
             disabled={disabled}
             value={value}
-            placeholder={placeholder}
+            placeholder={value ? '' : placeholder}
             onChange={handleChange}
+            onScroll={handleScroll}
+            onKeyUp={handleKeyUp}
             onFocus={onFocus}
             onBlur={onBlur}
             className={cn(
-              'min-h-[44px] w-full rounded-input border bg-transparent px-3 py-2.5 pr-11 text-[var(--color-text)]',
+              'peer min-h-[44px] w-full rounded-input border bg-transparent px-3 py-2.5 pr-11 font-mono text-[var(--color-text)]',
               'placeholder:text-[var(--color-text-muted)]/60',
               'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0 focus:border-transparent',
               error && 'border-red-500 focus:ring-red-500',
               !error && 'border-[var(--color-border)]',
               className
             )}
+            style={{
+              color: 'transparent',
+              caretColor: 'var(--color-text)',
+            }}
             aria-invalid={!!error}
             aria-describedby={[error ? `${inputId}-error` : null, hint ? `${inputId}-hint` : null].filter(Boolean).join(' ') || undefined}
             {...props}
           />
+
+          {/* Masking overlay containing the temporary "last character visible" behavior */}
+          <input
+            ref={overlayRef}
+            type="text"
+            tabIndex={-1}
+            readOnly
+            disabled={disabled}
+            value={value ? displayValue : ''}
+            placeholder={placeholder}
+            className={cn(
+              'absolute inset-0 pointer-events-none select-none w-full h-full rounded-input border border-transparent bg-transparent px-3 py-2.5 pr-11 font-mono text-[var(--color-text)]',
+              'peer-autofill:opacity-0 transition-opacity duration-75 focus:outline-none focus:ring-0 focus:border-transparent',
+              disabled && 'opacity-50',
+              className
+            )}
+          />
+
           {showPasswordToggle ? (
             <div className="pointer-events-auto absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center">
               <button

@@ -10,7 +10,7 @@ export function HeroSection() {
         src="/preview.png"
         alt=""
         className="absolute inset-0 h-full w-full object-cover object-bottom"
-        fetchPriority="high"
+        {...{ fetchpriority: 'high' }}
       />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,18,38,0.72)_0%,rgba(35,78,150,0.38)_42%,rgba(255,255,255,0.06)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(0deg,var(--color-bg)_0%,rgba(255,255,255,0)_100%)]" />

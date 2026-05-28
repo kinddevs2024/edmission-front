@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Building2, CheckCircle2, GraduationCap, MessageCircle } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, GraduationCap, User } from "lucide-react";
 import {
   loginWithGoogle,
   register as registerApi,
@@ -466,7 +466,7 @@ export function Register() {
         onClick={() => setStep("role")}
         className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
       >
-        <MessageCircle className="h-4 w-4" />
+        <User className="h-4 w-4" />
         {t("auth:changeAccountType", "Change account type")}
       </button>
     </Card>

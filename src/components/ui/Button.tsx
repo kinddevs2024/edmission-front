@@ -27,13 +27,32 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
 }
 
-const baseClasses = 'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60'
+const baseClasses = 'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-100 ease-out focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 transform active:translate-y-[3px] disabled:translate-y-0 disabled:shadow-none'
+
 const variantClasses = {
-  primary: 'border border-primary-accent bg-primary-accent text-primary-dark hover:bg-primary-accent/90 disabled:border-[var(--color-border)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)]',
-  secondary: 'border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)] hover:bg-[var(--color-bg)] disabled:bg-[var(--color-border)]/40 disabled:text-[var(--color-text-muted)]',
-  ghost: 'bg-transparent text-[var(--color-text)] hover:bg-[var(--color-border)]/70',
-  danger: 'border border-red-500 bg-red-500 text-white hover:bg-red-600',
+  primary: cn(
+    'border border-t-white/30 border-x-transparent border-b-transparent bg-primary-accent text-primary-dark',
+    'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_3px_0_0_rgba(0,0,0,0.22),0_4px_6px_0_rgba(0,0,0,0.12)]',
+    'hover:bg-primary-accent/95 hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45),0_4px_0_0_rgba(0,0,0,0.22),0_6px_10px_0_rgba(0,0,0,0.15)]',
+    'active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0px_0_0_rgba(0,0,0,0.22),0_1px_3px_0_rgba(0,0,0,0.08)]',
+    'disabled:border-[var(--color-border)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)]'
+  ),
+  secondary: cn(
+    'border border-t-white/50 border-x-[var(--color-border)] border-b-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-text)]',
+    'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_3px_0_0_rgba(0,0,0,0.06),0_4px_6px_0_rgba(0,0,0,0.04)]',
+    'hover:bg-[var(--color-bg)] hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_4px_0_0_rgba(0,0,0,0.06),0_6px_10px_0_rgba(0,0,0,0.06)]',
+    'active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),0_0px_0_0_rgba(0,0,0,0.06),0_1px_3px_0_rgba(0,0,0,0.03)]',
+    'disabled:bg-[var(--color-border)]/40 disabled:text-[var(--color-text-muted)]'
+  ),
+  ghost: 'bg-transparent text-[var(--color-text)] hover:bg-[var(--color-border)]/70 hover:translate-y-0 active:translate-y-0 active:scale-[0.98] shadow-none hover:shadow-none active:shadow-none',
+  danger: cn(
+    'border border-t-white/30 border-x-transparent border-b-transparent bg-red-500 text-white',
+    'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_3px_0_0_rgba(0,0,0,0.25),0_4px_6px_0_rgba(0,0,0,0.15)]',
+    'hover:bg-red-600 hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45),0_4px_0_0_rgba(0,0,0,0.25),0_6px_10px_0_rgba(0,0,0,0.18)]',
+    'active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0px_0_0_rgba(0,0,0,0.25),0_1px_3px_0_rgba(0,0,0,0.1)]'
+  ),
 }
+
 const sizeClasses = {
   sm: 'min-h-9 px-3 py-1.5 text-sm',
   md: 'min-h-10 px-4 py-2 text-sm',

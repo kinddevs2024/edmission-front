@@ -16,8 +16,6 @@ import { cn } from '@/utils/cn'
 import { getStudentDisplayName } from '@/utils/studentDisplay'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getLocalizedCountryName } from '@/utils/localeDisplay'
-import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
-import { getLocalizedCountryName } from '@/utils/localeDisplay'
 import { notifyError, notifySuccess } from '@/utils/notify'
 import { buildStudentShareLink, shareAccountLink } from '@/utils/shareAccount'
 
@@ -204,7 +202,7 @@ export function UniversityStudentProfile() {
             <><dt className="text-[var(--color-text-muted)]">{t('student:applyingForDegree', 'Applying for degree')}</dt><dd>{profile.targetDegreeLevel === 'master' ? t('student:degreeMaster', 'Master') : t('student:degreePhd', 'PhD')}</dd></>
           )}
           <dt className="text-[var(--color-text-muted)]">{t('student:gradeLevel', 'Grade / education level')}</dt><dd>{profile.gradeLevel ?? '--'}</dd>
-          <dt className="text-[var(--color-text-muted)]">{t('student:gpa', 'GPA (0–4)')}</dt><dd>{profile.gpa != null ? profile.gpa : '--'}</dd>
+          <dt className="text-[var(--color-text-muted)]">{t('student:gpa', 'GPA (0ï¿½4)')}</dt><dd>{profile.gpa != null ? profile.gpa : '--'}</dd>
           <dt className="text-[var(--color-text-muted)]">
             {profile.targetDegreeLevel === 'master' || profile.targetDegreeLevel === 'phd'
               ? t('student:institutionCompleted', 'University completed')
@@ -231,7 +229,7 @@ export function UniversityStudentProfile() {
             <ul className="space-y-2">
               {profile.schoolsAttended.map((s, i) => (
                 <li key={i} className="text-sm">
-                  {s.institutionName ?? '--'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` · ${s.attendedFrom.slice(0, 4)}–${s.attendedTo.slice(0, 4)}`}
+                  {s.institutionName ?? '--'} {s.country && `(${s.country})`} {s.attendedFrom && s.attendedTo && ` ï¿½ ${s.attendedFrom.slice(0, 4)}ï¿½${s.attendedTo.slice(0, 4)}`}
                 </li>
               ))}
             </ul>
@@ -292,7 +290,7 @@ export function UniversityStudentProfile() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{d.name ?? d.type}</p>
                   <p className="text-xs text-[var(--color-text-muted)]">
-                    {[d.certificateType, d.score ? `${t('university:scoreLabel', 'Score')}: ${d.score}` : null].filter(Boolean).join(' · ') || d.type}
+                    {[d.certificateType, d.score ? `${t('university:scoreLabel', 'Score')}: ${d.score}` : null].filter(Boolean).join(' ï¿½ ') || d.type}
                   </p>
                 </div>
                 <Button size="sm" variant="secondary" onClick={() => setFilePreview(d)}>

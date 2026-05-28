@@ -8,6 +8,7 @@ import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { BrandLogo } from '@/components/layout/BrandLogo'
 import { loadLanguage } from '@/i18n'
 import { STORAGE_KEY, supportedLngs, type SupportedLng } from '@/i18n/config'
+import { Button } from '@/components/ui/Button'
 
 const LANGUAGE_LABELS: Record<SupportedLng, string> = {
   en: 'English',
@@ -198,28 +199,31 @@ export function LandingHeader() {
           {/* Desktop: Language, Theme, Login, Register */}
           <div className="hidden lg:flex items-center gap-2">
             <LanguageMenu />
-            <Link
+            <Button
               to="/login"
-              className="rounded-input border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+              variant="secondary"
+              size="md"
             >
               {t('header.login')}
-            </Link>
-            <Link
+            </Button>
+            <Button
               to="/register"
-              className="rounded-input bg-primary-accent px-3 py-2 text-sm font-medium text-primary-dark hover:opacity-90 transition-colors"
+              variant="primary"
+              size="md"
             >
               {t('header.register')}
-            </Link>
+            </Button>
           </div>
 
           {/* Mobile: Register + Menu or Close */}
           <div className="lg:hidden flex items-center gap-2 flex-1 max-w-[300px] justify-end">
-            <Link
+            <Button
               to="/register"
-              className="flex-1 min-w-0 flex items-center justify-center rounded-full h-11 px-4 bg-primary-accent text-primary-dark text-sm font-medium hover:opacity-90 transition-colors"
+              variant="primary"
+              className="flex-1 min-w-0 rounded-full h-11"
             >
               <span className="truncate">{t('header.register')}</span>
-            </Link>
+            </Button>
             <div className="relative" ref={mobileLangRef}>
               <button
                 type="button"
@@ -335,20 +339,22 @@ export function LandingHeader() {
                   </button>
                 ))}
                 <div className="flex gap-2 pt-2">
-                  <Link
+                  <Button
                     to="/login"
+                    variant="secondary"
                     onClick={closeMenu}
-                    className="flex-1 flex items-center justify-center rounded-input border border-[var(--color-border)] px-3 py-2.5 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-border)]/20 transition-colors"
+                    className="flex-1"
                   >
                     {t('header.login')}
-                  </Link>
-                  <Link
+                  </Button>
+                  <Button
                     to="/register"
+                    variant="primary"
                     onClick={closeMenu}
-                    className="flex-1 flex items-center justify-center rounded-input bg-primary-accent px-3 py-2.5 text-sm font-medium text-primary-dark hover:opacity-90 transition-colors"
+                    className="flex-1"
                   >
                     {t('header.register')}
-                  </Link>
+                  </Button>
                 </div>
                 {(showGoogleAuth || showYandexAuth) && (
                   <div className="pt-2 space-y-2">
