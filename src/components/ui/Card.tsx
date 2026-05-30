@@ -16,10 +16,11 @@ export function Card({ children, className, style, interactive, tilt }: CardProp
     <div
       style={style}
       className={cn(
-        'rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
-        interactive && 'card-interactive',
+        'rounded-xl border bg-[var(--color-card)] p-4 transition-all duration-200 ease-out',
+        'border-[var(--color-border)]',
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_4px_0_0_rgba(0,0,0,0.05),0_8px_16px_0_rgba(0,0,0,0.04)]',
+        interactive && 'hover:-translate-y-[4px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.75),0_8px_0_0_rgba(0,0,0,0.05),0_12px_24px_0_rgba(0,0,0,0.06)] active:translate-y-0 active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_0_0_rgba(0,0,0,0.05),0_4px_8px_0_rgba(0,0,0,0.03)] cursor-pointer',
         tilt && 'card-3d',
-        !interactive && !tilt && 'shadow-[var(--shadow-card)]',
         className
       )}
     >

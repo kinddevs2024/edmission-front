@@ -19,10 +19,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           />
           <span
             className={cn(
-              'absolute inset-0 rounded-md border border-[var(--color-border)] bg-[var(--color-card)]',
-              'transition-colors duration-150',
+              'absolute inset-0 rounded-md border transition-colors duration-150',
+              'bg-[var(--color-card)] border-[var(--color-border)]',
+              'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_2px_0_0_rgba(0,0,0,0.05)]',
               'group-hover:border-[var(--color-text-muted)]',
-              'peer-checked:bg-primary-accent peer-checked:border-primary-accent',
+              'peer-checked:bg-primary-accent peer-checked:border-transparent peer-checked:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_0_0_rgba(0,0,0,0.15)]',
               'peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary-accent peer-focus-visible:ring-offset-2',
               'peer-disabled:opacity-50 peer-disabled:pointer-events-none'
             )}

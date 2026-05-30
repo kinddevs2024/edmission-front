@@ -162,11 +162,11 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             onFocus={onFocus}
             onBlur={onBlur}
             className={cn(
-              'peer min-h-[44px] w-full rounded-input border bg-transparent px-3 py-2.5 pr-11 font-mono text-[var(--color-text)]',
+              'peer min-h-[44px] w-full rounded-input border bg-[var(--color-card)] px-3 py-2.5 pr-11 font-mono text-[var(--color-text)] transition-colors duration-150',
               'placeholder:text-[var(--color-text-muted)]/60',
-              'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0 focus:border-transparent',
-              error && 'border-red-500 focus:ring-red-500',
-              !error && 'border-[var(--color-border)]',
+              'focus:outline-none focus:ring-2 focus:ring-primary-accent/15 focus:ring-offset-0 focus:border-primary-accent',
+              error && 'border-red-500 focus:ring-red-500 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_0_0_rgba(239,68,68,0.2)]',
+              !error && 'border-[var(--color-border)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_2px_0_0_rgba(0,0,0,0.05),0_3px_5px_0_rgba(0,0,0,0.03)]',
               className
             )}
             style={{

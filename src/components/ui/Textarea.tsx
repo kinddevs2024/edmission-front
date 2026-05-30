@@ -47,10 +47,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           placeholder={placeholder}
           className={cn(
-            'w-full rounded-input border bg-transparent px-3 py-2.5 text-[var(--color-text)]',
+            'w-full rounded-input border bg-[var(--color-card)] px-3 py-2.5 text-[var(--color-text)] transition-colors duration-150',
             'placeholder:text-[var(--color-text-muted)]/60',
-            'focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0',
-            hasError ? 'border-red-500 focus:ring-red-500' : 'border-[var(--color-border)]',
+            'focus:outline-none focus:ring-2 focus:ring-primary-accent/15 focus:ring-offset-0 focus:border-primary-accent',
+            hasError ? 'border-red-500 focus:ring-red-500 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_0_0_rgba(239,68,68,0.2)]' : 'border-[var(--color-border)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_2px_0_0_rgba(0,0,0,0.05),0_3px_5px_0_rgba(0,0,0,0.03)]',
             !resize && 'resize-none',
             minH,
             className

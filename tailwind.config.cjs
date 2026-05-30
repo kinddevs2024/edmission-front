@@ -14,13 +14,13 @@ module.exports = withMT({
     extend: {
       colors: {
         primary: {
-          dark: '#0F172A',
-          accent: '#84CC16',
+          dark: '#0F172A', // dark‑blue used on site
+          accent: '#84CC16', // green accent used on site
         },
         secondary: '#1E293B',
         surface: {
-          light: '#F8FAFC',
-          card: '#FFFFFF',
+          light: '#F8FAFC', // white background
+          card: '#FFFFFF', // card background (white)
           border: '#E5E7EB',
         },
         dark: {
@@ -94,5 +94,5 @@ module.exports = withMT({
       },
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate'), require('tailwindcss-react-aria-components')],
 })

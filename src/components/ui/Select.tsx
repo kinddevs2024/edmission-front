@@ -275,15 +275,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     }, [highlightedIndex, open])
 
     const triggerClasses = cn(
-      'group relative min-h-[44px] w-full overflow-hidden rounded-input border px-3 py-2.5 pr-11 text-left text-[var(--color-text)] transition-all duration-200',
-      'bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_16px_34px_-28px_rgba(15,23,42,0.7)]',
-      'hover:border-primary-accent/45 hover:shadow-[0_22px_42px_-30px_rgba(132,204,22,0.45)]',
+      'group relative min-h-[44px] w-full overflow-hidden rounded-input border px-3 py-2.5 pr-11 text-left text-[var(--color-text)] transition-all duration-100 ease-out transform active:translate-y-[3px]',
+      'bg-[var(--color-card)] border-[var(--color-border)]',
+      'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_3px_0_0_rgba(0,0,0,0.06),0_4px_6px_0_rgba(0,0,0,0.04)]',
+      'hover:bg-[var(--color-bg)] hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_4px_0_0_rgba(0,0,0,0.06),0_6px_10px_0_rgba(0,0,0,0.06)]',
+      'active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),0_0px_0_0_rgba(0,0,0,0.06),0_1px_3px_0_rgba(0,0,0,0.03)]',
       'focus:outline-none focus:ring-2 focus:ring-primary-accent focus:ring-offset-0',
-      'dark:bg-[linear-gradient(180deg,rgba(17,24,39,0.98),rgba(15,23,42,0.94))]',
-      !error && !open && 'border-[var(--color-border)]',
       open && 'border-primary-accent/60 ring-2 ring-primary-accent/15',
-      error && 'border-red-500 focus:ring-red-500',
-      disabled && 'cursor-not-allowed opacity-60 shadow-none',
+      error && 'border-red-500 focus:ring-red-500 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_0_0_rgba(239,68,68,0.2)]',
+      disabled && 'cursor-not-allowed opacity-60 shadow-none translate-y-0 hover:translate-y-0 active:translate-y-0',
       className
     )
 

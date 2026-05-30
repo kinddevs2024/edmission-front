@@ -93,12 +93,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={effectiveType}
             placeholder={placeholder}
             className={cn(
-              'min-h-11 w-full rounded-lg border bg-[var(--color-card)] px-3.5 py-2.5 text-sm text-[var(--color-text)] shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
+              'min-h-11 w-full rounded-lg border bg-[var(--color-card)] px-3.5 py-2.5 text-sm text-[var(--color-text)] transition-colors duration-150 focus:outline-none focus:ring-4 focus:ring-primary-accent/15 focus:border-primary-accent',
               'placeholder:text-[var(--color-text-muted)]/60',
-              'transition-colors duration-150 focus:border-primary-accent focus:outline-none focus:ring-4 focus:ring-primary-accent/15',
-              error && 'border-red-500 focus:ring-red-500',
-              success && 'border-green-500',
-              !error && !success && 'border-[var(--color-border)]',
+              error && 'border-red-500 focus:ring-red-500 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_0_0_rgba(239,68,68,0.2)]',
+              success && 'border-green-500 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_0_0_rgba(34,197,94,0.2)]',
+              !error && !success && 'border-[var(--color-border)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_2px_0_0_rgba(0,0,0,0.05),0_3px_5px_0_rgba(0,0,0,0.03)]',
               icon && 'pr-11',
               isPassword && showPasswordToggle && 'edmission-password-custom-toggle',
               className

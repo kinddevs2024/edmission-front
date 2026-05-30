@@ -86,7 +86,9 @@ export function Modal({ open, onClose, title, children, footer, panelClassName, 
       <div
         ref={panelRef}
         className={cn(
-          'relative rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col animate-modal-enter',
+          'relative rounded-card bg-[var(--color-card)] border max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col animate-modal-enter',
+          'border-[var(--color-border)]',
+          'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_12px_24px_-8px_rgba(15,23,42,0.15),0_4px_8px_-4px_rgba(15,23,42,0.08)]',
           panelClassName
         )}
         role="dialog"
