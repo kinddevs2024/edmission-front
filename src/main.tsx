@@ -9,7 +9,7 @@ import '@/styles/index.css'
 import { useAuthStore } from '@/store/authStore'
 import { loadAuth, isAuthExpired, clearAuth, updateLastActivity } from '@/services/authPersistence'
 import { getProfile } from '@/services/auth'
-import "styles/globals.css";
+import "@/styles/globals.css";
 
 installNativeShellEmbedListener()
 
