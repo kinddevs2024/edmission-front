@@ -33,6 +33,7 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   --color-surface-elevated: #ffffff;
   --radius-card: 16px;
   --radius-input: 12px;
+  --radius-button-soft: 14px;
   /* Motion & depth */
   --duration-motion: 0.25s;
   --ease-out-smooth: cubic-bezier(0.22, 1, 0.36, 1);
@@ -40,6 +41,11 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   --shadow-card-hover: 0 12px 24px -8px rgba(15, 23, 42, 0.15), 0 4px 8px -4px rgba(15, 23, 42, 0.08);
   --shadow-button: 0 2px 8px rgba(132, 204, 22, 0.25);
   --shadow-button-hover: 0 4px 14px rgba(132, 204, 22, 0.35);
+}
+
+/* Make compact square-ish controls slightly rounder without affecting cards/inputs. */
+button.rounded-input {
+  border-radius: var(--radius-button-soft);
 }
 
 .dark {

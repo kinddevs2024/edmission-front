@@ -99,7 +99,7 @@ export function LanguageMenu({
       {open && (
         <div
           className={cn(
-            "absolute right-0 z-[60] min-w-[160px] rounded-card border border-[var(--color-border)] bg-[var(--color-card)] py-1 shadow-lg animate-modal-enter",
+            "absolute right-0 z-[60] min-w-[160px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] py-1 shadow-lg animate-modal-enter",
             placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
           )}
           role="menu"

@@ -162,15 +162,15 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             onFocus={onFocus}
             onBlur={onBlur}
             className={cn(
-              'peer min-h-[44px] w-full rounded-input border bg-[var(--color-card)] px-3 py-2.5 pr-11 font-mono text-[var(--color-text)] transition-colors duration-150',
+              'peer min-h-11 w-full rounded-lg border bg-[var(--color-card)] px-3.5 py-2.5 pr-11 text-sm text-[var(--color-text)] transition-colors duration-150',
               'placeholder:text-[var(--color-text-muted)]/60',
-              'focus:outline-none focus:ring-2 focus:ring-primary-accent/15 focus:ring-offset-0 focus:border-primary-accent',
+              'focus:outline-none focus:ring-4 focus:ring-primary-accent/15 focus:border-primary-accent',
               error && 'border-red-500 focus:ring-red-500 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_2px_0_0_rgba(239,68,68,0.2)]',
               !error && 'border-[var(--color-border)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_2px_0_0_rgba(0,0,0,0.05),0_3px_5px_0_rgba(0,0,0,0.03)]',
               className
             )}
             style={{
-              color: 'transparent',
+              color: manuallyVisible ? 'var(--color-text)' : 'transparent',
               caretColor: 'var(--color-text)',
             }}
             aria-invalid={!!error}
@@ -188,8 +188,9 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             value={value ? displayValue : ''}
             placeholder={placeholder}
             className={cn(
-              'absolute inset-0 pointer-events-none select-none w-full h-full rounded-input border border-transparent bg-transparent px-3 py-2.5 pr-11 font-mono text-[var(--color-text)]',
+              'absolute inset-0 pointer-events-none select-none h-full w-full rounded-lg border border-transparent bg-transparent px-3.5 py-2.5 pr-11 text-sm text-[var(--color-text)]',
               'peer-autofill:opacity-0 transition-opacity duration-75 focus:outline-none focus:ring-0 focus:border-transparent',
+              manuallyVisible && 'opacity-0',
               disabled && 'opacity-50',
               className
             )}

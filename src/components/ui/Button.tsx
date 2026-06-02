@@ -31,10 +31,10 @@ const baseClasses = 'inline-flex cursor-pointer items-center justify-center gap-
 
 const variantClasses = {
   primary: cn(
-    'border border-t-white/30 border-x-transparent border-b-transparent bg-primary-accent text-primary-dark',
+    'border border-t-white/30 border-x-transparent border-b-transparent bg-lime-500 text-white',
     'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_3px_0_0_rgba(0,0,0,0.22),0_4px_6px_0_rgba(0,0,0,0.12)]',
-    'hover:bg-primary-accent/95 hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45),0_4px_0_0_rgba(0,0,0,0.22),0_6px_10px_0_rgba(0,0,0,0.15)]',
-    'active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0px_0_0_rgba(0,0,0,0.22),0_1px_3px_0_rgba(0,0,0,0.08)]',
+    'hover:bg-lime-600 hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45),0_4px_0_0_rgba(0,0,0,0.22),0_6px_10px_0_rgba(0,0,0,0.15)]',
+    'active:bg-lime-700 active:translate-y-[3px] active:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_0px_0_0_rgba(0,0,0,0.22),0_1px_3px_0_rgba(0,0,0,0.08)]',
     'disabled:border-[var(--color-border)] disabled:bg-[var(--color-border)] disabled:text-[var(--color-text-muted)]'
   ),
   secondary: cn(

@@ -36,13 +36,21 @@ type EmailFormData = {
 const roleConfig = {
   student: {
     icon: GraduationCap,
-    bullets: ["Find universities", "Scholarship offers", "Telegram updates"],
+    bullets: [
+      "auth:roleStudentBulletFindUniversities",
+      "auth:roleStudentBulletScholarshipOffers",
+      "auth:roleStudentBulletTelegramUpdates",
+    ],
   },
   university: {
     icon: Building2,
-    bullets: ["Student interests", "Direct chat", "Offers and scholarships"],
+    bullets: [
+      "auth:roleUniversityBulletStudentInterests",
+      "auth:roleUniversityBulletDirectChat",
+      "auth:roleUniversityBulletOffersAndScholarships",
+    ],
   },
-} satisfies Record<RegisterRole, { icon: typeof GraduationCap; bullets: string[] }>;
+} satisfies Record<RegisterRole, { icon: typeof GraduationCap; bullets: Array<`auth:${string}`> }>;
 
 function initialRoleFromQuery(value: string | null): RegisterRole {
   return value === "university" ? "university" : "student";
@@ -287,7 +295,7 @@ export function Register() {
                 onClick={() => setSelectedRole(role)}
                 className={
                   selected
-                    ? "flex w-full cursor-pointer items-start gap-3 rounded-xl border border-primary-accent bg-primary-accent/10 p-4 text-left ring-4 ring-primary-accent/10"
+                    ? "flex w-full cursor-pointer items-start gap-3 rounded-xl border border-primary-accent bg-primary-accent/10 p-4 text-left ring-2 ring-primary-accent/8"
                     : "flex w-full cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4 text-left transition-colors duration-150 hover:border-primary-accent/60 hover:bg-[var(--color-bg)]"
                 }
               >
@@ -309,7 +317,7 @@ export function Register() {
                         key={item}
                         className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-2 py-0.5 text-xs text-[var(--color-text-muted)]"
                       >
-                        {item}
+                        {t(item)}
                       </span>
                     ))}
                   </span>
