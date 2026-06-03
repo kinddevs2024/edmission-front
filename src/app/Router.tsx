@@ -122,7 +122,7 @@ function PageFallback() {
 }
 
 function isAdminPanelRole(role: Role | null): boolean {
-  return role === 'admin' || role === 'manager' || role === 'counsellor_coordinator'
+  return role === 'admin' || role === 'student_admin' || role === 'manager' || role === 'counsellor_coordinator'
 }
 
 function isMultiUniversityRole(role: Role | null): boolean {
@@ -155,7 +155,9 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
           ? '/university-multi-manager'
           : role === 'school_counsellor'
             ? '/school/dashboard'
-            : '/admin'
+            : role === 'student_admin'
+              ? '/admin/users'
+              : '/admin'
     return <Navigate to={redirect} replace />
   }
   return <>{children}</>
@@ -163,6 +165,17 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
 function AdminOnly({ children }: { children: React.ReactNode }) {
   return <ProtectedRoute allowedRoles={['admin']}>{children}</ProtectedRoute>
+}
+
+function AdminIndexRedirect() {
+  const { role } = useAuth()
+  return <Navigate to={role === 'student_admin' ? 'users' : 'dashboard'} replace />
+}
+
+function AdminDashboardGate() {
+  const { role } = useAuth()
+  if (role === 'student_admin') return <Navigate to="/admin/users" replace />
+  return <AdminDashboard />
 }
 
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
@@ -176,7 +189,8 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
     else redirect = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
   } else if (isMultiUniversityRole(role)) {
     redirect = '/university-multi-manager'
-  } else if (isAdminPanelRole(role)) redirect = '/admin'
+  } else if (role === 'student_admin') redirect = '/admin/users'
+  else if (isAdminPanelRole(role)) redirect = '/admin'
   else if (role === 'school_counsellor') redirect = '/school/dashboard'
   else redirect = '/admin'
   return <Navigate to={redirect} replace />
@@ -193,7 +207,8 @@ function LandingOrRedirect() {
     else to = user.universityProfile.verified ? '/university/dashboard' : '/university/pending'
   } else if (isMultiUniversityRole(role)) {
     to = '/university-multi-manager'
-  } else if (isAdminPanelRole(role)) to = '/admin'
+  } else if (role === 'student_admin') to = '/admin/users'
+  else if (isAdminPanelRole(role)) to = '/admin'
   else if (role === 'school_counsellor') to = '/school/dashboard'
   else to = '/admin'
   return <Navigate to={to} replace />
@@ -250,7 +265,7 @@ export function Router() {
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
-        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
+        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
         <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
         <Route path="/auth/yandex/callback" element={<YandexCallback />} />
         <Route path="/auth/google/mobile" element={<GoogleMobileCallback />} />
@@ -264,17 +279,17 @@ export function Router() {
         <Route path="cookies" element={<Cookies />} />
         <Route path="how-edmission-works" element={<HowEdmissionWorks />} />
         <Route path="help/tutorials" element={<HowEdmissionWorks />} />
-        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
-        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
+        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
+        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
         <Route
           path="search"
           element={
-            <ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
+            <ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
               <SearchPage />
             </ProtectedRoute>
           }
         />
-        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
+        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
         <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentPage /></ProtectedRoute>} />
         <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentSuccess /></ProtectedRoute>} />
         <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentCancel /></ProtectedRoute>} />
@@ -332,12 +347,12 @@ export function Router() {
           <Route path="ai" element={<AIChatPage />} />
         </Route>
 
-        <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'counsellor_coordinator']}><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'student_admin', 'manager', 'counsellor_coordinator']}><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<AdminIndexRedirect />} />
+          <Route path="dashboard" element={<AdminDashboardGate />} />
           <Route path="analytics" element={<AdminOnly><AdminAnalytics /></AdminOnly>} />
           <Route path="users" element={<UserManagement />} />
-          <Route path="users/:userId/student-profile" element={<AdminOnly><AdminStudentProfile /></AdminOnly>} />
+          <Route path="users/:userId/student-profile" element={<ProtectedRoute allowedRoles={['admin', 'student_admin']}><AdminStudentProfile /></ProtectedRoute>} />
           <Route path="users/:userId/university-profile" element={<AdminOnly><AdminUniversityProfile /></AdminOnly>} />
           <Route path="users/:userId/counsellor-profile" element={<AdminCounsellorProfile />} />
           <Route path="users/:userId/university-documents" element={<AdminOnly><AdminUniversityDocumentsLayout /></AdminOnly>}>

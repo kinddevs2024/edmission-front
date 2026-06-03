@@ -14,6 +14,7 @@ export function AdminLayout() {
   const { t } = useTranslation(['admin', 'common'])
   const { role } = useAuth()
   const isFullAdmin = role === 'admin'
+  const isStudentAdmin = role === 'student_admin'
   const location = useLocation()
   const isFixedHeightPage = location.pathname === '/admin/ai'
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
@@ -21,7 +22,11 @@ export function AdminLayout() {
 
   const navItems = useMemo(
     () => (
-      isFullAdmin
+      isStudentAdmin
+        ? [
+            { to: '/admin/users', label: t('students'), icon: 'Users' as const },
+          ]
+        : isFullAdmin
         ? [
             { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
             { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
@@ -48,21 +53,25 @@ export function AdminLayout() {
             { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
           ]
     ),
-    [isFullAdmin, t]
+    [isFullAdmin, isStudentAdmin, t]
   )
   const navBottomItems = useMemo(
-    () => isFullAdmin
+    () => isStudentAdmin
+      ? []
+      : isFullAdmin
       ? [
           { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
           { to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const },
         ]
       : [],
-    [isFullAdmin, t]
+    [isFullAdmin, isStudentAdmin, t]
   )
 
   // Mobile bottom bar: no AI, no Support
   const bottomNavItems = useMemo(
-    () => isFullAdmin
+    () => isStudentAdmin
+      ? [{ to: '/admin/users', label: t('students'), icon: 'Users' as const }]
+      : isFullAdmin
       ? [
           { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
           { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
@@ -76,7 +85,7 @@ export function AdminLayout() {
           { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
           { to: '/admin/ai', label: t('common:edmissionAi', 'AI'), icon: 'Bot' as const },
         ],
-    [isFullAdmin, t]
+    [isFullAdmin, isStudentAdmin, t]
   )
 
   useEffect(() => {

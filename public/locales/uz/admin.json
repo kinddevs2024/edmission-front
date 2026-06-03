@@ -179,6 +179,7 @@
   "changeRole": "Rolni o'zgartirish",
   "changeRoleHint": "«Maktab maslahatchisi» roli: foydalanuvchi maslahatchi huquqlari doirasida admin paneliga kirish oladi.",
   "schoolCounsellor": "Maktab maslahatchisi",
+  "studentAdminRole": "Talabalar admini",
   "userEmail": "Foydalanuvchi",
   "documentReviewNav": "Sertifikatlar",
   "documentReviewTitle": "Sertifikatlar va hujjatlar",

@@ -183,6 +183,7 @@
     "changeRole": "Change role",
     "changeRoleHint": "Assigning School counsellor: user will get read-only access to the admin panel (within counsellor permissions).",
     "schoolCounsellor": "School counsellor",
+    "studentAdminRole": "Student admin",
     "userEmail": "User",
     "documentReviewNav": "Certificates",
     "documentReviewTitle": "Certificates & documents",

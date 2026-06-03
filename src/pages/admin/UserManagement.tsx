@@ -60,13 +60,15 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
     subtitle: [uni.city, uni.country].filter(Boolean).join(', ') || uni.id,
   }
 }
-export function UserManagement() {
+
+export function UserManagement() {
   const { t } = useTranslation(['common', 'admin'])
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const querySearch = searchParams.get('search') || ''
   const { role } = useAuth()
   const isAdmin = role === 'admin'
+  const isStudentAdmin = role === 'student_admin'
   const isManager = role === 'manager'
   const isCoordinator = role === 'counsellor_coordinator'
   const canManageUsers = isAdmin || isManager || isCoordinator
@@ -78,12 +80,13 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
     multi_university_admin: t('admin:multiUniversityAdminRole', 'Multi University Admin'),
     admin: t('common:admin'),
     manager: t('admin:managerRole', 'Manager'),
+    student_admin: t('admin:studentAdminRole', 'Student admin'),
     counsellor_coordinator: t('admin:counsellorCoordinator', 'Counsellor coordinator'),
     school_counsellor: t('admin:schoolCounsellor', 'School counsellor'),
   }), [t])
 
   const assignableRoles = useMemo<Role[]>(() => {
-    if (isAdmin) return ['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+    if (isAdmin) return ['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
     if (isManager) return ['counsellor_coordinator', 'school_counsellor']
     if (isCoordinator) return ['school_counsellor']
     return []
@@ -98,13 +101,15 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
 
   const canViewStudentProfile = (targetRole: string) => {
     if (targetRole !== 'student') return false
-    return isAdmin || isManager || isCoordinator
+    return isAdmin || isStudentAdmin || isManager || isCoordinator
   }
 
   const ROLE_OPTIONS = useMemo(() => {
     const scoped =
-      isAdmin
-        ? ['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
+      isStudentAdmin
+        ? ['student']
+        : isAdmin
+        ? ['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'manager', 'counsellor_coordinator', 'school_counsellor']
         : isManager
           ? ['counsellor_coordinator', 'school_counsellor']
           : isCoordinator
@@ -114,7 +119,7 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
       { value: '', label: t('admin:allRoles') },
       ...scoped.map((r) => ({ value: r, label: roleLabels[r as keyof typeof roleLabels] })),
     ]
-  }, [isAdmin, isCoordinator, isManager, roleLabels, t])
+  }, [isAdmin, isCoordinator, isManager, isStudentAdmin, roleLabels, t])
 
   const assignableRoleOptions = useMemo(
     () => assignableRoles.map((r) => ({ value: r, label: roleLabels[r] })),
@@ -419,11 +424,13 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
 
   return (
     <div className="space-y-4">
-      <PageTitle title={t('admin:users')} icon="Users">
+      <PageTitle title={isStudentAdmin ? t('admin:students') : t('admin:users')} icon="Users">
         <div className="flex flex-wrap items-center gap-2">
+          {!isStudentAdmin && (
           <Button size="sm" variant="secondary" onClick={() => downloadAllUsersExcel().catch(toastApiError)} icon={<Download size={16} />}>
             {t('admin:downloadAllUsersData', 'Download all data')}
           </Button>
+          )}
           {canManageUsers && (
             <>
               <Button size="sm" variant="secondary" onClick={() => downloadUsersTemplate().catch(toastApiError)} icon={<Download size={16} />}>
@@ -456,7 +463,7 @@ function catalogUniversityPickerOption(uni: AdminCatalogUniversity): UniversityP
       </PageTitle>
 
       <Card>
-        <CardTitle className="mb-2">{t('admin:users')}</CardTitle>
+        <CardTitle className="mb-2">{isStudentAdmin ? t('admin:students') : t('admin:users')}</CardTitle>
         <div className="mb-4 grid grid-cols-1 gap-2 md:grid-cols-[minmax(260px,1fr)_180px_180px_auto] md:items-end">
           <Input
             label={t('admin:userSearchLabel', 'Search')}

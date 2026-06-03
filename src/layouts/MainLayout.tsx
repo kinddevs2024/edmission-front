@@ -113,6 +113,14 @@ export function MainLayout() {
         ],
       }
     }
+    if (role === 'student_admin') {
+      return {
+        navItems: [
+          { to: '/admin/users', label: t('admin:students'), icon: 'Users' },
+        ],
+        navBottomItems: [],
+      }
+    }
     if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') {
       const isFullAdmin = role === 'admin'
       return {
@@ -200,6 +208,9 @@ export function MainLayout() {
         { to: '/university/profile', label: t('university:navProfile', 'Profile'), icon: 'User' },
         { to: '/university/chat', label: t('university:navChat', 'Chat'), icon: 'MessageCircle' },
       ]
+    }
+    if (role === 'student_admin') {
+      return [{ to: '/admin/users', label: t('admin:students'), icon: 'Users' }]
     }
     if (role === 'admin' || role === 'manager' || role === 'counsellor_coordinator') {
       const isFullAdmin = role === 'admin'

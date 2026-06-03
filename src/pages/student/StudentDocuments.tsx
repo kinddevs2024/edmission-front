@@ -91,6 +91,19 @@ function getScoreStep(certType: string): number {
   return 5
 }
 
+function documentNameFromUploadUrl(url: string): string {
+  const trimmed = url.trim()
+  if (!trimmed) return ''
+  try {
+    const pathname = trimmed.includes('://') ? new URL(trimmed).pathname : trimmed
+    const filename = decodeURIComponent(pathname.split('/').pop() ?? '')
+    return filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim()
+  } catch {
+    const fallback = trimmed.split('/').pop() ?? ''
+    return fallback.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim()
+  }
+}
+
 type StudentDocumentsProps = {
   counsellorMode?: boolean
   studentUserId?: string
@@ -154,13 +167,31 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
   const getSourceLabel = (source: 'upload' | 'editor') =>
     t(`documents:studentDocumentSource.${source}`, SOURCE_LABEL[source])
 
+  const resolveUploadDocumentName = () => {
+    const trimmedName = name.trim()
+    if (trimmedName) return trimmedName
+    if (isLanguageCert) return certificateType.trim()
+    return documentNameFromUploadUrl(fileUrl) || getDocumentTypeLabel(type)
+  }
+
+  const canSubmitUpload =
+    Boolean(fileUrl.trim()) && (!isLanguageCert || Boolean(score.trim()))
+
+  const handleFileUrlChange = (url: string) => {
+    setFileUrl(url)
+    if (!url.trim() || isLanguageCert) return
+    setName((current) => {
+      if (current.trim()) return current
+      return documentNameFromUploadUrl(url)
+    })
+  }
+
   const handleAddUpload = async () => {
     if (!fileUrl.trim()) {
       setError(t('documents:studentDocuments.uploadFileFirst', 'Please upload a file first.'))
       return
     }
-    const trimmedName = name.trim()
-    const resolvedName = trimmedName || (isLanguageCert ? certificateType.trim() : '')
+    const resolvedName = resolveUploadDocumentName()
     if (!resolvedName) {
       setError(t('documents:studentDocuments.enterDocumentName', 'Please enter a document name.'))
       return
@@ -391,7 +422,12 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  {isLanguageCert ? t('documents:studentDocuments.name', 'Name') : <>{t('documents:studentDocuments.name', 'Name')} <span className="text-red-500">*</span></>}
+                  {t('documents:studentDocuments.name', 'Name')}
+                  {!isLanguageCert ? (
+                    <span className="ml-1 text-xs font-normal text-[var(--color-text-muted)]">
+                      ({t('documents:studentDocuments.nameOptionalHint', 'optional — filled from file name if empty')})
+                    </span>
+                  ) : null}
                 </label>
                 <input
                   type="text"
@@ -418,7 +454,9 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">{t('documents:studentDocuments.scoreLevel', 'Score / level')}</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    {t('documents:studentDocuments.scoreLevel', 'Score / level')} <span className="text-red-500">*</span>
+                  </label>
                   {certMeta?.scores ? (
                     <input
                       type="number"
@@ -448,14 +486,14 @@ export function StudentDocuments({ counsellorMode = false, studentUserId }: Stud
             <div data-onboarding="student-documents-upload">
               <FileUpload
                 value={fileUrl}
-                onChange={setFileUrl}
+                onChange={handleFileUrlChange}
                 inputRef={uploadInputRef}
                 accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/jfif,image/heic,image/heif,image/heic-sequence,image/heif-sequence,.heic,.heics,.heif,.heifs,application/pdf,.pdf"
                 label={t('documents:studentDocuments.fileImagePdf', 'File (image or PDF)')}
               />
             </div>
 
-            <Button className="mt-1" size="sm" onClick={handleAddUpload} disabled={adding || !fileUrl.trim() || (!name.trim() && !isLanguageCert) || (isLanguageCert && !score.trim())} loading={adding}>
+            <Button className="mt-1" size="sm" onClick={handleAddUpload} disabled={adding || !canSubmitUpload} loading={adding}>
               {t('documents:studentDocuments.submitForReview', 'Submit for review')}
             </Button>
           </div>
