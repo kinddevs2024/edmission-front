@@ -41,7 +41,8 @@ export async function navigateAfterRegistration(
     navigate('/set-password', { replace: rep })
     return
   }
-  const nextUrl = user.role === 'student' ? '/student/dashboard' : '/university/select'
+  const nextUrl =
+    user.role === 'student' ? '/student/onboarding' : '/university/select'
   const saved = getSavedLanguageIfSupported()
   const inferred = getFirstSupportedNavigatorLanguage()
   const lng = saved ?? inferred

@@ -25,6 +25,9 @@ const GoogleMobileCallback = lazy(() => import('@/pages/auth/GoogleMobileCallbac
 const TelegramAuth = lazy(() => import('@/pages/auth/TelegramAuth').then((m) => ({ default: m.TelegramAuth })))
 const MobileAppAuth = lazy(() => import('@/pages/auth/MobileAppAuth').then((m) => ({ default: m.MobileAppAuth })))
 
+const StudentRegistrationOnboarding = lazy(() =>
+  import('@/pages/student/StudentRegistrationOnboarding').then((m) => ({ default: m.StudentRegistrationOnboarding }))
+)
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard').then((m) => ({ default: m.StudentDashboard })))
 const StudentProfilePage = lazy(() => import('@/pages/student/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
 const ExploreUniversities = lazy(() => import('@/pages/student/ExploreUniversities').then((m) => ({ default: m.ExploreUniversities })))
@@ -297,6 +300,7 @@ export function Router() {
         <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
 
         <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
+          <Route path="onboarding" element={<StudentRegistrationOnboarding />} />
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="universities" element={<ExploreUniversities />} />

@@ -18,6 +18,7 @@ import { getStudentContactEmail, getStudentDisplayName } from '@/utils/studentDi
 import { toastApiError } from '@/utils/toastError'
 import { useSessionStorage } from '@/hooks/useSessionStorage'
 import { Lock, Map, MessageCircle, Search, SlidersHorizontal, User } from 'lucide-react'
+import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 
 const COUNTRY_OPTIONS = [
   { value: '', label: 'All countries' },
@@ -550,6 +551,12 @@ export function Discovery() {
               const email = getStudentContactEmail(student)
               const languages = student.languages?.slice(0, 2).map((entry) => `${entry.language}${entry.level ? ` (${entry.level})` : ''}`).join(', ')
               const degreeLabel = formatDegree(student.targetDegreeLevel)
+              const facultyLabels = (student.interestedFaculties ?? [])
+                .map((code) => {
+                  const cat = FIELD_OF_STUDY.find((item) => item.id === code)
+                  return cat ? t(cat.titleKey) : code
+                })
+                .filter(Boolean)
 
               return (
                 <div
@@ -586,6 +593,9 @@ export function Discovery() {
                       {degreeLabel ? <MetaLine label="Degree target" value={degreeLabel} /> : null}
                       {student?.budgetAmount != null && Number(student.budgetAmount) >= 0 ? (
                         <MetaLine label={t('university:budgetLabel', 'Budget')} value={`${Number(student.budgetAmount).toLocaleString()} ${student.budgetCurrency || 'USD'}`} />
+                      ) : null}
+                      {facultyLabels.length > 0 ? (
+                        <MetaLine label={t('student:interestedFacultiesHeading', 'Interested faculties')} value={facultyLabels.join(', ')} />
                       ) : null}
                       {languages ? <MetaLine label="Languages" value={languages} /> : null}
                       {student?.portfolioCompletionPercent != null && Number(student.portfolioCompletionPercent) > 0 ? <MetaLine label="Portfolio" value={`${student.portfolioCompletionPercent}%`} /> : null}

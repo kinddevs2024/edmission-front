@@ -70,9 +70,11 @@ export const FIELD_OF_STUDY: FieldOfStudyCategory[] = [
     id: 'health_medical_sciences',
     titleKey: 'common:fieldHealthMedicalSciences',
     items: [
+      'Medicine',
       'Health Sciences',
       'Nursing',
       'Pharmacy',
+      'Dentistry',
     ],
   },
   {
@@ -132,6 +134,50 @@ export const FIELD_OF_STUDY: FieldOfStudyCategory[] = [
     items: [
       'Law',
       'Forensic Science',
+    ],
+  },
+  {
+    id: 'medicine_clinical',
+    titleKey: 'common:fieldMedicineClinical',
+    items: [
+      'General Medicine',
+      'Dentistry',
+      'Veterinary Medicine',
+      'Public Health',
+      'Medical Laboratory Science',
+    ],
+  },
+  {
+    id: 'linguistics_foreign_languages',
+    titleKey: 'common:fieldLinguisticsForeignLanguages',
+    items: [
+      'English Language & Literature',
+      'Translation & Interpretation',
+      'Applied Linguistics',
+      'Foreign Languages',
+      'TEFL / TESOL',
+    ],
+  },
+  {
+    id: 'sports_physical_education',
+    titleKey: 'common:fieldSportsPhysicalEducation',
+    items: [
+      'Sports Science',
+      'Physical Education',
+      'Kinesiology',
+      'Coaching',
+      'Rehabilitation',
+    ],
+  },
+  {
+    id: 'performing_arts_music',
+    titleKey: 'common:fieldPerformingArtsMusic',
+    items: [
+      'Music',
+      'Theatre & Drama',
+      'Dance',
+      'Film & Television',
+      'Fine Arts',
     ],
   },
 ]

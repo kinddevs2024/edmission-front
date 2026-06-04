@@ -262,6 +262,8 @@ export interface DiscoverStudentItem {
     portfolioCompletionPercent?: number
     languages?: { language: string; level: string }[]
     profileVisibility?: 'private' | 'public'
+    interestedFaculties?: string[]
+    hobbies?: string[]
   }
   inPipeline: boolean
 }
