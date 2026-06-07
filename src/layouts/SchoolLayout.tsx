@@ -61,7 +61,7 @@ export function SchoolLayout() {
     <div className="flex flex-1 w-full min-h-full">
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex-1 min-w-0 min-h-full pb-mobile-nav transition-[margin-left] duration-200 flex flex-col lg:pt-16',
+        'flex-1 min-w-0 min-h-full pb-mobile-nav pt-3 sm:pt-4 transition-[margin-left] duration-200 flex flex-col lg:pt-16',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className="max-w-content mx-auto w-full px-2 sm:px-4 min-h-full flex flex-col">

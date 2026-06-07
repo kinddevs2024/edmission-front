@@ -252,157 +252,157 @@ function AuthSessionVerifier() {
 export function Router() {
   return (
     <Suspense fallback={<PageFallback />}>
-    <DocumentTitle />
-    <ScrollToTop />
+      <DocumentTitle />
+      <ScrollToTop />
       <AuthSessionVerifier />
       <SiteVisitTracker />
       <Routes>
-      <Route path="/maintenance" element={<Maintenance />} />
-      <Route path="/mobile-app-auth" element={<MobileAppAuth />} />
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-        <Route path="/login-phone" element={<Navigate to="/login" replace />} />
-        <Route path="/sing-in" element={<Navigate to="/login" replace />} />
-        <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
-        <Route path="/register-phone" element={<Navigate to="/register" replace />} />
-        <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
-        <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
-        <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
-        <Route path="/auth/yandex/callback" element={<YandexCallback />} />
-        <Route path="/auth/google/mobile" element={<GoogleMobileCallback />} />
-        <Route path="/auth/telegram" element={<PublicOnlyRoute><TelegramAuth /></PublicOnlyRoute>} />
-      </Route>
-
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<LandingOrRedirect />} />
-        <Route path="explore" element={<PublicOnlyRoute><ExploreCatalogPage /></PublicOnlyRoute>} />
-        <Route path="privacy" element={<Privacy />} />
-        <Route path="cookies" element={<Cookies />} />
-        <Route path="how-edmission-works" element={<HowEdmissionWorks />} />
-        <Route path="help/tutorials" element={<HowEdmissionWorks />} />
-        <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
-        <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
-        <Route
-          path="search"
-          element={
-            <ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
-              <SearchPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
-        <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentPage /></ProtectedRoute>} />
-        <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentSuccess /></ProtectedRoute>} />
-        <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentCancel /></ProtectedRoute>} />
-        <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
-        <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
-
-        <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
-          <Route path="onboarding" element={<StudentRegistrationOnboarding />} />
-          <Route path="dashboard" element={<StudentDashboard />} />
-          <Route path="profile" element={<StudentProfilePage />} />
-          <Route path="universities" element={<ExploreUniversities />} />
-          <Route path="universities/map" element={<UniversitiesMap />} />
-          <Route path="explore-more" element={<StudentExploreMore />} />
-          <Route path="universities/:id" element={<UniversityDetail />} />
-          <Route path="applications" element={<Navigate to="/student/interests" replace />} />
-          <Route path="interests" element={<StudentApplications />} />
-          <Route path="documents" element={<StudentDocuments />} />
-          <Route path="schools" element={<StudentSchools />} />
-          <Route path="school-invitations" element={<Navigate to="/student/schools" replace />} />
-          <Route path="offers" element={<StudentOffers />} />
-          <Route path="received-documents/:id" element={<StudentReceivedDocument />} />
-          <Route path="compare" element={<Compare />} />
-          <Route path="chat" element={<StudentChat />} />
-          <Route path="ai" element={<AIChatPage />} />
+        <Route path="/maintenance" element={<Maintenance />} />
+        <Route path="/mobile-app-auth" element={<MobileAppAuth />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+          <Route path="/login-phone" element={<Navigate to="/login" replace />} />
+          <Route path="/sing-in" element={<Navigate to="/login" replace />} />
+          <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+          <Route path="/register-phone" element={<Navigate to="/register" replace />} />
+          <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
+          <Route path="/set-password" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><SetPassword /></ProtectedRoute>} />
+          <Route path="/choose-language" element={<PublicOnlyRoute><ChooseLanguage /></PublicOnlyRoute>} />
+          <Route path="/auth/yandex/callback" element={<YandexCallback />} />
+          <Route path="/auth/google/mobile" element={<GoogleMobileCallback />} />
+          <Route path="/auth/telegram" element={<PublicOnlyRoute><TelegramAuth /></PublicOnlyRoute>} />
         </Route>
 
-        <Route
-          path="university-multi-manager"
-          element={(
-            <ProtectedRoute allowedRoles={['university_multi_manager', 'multi_university_admin']}>
-              <UniversityMultiManagerHome />
-            </ProtectedRoute>
-          )}
-        />
+        <Route path="/" element={<MainLayout />}>
+            <Route index element={<LandingOrRedirect />} />
+            <Route path="explore" element={<PublicOnlyRoute><ExploreCatalogPage /></PublicOnlyRoute>} />
+            <Route path="privacy" element={<Privacy />} />
+            <Route path="cookies" element={<Cookies />} />
+            <Route path="how-edmission-works" element={<HowEdmissionWorks />} />
+            <Route path="help/tutorials" element={<HowEdmissionWorks />} />
+            <Route path="profile" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><Profile /></ProtectedRoute>} />
+            <Route path="notifications" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><NotificationsPage /></ProtectedRoute>} />
+            <Route
+              path="search"
+              element={
+                <ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}>
+                  <SearchPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
+            <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentPage /></ProtectedRoute>} />
+            <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentSuccess /></ProtectedRoute>} />
+            <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentCancel /></ProtectedRoute>} />
+            <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
+            <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
 
-        <Route path="university" element={<ProtectedRoute allowedRoles={['university', 'university_multi_manager', 'multi_university_admin']}><UniversityLayout /></ProtectedRoute>}>
-          <Route path="select" element={<UniversitySelect />} />
-          <Route path="pending" element={<UniversityPendingVerification />} />
-          <Route path="onboarding" element={<UniversityOnboarding />} />
-          <Route path="profile" element={<UniversityProfilePage />} />
-          <Route path="dashboard" element={<UniversityDashboard />} />
-          <Route path="students/map" element={<StudentsMap />} />
-          <Route path="students/:studentId" element={<UniversityStudentProfile />} />
-          <Route path="students" element={<Discovery />} />
-          <Route path="pipeline" element={<Pipeline />} />
-          <Route path="scholarships" element={<Scholarships />} />
-          <Route path="faculties" element={<Faculties />} />
-          <Route path="analytics" element={<UniversityAnalytics />} />
-          <Route path="chat" element={<UniversityChat />} />
-          <Route path="documents" element={<UniversityDocuments />} />
-          <Route path="flyers" element={<UniversityFlyers />} />
-          <Route path="flyers/new" element={<UniversityFlyerEditorPage />} />
-          <Route path="documents/templates/new" element={<DocumentTemplateEditorPage />} />
-          <Route path="documents/templates/:id/edit" element={<DocumentTemplateEditorPage />} />
-          <Route path="offer-templates" element={<OfferTemplates />} />
-          <Route path="ai" element={<AIChatPage />} />
-        </Route>
+            <Route path="student" element={<ProtectedRoute allowedRoles={['student']}><StudentLayout /></ProtectedRoute>}>
+              <Route path="onboarding" element={<StudentRegistrationOnboarding />} />
+              <Route path="dashboard" element={<StudentDashboard />} />
+              <Route path="profile" element={<StudentProfilePage />} />
+              <Route path="universities" element={<ExploreUniversities />} />
+              <Route path="universities/map" element={<UniversitiesMap />} />
+              <Route path="explore-more" element={<StudentExploreMore />} />
+              <Route path="universities/:id" element={<UniversityDetail />} />
+              <Route path="applications" element={<Navigate to="/student/interests" replace />} />
+              <Route path="interests" element={<StudentApplications />} />
+              <Route path="documents" element={<StudentDocuments />} />
+              <Route path="schools" element={<StudentSchools />} />
+              <Route path="school-invitations" element={<Navigate to="/student/schools" replace />} />
+              <Route path="offers" element={<StudentOffers />} />
+              <Route path="received-documents/:id" element={<StudentReceivedDocument />} />
+              <Route path="compare" element={<Compare />} />
+              <Route path="chat" element={<StudentChat />} />
+              <Route path="ai" element={<AIChatPage />} />
+            </Route>
 
-        <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'student_admin', 'manager', 'counsellor_coordinator']}><AdminLayout /></ProtectedRoute>}>
-          <Route index element={<AdminIndexRedirect />} />
-          <Route path="dashboard" element={<AdminDashboardGate />} />
-          <Route path="analytics" element={<AdminOnly><AdminAnalytics /></AdminOnly>} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="users/:userId/student-profile" element={<ProtectedRoute allowedRoles={['admin', 'student_admin']}><AdminStudentProfile /></ProtectedRoute>} />
-          <Route path="users/:userId/university-profile" element={<AdminOnly><AdminUniversityProfile /></AdminOnly>} />
-          <Route path="users/:userId/counsellor-profile" element={<AdminCounsellorProfile />} />
-          <Route path="users/:userId/university-documents" element={<AdminOnly><AdminUniversityDocumentsLayout /></AdminOnly>}>
-            <Route index element={<UniversityDocuments />} />
-            <Route path="templates/new" element={<DocumentTemplateEditorPage />} />
-            <Route path="templates/:id/edit" element={<DocumentTemplateEditorPage />} />
+            <Route
+              path="university-multi-manager"
+              element={(
+                <ProtectedRoute allowedRoles={['university_multi_manager', 'multi_university_admin']}>
+                  <UniversityMultiManagerHome />
+                </ProtectedRoute>
+              )}
+            />
+
+            <Route path="university" element={<ProtectedRoute allowedRoles={['university', 'university_multi_manager', 'multi_university_admin']}><UniversityLayout /></ProtectedRoute>}>
+              <Route path="select" element={<UniversitySelect />} />
+              <Route path="pending" element={<UniversityPendingVerification />} />
+              <Route path="onboarding" element={<UniversityOnboarding />} />
+              <Route path="profile" element={<UniversityProfilePage />} />
+              <Route path="dashboard" element={<UniversityDashboard />} />
+              <Route path="students/map" element={<StudentsMap />} />
+              <Route path="students/:studentId" element={<UniversityStudentProfile />} />
+              <Route path="students" element={<Discovery />} />
+              <Route path="pipeline" element={<Pipeline />} />
+              <Route path="scholarships" element={<Scholarships />} />
+              <Route path="faculties" element={<Faculties />} />
+              <Route path="analytics" element={<UniversityAnalytics />} />
+              <Route path="chat" element={<UniversityChat />} />
+              <Route path="documents" element={<UniversityDocuments />} />
+              <Route path="flyers" element={<UniversityFlyers />} />
+              <Route path="flyers/new" element={<UniversityFlyerEditorPage />} />
+              <Route path="documents/templates/new" element={<DocumentTemplateEditorPage />} />
+              <Route path="documents/templates/:id/edit" element={<DocumentTemplateEditorPage />} />
+              <Route path="offer-templates" element={<OfferTemplates />} />
+              <Route path="ai" element={<AIChatPage />} />
+            </Route>
+
+            <Route path="admin" element={<ProtectedRoute allowedRoles={['admin', 'student_admin', 'manager', 'counsellor_coordinator']}><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<AdminIndexRedirect />} />
+              <Route path="dashboard" element={<AdminDashboardGate />} />
+              <Route path="analytics" element={<AdminOnly><AdminAnalytics /></AdminOnly>} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="users/:userId/student-profile" element={<ProtectedRoute allowedRoles={['admin', 'student_admin']}><AdminStudentProfile /></ProtectedRoute>} />
+              <Route path="users/:userId/university-profile" element={<AdminOnly><AdminUniversityProfile /></AdminOnly>} />
+              <Route path="users/:userId/counsellor-profile" element={<AdminCounsellorProfile />} />
+              <Route path="users/:userId/university-documents" element={<AdminOnly><AdminUniversityDocumentsLayout /></AdminOnly>}>
+                <Route index element={<UniversityDocuments />} />
+                <Route path="templates/new" element={<DocumentTemplateEditorPage />} />
+                <Route path="templates/:id/edit" element={<DocumentTemplateEditorPage />} />
+              </Route>
+              <Route path="verification" element={<AdminOnly><Verification /></AdminOnly>} />
+              <Route path="universities" element={<AdminOnly><AdminUniversities /></AdminOnly>} />
+              <Route path="faculties" element={<AdminOnly><AdminFaculties /></AdminOnly>} />
+              <Route path="university-requests" element={<AdminOnly><AdminUniversityRequests /></AdminOnly>} />
+              <Route path="investors" element={<AdminOnly><AdminInvestors /></AdminOnly>} />
+              <Route path="landing-certificates" element={<AdminOnly><AdminLandingCertificates /></AdminOnly>} />
+              <Route path="documents" element={<AdminOnly><AdminDocuments /></AdminOnly>} />
+              <Route path="offers" element={<AdminOnly><AdminOffers /></AdminOnly>} />
+              <Route path="interests" element={<AdminInterests />} />
+              <Route path="chats" element={<AdminOnly><AdminChats /></AdminOnly>} />
+              <Route path="scholarships" element={<AdminOnly><AdminScholarships /></AdminOnly>} />
+              <Route path="support" element={<AdminOnly><AdminSupport /></AdminOnly>} />
+              <Route path="support/:id" element={<AdminOnly><AdminSupport /></AdminOnly>} />
+              <Route path="logs" element={<AdminOnly><AdminLogs /></AdminOnly>} />
+              <Route path="health" element={<AdminOnly><SystemHealth /></AdminOnly>} />
+              <Route path="settings" element={<AdminOnly><AdminSettings /></AdminOnly>} />
+              <Route path="ai" element={<AIChatPage />} />
+            </Route>
+
+            <Route path="school" element={<ProtectedRoute allowedRoles={['school_counsellor']}><SchoolLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<SchoolDashboard />} />
+              <Route path="my-school" element={<CounsellorSchoolProfile />} />
+              <Route path="my-students/map" element={<CounsellorStudentsMap />} />
+              <Route path="my-students" element={<CounsellorStudents />} />
+              <Route path="student-interests" element={<CounsellorStudentInterests />} />
+              <Route path="student-interests/:studentId/universities/:id" element={<UniversityDetail />} />
+              <Route path="applications" element={<CounsellorApplications />} />
+              <Route path="offers" element={<CounsellorOffers />} />
+              <Route path="offers/:id" element={<CounsellorOfferDetail />} />
+              <Route path="chats" element={<CounsellorChats />} />
+              <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
+              <Route path="students/:studentId/documents" element={<CounsellorStudentDocuments />} />
+              <Route path="join-requests" element={<CounsellorJoinRequests />} />
+            </Route>
           </Route>
-          <Route path="verification" element={<AdminOnly><Verification /></AdminOnly>} />
-          <Route path="universities" element={<AdminOnly><AdminUniversities /></AdminOnly>} />
-          <Route path="faculties" element={<AdminOnly><AdminFaculties /></AdminOnly>} />
-          <Route path="university-requests" element={<AdminOnly><AdminUniversityRequests /></AdminOnly>} />
-          <Route path="investors" element={<AdminOnly><AdminInvestors /></AdminOnly>} />
-          <Route path="landing-certificates" element={<AdminOnly><AdminLandingCertificates /></AdminOnly>} />
-          <Route path="documents" element={<AdminOnly><AdminDocuments /></AdminOnly>} />
-          <Route path="offers" element={<AdminOnly><AdminOffers /></AdminOnly>} />
-          <Route path="interests" element={<AdminInterests />} />
-          <Route path="chats" element={<AdminOnly><AdminChats /></AdminOnly>} />
-          <Route path="scholarships" element={<AdminOnly><AdminScholarships /></AdminOnly>} />
-          <Route path="support" element={<AdminOnly><AdminSupport /></AdminOnly>} />
-          <Route path="support/:id" element={<AdminOnly><AdminSupport /></AdminOnly>} />
-          <Route path="logs" element={<AdminOnly><AdminLogs /></AdminOnly>} />
-          <Route path="health" element={<AdminOnly><SystemHealth /></AdminOnly>} />
-          <Route path="settings" element={<AdminOnly><AdminSettings /></AdminOnly>} />
-          <Route path="ai" element={<AIChatPage />} />
-        </Route>
 
-        <Route path="school" element={<ProtectedRoute allowedRoles={['school_counsellor']}><SchoolLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<SchoolDashboard />} />
-          <Route path="my-school" element={<CounsellorSchoolProfile />} />
-          <Route path="my-students/map" element={<CounsellorStudentsMap />} />
-          <Route path="my-students" element={<CounsellorStudents />} />
-          <Route path="student-interests" element={<CounsellorStudentInterests />} />
-          <Route path="student-interests/:studentId/universities/:id" element={<UniversityDetail />} />
-          <Route path="applications" element={<CounsellorApplications />} />
-          <Route path="offers" element={<CounsellorOffers />} />
-          <Route path="offers/:id" element={<CounsellorOfferDetail />} />
-          <Route path="chats" element={<CounsellorChats />} />
-          <Route path="students/:studentId/profile" element={<CounsellorStudentProfile />} />
-          <Route path="students/:studentId/documents" element={<CounsellorStudentDocuments />} />
-          <Route path="join-requests" element={<CounsellorJoinRequests />} />
-        </Route>
-      </Route>
-
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Suspense>
   )
 }

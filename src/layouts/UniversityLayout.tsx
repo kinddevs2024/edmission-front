@@ -118,7 +118,7 @@ export function UniversityLayout() {
       {(user?.role === 'university' || isDelegatedSession) ? <RoleOnboardingController role="university" /> : null}
       <Sidebar items={navItems} bottomItems={navBottomItems} />
       <div className={cn(
-        'flex min-h-0 min-w-0 flex-1 flex-col transition-[margin-left] duration-200',
+        'flex min-h-0 min-w-0 flex-1 flex-col pt-3 sm:pt-4 transition-[margin-left] duration-200',
         isFixedHeightPage
           ? 'h-[100dvh] max-h-[100dvh] overflow-hidden pb-0 lg:h-[100dvh] lg:max-h-[100dvh] lg:pt-16'
           : 'h-full pb-mobile-nav lg:pt-16',

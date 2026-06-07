@@ -21,9 +21,11 @@ export function AuthLayout() {
             </div>
           }
         >
-          <AuthStepTransition stepKey={location.pathname}>
-            <Outlet />
-          </AuthStepTransition>
+          <div className="relative min-h-[min(70dvh,32rem)]">
+            <AuthStepTransition stepKey={location.key} className="absolute inset-0 w-full">
+              <Outlet />
+            </AuthStepTransition>
+          </div>
         </Suspense>
       </div>
     </div>

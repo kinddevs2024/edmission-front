@@ -278,11 +278,11 @@ export function MainLayout() {
           <Sidebar items={navItems} bottomItems={navBottomItems} />
           <div
             className={cn(
-              'flex h-full min-h-0 min-w-0 flex-1 flex-col pb-mobile-nav transition-[margin-left] duration-200 lg:pt-16',
+              'flex h-full min-h-0 min-w-0 flex-1 flex-col pb-mobile-nav pt-3 sm:pt-4 transition-[margin-left] duration-200 lg:pt-16',
               collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
             )}
           >
-            <main className="flex h-full min-h-0 flex-1 flex-col overflow-auto bg-transparent p-3 pb-6 sm:p-4 md:pb-12">
+            <main className="flex h-full min-h-0 flex-1 flex-col overflow-auto bg-transparent px-3 pb-6 pt-3 sm:px-4 sm:pt-4 md:pb-12">
               <div className="max-w-content mx-auto flex min-h-0 w-full flex-col">
                 <Suspense fallback={<ContentFallback />}>
                   <Outlet />
@@ -295,7 +295,7 @@ export function MainLayout() {
         ) : (
           <main
             className={cn(
-              'flex h-full min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent p-2 pb-mobile-nav sm:p-2 md:pb-12',
+              'flex h-full min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent px-2 pb-mobile-nav pt-3 sm:px-2 sm:pt-4 md:pb-12',
               isChatPage && 'overflow-hidden'
             )}
           >

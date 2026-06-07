@@ -16,7 +16,6 @@ type FormData = { email: string }
 export function ForgotPassword() {
   const { t } = useTranslation(['common', 'auth', 'errors'])
   const [sent, setSent] = useState(false)
-  const [resetLink, setResetLink] = useState('')
   const [telegramPhone, setTelegramPhone] = useState('')
   const [code, setCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -43,7 +42,6 @@ export function ForgotPassword() {
     setLoading(true)
     try {
       const result = await forgotPassword(data.email)
-      setResetLink(result.resetLink ?? '')
       setTelegramPhone(result.mode === 'telegram_code' ? result.phone ?? data.email : '')
       setSent(true)
     } catch (err) {
@@ -137,16 +135,8 @@ export function ForgotPassword() {
       <Card className="p-6">
         <CardTitle className="mb-2">{t('auth:resetPassword', 'Reset password')}</CardTitle>
         <p className="text-[var(--color-text-muted)] mb-4">
-          {t('auth:resetPasswordSent')}
+          {t('auth:resetPasswordSent', 'If an account exists for this email, we sent a password reset link to it.')}
         </p>
-        {resetLink && (
-          <p className="mb-4 break-all text-sm text-[var(--color-text-muted)]">
-            Dev reset link:{' '}
-            <a href={resetLink} className="text-primary-accent hover:underline">
-              {resetLink}
-            </a>
-          </p>
-        )}
         <Link to="/login" className="text-primary-accent hover:underline">{t('common:back')}</Link>
       </Card>
     )

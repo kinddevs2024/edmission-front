@@ -77,6 +77,7 @@ export function StudentLayout() {
       <div
         className={cn(
           "flex min-h-0 min-w-0 flex-1 flex-col transition-[margin-left] duration-200",
+          !isOnboardingPage && "pt-3 sm:pt-4",
           isFixedHeightPage
             ? "h-[100dvh] max-h-[100dvh] overflow-hidden pb-0 lg:h-[100dvh] lg:max-h-[100dvh] lg:pt-16"
             : "h-full pb-mobile-nav lg:pt-16",
@@ -94,6 +95,7 @@ export function StudentLayout() {
             isFixedHeightPage
               ? "h-full min-h-0 flex-1 overflow-hidden"
               : "min-h-0 flex-1",
+            isOnboardingPage && "pt-0 sm:pt-0",
           )}
         >
           <Suspense fallback={<ContentFallback />}>
