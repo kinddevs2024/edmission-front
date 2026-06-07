@@ -17,6 +17,16 @@ input.edmission-password-custom-toggle::-webkit-textfield-decoration-container {
   display: none;
 }
 
+@keyframes onAutoFillStart {
+  from { opacity: 1; }
+  to { opacity: 1; }
+}
+
+input:-webkit-autofill {
+  animation-name: onAutoFillStart;
+  animation-duration: 0.01s;
+}
+
 /* Design tokens: semantic colors + elevation. Prefer var(--*) in components; extend Tailwind via theme.extend when needed. */
 :root {
   --color-primary-dark: #0f172a;

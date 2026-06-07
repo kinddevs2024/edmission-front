@@ -126,7 +126,7 @@ export function UniversityLayout() {
       )}>
         <div
           className={cn(
-            'mx-auto flex w-full flex-col animate-page-enter',
+            'mx-auto flex w-full flex-col',
             isChatPage
               ? 'h-full min-h-0 flex-1 max-w-none overflow-hidden px-0 sm:px-0'
               : 'max-w-content px-2 sm:px-4',

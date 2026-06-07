@@ -102,7 +102,7 @@ export function AdminLayout() {
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
         <div className={cn(
-          'max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter flex flex-col',
+          'max-w-content mx-auto w-full px-2 sm:px-4 flex flex-col',
           isFixedHeightPage ? 'flex-1 min-h-0 overflow-hidden' : 'min-h-full'
         )}>
           <Suspense fallback={<ContentFallback />}>

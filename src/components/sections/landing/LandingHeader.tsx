@@ -3,9 +3,10 @@ import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
-import { Menu, Send, UserRound, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { BrandLogo } from '@/components/layout/BrandLogo'
+import { LandingSocialAuthLinks } from '@/components/auth/AuthSocialButtons'
 import { loadLanguage } from '@/i18n'
 import { STORAGE_KEY, supportedLngs, type SupportedLng } from '@/i18n/config'
 import { Button } from '@/components/ui/Button'
@@ -357,45 +358,8 @@ export function LandingHeader() {
                   </Button>
                 </div>
                 {(showGoogleAuth || showYandexAuth) && (
-                  <div className="pt-2 space-y-2">
-                    {showGoogleAuth && (
-                      <Link
-                        to="/login"
-                        onClick={closeMenu}
-                        className="flex w-full items-center justify-center gap-2 rounded-input border border-[#dcdfe4] bg-white px-3 py-2.5 text-sm font-medium text-[#1f1f1f] hover:bg-[#f7f8fa] transition-colors"
-                      >
-                        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
-                          <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.8-5.4 3.8-3.3 0-5.9-2.7-5.9-6s2.6-6 5.9-6c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 6.9 2.2 2.8 6.3 2.8 11.4S6.9 20.6 12 20.6c6.9 0 9.2-4.8 9.2-7.2 0-.5 0-.8-.1-1.2H12z" />
-                          <path fill="#34A853" d="M3.7 7.8l3.2 2.3C7.7 8 9.7 6.4 12 6.4c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 8.4 2.2 5.2 4.3 3.7 7.8z" />
-                          <path fill="#FBBC05" d="M12 20.6c2.6 0 4.8-.9 6.3-2.5l-3-2.5c-.8.6-1.9 1.1-3.3 1.1-2.5 0-4.6-1.7-5.3-4l-3.3 2.5c1.5 3.7 4.9 5.4 8.6 5.4z" />
-                          <path fill="#4285F4" d="M21.2 13.4c0-.6-.1-1.1-.2-1.6H12v3.9h5.4c-.3 1.5-1.2 2.6-2.4 3.4l3 2.5c1.8-1.6 3.2-4 3.2-8.2z" />
-                        </svg>
-                        <span>{t('auth:continueWithGoogle')}</span>
-                      </Link>
-                    )}
-                    {showYandexAuth && (
-                      <Link
-                        to="/login"
-                        onClick={closeMenu}
-                        className="flex w-full items-center justify-between rounded-input bg-black px-3 py-2 text-sm font-medium text-white hover:opacity-95 transition-opacity"
-                      >
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FC3F1D] text-sm font-bold">Я</span>
-                        <span className="mx-2 flex-1 text-center">{t('auth:continueWithYandex')}</span>
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#404040]">
-                          <UserRound className="h-4 w-4" aria-hidden />
-                        </span>
-                      </Link>
-                    )}
-                    <Link
-                      to="/login"
-                      onClick={closeMenu}
-                      className="flex w-full items-center justify-center gap-2 rounded-input border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm font-medium text-sky-700 hover:bg-sky-100 transition-colors"
-                    >
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-white">
-                        <Send className="h-4 w-4" aria-hidden />
-                      </span>
-                      <span>{t('auth:continueWithTelegram', 'Continue with Telegram')}</span>
-                    </Link>
+                  <div className="pt-3">
+                    <LandingSocialAuthLinks onNavigate={closeMenu} />
                   </div>
                 )}
               </nav>

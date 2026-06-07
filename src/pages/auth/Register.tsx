@@ -22,6 +22,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
+import { AuthStepTransition } from "@/components/auth/AuthStepTransition";
 import { BrandMark } from "@/components/layout/BrandLogo";
 
 type RegisterRole = "student" | "university";
@@ -71,6 +72,8 @@ export function Register() {
   const [codeLoading, setCodeLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
   const [resendLoading, setResendLoading] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [codeReadOnly, setCodeReadOnly] = useState(true);
 
   const passwordSchema = useMemo(
     () =>
@@ -159,6 +162,8 @@ export function Register() {
       });
       if ("needsVerification" in result && result.needsVerification) {
         setPendingEmail(result.email);
+        setVerificationCode("");
+        setCodeReadOnly(true);
         setResendCooldown(60);
         setStep("code");
       } else if ("user" in result && result.user) {
@@ -195,9 +200,7 @@ export function Register() {
 
   const onVerifyEmailCode = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const codeInput = form.elements.namedItem("code") as HTMLInputElement;
-    const code = codeInput?.value?.trim().replace(/\D/g, "").slice(0, 6);
+    const code = verificationCode.trim().replace(/\D/g, "").slice(0, 6);
     if (!code || code.length !== 6) {
       setCodeError(`${t("auth:enterCode")} - 6 digits`);
       return;
@@ -217,57 +220,68 @@ export function Register() {
 
   if (step === "code") {
     return (
-      <Card className="p-6">
-        <div className="mb-5 flex items-center gap-3">
-          <BrandMark className="h-10 w-10" />
-          <div>
-            <CardTitle>{t("auth:verifyEmail")}</CardTitle>
-            <p className="text-sm text-[var(--color-text-muted)]">
-              {t("auth:verificationCodeSent", { email: pendingEmail })}
-            </p>
+      <AuthStepTransition stepKey="code">
+        <Card className="p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <BrandMark className="h-10 w-10" />
+            <div>
+              <CardTitle>{t("auth:verifyEmail")}</CardTitle>
+              <p className="text-sm text-[var(--color-text-muted)]">
+                {t("auth:verificationCodeSentIntro", "We sent a 6-digit code to:")}
+              </p>
+              <p className="mt-1 text-sm font-medium text-[var(--color-text)] break-all">{pendingEmail}</p>
+            </div>
           </div>
-        </div>
-        <form onSubmit={onVerifyEmailCode} className="space-y-4">
-          <Input
-            label={t("auth:enterCode")}
-            name="code"
-            placeholder={t("auth:codePlaceholder")}
-            maxLength={6}
-            autoComplete="one-time-code"
-            error={codeError}
-            onChange={(e) => {
-              e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
-              setCodeError("");
-            }}
-          />
-          <Button type="submit" className="w-full" loading={codeLoading} disabled={codeLoading}>
-            {t("auth:verifyAndContinue")}
-          </Button>
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => setStep("form")}
-              className="cursor-pointer text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            >
-              {t("common:back", "Back")}
-            </button>
-            {resendCooldown > 0 ? (
-              <span className="text-sm text-[var(--color-text-muted)]">
-                {t("auth:resendIn", { seconds: resendCooldown })}
-              </span>
-            ) : (
+          <form onSubmit={onVerifyEmailCode} className="space-y-4" autoComplete="off">
+            <Input
+              label={t("auth:enterCode")}
+              name="verification-code"
+              value={verificationCode}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder={t("auth:codePlaceholder")}
+              maxLength={6}
+              autoComplete="one-time-code"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              readOnly={codeReadOnly}
+              onFocus={() => setCodeReadOnly(false)}
+              error={codeError}
+              onChange={(e) => {
+                setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6));
+                setCodeError("");
+              }}
+            />
+            <Button type="submit" className="w-full" loading={codeLoading} disabled={codeLoading}>
+              {t("auth:verifyAndContinue")}
+            </Button>
+            <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
-                onClick={onResend}
-                disabled={resendLoading}
-                className="cursor-pointer text-sm font-medium text-primary-accent hover:opacity-80 disabled:opacity-50"
+                onClick={() => setStep("form")}
+                className="cursor-pointer text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               >
-                {resendLoading ? t("common:loading") : t("auth:resendCode")}
+                {t("common:back", "Back")}
               </button>
-            )}
-          </div>
-        </form>
-      </Card>
+              {resendCooldown > 0 ? (
+                <span className="text-sm text-[var(--color-text-muted)]">
+                  {t("auth:resendIn", { seconds: resendCooldown })}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onResend}
+                  disabled={resendLoading}
+                  className="cursor-pointer text-sm font-medium text-primary-accent hover:opacity-80 disabled:opacity-50"
+                >
+                  {resendLoading ? t("common:loading") : t("auth:resendCode")}
+                </button>
+              )}
+            </div>
+          </form>
+        </Card>
+      </AuthStepTransition>
     );
   }
 
@@ -275,6 +289,7 @@ export function Register() {
     const roles: RegisterRole[] = ["student", "university"];
 
     return (
+      <AuthStepTransition stepKey="role">
       <Card className="overflow-hidden p-0">
         <div className="border-b border-[var(--color-border)] p-6 text-center">
           <BrandMark className="mx-auto h-12 w-12" />
@@ -336,10 +351,12 @@ export function Register() {
           </Link>
         </div>
       </Card>
+      </AuthStepTransition>
     );
   }
 
   return (
+    <AuthStepTransition stepKey="form">
     <Card className="p-6">
       <div className="mb-5 flex items-center gap-3">
         <button
@@ -478,5 +495,6 @@ export function Register() {
         {t("auth:changeAccountType", "Change account type")}
       </button>
     </Card>
+    </AuthStepTransition>
   );
 }

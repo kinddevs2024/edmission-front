@@ -64,7 +64,7 @@ export function SchoolLayout() {
         'flex-1 min-w-0 min-h-full pb-mobile-nav transition-[margin-left] duration-200 flex flex-col lg:pt-16',
         collapsed ? 'lg:ml-[72px]' : 'lg:ml-sidebar'
       )}>
-        <div className="max-w-content mx-auto w-full px-2 sm:px-4 animate-page-enter min-h-full flex flex-col">
+        <div className="max-w-content mx-auto w-full px-2 sm:px-4 min-h-full flex flex-col">
           <Suspense fallback={<ContentFallback />}>
             <Outlet />
           </Suspense>

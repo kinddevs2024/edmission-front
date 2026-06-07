@@ -1,10 +1,13 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Suspense } from 'react'
 import { useTheme } from '@/hooks/useTheme'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
+import { AuthStepTransition } from '@/components/auth/AuthStepTransition'
 
 export function AuthLayout() {
   useTheme()
+  const location = useLocation()
+
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col items-center justify-center bg-surface-light dark:bg-primary-dark p-3 pt-14 sm:p-4 sm:pt-16 safe-area-pb">
       <div className="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
@@ -18,7 +21,9 @@ export function AuthLayout() {
             </div>
           }
         >
-          <Outlet />
+          <AuthStepTransition stepKey={location.pathname}>
+            <Outlet />
+          </AuthStepTransition>
         </Suspense>
       </div>
     </div>

@@ -92,7 +92,10 @@ export function Login() {
           label={t("auth:emailOrPhone", "Email or phone")}
           type="text"
           autoComplete="username"
-          placeholder={t("auth:emailOrPhonePlaceholder", "email@example.com or +998...")}
+          placeholder={t(
+            "auth:emailOrPhonePlaceholder",
+            "email@example.com or +998...",
+          )}
           error={errors.email?.message}
           {...register("email")}
         />
@@ -114,15 +117,26 @@ export function Login() {
           )}
         />
         {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-        <Button type="submit" className="w-full" loading={loading} disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          loading={loading}
+          disabled={loading}
+        >
           {t("common:signIn", "Sign in")}
         </Button>
       </form>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <Link to="/forgot-password" className="text-sm text-primary-accent hover:underline">
+        <Link
+          to="/forgot-password"
+          className="text-sm text-primary-accent hover:underline"
+        >
           {t("auth:forgotPassword")}
         </Link>
-        <Link to="/register" className="text-xs text-[var(--color-text-muted)] hover:underline text-right">
+        <Link
+          to="/register"
+          className="text-xs text-[var(--color-text-muted)] hover:underline text-right"
+        >
           {t("auth:noAccountShort", "No account?")} {t("common:register")}
         </Link>
       </div>
@@ -142,7 +156,6 @@ export function Login() {
           mode="login"
           loading={loading}
           role="student"
-          googleAutoPrompt
           yandexAcceptTerms
           setLoading={setLoading}
           setSubmitError={setSubmitError}

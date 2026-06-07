@@ -5,7 +5,7 @@
     "valueLine": "Universitetlar va stipendiyalar bilan bitta platformada moslashing. Vaqt va pulingizni tejang.",
     "subtitle": "Talabalar va universitetlarni vositachilarsiz bog'laymiz",
     "description": "Edmission — AI asosidagi moslashtirish va to'g'ridan-to'g'ri muloqot orqali talabalar hamda universitetlar o'rtasida shaffof qabul jarayonini ta'minlaydigan milliy raqamli platforma.",
-    "primaryCta": "Bepul hisob yaratish",
+    "primaryCta": "Universitet takliflarini olish",
     "secondaryCta": "Men universitetman",
     "exploreBtn": "Universitetlarni ko'rish",
     "registerUniversityBtn": "Universitetni ro'yxatdan o'tkazish",
@@ -103,7 +103,7 @@
   "ctaBlock": {
     "title": "Boshlashga tayyormisiz?",
     "description": "Profil yarating va universitetlar va stipendiyalar bilan tanishing.",
-    "button": "Hisob yaratish"
+    "button": "Universitet takliflarini olish"
   },
   "explore": {
     "eyebrow": "Ko'rish",

@@ -36,6 +36,7 @@ export function MainLayout() {
   }, [location.pathname])
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
   const showSidebar = isAuthenticated && isSidebarPath(location.pathname)
+  const isStudentOnboarding = location.pathname === '/student/onboarding'
   const isChatPage = location.pathname === '/student/chat' || location.pathname === '/university/chat' || location.pathname === '/school/chats'
 
   useAutoReadNotifications(role ?? null, isAuthenticated)
@@ -264,7 +265,7 @@ export function MainLayout() {
   return (
     <ElevenLabsSupportProvider>
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
-      {isAuthenticated && <TopBar />}
+      {isAuthenticated && !isStudentOnboarding && <TopBar />}
       <div
         ref={scrollContainerRef}
         className={cn(
@@ -311,7 +312,7 @@ export function MainLayout() {
           </main>
         )}
       </div>
-      {isAuthenticated && <FloatingAIButton />}
+      {isAuthenticated && !isStudentOnboarding && <FloatingAIButton />}
       <CookieConsentBanner />
     </div>
     </ElevenLabsSupportProvider>

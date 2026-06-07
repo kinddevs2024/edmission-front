@@ -5,7 +5,7 @@
     "valueLine": "Get matched with universities and scholarships in one platform. Save time and money.",
     "subtitle": "Connecting Students and Universities Without Intermediaries",
     "description": "Edmission is a national digital platform that enables transparent admissions between students and universities through AI-powered matching and direct communication.",
-    "primaryCta": "Create free account",
+    "primaryCta": "Get university offers",
     "secondaryCta": "I'm a university",
     "exploreBtn": "Explore Universities",
     "registerUniversityBtn": "Register University",
@@ -112,7 +112,7 @@
   "ctaBlock": {
     "title": "Ready to get started?",
     "description": "Create your profile and get matched with universities and scholarship opportunities.",
-    "button": "Create free account"
+    "button": "Get university offers"
   },
   "explore": {
     "eyebrow": "Explore",
