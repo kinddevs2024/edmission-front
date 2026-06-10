@@ -2,7 +2,7 @@ import { api, getApiError } from './api'
 import type { User, LoginResponse } from '@/types/user'
 import { useAuthStore } from '@/store/authStore'
 import { useAIChatStore } from '@/store/aiChatStore'
-import { saveAuth, clearAuth, getStoredRefreshToken } from './authPersistence'
+import { saveAuth, clearAuth } from './authPersistence'
 import { queryClient } from '@/app/queryClient'
 import i18n, { loadLanguage } from '@/i18n'
 import { STORAGE_KEY, type SupportedLng } from '@/i18n/config'
@@ -83,7 +83,7 @@ export interface RegisterPayload {
 }
 
 export type RegisterResult =
-  | { needsVerification: true; email: string }
+  | { needsVerification: true; email: string; emailSent?: boolean; devVerificationCode?: string }
   | LoginResponse
 
 export interface PhoneRegisterStartPayload {
@@ -418,8 +418,17 @@ export async function verifyEmailByCode(email: string, code: string): Promise<Lo
 }
 
 /** Resend 6-digit verification code. Available after 60s cooldown. */
-export async function resendVerificationCode(email: string): Promise<void> {
-  await api.post('/auth/verify-email/resend', { email })
+export async function resendVerificationCode(email: string): Promise<{
+  success: true
+  emailSent?: boolean
+  devVerificationCode?: string
+}> {
+  const { data } = await api.post<{
+    success: true
+    emailSent?: boolean
+    devVerificationCode?: string
+  }>('/auth/verify-email/resend', { email })
+  return data
 }
 
 export async function startLinkEmail(email: string): Promise<{ success: true; email: string; expiresAt: string }> {
@@ -432,15 +441,14 @@ export async function verifyLinkEmail(payload: { email: string; code: string }):
   useAuthStore.getState().setUser(data)
   const token = useAuthStore.getState().accessToken
   if (token) {
-    saveAuth(data, token, getStoredRefreshToken())
+    saveAuth(data, token)
   }
   return data
 }
 
 export async function logout(): Promise<void> {
-  const refreshToken = getStoredRefreshToken()
   try {
-    await api.post('/auth/logout', { refreshToken: refreshToken ?? undefined })
+    await api.post('/auth/logout')
   } finally {
     clearPendingTelegramAuthSession()
     clearAuth()
@@ -498,7 +506,7 @@ export async function getProfile(): Promise<User> {
   useAuthStore.getState().setUser(data)
   const token = useAuthStore.getState().accessToken
   if (token) {
-    saveAuth(data, token, getStoredRefreshToken())
+    saveAuth(data, token)
   }
   return data
 }
@@ -508,7 +516,7 @@ export async function updateProfile(patch: Partial<Pick<User, 'name' | 'phone' |
   useAuthStore.getState().setUser(data)
   const token = useAuthStore.getState().accessToken
   if (token) {
-    saveAuth(data, token, getStoredRefreshToken())
+    saveAuth(data, token)
   }
   return data
 }

@@ -1,5 +1,5 @@
 import { api } from './api'
-import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
+import { saveAuth, clearAuth } from './authPersistence'
 import { useAuthStore } from '@/store/authStore'
 import { useAIChatStore } from '@/store/aiChatStore'
 
@@ -27,11 +27,9 @@ export interface AIStatus {
 export type StreamChunk = { type: 'content' | 'thinking'; text: string }
 
 async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = getStoredRefreshToken()
-  if (!refreshToken) return null
   try {
-    const { data } = await api.post<{ user: import('@/types/user').User; accessToken: string }>('/auth/refresh', { refreshToken })
-    saveAuth(data.user, data.accessToken, refreshToken)
+    const { data } = await api.post<{ user: import('@/types/user').User; accessToken: string }>('/auth/refresh')
+    saveAuth(data.user, data.accessToken)
     useAuthStore.getState().setAuth(data.user, data.accessToken)
     return data.accessToken
   } catch {

@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { useAuthStore } from '@/store/authStore'
 import { clearAuth, isAuthExpired, loadAuth, updateLastActivity } from '@/services/authPersistence'
 
-const AUTH_KEYS = ['auth_user', 'auth_accessToken', 'auth_refreshToken', 'auth_lastActivityAt'] as const
+const AUTH_KEYS = ['auth_user', 'auth_accessToken', 'auth_lastActivityAt'] as const
 
 const authSeedMessageSchema = z.object({
   __edmission: z.literal(true),
@@ -52,7 +52,6 @@ function postAuthStateToNative(): void {
         type: 'edmission.auth',
         user: localStorage.getItem('auth_user'),
         accessToken: localStorage.getItem('auth_accessToken'),
-        refreshToken: localStorage.getItem('auth_refreshToken'),
         lastActivityAt: localStorage.getItem('auth_lastActivityAt'),
       })
     )
@@ -96,13 +95,10 @@ export function applyNativeShellAuthSeed(seed: {
 }): void {
   installLocalStorageAuthBridge()
   try {
+    void seed.refreshToken
     localStorage.setItem('auth_user', seed.userJson)
     localStorage.setItem('auth_accessToken', seed.accessToken)
-    if (seed.refreshToken != null && seed.refreshToken !== '') {
-      localStorage.setItem('auth_refreshToken', seed.refreshToken)
-    } else {
-      localStorage.removeItem('auth_refreshToken')
-    }
+    localStorage.removeItem('auth_refreshToken')
     localStorage.setItem('auth_lastActivityAt', String(Date.now()))
     postAuthStateToNative()
   } catch {

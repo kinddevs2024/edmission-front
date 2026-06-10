@@ -74,6 +74,7 @@ export function Register() {
   const [resendLoading, setResendLoading] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [codeReadOnly, setCodeReadOnly] = useState(true);
+  const [verificationEmailSent, setVerificationEmailSent] = useState(true);
 
   const passwordSchema = useMemo(
     () =>
@@ -162,8 +163,9 @@ export function Register() {
       });
       if ("needsVerification" in result && result.needsVerification) {
         setPendingEmail(result.email);
-        setVerificationCode("");
-        setCodeReadOnly(true);
+        setVerificationEmailSent(result.emailSent !== false);
+        setVerificationCode(result.devVerificationCode ?? "");
+        setCodeReadOnly(!result.devVerificationCode);
         setResendCooldown(60);
         setStep("code");
       } else if ("user" in result && result.user) {
@@ -188,7 +190,12 @@ export function Register() {
     setResendLoading(true);
     setCodeError("");
     try {
-      await resendVerificationCode(pendingEmail);
+      const result = await resendVerificationCode(pendingEmail);
+      setVerificationEmailSent(result.emailSent !== false)
+      if (result.devVerificationCode) {
+        setVerificationCode(result.devVerificationCode)
+        setCodeReadOnly(false)
+      }
       setResendCooldown(60);
     } catch (err) {
       const apiErr = getApiError(err);
@@ -227,11 +234,18 @@ export function Register() {
             <div>
               <CardTitle>{t("auth:verifyEmail")}</CardTitle>
               <p className="text-sm text-[var(--color-text-muted)]">
-                {t("auth:verificationCodeSentIntro", "We sent a 6-digit code to:")}
+                {verificationEmailSent
+                  ? t("auth:verificationCodeSentIntro", "We sent a 6-digit code to:")
+                  : t("auth:verificationEmailFailedIntro", "Email delivery failed. Development verification is active for:")}
               </p>
               <p className="mt-1 text-sm font-medium text-[var(--color-text)] break-all">{pendingEmail}</p>
             </div>
           </div>
+          {!verificationEmailSent ? (
+            <p className="mb-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-500">
+              {t("auth:verificationEmailFailedHint", "The code was not emailed because SMTP authentication failed. A local development code was inserted below.")}
+            </p>
+          ) : null}
           <form onSubmit={onVerifyEmailCode} className="space-y-4" autoComplete="off">
             <Input
               label={t("auth:enterCode")}

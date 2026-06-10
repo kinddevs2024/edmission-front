@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from 'axios'
 import { useAuthStore } from '@/store/authStore'
-import { getStoredRefreshToken, saveAuth, clearAuth } from './authPersistence'
+import { saveAuth, clearAuth } from './authPersistence'
 import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
 import { getInitialLanguage, getSavedLanguageIfSupported, supportedLngs } from '@/i18n/config'
 
@@ -99,18 +99,15 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
 
-      const refreshToken = getStoredRefreshToken()
-      if (refreshToken) {
-        originalRequest._retry = true
-        try {
-          const { data } = await api.post<{ user: import('@/types/user').User; accessToken: string }>('/auth/refresh', { refreshToken })
-          saveAuth(data.user, data.accessToken, refreshToken)
-          useAuthStore.getState().setAuth(data.user, data.accessToken)
-          if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
-          return api(originalRequest)
-        } catch {
-          /* fall through to clear and redirect */
-        }
+      originalRequest._retry = true
+      try {
+        const { data } = await api.post<{ user: import('@/types/user').User; accessToken: string }>('/auth/refresh')
+        saveAuth(data.user, data.accessToken)
+        useAuthStore.getState().setAuth(data.user, data.accessToken)
+        if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+        return api(originalRequest)
+      } catch {
+        /* fall through to clear and redirect */
       }
       forceLogout()
       return Promise.reject(error)

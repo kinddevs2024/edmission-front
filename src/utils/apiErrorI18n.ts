@@ -26,9 +26,12 @@ export function getApiErrorKey(error: unknown): string {
   if (axios.isAxiosError(error) && error.response?.data) {
     const code = (error.response.data as { code?: string }).code
     if (code === 'OAUTH_SIGNUP_REQUIRED') return 'oauthSignUpRequired'
+    if (code === 'EMAIL_ALREADY_REGISTERED') return 'userExists'
+    if (error.response.status === 409 && String(error.config?.url ?? '').includes('/auth/register')) return 'userExists'
     if (error.response.status === 401) return 'invalidCredentials'
     if (error.response.status === 403) return 'forbidden'
     if (error.response.status === 429) return 'rateLimit'
+    if (error.response.status === 503 || code === 'SERVICE_UNAVAILABLE') return 'serviceUnavailable'
     if (error.response.status >= 500) return 'serverError'
   }
   const msg = getMessage(error).toLowerCase()

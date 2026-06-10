@@ -13,16 +13,16 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
 export interface StoredAuth {
   user: User
   accessToken: string
-  refreshToken: string | null
   lastActivityAt: number
 }
 
 export function saveAuth(user: User, accessToken: string, refreshToken?: string | null): void {
   try {
+    void refreshToken
     const now = Date.now()
     localStorage.setItem(KEY_USER, JSON.stringify(user))
     localStorage.setItem(KEY_ACCESS, accessToken)
-    if (refreshToken != null) localStorage.setItem(KEY_REFRESH, refreshToken)
+    localStorage.removeItem(KEY_REFRESH)
     localStorage.setItem(KEY_ACTIVITY, String(now))
   } catch {
     /* ignore */
@@ -38,19 +38,14 @@ export function loadAuth(): StoredAuth | null {
     const user = JSON.parse(userStr) as User
     const at = Number(lastActivityAt)
     if (Number.isNaN(at)) return null
-    const refreshToken = localStorage.getItem(KEY_REFRESH)
-    return { user, accessToken, refreshToken, lastActivityAt: at }
+    return { user, accessToken, lastActivityAt: at }
   } catch {
     return null
   }
 }
 
 export function getStoredRefreshToken(): string | null {
-  try {
-    return localStorage.getItem(KEY_REFRESH)
-  } catch {
-    return null
-  }
+  return null
 }
 
 export function isAuthExpired(lastActivityAt: number): boolean {
