@@ -65,7 +65,7 @@ function FlowColumn({
                 <span className={`absolute inset-y-0 left-0 w-1 ${flow.theme.accent}`} aria-hidden />
                 <div className="flex items-start gap-4">
                   <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-sm font-semibold ${flow.theme.ordinal}`}>
-                    {String(index + 1).padStart(2, '0')}
+                    {String(index + 1).padStart(1, '0')}
                   </span>
                   <div className="min-w-0">
                     <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${flow.theme.ordinalText}`}>

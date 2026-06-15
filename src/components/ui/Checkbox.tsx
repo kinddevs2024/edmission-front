@@ -6,6 +6,18 @@ type CheckboxProps = Omit<React.ComponentProps<'input'>, 'type' | 'size'> & {
   color?: 'blue' | 'red' | 'green' | 'amber' | 'teal' | 'indigo' | 'purple' | 'pink' | 'gray'
 }
 
+const checkedColorClasses: Record<NonNullable<CheckboxProps['color']>, string> = {
+  blue: 'peer-checked:bg-blue-500',
+  red: 'peer-checked:bg-red-500',
+  green: 'peer-checked:bg-green-500',
+  amber: 'peer-checked:bg-amber-500',
+  teal: 'peer-checked:bg-teal-500',
+  indigo: 'peer-checked:bg-indigo-500',
+  purple: 'peer-checked:bg-purple-500',
+  pink: 'peer-checked:bg-pink-500',
+  gray: 'peer-checked:bg-gray-500',
+}
+
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   function Checkbox({ label, color = 'green', className, ...props }, ref) {
     return (
@@ -23,7 +35,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               'bg-[var(--color-card)] border-[var(--color-border)]',
               'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_2px_0_0_rgba(0,0,0,0.05)]',
               'group-hover:border-[var(--color-text-muted)]',
-              'peer-checked:bg-primary-accent peer-checked:border-transparent peer-checked:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_0_0_rgba(0,0,0,0.15)]',
+              'peer-checked:border-transparent peer-checked:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_0_0_rgba(0,0,0,0.15)]',
+              checkedColorClasses[color],
               'peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary-accent peer-focus-visible:ring-offset-2',
               'peer-disabled:opacity-50 peer-disabled:pointer-events-none'
             )}

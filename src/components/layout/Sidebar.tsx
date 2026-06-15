@@ -86,6 +86,14 @@ export function Sidebar({
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const { user } = useAuth();
   const dashboardPath = getDashboardPath(user);
+  const subscriptionItem: NavItem = {
+    to: "/payment",
+    label: t("subscription", "Subscription"),
+    icon: "CreditCard",
+  };
+  const visibleBottomItems = user && ![...items, ...bottomItems].some((item) => item.to === "/payment")
+    ? [subscriptionItem, ...bottomItems]
+    : bottomItems;
 
   return (
     <aside
@@ -123,9 +131,9 @@ export function Sidebar({
             </div>
           ))}
         </div>
-        {bottomItems.length > 0 && (
+        {visibleBottomItems.length > 0 && (
           <div className="mt-auto pt-3 border-t border-white/10 space-y-0.5 shrink-0">
-            {bottomItems.map((item) => (
+            {visibleBottomItems.map((item) => (
               <NavLinkItem key={item.to} {...item} collapsed={collapsed} />
             ))}
           </div>

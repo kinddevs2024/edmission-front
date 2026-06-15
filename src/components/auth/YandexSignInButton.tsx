@@ -159,7 +159,7 @@ export function YandexSignInButton({
             const msg = err instanceof Error ? err.message : String(err)
             onErrorRef.current(msg || t('errors:unknown'))
           })
-      } catch (e) {
+      } catch {
         if (!cancelled) {
           setFallbackMode(true)
         }
@@ -170,7 +170,7 @@ export function YandexSignInButton({
       cancelled = true
       el.innerHTML = ''
     }
-  }, [clientId, disabled, fallbackMode, uiTheme, i18n.language, t])
+  }, [clientId, compact, disabled, fallbackMode, uiTheme, i18n.language, t])
 
   if (!clientId) return null
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { getFunnelAnalytics } from '@/services/university'
@@ -6,11 +7,13 @@ import { toastApiError } from '@/utils/toastError'
 import { Card, CardBody, CardHeader, Progress, Typography } from '@material-tailwind/react'
 import { MiniAreaAnalyticsCard } from '@/components/analytics/MiniAreaAnalyticsCard'
 
-const MTCard = Card as any
-const MTCardBody = CardBody as any
-const MTCardHeader = CardHeader as any
-const MTTypography = Typography as any
-const MTProgress = Progress as any
+type MaterialComponent = ComponentType<{ children?: ReactNode; [key: string]: unknown }>
+
+const MTCard = Card as unknown as MaterialComponent
+const MTCardBody = CardBody as unknown as MaterialComponent
+const MTCardHeader = CardHeader as unknown as MaterialComponent
+const MTTypography = Typography as unknown as MaterialComponent
+const MTProgress = Progress as unknown as MaterialComponent
 
 const STATUS_TO_KEY: Record<string, string> = {
   interested: 'university:pipelineInterested',

@@ -56,10 +56,8 @@ export function GoogleSignInButton({
   useEffect(() => {
     if (!clientId || !containerRef.current) return;
 
-    let cancelled = false;
-
     const mountButton = () => {
-      if (cancelled || !containerRef.current || !window.google?.accounts?.id)
+      if (!containerRef.current || !window.google?.accounts?.id)
         return;
       const el = containerRef.current;
       el.innerHTML = "";
@@ -116,7 +114,7 @@ export function GoogleSignInButton({
       };
       document.head.appendChild(script);
     }
-  }, [autoPrompt, clientId, disabled, pathname, uiTheme]);
+  }, [autoPrompt, clientId, compact, disabled, pathname, uiTheme]);
 
   if (!clientId) return null;
 

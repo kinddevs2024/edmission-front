@@ -189,7 +189,7 @@ export function MainLayout() {
       const showMySchools =
         (user?.studentProfile?.educationStatus === 'in_school' ||
           user?.studentProfile?.educationStatus === 'finished_school') &&
-        !Boolean((user?.studentProfile as { counsellorUserId?: string } | undefined)?.counsellorUserId)
+        !(user?.studentProfile as { counsellorUserId?: string } | undefined)?.counsellorUserId
       return buildStudentNavigation(
         (key, defaultValue) => t(`student:${key}`, { defaultValue: defaultValue ?? key }),
         { showMySchools }

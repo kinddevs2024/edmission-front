@@ -36,15 +36,17 @@ export function PaymentPage() {
   const sub = isMultiUniversityRole ? undefined : user?.subscription
   const isStudent = user?.role === 'student'
   const isUniversity = isUniversityLikeRole(user?.role)
+  const userId = user?.id
+  const hasSubscription = Boolean(user?.subscription)
 
   useEffect(() => {
-    if (user && !user.subscription) {
+    if (userId && !hasSubscription) {
       setLoading(true)
       getProfile()
         .then(() => setLoading(false))
         .catch(() => setLoading(false))
     }
-  }, [user?.id])
+  }, [hasSubscription, userId])
 
   const handleUpgrade = async (planId: string) => {
     setError('')
@@ -63,13 +65,41 @@ export function PaymentPage() {
     }
   }
 
-  if (!user || (user.role !== 'student' && !isUniversityLikeRole(user.role))) {
+  if (!user) return null
+
+  if (user.role !== 'student' && !isUniversityLikeRole(user.role)) {
     return (
-      <div className="w-full max-w-5xl mx-auto pb-page-bottom-cta">
-        <PageTitle title={t('subscription')} icon="CreditCard" />
+      <div className="w-full max-w-5xl mx-auto space-y-6 pb-page-bottom-cta">
+        <PageTitle title={t('subscriptionAndPayment')} icon="CreditCard" />
         <Card>
           <p className="text-[var(--color-text-muted)]">{t('subscriptionPlansHint')}</p>
         </Card>
+        <div>
+          <h2 className="mb-3 text-lg font-semibold text-[var(--color-text)]">{t('studentPlans', 'Student plans')}</h2>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {STUDENT_PLANS.map((plan) => (
+              <Card key={plan.id} className={cn('p-5 min-h-[180px] flex flex-col', plan.highlight && 'ring-2 ring-primary-accent')}>
+                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                <ul className="mt-3 flex-1 space-y-1.5 text-sm text-[var(--color-text-muted)]">
+                  <li>{plan.apps}</li><li>Period: {plan.period}</li><li>Chat: {plan.chat}</li>
+                </ul>
+              </Card>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h2 className="mb-3 text-lg font-semibold text-[var(--color-text)]">{t('universityPlans', 'University plans')}</h2>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {UNIVERSITY_PLANS.map((plan) => (
+              <Card key={plan.id} className={cn('p-5 min-h-[180px] flex flex-col', plan.highlight && 'ring-2 ring-primary-accent')}>
+                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                <ul className="mt-3 flex-1 space-y-1.5 text-sm text-[var(--color-text-muted)]">
+                  <li>{plan.requests}</li><li>Chat: {plan.chat}</li>
+                </ul>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }

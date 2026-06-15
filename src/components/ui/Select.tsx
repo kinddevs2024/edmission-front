@@ -242,7 +242,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       if (domValue !== internalValue) {
         setInternalValue(domValue)
       }
-    })
+    }, [internalValue, isControlled])
 
     useEffect(() => {
       if (!open) return

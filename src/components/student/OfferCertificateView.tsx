@@ -8,8 +8,8 @@ interface OfferCertificateViewProps {
 }
 
 export function OfferCertificateView({ offer }: OfferCertificateViewProps) {
-  const title = (offer as any).certificateTitle ?? 'Offer certificate'
-  const body = (offer as any).certificateBody ?? ''
+  const title = offer.certificateTitle ?? 'Offer certificate'
+  const body = offer.certificateBody ?? ''
   const studentName = '' // optionally use from context in the future
 
   return (

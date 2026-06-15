@@ -9,7 +9,7 @@ export function HeroSection() {
       <img
         src="/preview.png"
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-[center_75%] sm:object-bottom"
+        className="absolute inset-0 h-screen w-full object-cover object-[center_90%] sm:object-bottom"
         {...{ fetchpriority: 'high' }}
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,18,38,0.82)_0%,rgba(35,78,150,0.55)_38%,rgba(255,255,255,0.08)_100%)] sm:bg-[linear-gradient(90deg,rgba(9,18,38,0.72)_0%,rgba(35,78,150,0.38)_42%,rgba(255,255,255,0.06)_100%)]" />

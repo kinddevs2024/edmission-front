@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import type { ApexOptions } from 'apexcharts'
 import merge from 'deepmerge'
 import Chart from 'react-apexcharts'
@@ -15,13 +16,15 @@ import {
 } from '@material-tailwind/react'
 import { ChevronDown } from 'lucide-react'
 
-const MTCard = Card as any
-const MTCardHeader = CardHeader as any
-const MTCardBody = CardBody as any
-const MTTypography = Typography as any
-const MTButton = Button as any
-const MTMenuList = MenuList as any
-const MTMenuItem = MenuItem as any
+type MaterialComponent = ComponentType<{ children?: ReactNode; [key: string]: unknown }>
+
+const MTCard = Card as unknown as MaterialComponent
+const MTCardHeader = CardHeader as unknown as MaterialComponent
+const MTCardBody = CardBody as unknown as MaterialComponent
+const MTTypography = Typography as unknown as MaterialComponent
+const MTButton = Button as unknown as MaterialComponent
+const MTMenuList = MenuList as unknown as MaterialComponent
+const MTMenuItem = MenuItem as unknown as MaterialComponent
 
 type RangeKey = '12h' | '24h' | '7d'
 

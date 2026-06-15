@@ -23,7 +23,6 @@ export function trackStudentFunnel(event: StudentFunnelEvent, props?: Record<str
   window.__edmissionFunnel = window.__edmissionFunnel ?? []
   window.__edmissionFunnel.push(row)
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
     console.debug('[edmission funnel]', event, props)
   }
   try {

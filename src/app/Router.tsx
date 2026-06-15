@@ -293,9 +293,9 @@ export function Router() {
               }
             />
             <Route path="ai" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><AIPageOrRedirect /></ProtectedRoute>} />
-            <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentPage /></ProtectedRoute>} />
-            <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentSuccess /></ProtectedRoute>} />
-            <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin']}><PaymentCancel /></ProtectedRoute>} />
+            <Route path="payment" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><PaymentPage /></ProtectedRoute>} />
+            <Route path="payment/success" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><PaymentSuccess /></ProtectedRoute>} />
+            <Route path="payment/cancel" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'admin', 'student_admin', 'school_counsellor', 'manager', 'counsellor_coordinator']}><PaymentCancel /></ProtectedRoute>} />
             <Route path="support" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
             <Route path="support/:id" element={<ProtectedRoute allowedRoles={['student', 'university', 'university_multi_manager', 'multi_university_admin', 'school_counsellor']}><SupportPage /></ProtectedRoute>} />
 

@@ -195,7 +195,7 @@ export async function getOffers(params?: PaginationParams): Promise<PaginatedRes
     universityName: o.universityName ?? o.university?.universityName,
     scholarshipType: (o.scholarshipType ?? (o.scholarship?.coveragePercent === 100 ? 'full' : 'partial')) as Offer['scholarshipType'],
     coveragePercent: o.coveragePercent ?? o.scholarship?.coveragePercent,
-    expiresAt: (o as any).expiresAt,
+    expiresAt: o.expiresAt,
   }))
   return { data: normalized, total, page }
 }

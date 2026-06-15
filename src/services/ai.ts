@@ -115,7 +115,7 @@ export async function sendAIChatStream(
       const reply = data.reply ?? ''
       if (reply) callbacks.onChunk({ type: 'content', text: reply })
       callbacks.onDone()
-    } catch (_) {
+    } catch {
       callbacks.onError('Invalid response')
     }
     return
@@ -145,7 +145,7 @@ export async function sendAIChatStream(
         if ((payload.t === 'content' || payload.t === 'thinking') && payload.d !== undefined) {
           callbacks.onChunk({ type: payload.t as 'content' | 'thinking', text: String(payload.d) })
         }
-      } catch (_) {
+      } catch {
         /* skip malformed */
       }
     }

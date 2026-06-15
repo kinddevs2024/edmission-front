@@ -36,7 +36,7 @@ export function parseAIActions(text: string): ParsedAIActions {
         const raw = rest.slice(start, end)
         profileUpdate = JSON.parse(raw) as Record<string, unknown>
         toRemove.push('[PROFILE_UPDATE]' + raw)
-      } catch (_) {
+      } catch {
         // Even if JSON is malformed, remove service marker from chat output.
         const malformedPayload = rest.slice(start, end > start ? end : undefined)
         toRemove.push('[PROFILE_UPDATE]' + malformedPayload)

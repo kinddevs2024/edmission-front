@@ -37,8 +37,6 @@ export function TelegramAuthAutoLoginWatcher() {
     }
 
     let stopped = false
-    let intervalId: number | undefined
-
     const tick = async () => {
       if (stopped || inFlightRef.current) return
       inFlightRef.current = true
@@ -63,19 +61,15 @@ export function TelegramAuthAutoLoginWatcher() {
     }
 
     void tick()
-    intervalId = window.setInterval(() => {
+    const intervalId = window.setInterval(() => {
       if (stopped) {
-        if (intervalId != null) {
-          window.clearInterval(intervalId)
-        }
+        window.clearInterval(intervalId)
         return
       }
       if (Date.now() - pending.startedAt > TELEGRAM_PENDING_SESSION_MAX_AGE_MS) {
         clearPendingTelegramAuthSession()
         stopped = true
-        if (intervalId != null) {
-          window.clearInterval(intervalId)
-        }
+        window.clearInterval(intervalId)
         return
       }
       void tick()
@@ -83,9 +77,7 @@ export function TelegramAuthAutoLoginWatcher() {
 
     return () => {
       stopped = true
-      if (intervalId != null) {
-        window.clearInterval(intervalId)
-      }
+      window.clearInterval(intervalId)
     }
   }, [isAuthenticated, location.pathname, navigate])
 

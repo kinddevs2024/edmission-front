@@ -5,7 +5,16 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist', 'node_modules', '*.config.js', '*.config.ts'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      'public/elevenlabs-worklets/**',
+      '*.config.js',
+      '*.config.cjs',
+      '*.config.ts',
+    ],
+  },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

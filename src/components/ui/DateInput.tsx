@@ -326,7 +326,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           setVisibleMonth(getVisibleMonth(domDate))
         }
       }
-    })
+    }, [internalValue, isControlled])
 
     useEffect(() => {
       if (!open) return
@@ -352,7 +352,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
         window.removeEventListener('resize', handleViewportChange)
         window.removeEventListener('scroll', handleViewportChange, true)
       }
-    }, [open, visibleMonth.year, visibleMonth.month])
+    }, [open, pickerId, visibleMonth.year, visibleMonth.month])
 
     const nativeInputProps = isControlled
       ? { value: selectedValue }
