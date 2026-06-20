@@ -46,3 +46,4 @@ BACKEND_GOOGLE_CREDENTIALS.json
 *client_secret*.json
 *credentials*.json
 
+.vercel
