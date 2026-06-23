@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import { MoreHorizontal, X } from 'lucide-react'
+import { ChevronDown, MoreHorizontal, X } from 'lucide-react'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
 import { useAuth } from '@/hooks/useAuth'
 import { getNavIcon } from '@/components/icons/NavIcons'
@@ -16,6 +16,7 @@ export function MobileNavDrawer() {
   const { user } = useAuth()
   const navItems = useMobileMenuStore((s) => s.navItems)
   const [open, setOpen] = useState(false)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const location = useLocation()
   const dashboardPath = getDashboardPath(user)
 
@@ -103,32 +104,77 @@ export function MobileNavDrawer() {
               className="flex-1 overflow-y-auto p-2"
               style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))' }}
             >
-              {navItems.map((item) => (
+              {navItems.map((item) => {
+                const hasChildren = Boolean(item.children?.length)
+                const groupOpen = openGroups[item.to] ?? true
+                return (
                 <div key={item.to}>
                   {item.section ? (
                     <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                       {item.section}
                     </p>
                   ) : null}
-                  <NavLink
-                    to={item.to}
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-input text-sm transition-colors text-left touch-manipulation',
-                        isActive
-                          ? 'bg-primary-accent/15 text-primary-accent font-medium'
-                          : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
-                      )
-                    }
-                  >
-                    <span className="shrink-0 w-5 h-5 flex items-center justify-center">
-                      {getNavIcon(item.icon, 'size-5')}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  </NavLink>
+                  {hasChildren ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setOpenGroups((prev) => ({ ...prev, [item.to]: !groupOpen }))}
+                        className="flex w-full items-center gap-3 px-3 py-3 min-h-[44px] rounded-input text-sm transition-colors text-left touch-manipulation text-[var(--color-text)] hover:bg-[var(--color-border)]/20"
+                        aria-expanded={groupOpen}
+                      >
+                        <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                          {getNavIcon(item.icon, 'size-5')}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                        <ChevronDown className={cn('h-4 w-4 shrink-0 transition-transform', groupOpen && 'rotate-180')} aria-hidden />
+                      </button>
+                      {groupOpen ? (
+                        <div className="ml-4 space-y-1">
+                          {item.children?.map((child) => (
+                            <NavLink
+                              key={child.to}
+                              to={child.to}
+                              onClick={() => setOpen(false)}
+                              className={({ isActive }) =>
+                                cn(
+                                  'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-input text-sm transition-colors text-left touch-manipulation',
+                                  isActive
+                                    ? 'bg-primary-accent/15 text-primary-accent font-medium'
+                                    : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
+                                )
+                              }
+                            >
+                              <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                                {getNavIcon(child.icon, 'size-5')}
+                              </span>
+                              <span className="min-w-0 flex-1 truncate">{child.label}</span>
+                            </NavLink>
+                          ))}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <NavLink
+                      to={item.to}
+                      onClick={() => setOpen(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-input text-sm transition-colors text-left touch-manipulation',
+                          isActive
+                            ? 'bg-primary-accent/15 text-primary-accent font-medium'
+                            : 'text-[var(--color-text)] hover:bg-[var(--color-border)]/20'
+                        )
+                      }
+                    >
+                      <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                        {getNavIcon(item.icon, 'size-5')}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                    </NavLink>
+                  )}
                 </div>
-              ))}
+                )
+              })}
             </nav>
             <div
               className="p-4 border-t border-[var(--color-border)]"

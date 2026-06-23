@@ -131,11 +131,19 @@ export function useGlobalSearch(options?: { afterNavigate?: () => void }) {
 
   const handleSearchWithAI = useCallback(() => {
     afterNavigate?.()
-    const q = value.trim()
     setValue('')
     setResult(null)
-    navigate(q ? `/ai?q=${encodeURIComponent(q)}` : '/ai')
-  }, [afterNavigate, navigate, value])
+    const chatPath = role === 'student'
+      ? '/student/chat'
+      : role === 'university' || role === 'university_multi_manager' || role === 'multi_university_admin'
+        ? '/university/chat'
+        : role === 'school_counsellor'
+          ? '/school/chats'
+          : role === 'admin'
+            ? '/admin/chats'
+            : '/support'
+    navigate(chatPath)
+  }, [afterNavigate, navigate, role])
 
   return {
     value,

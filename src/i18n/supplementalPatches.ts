@@ -196,11 +196,15 @@ function mergeNamespacePatch(lng: SupportedLng, ns: string, patch: Record<string
 mergeNamespacePatch('en', 'common', {
   messageButton: 'Message',
   addToCompare: 'Add to compare',
+  more: 'More',
 })
 
 mergeNamespacePatch('en', 'common', {
-  supportChat: 'Support chat',
-  openSupportChat: 'Open support chat',
+  supportChat: 'Consulting chat',
+  openSupportChat: 'Open consulting chat',
+  supportConsultant: 'Support consultant',
+  consultingChat: 'Consulting chat',
+  openConsultingChat: 'Open consulting chat',
 })
 
 mergeNamespacePatch('en', 'school', {
@@ -209,30 +213,37 @@ mergeNamespacePatch('en', 'school', {
 })
 
 mergeNamespacePatch('ru', 'common', {
-  supportChat: 'Чат с администрацией',
-  openSupportChat: 'Открыть чат с администрацией',
+  supportChat: 'Чат с консультантом',
+  openSupportChat: 'Открыть чат с консультантом',
+  supportConsultant: 'Support-консультатор',
+  consultingChat: 'Консультационный чат',
+  openConsultingChat: 'Открыть консультационный чат',
 })
 
 mergeNamespacePatch('uz', 'common', {
-  supportChat: 'Administratsiya bilan chat',
-  openSupportChat: 'Administratsiya chatini ochish',
+  supportChat: 'Konsultant bilan chat',
+  openSupportChat: 'Konsultant chatini ochish',
+  supportConsultant: 'Support konsultant',
+  consultingChat: 'Konsultatsiya chati',
+  openConsultingChat: 'Konsultatsiya chatini ochish',
 })
 
 mergeNamespacePatch('en', 'student', {
-  navSupportChat: 'Support chat',
+  navSupportChat: 'Consulting chat',
 })
 
 mergeNamespacePatch('ru', 'student', {
-  navSupportChat: 'Чат с администрацией',
+  navSupportChat: 'Чат с консультантом',
 })
 
 mergeNamespacePatch('uz', 'student', {
-  navSupportChat: 'Administratsiya bilan chat',
+  navSupportChat: 'Konsultant bilan chat',
 })
 
 mergeNamespacePatch('ru', 'common', {
   messageButton: 'Написать',
   addToCompare: 'Добавить к сравнению',
+  more: 'Ещё',
 })
 
 mergeNamespacePatch('ru', 'school', {
@@ -243,11 +254,12 @@ mergeNamespacePatch('ru', 'school', {
 mergeNamespacePatch('uz', 'common', {
   messageButton: 'Yozish',
   addToCompare: "Taqqoslashga qo'shish",
+  more: "Ko'proq",
 })
 
 mergeNamespacePatch('en', 'university', {
   aiHelperText: 'Get suggestions, refine your profile, and explore answers about applications and scholarships.',
-  openEdmissionAi: 'Open support chat',
+  openEdmissionAi: 'Open consulting chat',
   pipelineFunnelSteps: 'Interested → Contacted → Evaluating → Offer Sent → Accepted',
   total: 'Total',
   bestMatchScore: 'Best match score',
@@ -259,7 +271,7 @@ mergeNamespacePatch('en', 'university', {
 
 mergeNamespacePatch('ru', 'university', {
   aiHelperText: 'Получайте предложения, улучшайте профиль и находите ответы о поступлении и стипендиях.',
-  openEdmissionAi: 'Открыть чат с администрацией',
+  openEdmissionAi: 'Открыть чат с консультантом',
   pipelineFunnelSteps: 'Интерес → Связано → Рассмотрение → Оффер отправлен → Принято',
   total: 'Всего',
   bestMatchScore: 'Лучший балл совпадения',
@@ -271,7 +283,7 @@ mergeNamespacePatch('ru', 'university', {
 
 mergeNamespacePatch('uz', 'university', {
   aiHelperText: 'Takliflar oling, profilingizni yaxshilang va qabul hamda stipendyalar boʻyicha javoblar toping.',
-  openEdmissionAi: 'Administratsiya chatini ochish',
+  openEdmissionAi: 'Konsultant chatini ochish',
   pipelineFunnelSteps: 'Qiziqish → Bogʻlanish → Koʻrib chiqish → Taklif yuborilgan → Qabul qilingan',
   total: 'Jami',
   bestMatchScore: 'Eng yaxshi moslik bal',
@@ -672,7 +684,7 @@ mergeNamespacePatch('en', 'common', {
   aiSupportMinimize: 'Minimize AI call',
   aiSupportOpenFull: 'Open full AI chat',
   aiSupportExpand: 'Expand AI call',
-  aiSupportAgentMissing: 'Support chat is not configured.',
+  aiSupportAgentMissing: 'Consulting chat is not configured.',
   aiSupportMicrophoneUnavailable: 'Microphone access is not available in this browser.',
   aiSupportStartFailed: 'Could not start the call.',
   aiSupportStartBeforeMessage: 'Start the call before sending a message.',

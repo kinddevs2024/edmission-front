@@ -15,7 +15,6 @@ const PATH_PREFIXES = [
   '/notifications',
   '/payment',
   '/support',
-  '/ai',
   '/sing-in',
   '/login',
   '/register',

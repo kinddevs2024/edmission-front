@@ -17,7 +17,6 @@ export const SITE_PAGES: SitePageItem[] = [
   { path: '/student/documents', labelKey: 'student:navDocuments', terms: ['documents', 'документы', 'hujjatlar'] },
   { path: '/student/compare', labelKey: 'student:compareTitle', terms: ['compare', 'сравнить', 'taqqoslash'] },
   { path: '/student/schools', labelKey: 'student:linkToMySchool', terms: ['school', 'schools', 'школа', 'maktab'] },
-  { path: '/student/ai', labelKey: 'common:supportChat', terms: ['support', 'chat', 'admin', 'поддержка', 'чат', 'админ', 'yordam'] },
   { path: '/university/dashboard', labelKey: 'university:dashboard', terms: ['dashboard', 'home', 'главная', 'boshqaruv'] },
   { path: '/university/profile', labelKey: 'university:navProfile', terms: ['profile', 'профиль', 'profil'] },
   { path: '/university/students', labelKey: 'university:navDiscovery', terms: ['discovery', 'students', 'студенты', 'talabalar'] },
@@ -27,7 +26,6 @@ export const SITE_PAGES: SitePageItem[] = [
   { path: '/university/faculties', labelKey: 'university:navFaculties', terms: ['faculties', 'факультеты', 'fakultetlar'] },
   { path: '/university/analytics', labelKey: 'university:navAnalytics', terms: ['analytics', 'аналитика', 'tahlil'] },
   { path: '/university/chat', labelKey: 'common:chat', terms: ['chat', 'чат', 'suhbat'] },
-  { path: '/university/ai', labelKey: 'common:supportChat', terms: ['support', 'chat', 'admin', 'поддержка', 'чат', 'админ', 'yordam'] },
   { path: '/admin/dashboard', labelKey: 'admin:dashboard', terms: ['dashboard', 'home', 'главная', 'boshqaruv'] },
   { path: '/admin/analytics', labelKey: 'admin:analytics', terms: ['analytics', 'аналитика', 'tahlil'] },
   {
@@ -37,7 +35,6 @@ export const SITE_PAGES: SitePageItem[] = [
   },
   { path: '/notifications', labelKey: 'common:notifications', terms: ['notifications', 'уведомления', 'bildirishnomalar'] },
   { path: '/profile', labelKey: 'common:profile', terms: ['profile', 'профиль', 'profil'] },
-  { path: '/ai', labelKey: 'common:supportChat', terms: ['support', 'chat', 'admin', 'поддержка', 'чат', 'админ', 'yordam'] },
   { path: '/support', labelKey: 'common:support', terms: ['support', 'поддержка', 'qollab-quvvatlash', 'yordam'] },
 ]
 

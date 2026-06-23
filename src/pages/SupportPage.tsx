@@ -31,6 +31,7 @@ export function SupportPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [detailError, setDetailError] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [replyText, setReplyText] = useState('')
@@ -52,12 +53,19 @@ export function SupportPage() {
     if (needsUniversitySelection) return
     if (id) {
       setLoading(true)
+      setDetailError('')
       getTicket(id)
         .then(setTicket)
-        .catch((e) => { toastApiError(e); setTicket(null) })
+        .catch((e) => {
+          const apiError = getApiError(e)
+          setDetailError(apiError.message)
+          toastApiError(e)
+          setTicket(null)
+        })
         .finally(() => setLoading(false))
     } else {
       setTicket(null)
+      setDetailError('')
     }
   }, [id, needsUniversitySelection])
 
@@ -160,6 +168,29 @@ export function SupportPage() {
             </form>
           </Card>
         )}
+      </div>
+    )
+  }
+
+  if (id) {
+    return (
+      <div className="w-full max-w-5xl mx-auto space-y-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/support')}>
+          ← {t('backToMyTickets')}
+        </Button>
+        <PageTitle title={t('support')} icon="HelpCircle" />
+        <Card>
+          {loading ? (
+            <p className="text-[var(--color-text-muted)] text-sm">{t('loading')}</p>
+          ) : (
+            <>
+              <CardTitle>{t('ticketUnavailable', 'Ticket unavailable')}</CardTitle>
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                {detailError || t('tryAgainLater', 'Please try again later.')}
+              </p>
+            </>
+          )}
+        </Card>
       </div>
     )
   }

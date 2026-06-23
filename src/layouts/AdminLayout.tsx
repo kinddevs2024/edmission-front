@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { Suspense } from 'react'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -15,8 +15,7 @@ export function AdminLayout() {
   const { role } = useAuth()
   const isFullAdmin = role === 'admin'
   const isStudentAdmin = role === 'student_admin'
-  const location = useLocation()
-  const isFixedHeightPage = location.pathname === '/admin/ai'
+  const isFixedHeightPage = false
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
 
@@ -29,28 +28,36 @@ export function AdminLayout() {
         : isFullAdmin
         ? [
             { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
-            { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
             { to: '/admin/users', label: t('users'), icon: 'Users' as const },
-            { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
             { to: '/admin/documents', label: t('documentReviewNav', 'Certificates'), icon: 'FileCheck' as const },
+            { to: '/admin/consulting', label: t('common:consultingChat', 'Consulting chat'), icon: 'MessageCircle' as const },
             { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
-            { to: '/admin/faculties', label: t('faculties', 'Faculties'), icon: 'GraduationCap' as const },
-            { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' as const },
-            { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
-            { to: '/admin/landing-certificates', label: t('landingCertificates', 'Landing Certificates'), icon: 'Award' as const },
-            { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
-            { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
             { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' as const },
-            { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
-            { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
-            { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
-            { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' as const },
+            {
+              to: '/admin/more',
+              label: t('common:more', 'More'),
+              icon: 'Settings' as const,
+              children: [
+                { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
+                { to: '/admin/verification', label: t('verification'), icon: 'ShieldCheck' as const },
+                { to: '/admin/faculties', label: t('faculties', 'Faculties'), icon: 'GraduationCap' as const },
+                { to: '/admin/university-requests', label: t('universityRequests', 'Requests'), icon: 'Users' as const },
+                { to: '/admin/investors', label: t('investors', 'Investors'), icon: 'Building2' as const },
+                { to: '/admin/landing-certificates', label: t('landingCertificates', 'Landing Certificates'), icon: 'Award' as const },
+                { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
+                { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
+                { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
+                { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
+                { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
+                { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
+                { to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const },
+              ],
+            },
           ]
         : [
             { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
             { to: '/admin/users', label: t('users'), icon: 'Users' as const },
             { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
-            { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' as const },
           ]
     ),
     [isFullAdmin, isStudentAdmin, t]
@@ -59,10 +66,7 @@ export function AdminLayout() {
     () => isStudentAdmin
       ? []
       : isFullAdmin
-      ? [
-          { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
-          { to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const },
-        ]
+      ? []
       : [],
     [isFullAdmin, isStudentAdmin, t]
   )
@@ -74,16 +78,15 @@ export function AdminLayout() {
       : isFullAdmin
       ? [
           { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
-          { to: '/admin/analytics', label: t('analytics', 'Analytics'), icon: 'BarChart3' as const },
           { to: '/admin/users', label: t('users'), icon: 'Users' as const },
-          { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
-          { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
+          { to: '/admin/documents', label: t('documentReviewNav', 'Certificates'), icon: 'FileCheck' as const },
+          { to: '/admin/consulting', label: t('common:consultingChat', 'Consulting chat'), icon: 'MessageCircle' as const },
+          { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' as const },
         ]
       : [
           { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
           { to: '/admin/users', label: t('users'), icon: 'Users' as const },
           { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
-          { to: '/admin/ai', label: t('common:supportChat', 'Support'), icon: 'MessageCircle' as const },
         ],
     [isFullAdmin, isStudentAdmin, t]
   )

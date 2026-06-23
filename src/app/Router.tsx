@@ -81,6 +81,7 @@ const SystemHealth = lazy(() => import('@/pages/admin/SystemHealth').then((m) =>
 const AdminOffers = lazy(() => import('@/pages/admin/AdminOffers').then((m) => ({ default: m.AdminOffers })))
 const AdminInterests = lazy(() => import('@/pages/admin/AdminInterests').then((m) => ({ default: m.AdminInterests })))
 const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ default: m.AdminChats })))
+const AdminConsultingChats = lazy(() => import('@/pages/admin/AdminConsultingChats').then((m) => ({ default: m.AdminConsultingChats })))
 const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
 const AdminFaculties = lazy(() => import('@/pages/admin/AdminFaculties').then((m) => ({ default: m.AdminFaculties })))
@@ -134,7 +135,7 @@ function isMultiUniversityRole(role: Role | null): boolean {
 
 function AIPageOrRedirect() {
   const { role } = useAuth()
-  if (isAdminPanelRole(role)) return <Navigate to="/admin/ai" replace />
+  if (isAdminPanelRole(role)) return <Navigate to="/admin/consulting" replace />
   return <AIChatPage />
 }
 
@@ -373,6 +374,7 @@ export function Router() {
               <Route path="documents" element={<AdminOnly><AdminDocuments /></AdminOnly>} />
               <Route path="offers" element={<AdminOnly><AdminOffers /></AdminOnly>} />
               <Route path="interests" element={<AdminInterests />} />
+              <Route path="consulting" element={<AdminOnly><AdminConsultingChats /></AdminOnly>} />
               <Route path="chats" element={<AdminOnly><AdminChats /></AdminOnly>} />
               <Route path="scholarships" element={<AdminOnly><AdminScholarships /></AdminOnly>} />
               <Route path="support" element={<AdminOnly><AdminSupport /></AdminOnly>} />

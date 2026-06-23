@@ -1,6 +1,9 @@
 import { api } from './api'
 import type { Chat, Message } from '@/types/chat'
 
+const SUPPORT_CONSULTANT_NAME = 'Support-\u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0440'
+const SUPPORT_CONSULTANT_AVATAR = '/logo/Group%201.png'
+
 type RawLastMessage = {
   id?: string
   _id?: unknown
@@ -94,7 +97,7 @@ function normalizeChat(raw: RawChat, currentUserRole: ChatViewerRole, viewerUser
       : String(supportAdmin?.id ?? supportAdmin?._id ?? raw.adminParticipantId ?? 'admin')
     const participantName = isAdminViewer
       ? (supportUser?.name || supportUser?.email || 'User')
-      : (supportAdmin?.name || 'Edmission Administration')
+      : SUPPORT_CONSULTANT_NAME
 
     return {
       id: raw.id,
@@ -102,6 +105,7 @@ function normalizeChat(raw: RawChat, currentUserRole: ChatViewerRole, viewerUser
       participant: {
         id: participantId,
         name: participantName,
+        avatar: SUPPORT_CONSULTANT_AVATAR,
         type: isAdminViewer ? 'support' : 'admin',
       },
       lastMessage: lastMsg

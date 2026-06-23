@@ -968,9 +968,6 @@ export function StudentDashboard() {
         <Button to="/student/chat" variant="secondary">
           {t("chats")}
         </Button>
-        <Button to="/student/ai" variant="ghost">
-          {t("navSupportChat", "Support chat")}
-        </Button>
       </div>
     </div>
   );

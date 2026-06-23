@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { ChevronDown } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/utils/cn";
@@ -12,6 +14,7 @@ export interface NavItem {
   to: string;
   label: string;
   icon?: string;
+  children?: NavItem[];
   /** Renders a section label above this item (use on the first item of a group). */
   section?: string;
 }
@@ -75,6 +78,58 @@ function NavLinkItem({
   );
 }
 
+function NavGroupItem({
+  item,
+  collapsed,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+}) {
+  const location = useLocation();
+  const isGroupActive = item.children?.some((child) => location.pathname === child.to || location.pathname.startsWith(`${child.to}/`)) ?? false;
+  const [open, setOpen] = useState(isGroupActive);
+
+  return (
+    <div className="space-y-0.5">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className={cn(
+          "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors duration-200",
+          collapsed && "justify-center px-2",
+          isGroupActive
+            ? "text-primary-accent"
+            : "text-dark-muted hover:bg-white/5 hover:text-white",
+        )}
+        aria-expanded={open}
+      >
+        {isGroupActive && (
+          <span className="absolute inset-0 rounded-xl bg-primary-accent/20 shadow-sm" aria-hidden />
+        )}
+        <span className="relative z-10 shrink-0 w-5 h-5 flex items-center justify-center">
+          {getNavIcon(item.icon, "size-5")}
+        </span>
+        {!collapsed && (
+          <>
+            <span className="relative z-10 min-w-0 flex-1 truncate text-left">{item.label}</span>
+            <ChevronDown
+              className={cn("relative z-10 h-4 w-4 shrink-0 transition-transform", open && "rotate-180")}
+              aria-hidden
+            />
+          </>
+        )}
+      </button>
+      {open && item.children?.length ? (
+        <div className={cn("space-y-0.5", !collapsed && "pl-4")}>
+          {item.children.map((child) => (
+            <NavLinkItem key={child.to} {...child} collapsed={collapsed} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function Sidebar({
   items,
   bottomItems = [],
@@ -91,7 +146,8 @@ export function Sidebar({
     label: t("subscription", "Subscription"),
     icon: "CreditCard",
   };
-  const visibleBottomItems = user && ![...items, ...bottomItems].some((item) => item.to === "/payment")
+  const allItems = [...items, ...bottomItems].flatMap((item) => [item, ...(item.children ?? [])]);
+  const visibleBottomItems = user && !allItems.some((item) => item.to === "/payment")
     ? [subscriptionItem, ...bottomItems]
     : bottomItems;
 
@@ -127,7 +183,11 @@ export function Sidebar({
                   {item.section}
                 </p>
               ) : null}
-              <NavLinkItem {...item} collapsed={collapsed} />
+              {item.children?.length ? (
+                <NavGroupItem item={item} collapsed={collapsed} />
+              ) : (
+                <NavLinkItem {...item} collapsed={collapsed} />
+              )}
             </div>
           ))}
         </div>

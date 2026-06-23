@@ -24,12 +24,6 @@ export function buildStudentNavigation(
 
   const more: NavItem[] = [
     { to: '/student/universities/map', label: t('navMap', 'Map'), icon: 'Map' },
-    {
-      to: '/student/ai',
-      label: t('navSupportChat', 'Support chat'),
-      icon: 'MessageCircle',
-      section: t('navSectionMore', 'More'),
-    },
     { to: '/student/documents', label: t('navDocuments', 'Documents'), icon: 'FileText' },
     { to: '/student/offers', label: t('navOffers', 'Offers'), icon: 'Gift' },
     { to: '/student/compare', label: t('navCompare', 'Compare'), icon: 'GitCompare' },

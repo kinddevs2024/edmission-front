@@ -221,7 +221,7 @@ export function SearchResultsList({
           onClick={onSearchWithAI}
           className="w-full rounded-full bg-primary-accent py-3 text-sm font-semibold text-primary-dark shadow-md hover:bg-primary-accent/90 transition-colors"
         >
-          {t('searchWithAI')}
+          {t('askConsultant', 'Ask consultant')}
         </button>
       </div>
     )

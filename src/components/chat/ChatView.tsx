@@ -43,9 +43,10 @@ function getMessagePreview(message: Message): Chat['lastMessage'] {
 interface ChatViewProps {
   supportOnly?: boolean
   autoOpenSupport?: boolean
+  compact?: boolean
 }
 
-export function ChatView({ supportOnly = false, autoOpenSupport = false }: ChatViewProps) {
+export function ChatView({ supportOnly = false, autoOpenSupport = false, compact = false }: ChatViewProps) {
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
   const authUser = useAuthStore((s) => s.user)
@@ -509,6 +510,25 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false }: ChatV
 
   const showList = mobileView === 'list'
   const showThread = mobileView === 'thread'
+  const showOnlyThread = compact && supportOnly && role !== 'admin'
+
+  if (showOnlyThread) {
+    return (
+      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
+        <MessageThread
+          chat={selectedChat}
+          messages={messages}
+          loading={messagesLoading || chatsLoading}
+          onSend={handleSend}
+          onUpdateMessage={handleUpdateMessage}
+          onDeleteMessage={handleDeleteMessage}
+          onMarkRead={handleMarkRead}
+          isTyping={false}
+          role={role}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">

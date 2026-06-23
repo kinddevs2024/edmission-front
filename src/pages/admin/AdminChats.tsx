@@ -154,7 +154,7 @@ export function AdminChats() {
           }
         }))
         const ch = res.chat
-        setActiveChat((prev) => ({ ...(prev ?? {} as AdminChat), ...ch }))
+        setActiveChat((prev) => ({ ...((prev ?? {}) as AdminChat), ...ch }))
         const uni = (ch as { universityUserId?: string }).universityUserId
         const stud = (ch as { studentProfileId?: string }).studentProfileId
         if (uni) {

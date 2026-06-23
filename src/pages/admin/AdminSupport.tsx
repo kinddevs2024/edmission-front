@@ -41,6 +41,9 @@ export function AdminSupport() {
     { value: '', label: t('all') },
     { value: 'student', label: t('student') },
     { value: 'university', label: t('university') },
+    { value: 'university_multi_manager', label: t('universityMultiManager', 'University manager') },
+    { value: 'multi_university_admin', label: t('multiUniversityAdmin', 'Multi-university admin') },
+    { value: 'school_counsellor', label: t('schoolCounsellor', 'School counsellor') },
   ]
   const { id } = useParams<{ id: string }>()
   const [tickets, setTickets] = useState<AdminTicket[]>([])
@@ -48,6 +51,7 @@ export function AdminSupport() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [detailError, setDetailError] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [replyText, setReplyText] = useState('')
@@ -69,15 +73,22 @@ export function AdminSupport() {
   useEffect(() => {
     if (id) {
       setLoading(true)
+      setDetailError('')
       getAdminTicket(id)
         .then((t) => {
           setTicket(t)
           setStatusUpdate(t.status)
         })
-        .catch((e) => { toastApiError(e); setTicket(null) })
+        .catch((e) => {
+          const apiError = getApiError(e)
+          setDetailError(apiError.message)
+          toastApiError(e)
+          setTicket(null)
+        })
         .finally(() => setLoading(false))
     } else {
       setTicket(null)
+      setDetailError('')
     }
   }, [id])
 
@@ -171,6 +182,29 @@ export function AdminSupport() {
               {t('sendReply')}
             </Button>
           </form>
+        </Card>
+      </div>
+    )
+  }
+
+  if (id) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/admin/support')}>
+          ← {t('backToTickets')}
+        </Button>
+        <PageTitle title={t('supportTickets')} icon="HelpCircle" />
+        <Card>
+          {loading ? (
+            <p className="text-[var(--color-text-muted)] text-sm">{t('loading')}</p>
+          ) : (
+            <>
+              <CardTitle>{t('ticketUnavailable', 'Ticket unavailable')}</CardTitle>
+              <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                {detailError || t('tryAgainLater', 'Please try again later.')}
+              </p>
+            </>
+          )}
         </Card>
       </div>
     )

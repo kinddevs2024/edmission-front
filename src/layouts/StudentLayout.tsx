@@ -33,7 +33,7 @@ export function StudentLayout() {
 
   const isOnboardingPage = location.pathname === "/student/onboarding";
   const isChatPage = location.pathname === "/student/chat";
-  const isFixedHeightPage = location.pathname === "/student/ai" || isChatPage;
+  const isFixedHeightPage = isChatPage;
 
   const { bottomNavItems, sidebarItems, sidebarBottomItems, mobileMenuItems } =
     useMemo(

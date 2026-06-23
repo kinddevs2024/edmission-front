@@ -26,6 +26,7 @@ export function assertMaxUploadSize(file: File): void {
 export function getImageUrl(value: string | undefined | null): string {
   if (!value) return ''
   if (value.startsWith('http') || value.startsWith('data:')) return value
+  if (value.startsWith('/logo/') || value.startsWith('/landing/') || value.startsWith('/favicon')) return value
   let path = value.startsWith('/') ? value : `/${value}`
   // Express serves files at /api/uploads; older data may store /uploads/... only
   if (path.startsWith('/uploads/') && !path.startsWith('/api/')) {

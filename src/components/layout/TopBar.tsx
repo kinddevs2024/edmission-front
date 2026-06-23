@@ -26,7 +26,6 @@ import { useUIStore } from "@/store/uiStore";
 const MAIN_LAYOUT_SIDEBAR_PATHS = [
   "/profile",
   "/notifications",
-  "/ai",
   "/payment",
   "/payment/success",
   "/payment/cancel",

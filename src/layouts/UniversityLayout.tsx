@@ -24,7 +24,7 @@ export function UniversityLayout() {
   const isSelect = location.pathname === '/university/select'
   const isPending = location.pathname === '/university/pending'
   const isChatPage = location.pathname === '/university/chat'
-  const isFixedHeightPage = location.pathname === '/university/ai' || isChatPage
+  const isFixedHeightPage = isChatPage
 
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
   const setNavItems = useMobileMenuStore((s) => s.setNavItems)
@@ -69,7 +69,6 @@ export function UniversityLayout() {
               icon: 'Bell',
               section: t('navSectionMore', 'More'),
             },
-            { to: '/university/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
           ],
     [t, isSelect, isPending]
   )

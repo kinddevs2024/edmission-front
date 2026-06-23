@@ -363,18 +363,6 @@ export function UniversityDashboard() {
           </Card>
         </Link>
       </div>
-
-      <Card className="border-primary-accent/20 bg-primary-accent/5">
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle size={18} /> {t("common:supportChat", "Support chat")}
-        </CardTitle>
-        <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          {t("university:supportChatHelperText", "Ask Edmission administration questions and continue the conversation in chat.")}
-        </p>
-        <Button to="/university/ai" className="mt-3" icon={<MessageCircle size={16} />}>
-          {t("common:openSupportChat", "Open support chat")}
-        </Button>
-      </Card>
     </div>
   );
 }

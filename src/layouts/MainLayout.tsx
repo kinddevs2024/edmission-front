@@ -15,7 +15,7 @@ import { ContentFallback } from '@/components/layout/ContentFallback'
 import { useAutoReadNotifications } from '@/hooks/useAutoReadNotifications'
 import { buildStudentNavigation } from '@/navigation/studentNav'
 
-const SIDEBAR_PATHS = ['/profile', '/notifications', '/ai', '/payment', '/payment/success', '/payment/cancel', '/support']
+const SIDEBAR_PATHS = ['/profile', '/notifications', '/payment', '/payment/success', '/payment/cancel', '/support']
 
 function isSidebarPath(pathname: string) {
   return SIDEBAR_PATHS.some((p) => pathname === p || pathname.startsWith('/support/'))
@@ -62,7 +62,6 @@ export function MainLayout() {
         navItems: [
           { to: '/university-multi-manager', label: role === 'multi_university_admin' ? t('university:multiUniversityAdminTitle', 'All universities') : t('university:multiManagerTitle', 'Your universities'), icon: 'Building2' },
           { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
-          { to: '/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
         ],
         navBottomItems: [
           { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
@@ -105,7 +104,6 @@ export function MainLayout() {
             icon: 'Bell',
             section: t('university:navSectionMore', 'More'),
           },
-          { to: '/university/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
         ],
         navBottomItems: [
           { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
@@ -127,43 +125,44 @@ export function MainLayout() {
         navItems: isFullAdmin
           ? [
               { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
-              { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
-              { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
+              { to: '/admin/documents', label: t('admin:documentReviewNav', 'Certificates'), icon: 'FileCheck' },
+              { to: '/admin/consulting', label: t('common:consultingChat', 'Consulting chat'), icon: 'MessageCircle' },
               { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
-              { to: '/admin/faculties', label: t('admin:faculties', 'Faculties'), icon: 'GraduationCap' },
-              { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
-              { to: '/admin/investors', label: t('admin:investors', 'Investors'), icon: 'Building2' },
-              { to: '/admin/landing-certificates', label: t('admin:landingCertificates', 'Landing Certificates'), icon: 'Award' },
-              { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
-              { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
               { to: '/admin/chats', label: t('admin:chats', 'Chats'), icon: 'MessageCircle' },
-              { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
-              { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
-              { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
-              { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
+              {
+                to: '/admin/more',
+                label: t('common:more', 'More'),
+                icon: 'Settings',
+                children: [
+                  { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' },
+                  { to: '/admin/verification', label: t('admin:verification'), icon: 'ShieldCheck' },
+                  { to: '/admin/faculties', label: t('admin:faculties', 'Faculties'), icon: 'GraduationCap' },
+                  { to: '/admin/university-requests', label: t('admin:universityRequests', 'Requests'), icon: 'Users' },
+                  { to: '/admin/investors', label: t('admin:investors', 'Investors'), icon: 'Building2' },
+                  { to: '/admin/landing-certificates', label: t('admin:landingCertificates', 'Landing Certificates'), icon: 'Award' },
+                  { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
+                  { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
+                  { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
+                  { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' as const },
+                  { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
+                  { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
+                  { to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' as const },
+                ],
+              },
             ]
           : [
               { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
               { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
-              { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
         ],
-        navBottomItems: [
-          ...(isFullAdmin
-            ? [
-                { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' as const },
-                { to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' as const },
-              ]
-            : []),
-        ],
+        navBottomItems: [],
       }
     }
     if (role === 'school_counsellor') {
       return {
         navItems: [
           { to: '/school/dashboard', label: tSchool('dashboard'), icon: 'LayoutDashboard' },
-          { to: '/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
           { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
           { to: '/school/my-students/map', label: tSchool('studentMap', 'Student map'), icon: 'Map' },
@@ -218,15 +217,14 @@ export function MainLayout() {
         ? [
             { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
             { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
-            { to: '/admin/analytics', label: t('admin:analytics', 'Analytics'), icon: 'BarChart3' as const },
-            { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
-            { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' },
+            { to: '/admin/documents', label: t('admin:documentReviewNav', 'Certificates'), icon: 'FileCheck' as const },
+            { to: '/admin/consulting', label: t('common:consultingChat', 'Consulting chat'), icon: 'MessageCircle' },
+            { to: '/admin/chats', label: t('admin:chats', 'Chats'), icon: 'MessageCircle' },
           ]
         : [
             { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
             { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
             { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' as const },
-            { to: '/admin/ai', label: t('common:supportChat', 'Support'), icon: 'MessageCircle' as const },
           ]
     }
     if (role === 'school_counsellor') {
@@ -243,7 +241,7 @@ export function MainLayout() {
     return []
   }, [role, t, tSchool, user?.studentProfile])
 
-  // Only own mobile nav when /profile, /notifications, /ai, etc. For role layouts (student/*, …)
+  // Only own mobile nav when /profile, /notifications, etc. For role layouts (student/*, …)
   // never clear here — their useEffect would lose the race and navItems stay null (hamburger hidden).
   useEffect(() => {
     if (!showSidebar) return
