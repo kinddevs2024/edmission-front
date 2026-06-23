@@ -405,8 +405,8 @@ function getUniversityTourSteps(t: TourT): RouteAwareTourStep[] {
     {
       route: '/university/pipeline',
       target: '[data-onboarding="floating-ai"]',
-      title: t('tutorial.slide5Title', 'Edmission AI'),
-      description: t('tutorial.slide5Body', 'AI is available here too when you need help with filters, profiles, or platform questions.'),
+      title: t('tutorial.slide5Title', 'Support chat'),
+      description: t('tutorial.slide5Body', 'Use support chat when you need help with filters, profiles, or platform questions.'),
       side: 'left',
       align: 'end',
       interactive: true,

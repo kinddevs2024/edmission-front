@@ -1,7 +1,8 @@
 /** Inline fallback when fetch fails. Ensures sidebar and student profile show English. */
 export const studentEn: Record<string, string | Record<string, string>> = {
   dashboard: 'Dashboard',
-  navEdmissionAi: 'Edmission AI',
+  navEdmissionAi: 'Support chat',
+  navSupportChat: 'Support chat',
   navProfile: 'Profile',
   navUniversities: 'Universities',
   navApplications: 'My interests',
@@ -156,8 +157,8 @@ export const studentEn: Record<string, string | Record<string, string>> = {
     slide3Body: 'Show interest to start an application. Use Chat to communicate.',
     slide4Title: 'Search',
     slide4Body: 'Use the search bar or Search with AI.',
-    slide5Title: 'Edmission AI',
-    slide5Body: 'The AI assistant helps you find universities and get answers.',
+    slide5Title: 'Support chat',
+    slide5Body: 'Support chat helps you contact administration and get answers.',
   },
 }
 

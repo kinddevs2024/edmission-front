@@ -26,8 +26,8 @@ export function buildStudentNavigation(
     { to: '/student/universities/map', label: t('navMap', 'Map'), icon: 'Map' },
     {
       to: '/student/ai',
-      label: t('navEdmissionAi', 'Edmission AI'),
-      icon: 'Bot',
+      label: t('navSupportChat', 'Support chat'),
+      icon: 'MessageCircle',
       section: t('navSectionMore', 'More'),
     },
     { to: '/student/documents', label: t('navDocuments', 'Documents'), icon: 'FileText' },

@@ -69,7 +69,7 @@ export function UniversityLayout() {
               icon: 'Bell',
               section: t('navSectionMore', 'More'),
             },
-            { to: '/university/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
+            { to: '/university/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
           ],
     [t, isSelect, isPending]
   )

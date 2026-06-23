@@ -17,7 +17,7 @@ export function SchoolLayout() {
   const navItems = useMemo(
     () => [
       { to: '/school/dashboard', label: t('school:dashboard'), icon: 'LayoutDashboard' as const },
-      { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
+      { to: '/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' as const },
       { to: '/school/my-school', label: t('school:mySchool'), icon: 'Building2' as const },
       { to: '/school/my-students', label: t('school:myStudents'), icon: 'Users' as const },
       { to: '/school/my-students/map', label: t('school:studentMap', 'Student map'), icon: 'Map' as const },

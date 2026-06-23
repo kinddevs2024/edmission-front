@@ -1,10 +1,11 @@
 export interface Chat {
   id: string
+  chatType?: 'application' | 'support'
   participant: {
     id: string
     name: string
     avatar?: string
-    type: 'university' | 'student'
+    type: 'university' | 'student' | 'admin' | 'support'
   }
   lastMessage?: {
     id?: string

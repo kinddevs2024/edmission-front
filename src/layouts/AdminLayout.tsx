@@ -44,13 +44,13 @@ export function AdminLayout() {
             { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
             { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
             { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
-            { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
+            { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' as const },
           ]
         : [
             { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
             { to: '/admin/users', label: t('users'), icon: 'Users' as const },
             { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
-            { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' as const },
+            { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' as const },
           ]
     ),
     [isFullAdmin, isStudentAdmin, t]
@@ -83,7 +83,7 @@ export function AdminLayout() {
           { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
           { to: '/admin/users', label: t('users'), icon: 'Users' as const },
           { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
-          { to: '/admin/ai', label: t('common:edmissionAi', 'AI'), icon: 'Bot' as const },
+          { to: '/admin/ai', label: t('common:supportChat', 'Support'), icon: 'MessageCircle' as const },
         ],
     [isFullAdmin, isStudentAdmin, t]
   )

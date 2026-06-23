@@ -12,14 +12,6 @@ interface ImportMetaEnv {
   readonly VITE_YANDEX_SUGGEST_REDIRECT_URI?: string
   /** Optional Telegram bot URL for onboarding (e.g. https://t.me/your_bot) */
   readonly VITE_TELEGRAM_BOT_URL?: string
-  /** ElevenLabs Conversational AI agent ID used by the support call UI */
-  readonly VITE_ELEVENLABS_AGENT_ID?: string
-  /** English ElevenLabs Conversational AI support agent ID */
-  readonly VITE_ELEVENLABS_AGENT_ID_EN?: string
-  /** Russian ElevenLabs Conversational AI support agent ID */
-  readonly VITE_ELEVENLABS_AGENT_ID_RU?: string
-  /** Uzbek ElevenLabs Conversational AI support agent ID */
-  readonly VITE_ELEVENLABS_AGENT_ID_UZ?: string
 }
 
 interface ImportMeta {

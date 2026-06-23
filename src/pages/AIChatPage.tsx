@@ -1,5 +1,5 @@
-import { ElevenLabsSupportPage } from '@/components/ai/ElevenLabsSupport'
+import { ChatView } from '@/components/chat/ChatView'
 
 export function AIChatPage() {
-  return <ElevenLabsSupportPage />
+  return <ChatView supportOnly autoOpenSupport />
 }

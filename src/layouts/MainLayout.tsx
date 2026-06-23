@@ -7,7 +7,6 @@ import { TopBar } from '@/components/layout/TopBar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { FloatingAIButton } from '@/components/ai/FloatingAIButton'
-import { ElevenLabsSupportProvider } from '@/components/ai/ElevenLabsSupport'
 import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { useUIStore } from '@/store/uiStore'
 import { useMobileMenuStore } from '@/store/mobileMenuStore'
@@ -63,7 +62,7 @@ export function MainLayout() {
         navItems: [
           { to: '/university-multi-manager', label: role === 'multi_university_admin' ? t('university:multiUniversityAdminTitle', 'All universities') : t('university:multiManagerTitle', 'Your universities'), icon: 'Building2' },
           { to: '/notifications', label: t('university:navNotifications', 'Notifications'), icon: 'Bell' },
-          { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
+          { to: '/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
         ],
         navBottomItems: [
           { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
@@ -106,7 +105,7 @@ export function MainLayout() {
             icon: 'Bell',
             section: t('university:navSectionMore', 'More'),
           },
-          { to: '/university/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
+          { to: '/university/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
         ],
         navBottomItems: [
           { to: '/support', label: t('common:support', 'Support'), icon: 'HelpCircle' },
@@ -142,13 +141,13 @@ export function MainLayout() {
               { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
               { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
               { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
-              { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
+              { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
             ]
           : [
               { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
               { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
-              { to: '/admin/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
+              { to: '/admin/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
         ],
         navBottomItems: [
           ...(isFullAdmin
@@ -164,7 +163,7 @@ export function MainLayout() {
       return {
         navItems: [
           { to: '/school/dashboard', label: tSchool('dashboard'), icon: 'LayoutDashboard' },
-          { to: '/ai', label: t('common:edmissionAi', 'Edmission AI'), icon: 'Bot' },
+          { to: '/ai', label: t('common:supportChat', 'Support chat'), icon: 'MessageCircle' },
           { to: '/school/my-school', label: tSchool('mySchool'), icon: 'Building2' },
           { to: '/school/my-students', label: tSchool('myStudents'), icon: 'Users' },
           { to: '/school/my-students/map', label: tSchool('studentMap', 'Student map'), icon: 'Map' },
@@ -227,7 +226,7 @@ export function MainLayout() {
             { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
             { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
             { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' as const },
-            { to: '/admin/ai', label: t('common:edmissionAi', 'AI'), icon: 'Bot' as const },
+            { to: '/admin/ai', label: t('common:supportChat', 'Support'), icon: 'MessageCircle' as const },
           ]
     }
     if (role === 'school_counsellor') {
@@ -263,7 +262,6 @@ export function MainLayout() {
   }, [isAuthenticated])
 
   return (
-    <ElevenLabsSupportProvider>
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
       {isAuthenticated && !isStudentOnboarding && <TopBar />}
       <div
@@ -315,6 +313,5 @@ export function MainLayout() {
       {isAuthenticated && !isStudentOnboarding && <FloatingAIButton />}
       <CookieConsentBanner />
     </div>
-    </ElevenLabsSupportProvider>
   )
 }

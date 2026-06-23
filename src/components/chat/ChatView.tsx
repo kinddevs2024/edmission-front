@@ -6,6 +6,7 @@ import {
   getMessages,
   sendMessage,
   createChat,
+  createSupportChat,
   acceptStudent,
   updateMessage as updateChatMessage,
   deleteMessage as deleteChatMessage,
@@ -39,19 +40,28 @@ function getMessagePreview(message: Message): Chat['lastMessage'] {
   }
 }
 
-export function ChatView() {
+interface ChatViewProps {
+  supportOnly?: boolean
+  autoOpenSupport?: boolean
+}
+
+export function ChatView({ supportOnly = false, autoOpenSupport = false }: ChatViewProps) {
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
   const authUser = useAuthStore((s) => s.user)
   const currentUserId =
-    authUser?.role === 'university_multi_manager' || authUser?.role === 'multi_university_admin'
-      ? (getActAsUniversityUserId() ?? '')
-      : (authUser?.id ?? '')
-  const role = ((): 'student' | 'university' | 'counsellor' | undefined => {
+    supportOnly
+      ? (authUser?.id ?? '')
+      : (authUser?.role === 'university_multi_manager' || authUser?.role === 'multi_university_admin')
+        ? (getActAsUniversityUserId() ?? '')
+        : (authUser?.id ?? '')
+  const role = ((): 'student' | 'university' | 'counsellor' | 'admin' | undefined => {
     const r = authUser?.role
+    if (r === 'admin') return 'admin'
     if (r === 'student') return 'student'
     if (r === 'university') return 'university'
     if ((r === 'university_multi_manager' || r === 'multi_university_admin') && getActAsUniversityUserId()) return 'university'
+    if ((r === 'university_multi_manager' || r === 'multi_university_admin') && supportOnly) return 'university'
     if (r === 'school_counsellor') return 'counsellor'
     return undefined
   })()
@@ -64,6 +74,7 @@ export function ChatView() {
 
   const { joinChat, leaveChat, onNewMessage, onMessagesRead, onNotification, onMessageUpdated, onMessageDeleted } = useSocket()
   const loadChatsRequestIdRef = useRef(0)
+  const supportCreateInFlightRef = useRef(false)
 
   const normalizeMessage = useCallback((message: Message | Record<string, unknown>) => {
     const raw = message as Message & { sender?: { id?: string; _id?: unknown }; senderId?: string | { _id?: unknown } }
@@ -94,11 +105,12 @@ export function ChatView() {
 
   const loadChats = useCallback(
     async (options?: { selectedChatId?: string | null; selectChatId?: string; openThread?: boolean }) => {
-      if (role !== 'student' && role !== 'university' && role !== 'counsellor') {
+      if (role !== 'student' && role !== 'university' && role !== 'counsellor' && role !== 'admin') {
         return []
       }
       const requestId = ++loadChatsRequestIdRef.current
-      const list = await getChats(role, currentUserId ?? null)
+      const allChats = await getChats(role, currentUserId ?? null)
+      const list = supportOnly ? allChats.filter((chat) => chat.chatType === 'support') : allChats
       if (requestId !== loadChatsRequestIdRef.current) {
         return list
       }
@@ -118,7 +130,7 @@ export function ChatView() {
 
       return list
     },
-    [role, currentUserId]
+    [role, currentUserId, supportOnly]
   )
 
   const syncChatPreview = useCallback((chatId: string, nextMessages: Message[]) => {
@@ -216,6 +228,40 @@ export function ChatView() {
         setSearchParams({}, { replace: true })
       })
   }, [searchParams, role, chatsLoading, setSearchParams, currentUserId])
+
+  useEffect(() => {
+    const shouldOpenSupport = autoOpenSupport || searchParams.get('support') === '1'
+    if (!shouldOpenSupport || !role || role === 'admin' || chatsLoading || supportCreateInFlightRef.current) return
+
+    const existingSupportChat = chats.find((chat) => chat.chatType === 'support')
+    if (existingSupportChat) {
+      setSelectedChat(existingSupportChat)
+      setMobileView('thread')
+      if (searchParams.get('support') === '1') {
+        setSearchParams({}, { replace: true })
+      }
+      return
+    }
+
+    supportCreateInFlightRef.current = true
+    createSupportChat(authUser?.id ?? currentUserId ?? null)
+      .then((chat) => {
+        setChats((prev) => (
+          prev.some((current) => current.id === chat.id)
+            ? prev.map((current) => (current.id === chat.id ? { ...current, ...chat } : current))
+            : [chat, ...prev]
+        ))
+        setSelectedChat(chat)
+        setMobileView('thread')
+        if (searchParams.get('support') === '1') {
+          setSearchParams({}, { replace: true })
+        }
+      })
+      .catch(toastApiError)
+      .finally(() => {
+        supportCreateInFlightRef.current = false
+      })
+  }, [autoOpenSupport, searchParams, role, chatsLoading, chats, setSearchParams, authUser?.id, currentUserId])
 
   useEffect(() => {
     if (!selectedChat?.id) {

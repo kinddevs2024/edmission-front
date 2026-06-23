@@ -53,12 +53,18 @@ export function coerceIsoDateString(value: unknown): string {
 
 type RawChat = {
   id: string
+  chatType?: 'support' | 'application'
   universityId?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   studentId?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string; profileVisibility?: string }
   university?: { universityName?: string; logoUrl?: string; _id?: unknown; name?: string; userEmail?: string }
   student?: { firstName?: string; lastName?: string; avatarUrl?: string; _id?: unknown; name?: string; userEmail?: string; profileVisibility?: string }
+  supportUser?: { id?: string; _id?: unknown; name?: string; email?: string; role?: string }
+  supportAdmin?: { id?: string; _id?: unknown; name?: string; email?: string; role?: string }
+  userParticipantId?: string
+  adminParticipantId?: string
   lastMessage?: RawLastMessage[]
   messages?: RawLastMessage[]
+  updatedAt?: string
   acceptedAt?: string
   acceptancePositionType?: string
   acceptancePositionLabel?: string
@@ -71,9 +77,49 @@ type RawChat = {
   universityProfileId?: string
 }
 
-export type ChatViewerRole = 'student' | 'university' | 'counsellor'
+export type ChatViewerRole = 'student' | 'university' | 'counsellor' | 'admin'
 
 function normalizeChat(raw: RawChat, currentUserRole: ChatViewerRole, viewerUserId?: string | null): Chat {
+  const lastMsgArr = raw.lastMessage ?? raw.messages ?? []
+  const lastMsg = lastMsgArr[0]
+  const lastSenderId = rawLastMessageSenderId(lastMsg)
+  const lastIsFromMe = Boolean(viewerUserId && lastSenderId && lastSenderId === viewerUserId)
+
+  if (raw.chatType === 'support') {
+    const isAdminViewer = currentUserRole === 'admin'
+    const supportUser = raw.supportUser
+    const supportAdmin = raw.supportAdmin
+    const participantId = isAdminViewer
+      ? String(supportUser?.id ?? supportUser?._id ?? raw.userParticipantId ?? '')
+      : String(supportAdmin?.id ?? supportAdmin?._id ?? raw.adminParticipantId ?? 'admin')
+    const participantName = isAdminViewer
+      ? (supportUser?.name || supportUser?.email || 'User')
+      : (supportAdmin?.name || 'Edmission Administration')
+
+    return {
+      id: raw.id,
+      chatType: 'support',
+      participant: {
+        id: participantId,
+        name: participantName,
+        type: isAdminViewer ? 'support' : 'admin',
+      },
+      lastMessage: lastMsg
+        ? {
+            id: String(lastMsg.id ?? lastMsg._id ?? ''),
+            text: String(lastMsg.message ?? lastMsg.text ?? ''),
+            createdAt: coerceIsoDateString(lastMsg.createdAt),
+            isFromMe: lastIsFromMe,
+            read: Boolean(lastMsg.isRead),
+          }
+        : undefined,
+      unreadCount: typeof raw.unreadCount === 'number' && Number.isFinite(raw.unreadCount) ? Math.max(0, Math.floor(raw.unreadCount)) : 0,
+      updatedAt: lastMsg?.createdAt ? coerceIsoDateString(lastMsg.createdAt) : coerceIsoDateString(raw.updatedAt),
+      isReadOnly: raw.isReadOnly,
+      readOnlyReason: raw.readOnlyReason,
+    }
+  }
+
   const uniLike = raw.universityId ?? raw.university
   const stuLike = raw.studentId ?? raw.student
   /** Counterparty in the thread only — never fall back to "self" or the wrong side for profile links. */
@@ -115,12 +161,9 @@ function normalizeChat(raw: RawChat, currentUserRole: ChatViewerRole, viewerUser
     partyRef && typeof partyRef === 'object' && 'logoUrl' in partyRef
       ? (partyRef as { logoUrl?: string }).logoUrl
       : (partyRef as { avatarUrl?: string } | undefined)?.avatarUrl
-  const lastMsgArr = raw.lastMessage ?? raw.messages ?? []
-  const lastMsg = lastMsgArr[0]
-  const lastSenderId = rawLastMessageSenderId(lastMsg)
-  const lastIsFromMe = Boolean(viewerUserId && lastSenderId && lastSenderId === viewerUserId)
   return {
     id: raw.id,
+    chatType: 'application',
     participant: {
       id: participantId,
       name,
@@ -153,12 +196,17 @@ export async function getChats(currentUserRole: ChatViewerRole, viewerUserId?: s
 }
 
 export async function createChat(
-  params: { studentId?: string; universityId?: string },
+  params: { studentId?: string; universityId?: string; support?: boolean; type?: 'support' },
   viewerUserId?: string | null
 ): Promise<Chat> {
   const { data } = await api.post<RawChat>('/chat', params)
-  const role = params.studentId ? 'university' : 'student'
+  const role: ChatViewerRole = params.support || params.type === 'support' ? 'student' : params.studentId ? 'university' : 'student'
   return normalizeChat(data, role, viewerUserId)
+}
+
+export async function createSupportChat(viewerUserId?: string | null): Promise<Chat> {
+  const { data } = await api.post<RawChat>('/chat', { type: 'support' })
+  return normalizeChat(data, 'student', viewerUserId)
 }
 
 type MessagesResponse = { data?: Array<Record<string, unknown>>; total?: number; page?: number; limit?: number; totalPages?: number }

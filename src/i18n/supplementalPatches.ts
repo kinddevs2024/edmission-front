@@ -198,9 +198,36 @@ mergeNamespacePatch('en', 'common', {
   addToCompare: 'Add to compare',
 })
 
+mergeNamespacePatch('en', 'common', {
+  supportChat: 'Support chat',
+  openSupportChat: 'Open support chat',
+})
+
 mergeNamespacePatch('en', 'school', {
   counsellorOfferReadOnlyHint: 'This is a read-only counsellor view. The student keeps control of accepting, declining, or postponing the offer.',
   backToOffers: 'Back to offers',
+})
+
+mergeNamespacePatch('ru', 'common', {
+  supportChat: 'Чат с администрацией',
+  openSupportChat: 'Открыть чат с администрацией',
+})
+
+mergeNamespacePatch('uz', 'common', {
+  supportChat: 'Administratsiya bilan chat',
+  openSupportChat: 'Administratsiya chatini ochish',
+})
+
+mergeNamespacePatch('en', 'student', {
+  navSupportChat: 'Support chat',
+})
+
+mergeNamespacePatch('ru', 'student', {
+  navSupportChat: 'Чат с администрацией',
+})
+
+mergeNamespacePatch('uz', 'student', {
+  navSupportChat: 'Administratsiya bilan chat',
 })
 
 mergeNamespacePatch('ru', 'common', {
@@ -220,7 +247,7 @@ mergeNamespacePatch('uz', 'common', {
 
 mergeNamespacePatch('en', 'university', {
   aiHelperText: 'Get suggestions, refine your profile, and explore answers about applications and scholarships.',
-  openEdmissionAi: 'Open Edmission AI',
+  openEdmissionAi: 'Open support chat',
   pipelineFunnelSteps: 'Interested → Contacted → Evaluating → Offer Sent → Accepted',
   total: 'Total',
   bestMatchScore: 'Best match score',
@@ -232,7 +259,7 @@ mergeNamespacePatch('en', 'university', {
 
 mergeNamespacePatch('ru', 'university', {
   aiHelperText: 'Получайте предложения, улучшайте профиль и находите ответы о поступлении и стипендиях.',
-  openEdmissionAi: 'Открыть Edmission AI',
+  openEdmissionAi: 'Открыть чат с администрацией',
   pipelineFunnelSteps: 'Интерес → Связано → Рассмотрение → Оффер отправлен → Принято',
   total: 'Всего',
   bestMatchScore: 'Лучший балл совпадения',
@@ -244,7 +271,7 @@ mergeNamespacePatch('ru', 'university', {
 
 mergeNamespacePatch('uz', 'university', {
   aiHelperText: 'Takliflar oling, profilingizni yaxshilang va qabul hamda stipendyalar boʻyicha javoblar toping.',
-  openEdmissionAi: 'Edmission AI ni ochish',
+  openEdmissionAi: 'Administratsiya chatini ochish',
   pipelineFunnelSteps: 'Qiziqish → Bogʻlanish → Koʻrib chiqish → Taklif yuborilgan → Qabul qilingan',
   total: 'Jami',
   bestMatchScore: 'Eng yaxshi moslik bal',
@@ -645,7 +672,7 @@ mergeNamespacePatch('en', 'common', {
   aiSupportMinimize: 'Minimize AI call',
   aiSupportOpenFull: 'Open full AI chat',
   aiSupportExpand: 'Expand AI call',
-  aiSupportAgentMissing: 'ElevenLabs agent ID is not configured.',
+  aiSupportAgentMissing: 'Support chat is not configured.',
   aiSupportMicrophoneUnavailable: 'Microphone access is not available in this browser.',
   aiSupportStartFailed: 'Could not start the call.',
   aiSupportStartBeforeMessage: 'Start the call before sending a message.',
@@ -677,7 +704,7 @@ mergeNamespacePatch('ru', 'common', {
   aiSupportMinimize: 'Свернуть AI-звонок',
   aiSupportOpenFull: 'Открыть полный AI-чат',
   aiSupportExpand: 'Развернуть AI-звонок',
-  aiSupportAgentMissing: 'ID агента ElevenLabs не настроен.',
+  aiSupportAgentMissing: 'Чат поддержки не настроен.',
   aiSupportMicrophoneUnavailable: 'Доступ к микрофону недоступен в этом браузере.',
   aiSupportStartFailed: 'Не удалось начать звонок.',
   aiSupportStartBeforeMessage: 'Начните звонок перед отправкой сообщения.',
@@ -709,7 +736,7 @@ mergeNamespacePatch('uz', 'common', {
   aiSupportMinimize: 'AI qo‘ng‘iroqni kichraytirish',
   aiSupportOpenFull: 'To‘liq AI chatni ochish',
   aiSupportExpand: 'AI qo‘ng‘iroqni kengaytirish',
-  aiSupportAgentMissing: 'ElevenLabs agent ID sozlanmagan.',
+  aiSupportAgentMissing: 'Yordam chati sozlanmagan.',
   aiSupportMicrophoneUnavailable: 'Bu brauzerda mikrofondan foydalanib bo‘lmaydi.',
   aiSupportStartFailed: 'Qo‘ng‘iroqni boshlab bo‘lmadi.',
   aiSupportStartBeforeMessage: 'Xabar yuborishdan oldin qo‘ng‘iroqni boshlang.',

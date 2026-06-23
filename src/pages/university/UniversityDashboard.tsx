@@ -13,7 +13,6 @@ import { toastApiError } from "@/utils/toastError";
 import {
   ArrowRight,
   BarChart3,
-  Bot,
   MessageCircle,
   Send,
   ShieldCheck,
@@ -367,13 +366,13 @@ export function UniversityDashboard() {
 
       <Card className="border-primary-accent/20 bg-primary-accent/5">
         <CardTitle className="flex items-center gap-2">
-          <Bot size={18} /> {t("common:edmissionAi")}
+          <MessageCircle size={18} /> {t("common:supportChat", "Support chat")}
         </CardTitle>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          {t("university:aiHelperText")}
+          {t("university:supportChatHelperText", "Ask Edmission administration questions and continue the conversation in chat.")}
         </p>
-        <Button to="/university/ai" className="mt-3" icon={<Bot size={16} />}>
-          {t("university:openEdmissionAi")}
+        <Button to="/university/ai" className="mt-3" icon={<MessageCircle size={16} />}>
+          {t("common:openSupportChat", "Open support chat")}
         </Button>
       </Card>
     </div>

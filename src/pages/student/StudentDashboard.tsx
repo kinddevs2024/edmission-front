@@ -969,7 +969,7 @@ export function StudentDashboard() {
           {t("chats")}
         </Button>
         <Button to="/student/ai" variant="ghost">
-          {t("navEdmissionAi", "Edmission AI")}
+          {t("navSupportChat", "Support chat")}
         </Button>
       </div>
     </div>
