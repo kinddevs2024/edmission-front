@@ -1,4 +1,5 @@
-import { useRef, useEffect, useLayoutEffect, useState } from 'react'
+import { type CSSProperties, useRef, useEffect, useLayoutEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MessageBubble } from './MessageBubble'
@@ -44,6 +45,7 @@ interface MessageThreadProps {
   onAcceptStudent?: (params: { positionType: 'budget' | 'grant' | 'other'; positionLabel?: string; congratulatoryMessage: string }) => void | Promise<unknown>
   /** Mobile split view: back to conversation list */
   onMobileBack?: () => void
+  compact?: boolean
 }
 
 type VoiceDraft = {
@@ -60,17 +62,18 @@ function formatVoiceDuration(durationMs: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-function VoiceWaveform({ levels, active = false }: { levels: number[]; active?: boolean }) {
+function VoiceWaveform({ levels, active = false, compact = false }: { levels: number[]; active?: boolean; compact?: boolean }) {
   return (
-    <div className="flex h-12 items-end gap-1">
+    <div className={cn('flex items-end', compact ? 'h-9 gap-0.5' : 'h-12 gap-1')}>
       {levels.map((level, index) => (
         <span
           key={`${index}-${level}`}
           className={cn(
-            'w-1.5 rounded-full bg-primary-accent/85 transition-all duration-150',
+            'rounded-full bg-primary-accent/85 transition-all duration-150',
+            compact ? 'w-1' : 'w-1.5',
             active && 'shadow-[0_0_14px_rgba(132,229,0,0.35)]'
           )}
-          style={{ height: `${Math.max(8, Math.min(42, Math.round(level * 46)))}px` }}
+          style={{ height: `${Math.max(compact ? 6 : 8, Math.min(compact ? 30 : 42, Math.round(level * (compact ? 34 : 46))))}px` }}
         />
       ))}
     </div>
@@ -89,6 +92,7 @@ export function MessageThread({
   role,
   onAcceptStudent,
   onMobileBack,
+  compact = false,
 }: MessageThreadProps) {
   const { t } = useTranslation(['common', 'chat'])
   const inputRef = useRef<HTMLInputElement>(null)
@@ -98,14 +102,17 @@ export function MessageThread({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
+  const emotionButtonRef = useRef<HTMLButtonElement | null>(null)
   const animationFrameRef = useRef<number | null>(null)
   const durationTimerRef = useRef<number | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const recordingStartedAtRef = useRef<number | null>(null)
+  const sendAfterStopRef = useRef(false)
   const waveformSnapshotRef = useRef<number[]>(DEFAULT_WAVE_LEVELS)
 
   const [composerText, setComposerText] = useState('')
   const [emotionOpen, setEmotionOpen] = useState(false)
+  const [emotionMenuStyle, setEmotionMenuStyle] = useState<CSSProperties>({})
   const [recordingState, setRecordingState] = useState<'idle' | 'recording' | 'processing' | 'review'>('idle')
   const [recordingDurationMs, setRecordingDurationMs] = useState(0)
   const [waveLevels, setWaveLevels] = useState<number[]>(DEFAULT_WAVE_LEVELS)
@@ -122,6 +129,7 @@ export function MessageThread({
   const [deleteBusy, setDeleteBusy] = useState(false)
   const [sendDocumentOpen, setSendDocumentOpen] = useState(false)
   const [isCompactViewport, setIsCompactViewport] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
+  const isCompactComposer = compact || isCompactViewport
 
   useEffect(() => {
     const el = messageListRef.current
@@ -208,6 +216,28 @@ export function MessageThread({
     return () => window.removeEventListener('resize', updateViewportMode)
   }, [])
 
+  useEffect(() => {
+    if (!emotionOpen || typeof window === 'undefined') return
+
+    const updateEmotionMenuPosition = () => {
+      const rect = emotionButtonRef.current?.getBoundingClientRect()
+      if (!rect) return
+      const menuWidth = 224
+      setEmotionMenuStyle({
+        left: Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8)),
+        bottom: Math.max(8, window.innerHeight - rect.top + 8),
+      })
+    }
+
+    updateEmotionMenuPosition()
+    window.addEventListener('resize', updateEmotionMenuPosition)
+    window.addEventListener('scroll', updateEmotionMenuPosition, true)
+    return () => {
+      window.removeEventListener('resize', updateEmotionMenuPosition)
+      window.removeEventListener('scroll', updateEmotionMenuPosition, true)
+    }
+  }, [emotionOpen])
+
   const clearRecordingHelpers = () => {
     if (animationFrameRef.current) {
       window.cancelAnimationFrame(animationFrameRef.current)
@@ -227,6 +257,7 @@ export function MessageThread({
 
   const resetVoiceDraft = () => {
     if (voiceDraft?.url) URL.revokeObjectURL(voiceDraft.url)
+    sendAfterStopRef.current = false
     setVoiceDraft(null)
     setWaveLevels(DEFAULT_WAVE_LEVELS)
     waveformSnapshotRef.current = DEFAULT_WAVE_LEVELS
@@ -352,6 +383,7 @@ export function MessageThread({
 
     try {
       resetVoiceDraft()
+      sendAfterStopRef.current = false
       chunksRef.current = []
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaStreamRef.current = stream
@@ -426,6 +458,19 @@ export function MessageThread({
         setWaveLevels(waveformSnapshotRef.current)
         setRecordingDurationMs(durationMs)
         setRecordingState('review')
+
+        if (sendAfterStopRef.current) {
+          sendAfterStopRef.current = false
+          void sendVoiceFile(file).then((sent) => {
+            if (!sent) return
+            URL.revokeObjectURL(url)
+            setVoiceDraft(null)
+            setWaveLevels(DEFAULT_WAVE_LEVELS)
+            waveformSnapshotRef.current = DEFAULT_WAVE_LEVELS
+            setRecordingDurationMs(0)
+            setRecordingState('idle')
+          })
+        }
       }
 
       mediaRecorder.start()
@@ -443,11 +488,11 @@ export function MessageThread({
     mediaRecorderRef.current.stop()
   }
 
-  const sendVoiceDraft = async () => {
-    if (!voiceDraft || chat?.isReadOnly) return
+  const sendVoiceFile = async (file: File) => {
+    if (chat?.isReadOnly) return false
     setVoiceSending(true)
     try {
-      const attachmentUrl = await uploadFile(voiceDraft.file)
+      const attachmentUrl = await uploadFile(file)
       const replyMetadata = buildReplyMetadata()
       await Promise.resolve(onSend({
         type: 'voice',
@@ -455,12 +500,25 @@ export function MessageThread({
         ...(replyMetadata ? { metadata: replyMetadata } : {}),
       }))
       setReplyTo(null)
-      resetVoiceDraft()
+      return true
     } catch (error) {
       toastApiError(error)
+      return false
     } finally {
       setVoiceSending(false)
     }
+  }
+
+  const sendVoiceDraft = async () => {
+    if (!voiceDraft) return
+    const sent = await sendVoiceFile(voiceDraft.file)
+    if (sent) resetVoiceDraft()
+  }
+
+  const sendCurrentRecording = () => {
+    if (recordingState !== 'recording') return
+    sendAfterStopRef.current = true
+    stopRecording()
   }
 
   const handleAcceptSubmit = async () => {
@@ -536,6 +594,27 @@ export function MessageThread({
     chat.readOnlyReason === 'rejected'
       ? t('chat:readOnlyRejected', 'This university closed the chat after rejecting your application. You can still read the conversation, but you can no longer send messages.')
       : t('chat:readOnlyGeneric', 'This chat is read-only. You can still view the conversation, but you cannot send new messages.')
+  const emotionMenu = emotionOpen && typeof document !== 'undefined'
+    ? createPortal(
+        <div
+          className="fixed z-[1000] p-2 rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-2xl flex flex-wrap gap-1 w-[224px] max-w-[calc(100vw-1rem)]"
+          style={emotionMenuStyle}
+          onClick={(event) => event.stopPropagation()}
+        >
+          {EMOTION_OPTIONS.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => handleSendEmotion(emoji)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-2xl transition-colors hover:bg-[var(--color-border)]/30"
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )
+    : null
   const acceptPositionOptions = [
     { value: 'budget', label: t('chat:positionBudget') },
     { value: 'grant', label: t('chat:positionGrant') },
@@ -836,6 +915,7 @@ export function MessageThread({
           <div className="relative flex gap-2 items-center w-full rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 focus-within:border-primary-accent focus-within:ring-2 focus-within:ring-primary-accent focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-card)] transition-all duration-200">
             <div className="relative flex items-center gap-1 shrink-0">
               <button
+                ref={emotionButtonRef}
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation()
@@ -847,20 +927,7 @@ export function MessageThread({
               >
                 <Smile className="w-5 h-5" />
               </button>
-              {emotionOpen && (
-                <div className="absolute bottom-full left-0 mb-1 p-2 rounded-card bg-[var(--color-card)] border border-[var(--color-border)] shadow-lg flex flex-wrap gap-1 max-w-[200px] z-10">
-                  {EMOTION_OPTIONS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => handleSendEmotion(emoji)}
-                      className="text-2xl p-1 hover:bg-[var(--color-border)]/30 rounded-lg transition-colors"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {emotionMenu}
             </div>
 
             {recordingState === 'idle' ? (
@@ -900,31 +967,50 @@ export function MessageThread({
                 </Button>
               </>
             ) : (
-              <div className="flex flex-1 items-center gap-3">
+              <div className={cn('flex flex-1 items-center min-w-0', isCompactComposer ? 'gap-2' : 'gap-3')}>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 text-xs text-[var(--color-text-muted)] mb-2">
-                    <span>
+                  <div className={cn('flex items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]', isCompactComposer ? 'mb-1' : 'mb-2')}>
+                    <span className="truncate">
                       {recordingState === 'recording'
                         ? t('chat:recordingNow', 'Recording...')
                         : recordingState === 'processing'
                           ? t('chat:processingVoice', 'Preparing voice message...')
                           : t('chat:voiceReady', 'Voice message ready')}
                     </span>
-                    <span>{formatVoiceDuration(recordingDurationMs)}</span>
+                    <span className="shrink-0">{formatVoiceDuration(recordingDurationMs)}</span>
                   </div>
-                  <VoiceWaveform levels={voiceDraft?.levels ?? waveLevels} active={recordingState === 'recording'} />
+                  <VoiceWaveform
+                    levels={(voiceDraft?.levels ?? waveLevels).slice(0, isCompactComposer ? 14 : undefined)}
+                    active={recordingState === 'recording'}
+                    compact={isCompactComposer}
+                  />
                 </div>
 
                 {recordingState === 'recording' ? (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={stopRecording}
-                    icon={<Square className="w-4 h-4" />}
-                  >
-                    {t('chat:stopRecording')}
-                  </Button>
+                  isCompactComposer ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full p-0 flex items-center justify-center"
+                      onClick={sendCurrentRecording}
+                      icon={<Send className="w-5 h-5" />}
+                      loading={voiceSending}
+                      aria-label={t('chat:sendVoiceMessage', 'Send voice message')}
+                      title={t('chat:sendVoiceMessage', 'Send voice message')}
+                    >
+                      <span className="sr-only">{t('chat:sendVoiceMessage', 'Send voice message')}</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={stopRecording}
+                      icon={<Square className="w-4 h-4" />}
+                    >
+                      {t('chat:stopRecording')}
+                    </Button>
+                  )
                 ) : recordingState === 'review' ? (
                   <div className="flex items-center gap-2 shrink-0">
                     <button

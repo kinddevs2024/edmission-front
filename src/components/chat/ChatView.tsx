@@ -525,6 +525,7 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
           onMarkRead={handleMarkRead}
           isTyping={false}
           role={role}
+          compact={compact}
         />
       </div>
     )
@@ -573,6 +574,7 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
               role={role}
               onAcceptStudent={role === 'university' ? handleAcceptStudent : undefined}
               onMobileBack={() => setMobileView('list')}
+              compact={compact}
             />
           </div>
         </div>
