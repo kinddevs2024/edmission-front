@@ -23,6 +23,11 @@ const UNIVERSITY_PLANS = [
   { id: 'university_premium', name: 'Premium', requests: 'Unlimited', chat: 'ChatGPT-4', highlight: true },
 ]
 
+const COUNSELLOR_PLANS = [
+  { id: 'school_counsellor_free', name: 'Free', students: 'Basic school workspace', chat: 'Basic', highlight: false },
+  { id: 'school_counsellor_premium', name: 'Counsellor Premium', students: 'Premium school workspace', chat: 'ChatGPT-4', highlight: true },
+]
+
 const getOrigin = () => typeof window !== 'undefined' ? window.location.origin : ''
 
 export function PaymentPage() {
@@ -36,6 +41,7 @@ export function PaymentPage() {
   const sub = isMultiUniversityRole ? undefined : user?.subscription
   const isStudent = user?.role === 'student'
   const isUniversity = isUniversityLikeRole(user?.role)
+  const isCounsellor = user?.role === 'school_counsellor'
   const userId = user?.id
   const hasSubscription = Boolean(user?.subscription)
 
@@ -67,7 +73,7 @@ export function PaymentPage() {
 
   if (!user) return null
 
-  if (user.role !== 'student' && !isUniversityLikeRole(user.role)) {
+  if (user.role !== 'student' && !isUniversityLikeRole(user.role) && user.role !== 'school_counsellor') {
     return (
       <div className="w-full max-w-5xl mx-auto space-y-6 pb-page-bottom-cta">
         <PageTitle title={t('subscriptionAndPayment')} icon="CreditCard" />
@@ -95,6 +101,19 @@ export function PaymentPage() {
                 <CardTitle className="text-lg">{plan.name}</CardTitle>
                 <ul className="mt-3 flex-1 space-y-1.5 text-sm text-[var(--color-text-muted)]">
                   <li>{plan.requests}</li><li>Chat: {plan.chat}</li>
+                </ul>
+              </Card>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h2 className="mb-3 text-lg font-semibold text-[var(--color-text)]">{t('counsellorPlans', 'Counsellor plans')}</h2>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {COUNSELLOR_PLANS.map((plan) => (
+              <Card key={plan.id} className={cn('p-5 min-h-[180px] flex flex-col', plan.highlight && 'ring-2 ring-primary-accent')}>
+                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                <ul className="mt-3 flex-1 space-y-1.5 text-sm text-[var(--color-text-muted)]">
+                  <li>{plan.students}</li><li>Chat: {plan.chat}</li>
                 </ul>
               </Card>
             ))}
@@ -195,6 +214,32 @@ export function PaymentPage() {
                   </div>
                   <ul className="mt-3 text-sm text-[var(--color-text-muted)] space-y-1.5 flex-1">
                     <li>{plan.requests}</li>
+                    <li>Chat: {plan.chat}</li>
+                  </ul>
+                  <Button
+                    variant={sub?.plan === plan.id ? 'secondary' : 'primary'}
+                    size="sm"
+                    className="mt-4 w-full"
+                    onClick={() => sub?.plan !== plan.id && handleUpgrade(plan.id)}
+                    disabled={sub?.plan === plan.id || checkoutLoading === plan.id}
+                    loading={checkoutLoading === plan.id}
+                  >
+                    {sub?.plan === plan.id ? t('currentPlan') : t('upgrade', 'Upgrade')}
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
+          {isCounsellor && (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {COUNSELLOR_PLANS.map((plan) => (
+                <Card key={plan.id} className={cn('p-5 min-h-[200px] flex flex-col', plan.highlight && 'ring-2 ring-primary-accent')} interactive>
+                  <div className="flex items-center gap-2">
+                    {getNavIcon('CreditCard', 'size-5 text-primary-accent')}
+                    <CardTitle className="text-lg">{plan.name}</CardTitle>
+                  </div>
+                  <ul className="mt-3 text-sm text-[var(--color-text-muted)] space-y-1.5 flex-1">
+                    <li>{plan.students}</li>
                     <li>Chat: {plan.chat}</li>
                   </ul>
                   <Button
