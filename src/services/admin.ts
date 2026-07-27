@@ -7,7 +7,7 @@ import type {
   RenderedTemplatePreview,
   UniversityDocumentSummary,
 } from '@/types/documentModule'
-import type { GlobalFaculty } from '@/types/university'
+import type { GlobalFaculty, Program } from '@/types/university'
 
 /** Backend GET /admin/dashboard returns this shape */
 export interface AdminDashboardResponse {
@@ -78,6 +78,25 @@ export interface AdminUniversityProfile {
   ieltsMinBand?: number
   gpaMinMode?: 'scale' | 'percent' | null
   gpaMinValue?: number | null
+  programs?: Program[]
+}
+
+function normalizePrograms(value: unknown): Program[] {
+  if (!Array.isArray(value)) return []
+  return value.map((item, index) => {
+    const raw = item && typeof item === 'object' ? item as Record<string, unknown> : {}
+    return {
+      id: String(raw.id ?? raw._id ?? `program-${index}`),
+      universityId: String(raw.universityId ?? ''),
+      name: raw.name != null ? String(raw.name) : '',
+      degreeLevel: raw.degreeLevel != null ? String(raw.degreeLevel) : '',
+      field: raw.field != null ? String(raw.field) : '',
+      durationYears: raw.durationYears != null ? Number(raw.durationYears) : undefined,
+      tuitionFee: raw.tuitionFee != null ? Number(raw.tuitionFee) : undefined,
+      language: raw.language != null ? String(raw.language) : undefined,
+      entryRequirements: raw.entryRequirements != null ? String(raw.entryRequirements) : undefined,
+    }
+  })
 }
 
 export interface AdminCounsellorProfile {
@@ -469,6 +488,7 @@ export async function getUniversityProfileByUser(userId: string): Promise<AdminU
     ieltsMinBand: raw.ieltsMinBand != null ? Number(raw.ieltsMinBand) : undefined,
     gpaMinMode: gpaMode === 'scale' || gpaMode === 'percent' ? gpaMode : raw.gpaMinMode === null ? null : undefined,
     gpaMinValue: raw.gpaMinValue != null ? Number(raw.gpaMinValue) : raw.gpaMinValue === null ? null : undefined,
+    programs: normalizePrograms(raw.programs),
   }
 }
 
@@ -493,6 +513,7 @@ export async function updateUniversityProfileByUser(
     ieltsMinBand?: number | null
     gpaMinMode?: 'scale' | 'percent' | null
     gpaMinValue?: number | null
+    programs?: Program[]
   }
 ): Promise<AdminUniversityProfile> {
   const { data } = await api.patch<Record<string, unknown>>(`/admin/users/${userId}/university-profile`, payload)
@@ -521,6 +542,7 @@ export async function updateUniversityProfileByUser(
     ieltsMinBand: raw.ieltsMinBand != null ? Number(raw.ieltsMinBand) : undefined,
     gpaMinMode: gpaMode === 'scale' || gpaMode === 'percent' ? gpaMode : raw.gpaMinMode === null ? null : undefined,
     gpaMinValue: raw.gpaMinValue != null ? Number(raw.gpaMinValue) : raw.gpaMinValue === null ? null : undefined,
+    programs: normalizePrograms(raw.programs),
   }
 }
 

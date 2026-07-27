@@ -82,6 +82,17 @@ export async function updateProfile(patch: Partial<UniversityProfile>): Promise<
     body.gpaMinValue = (patch as { gpaMinValue?: number | null }).gpaMinValue
   }
   if (patch.tuitionPrice != null) body.tuitionPrice = patch.tuitionPrice
+  if (patch.programs != null) {
+    body.programs = patch.programs.map((program) => ({
+      name: program.name ?? '',
+      degreeLevel: program.degreeLevel ?? program.degree ?? '',
+      field: program.field ?? '',
+      durationYears: program.durationYears,
+      tuitionFee: program.tuitionFee ?? program.tuition,
+      language: program.language,
+      entryRequirements: program.entryRequirements ?? program.requirements,
+    }))
+  }
   const { data } = await api.put<UniversityProfileResponse | null>('/university/profile', body)
   const raw = data ?? {}
   return {

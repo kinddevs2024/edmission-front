@@ -53,6 +53,7 @@ export interface UniversityProfile {
   gpaMinMode?: 'scale' | 'percent'
   gpaMinValue?: number
   tuitionPrice?: number
+  programs?: Program[]
 }
 
 export interface Program {

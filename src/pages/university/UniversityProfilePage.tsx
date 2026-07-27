@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Building2 } from 'lucide-react'
-import { useForm } from 'react-hook-form'
+import { Building2, Plus, Trash2 } from 'lucide-react'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -49,9 +49,30 @@ const schema = z.object({
   gpaMinMode: z.union([z.literal(''), z.literal('scale'), z.literal('percent')]).optional(),
   gpaMinValue: z.preprocess((v) => (v === '' || v === undefined ? undefined : v), z.coerce.number().min(0).optional()),
   tuitionPrice: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
+  programs: z.array(z.object({
+    name: z.string().trim().min(1, 'Program name is required'),
+    degreeLevel: z.string().optional(),
+    field: z.string().optional(),
+    durationYears: z.preprocess((v) => (v === '' || v === undefined ? undefined : v), z.coerce.number().min(0).optional()),
+    tuitionFee: z.preprocess((v) => (v === '' || v === undefined ? undefined : v), z.coerce.number().min(0).optional()),
+    language: z.string().optional(),
+    entryRequirements: z.string().optional(),
+  })).max(50),
 })
 
 type FormData = z.infer<typeof schema>
+
+function profileProgramsToForm(programs: UniversityProfile['programs'] = []): FormData['programs'] {
+  return programs.map((program) => ({
+    name: program.name ?? '',
+    degreeLevel: program.degreeLevel ?? program.degree ?? '',
+    field: program.field ?? '',
+    durationYears: program.durationYears,
+    tuitionFee: program.tuitionFee ?? program.tuition,
+    language: program.language ?? '',
+    entryRequirements: program.entryRequirements ?? program.requirements ?? '',
+  }))
+}
 
 const COUNTRY_CODE_OPTIONS = [
   { code: 'UZ', label: 'Uzbekistan' },
@@ -79,14 +100,16 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
   const [, setProfile] = useState<UniversityProfile | null>(null)
   const [openFacultyId, setOpenFacultyId] = useState<string | null>(null)
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<FormData>({
+  const { control, register, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       logo: '',
       coverImage: '',
       gpaMinMode: '' as '' | 'scale' | 'percent',
+      programs: [],
     },
   })
+  const { fields: programFields, append: appendProgram, remove: removeProgram } = useFieldArray({ control, name: 'programs' })
   const logoValue = watch('logo') ?? ''
   const nameValue = watch('name') ?? ''
   const countryWatch = watch('country')
@@ -120,6 +143,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
             gpaMinMode: (p.gpaMinMode === 'scale' || p.gpaMinMode === 'percent' ? p.gpaMinMode : '') as '' | 'scale' | 'percent',
             gpaMinValue: p.gpaMinValue ?? undefined,
             tuitionPrice: p.tuitionPrice ?? undefined,
+            programs: profileProgramsToForm(p.programs),
           })
           setProfile(null)
         })
@@ -147,6 +171,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
               gpaMinMode: ((data as { gpaMinMode?: string }).gpaMinMode as 'scale' | 'percent' | '') ?? '',
               gpaMinValue: (data as { gpaMinValue?: number }).gpaMinValue ?? undefined,
               tuitionPrice: data.tuitionPrice ?? undefined,
+              programs: profileProgramsToForm(data.programs),
             })
           })
     load.catch((e) => setError(getApiError(e).message)).finally(() => setLoading(false))
@@ -182,6 +207,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
                 : null
               : null,
           tuitionPrice: data.tuitionPrice ?? undefined,
+          programs: data.programs.map((program) => ({ id: '', universityId: '', ...program })),
         })
         const p = await getUniversityProfileByUser(adminEditUserId)
         reset({
@@ -203,6 +229,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
           gpaMinMode: (p.gpaMinMode === 'scale' || p.gpaMinMode === 'percent' ? p.gpaMinMode : '') as '' | 'scale' | 'percent',
           gpaMinValue: p.gpaMinValue ?? undefined,
           tuitionPrice: p.tuitionPrice ?? undefined,
+          programs: profileProgramsToForm(p.programs),
         })
         notifySuccess(t('common:saved', 'Saved'))
       } else {
@@ -231,6 +258,7 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
                 : undefined
               : undefined,
           tuitionPrice: data.tuitionPrice ?? undefined,
+          programs: data.programs.map((program) => ({ id: '', universityId: '', ...program })),
         })
         setProfile(updated)
         await refreshAuthUser().catch(() => {})
@@ -418,6 +446,76 @@ export function UniversityProfilePage({ adminEditUserId }: UniversityProfilePage
               {...register('coverImage')}
               placeholder="https://... or /api/uploads/..."
             />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle>{t('university:programs', 'Programs')}</CardTitle>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                {t('university:programsProfileHint', 'Programs imported from Excel are shown here and can be edited or removed.')}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              icon={<Plus size={16} />}
+              disabled={programFields.length >= 50}
+              onClick={() => appendProgram({
+                name: '',
+                degreeLevel: '',
+                field: '',
+                durationYears: undefined,
+                tuitionFee: undefined,
+                language: '',
+                entryRequirements: '',
+              })}
+            >
+              {t('university:addProgram', 'Add program')}
+            </Button>
+          </div>
+          <div className="mt-4 space-y-4">
+            {programFields.length === 0 ? (
+              <p className="rounded-card border border-dashed border-[var(--color-border)] px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">
+                {t('university:noProgramsYet', 'No programs added yet.')}
+              </p>
+            ) : programFields.map((program, index) => (
+              <div key={program.id} className="rounded-card border border-[var(--color-border)] p-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <Input
+                    label={t('university:programName', 'Program name')}
+                    error={errors.programs?.[index]?.name?.message}
+                    {...register(`programs.${index}.name`)}
+                    required
+                  />
+                  <Input label={t('university:degreeLevel', 'Degree level')} {...register(`programs.${index}.degreeLevel`)} />
+                  <Input label={t('university:field', 'Field')} {...register(`programs.${index}.field`)} />
+                  <Input label={t('university:durationYears', 'Duration (years)')} type="number" min={0} step="0.5" {...register(`programs.${index}.durationYears`)} />
+                  <Input label={t('university:tuitionFee', 'Tuition fee')} type="number" min={0} {...register(`programs.${index}.tuitionFee`)} />
+                  <Input label={t('university:language', 'Language')} {...register(`programs.${index}.language`)} />
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Textarea
+                      label={t('university:entryRequirements', 'Entry requirements')}
+                      rows={2}
+                      {...register(`programs.${index}.entryRequirements`)}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    icon={<Trash2 size={15} />}
+                    onClick={() => removeProgram(index)}
+                  >
+                    {t('common:delete', 'Delete')}
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
 
