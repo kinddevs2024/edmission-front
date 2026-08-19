@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
+import { TextGenerateEffect } from '@/components/ui/TextMotion'
 import { useState, useRef, useEffect } from 'react'
 import { clsx } from 'clsx'
 
@@ -35,7 +36,7 @@ export function FAQSection() {
         <Reveal>
           <SectionHeading
             align="center"
-            title={t('faq.title')}
+            title={<TextGenerateEffect text={t('faq.title')} delay={0.08} />}
           />
         </Reveal>
         <div className="mt-10 space-y-2">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { checkBackendHealth } from '@/services/health'
+import { StatusPulseText } from '@/components/ui/TextMotion'
 
 type Status = 'checking' | 'ok' | 'error'
 
@@ -31,20 +32,23 @@ export function BackendStatus({ className }: { className?: string }) {
   if (status === 'checking') {
     return (
       <p className={`text-sm text-[var(--color-text-muted)] ${className ?? ''}`}>
-        {t('backendChecking')}
+        <StatusPulseText label={t('backendChecking')} status="checking" />
       </p>
     )
   }
   if (status === 'ok') {
     return (
       <p className={`text-sm text-green-600 dark:text-green-400 ${className ?? ''}`} role="status">
-        {t('backendOk')} {detail ? `(${new Date(detail).toLocaleString()})` : ''}
+        <StatusPulseText
+          label={`${t('backendOk')}${detail ? ` (${new Date(detail).toLocaleString()})` : ''}`}
+          status="ok"
+        />
       </p>
     )
   }
   return (
     <p className={`text-sm text-amber-600 dark:text-amber-400 ${className ?? ''}`} role="status">
-      {detail || t('backendError')}
+      <StatusPulseText label={detail || t('backendError')} status="error" />
     </p>
   )
 }

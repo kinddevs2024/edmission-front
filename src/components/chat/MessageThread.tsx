@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
+import { TypingIndicatorText } from '@/components/ui/TextMotion'
 import { SendDocumentModal } from '@/components/documents/SendDocumentModal'
 import { uploadFile } from '@/services/upload'
 import { toastApiError } from '@/utils/toastError'
@@ -40,6 +41,7 @@ interface MessageThreadProps {
   onUpdateMessage?: (messageId: string, text: string) => void | Promise<unknown>
   onDeleteMessage?: (messageId: string, scope: 'me' | 'everyone') => void | Promise<unknown>
   onMarkRead?: () => void
+  onTyping?: (chatId: string) => void
   isTyping?: boolean
   role?: 'student' | 'university' | 'counsellor' | 'admin'
   onAcceptStudent?: (params: { positionType: 'budget' | 'grant' | 'other'; positionLabel?: string; congratulatoryMessage: string }) => void | Promise<unknown>
@@ -88,6 +90,7 @@ export function MessageThread({
   onUpdateMessage,
   onDeleteMessage,
   onMarkRead,
+  onTyping,
   isTyping,
   role,
   onAcceptStudent,
@@ -744,7 +747,7 @@ export function MessageThread({
           {isTyping && (
             <div className="flex justify-start">
               <div className="rounded-card bg-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-muted)]">
-                {t('common:typing')}
+                <TypingIndicatorText label={t('common:typing')} />
               </div>
             </div>
           )}
@@ -949,7 +952,10 @@ export function MessageThread({
                   ref={inputRef}
                   type="text"
                   value={composerText}
-                  onChange={(event) => setComposerText(event.target.value)}
+                  onChange={(event) => {
+                    setComposerText(event.target.value)
+                    if (event.target.value.trim() && chat) onTyping?.(chat.id)
+                  }}
                   placeholder={editingMessage ? t('chat:editPlaceholder', 'Edit your message') : t('common:typeMessage')}
                   className="flex-1 min-w-0 bg-transparent px-1 py-1.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none"
                   disabled={loading || messageSaving}

@@ -72,10 +72,13 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
   const [chatsLoading, setChatsLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list')
+  const [typingChatId, setTypingChatId] = useState<string | null>(null)
 
-  const { joinChat, leaveChat, onNewMessage, onMessagesRead, onNotification, onMessageUpdated, onMessageDeleted } = useSocket()
+  const { joinChat, leaveChat, onNewMessage, onMessagesRead, onNotification, onMessageUpdated, onMessageDeleted, emitTyping, onUserTyping } = useSocket()
   const loadChatsRequestIdRef = useRef(0)
   const supportCreateInFlightRef = useRef(false)
+  const typingClearTimerRef = useRef<number | null>(null)
+  const lastTypingEmitRef = useRef(0)
 
   const normalizeMessage = useCallback((message: Message | Record<string, unknown>) => {
     const raw = message as Message & { sender?: { id?: string; _id?: unknown }; senderId?: string | { _id?: unknown } }
@@ -318,6 +321,27 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
   }, [selectedChat?.id, onNewMessage, currentUserId, normalizeMessage, syncChatPreview])
 
   useEffect(() => {
+    const unsubscribe = onUserTyping(({ chatId, userId }) => {
+      if (userId === currentUserId) return
+      setTypingChatId(chatId)
+      if (typingClearTimerRef.current != null) window.clearTimeout(typingClearTimerRef.current)
+      typingClearTimerRef.current = window.setTimeout(() => setTypingChatId(null), 1800)
+    })
+
+    return () => {
+      unsubscribe()
+      if (typingClearTimerRef.current != null) window.clearTimeout(typingClearTimerRef.current)
+    }
+  }, [currentUserId, onUserTyping])
+
+  const handleTyping = useCallback((chatId: string) => {
+    const now = Date.now()
+    if (now - lastTypingEmitRef.current < 700) return
+    lastTypingEmitRef.current = now
+    emitTyping(chatId, true)
+  }, [emitTyping])
+
+  useEffect(() => {
     const unsub = onMessageUpdated(({ chatId, message }) => {
       const normalized = normalizeMessage(message as Message)
 
@@ -523,7 +547,8 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
           onUpdateMessage={handleUpdateMessage}
           onDeleteMessage={handleDeleteMessage}
           onMarkRead={handleMarkRead}
-          isTyping={false}
+          isTyping={typingChatId === selectedChat?.id}
+          onTyping={handleTyping}
           role={role}
           compact={compact}
         />
@@ -570,7 +595,8 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
               onUpdateMessage={handleUpdateMessage}
               onDeleteMessage={handleDeleteMessage}
               onMarkRead={handleMarkRead}
-              isTyping={false}
+              isTyping={typingChatId === selectedChat?.id}
+              onTyping={handleTyping}
               role={role}
               onAcceptStudent={role === 'university' ? handleAcceptStudent : undefined}
               onMobileBack={() => setMobileView('list')}

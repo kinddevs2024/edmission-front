@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PageTitle } from "@/components/ui/PageTitle";
+import { TextGenerateEffect } from "@/components/ui/TextMotion";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { UniversityCard } from "@/components/student/UniversityCard";
 import { CardSkeleton } from "@/components/ui/Skeleton";
@@ -433,10 +434,12 @@ export function StudentDashboard() {
               icon="LayoutDashboard"
             />
             <p className="text-lg font-medium leading-snug text-[var(--color-text)]">
-              {t(
-                "homeMissionTitle",
-                "Find universities that fit you — show interest in one tap.",
-              )}
+              <TextGenerateEffect
+                text={t(
+                  "homeMissionTitle",
+                  "Find universities that fit you — show interest in one tap.",
+                )}
+              />
             </p>
             <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
               {t(

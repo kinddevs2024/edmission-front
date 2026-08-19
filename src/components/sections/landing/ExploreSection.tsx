@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
 import { CardSkeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { TextGenerateEffect } from '@/components/ui/TextMotion'
 import { UniversityCard } from '@/components/student/UniversityCard'
 import { getPublicUniversities } from '@/services/public'
 import type { UniversityListItem } from '@/types/university'
@@ -68,8 +69,7 @@ export function ExploreSection() {
         <Reveal>
           <SectionHeading
             align="center"
-            eyebrow={t('explore.eyebrow', 'Explore')}
-            title={t('explore.title', 'See more universities')}
+            title={<TextGenerateEffect text={t('explore.title', 'See more universities')} delay={0.08} />}
             description={t(
               'explore.description',
               'Open the full university catalog with no profile filters.'

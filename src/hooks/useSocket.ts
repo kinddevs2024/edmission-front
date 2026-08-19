@@ -128,6 +128,14 @@ export function useSocket() {
     }
   }, [])
 
+  const onUserTyping = useCallback((callback: (payload: { chatId: string; userId: string }) => void) => {
+    if (!socketInstance) return () => {}
+    socketInstance.on('user_typing', callback)
+    return () => {
+      socketInstance?.off('user_typing', callback)
+    }
+  }, [])
+
   const isConnected = () => connectedRef.current && socketInstance?.connected
 
   return {
@@ -141,6 +149,7 @@ export function useSocket() {
     onMessageDeleted,
     onNotification,
     emitTyping,
+    onUserTyping,
     isConnected,
   }
 }

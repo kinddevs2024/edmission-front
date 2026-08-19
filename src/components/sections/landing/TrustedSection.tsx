@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getTrustedUniversityLogoPage } from '@/services/public'
 import { getImageUrl } from '@/services/upload'
+import { CountingNumber } from '@/components/ui/TextMotion'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { STATIC_TRUSTED_LOGOS } from './landingAssets'
@@ -88,7 +89,9 @@ export function TrustedSection() {
             {marqueeLogos.map((logo, i) => (
               <div
                 key={`${logo.id}-${i}`}
-                className="flex h-14 w-44 shrink-0 items-center justify-center px-2 sm:h-16 sm:w-48"
+                className={`flex h-14 w-44 shrink-0 items-center justify-center px-3 sm:h-16 sm:w-48 ${
+                  logo.id === 'icn' ? 'rounded-lg bg-slate-950' : ''
+                }`}
               >
                 <img
                   src={logo.logoUrl.startsWith('/') ? logo.logoUrl : getImageUrl(logo.logoUrl)}
@@ -109,7 +112,9 @@ export function TrustedSection() {
               whileHover={{ y: -2 }}
               className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-6 text-center shadow-[var(--shadow-card)]"
             >
-              <p className="text-3xl font-bold text-primary-accent md:text-4xl">{stat.value}</p>
+              <p className="text-3xl font-bold text-primary-accent md:text-4xl">
+                <CountingNumber value={stat.value} />
+              </p>
               <p className="mt-1 text-sm font-medium text-[var(--color-text-muted)]">{stat.label}</p>
             </motion.div>
           </Reveal>

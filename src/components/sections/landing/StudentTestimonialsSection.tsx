@@ -1,21 +1,11 @@
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getLandingCertificates, type LandingCertificate } from '@/services/public'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import { STATIC_STUDENT_TESTIMONIALS } from './landingAssets'
 
 export function StudentTestimonialsSection() {
   const { t } = useTranslation('landing')
-  const [items, setItems] = useState<LandingCertificate[]>([])
-
-  useEffect(() => {
-    getLandingCertificates()
-      .then((list) => setItems(list.filter((c) => c.type === 'student')))
-      .catch(() => {})
-  }, [])
-
-  const visibleItems = items.length > 0 ? items : STATIC_STUDENT_TESTIMONIALS
+  const visibleItems = STATIC_STUDENT_TESTIMONIALS
 
   return (
     <section
@@ -45,6 +35,7 @@ export function StudentTestimonialsSection() {
                     src={item.imageUrl}
                     alt={item.title}
                     className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-105"
+                    style={{ objectPosition: item.objectPosition }}
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />

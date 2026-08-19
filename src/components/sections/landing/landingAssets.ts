@@ -1,17 +1,10 @@
 export const STATIC_TRUSTED_LOGOS = [
-  { id: 'phbs', name: 'Peking University HSBC Business School', logoUrl: '/landing/image%20copy%203.png' },
-  { id: 'ubi', name: 'UBI Business School', logoUrl: '/landing/image%20copy%204.png' },
-  { id: 'kuas', name: 'Kyoto University of Advanced Science', logoUrl: '/landing/image%20copy%205.png' },
-  { id: 'icn', name: 'ICN Creative Business School', logoUrl: '/landing/image%20copy%206.png' },
-  { id: 'wollongong', name: 'University of Wollongong in Dubai', logoUrl: '/landing/image%20copy%207.png' },
-  { id: 'toronto', name: 'Toronto partner university', logoUrl: '/landing/images%20(1).png' },
-  { id: 'green-university', name: 'Partner university', logoUrl: '/landing/images%20(2).png' },
-  { id: 'sfu', name: 'SFU', logoUrl: '/landing/images.png' },
-  { id: 'geneva', name: 'Geneva School of Diplomacy and International Relations', logoUrl: '/landing/logo.png' },
-  { id: 'seneca', name: 'Seneca Polytechnic', logoUrl: '/landing/%EC%84%B8%EB%84%A4%EC%B9%B4-%EC%BB%AC%EB%A6%AC%EC%A7%80-%EB%A1%9C%EA%B3%A0.jpg' },
-  { id: 'ubi-dark', name: 'UBI Business School', logoUrl: '/landing/ubi-business-school.webp' },
-  { id: 'neoma', name: 'NEOMA Business School', logoUrl: '/landing/unnamed.jpg' },
-  { id: 'tashkent-tech', name: 'Partner university', logoUrl: '/landing/unnamed.png' },
+  { id: 'phbs', name: 'Peking University HSBC Business School', logoUrl: '/landing/university-logos/phbs.png' },
+  { id: 'kuas', name: 'Kyoto University of Advanced Science', logoUrl: '/landing/university-logos/kuas.svg' },
+  { id: 'icn', name: 'ICN Business School', logoUrl: '/landing/university-logos/icn.svg' },
+  { id: 'sfu', name: 'Simon Fraser University', logoUrl: '/landing/university-logos/sfu.png' },
+  { id: 'seneca', name: 'Seneca Polytechnic', logoUrl: '/landing/university-logos/seneca.svg' },
+  { id: 'neoma', name: 'NEOMA Business School', logoUrl: '/landing/university-logos/neoma.svg' },
 ]
 
 export const STATIC_UNIVERSITY_CERTIFICATES = [
@@ -22,13 +15,13 @@ export const STATIC_UNIVERSITY_CERTIFICATES = [
   },
   {
     id: 'abcc-canada',
-    title: 'ABCC Canada certificate',
-    imageUrl: '/landing/Certifications/5294243325370552559_121.jpg',
+    title: 'British Council certified counsellor',
+    imageUrl: '/landing/certifications/british-council.webp',
   },
   {
     id: 'abcc-usa',
-    title: 'ABCC USA certificate',
-    imageUrl: '/landing/Certifications/5330309926691655801_121.jpg',
+    title: 'ApplyBoard recruitment partner',
+    imageUrl: '/landing/certifications/applyboard.webp',
   },
 ]
 
@@ -36,31 +29,37 @@ export const STATIC_STUDENT_TESTIMONIALS = [
   {
     id: 'student-ielts-certificate',
     title: 'Student certificate result',
-    imageUrl: '/landing/Certifications/IMG_8816.PNG',
+    imageUrl: '/landing/testimonials/student-01.webp',
+    objectPosition: '50% 42%',
   },
   {
     id: 'student-campus-offer',
     title: 'Student admission result',
-    imageUrl: '/landing/Certifications/IMG_8817.PNG',
+    imageUrl: '/landing/testimonials/student-02.webp',
+    objectPosition: '50% 40%',
   },
   {
     id: 'student-bosch-event',
     title: 'International student achievement',
-    imageUrl: '/landing/Certifications/IMG_8820.JPG',
+    imageUrl: '/landing/testimonials/student-03.webp',
+    objectPosition: '50% 42%',
   },
   {
     id: 'student-university-offers',
     title: 'University admission portfolio',
-    imageUrl: '/landing/Certifications/IMG_8822.PNG',
+    imageUrl: '/landing/testimonials/student-04.webp',
+    objectPosition: '50% 40%',
   },
   {
     id: 'student-award',
     title: 'Student success story',
-    imageUrl: '/landing/Certifications/IMG_8824.PNG',
+    imageUrl: '/landing/testimonials/student-05.webp',
+    objectPosition: '58% 45%',
   },
   {
     id: 'student-campus-story',
     title: 'Student campus story',
-    imageUrl: '/landing/Certifications/IMG_8825.PNG',
+    imageUrl: '/landing/testimonials/student-06.webp',
+    objectPosition: '32% 62%',
   },
 ]
