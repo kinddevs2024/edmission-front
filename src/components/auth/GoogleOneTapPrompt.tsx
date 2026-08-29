@@ -22,7 +22,13 @@ type GoogleIdentityApi = {
 }
 
 const GOOGLE_SCRIPT_SRC = 'https://accounts.google.com/gsi/client'
-const HIDDEN_PATH_PREFIXES = ['/maintenance', '/auth/google/mobile', '/auth/telegram']
+const HIDDEN_PATH_PREFIXES = [
+  '/maintenance',
+  '/auth/google/mobile',
+  '/auth/telegram',
+  '/login',
+  '/register',
+]
 
 function getGoogleIdentityApi(): GoogleIdentityApi | undefined {
   const w = window as Window & {

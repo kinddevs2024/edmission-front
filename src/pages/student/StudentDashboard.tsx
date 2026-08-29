@@ -1,977 +1,359 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
-import { Card, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { PageTitle } from "@/components/ui/PageTitle";
-import { TextGenerateEffect } from "@/components/ui/TextMotion";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { UniversityCard } from "@/components/student/UniversityCard";
-import { CardSkeleton } from "@/components/ui/Skeleton";
-import {
-  getApplications,
-  getOffers,
-  getRecommendations,
-  getCompareUniversities,
-  getStudentProfile,
-} from "@/services/student";
-import { getMyDocuments } from "@/services/studentDocuments";
-import { getNotifications } from "@/services/notifications";
-import type { UniversityListItem } from "@/types/university";
-import type { Application, Offer } from "@/types/student";
-import { toastApiError } from "@/utils/toastError";
-import { cn } from "@/utils/cn";
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   ArrowRight,
   Bell,
   Building2,
-  CheckCircle,
-  Circle,
-  FileText,
+  CheckCircle2,
+  FileCheck2,
   Gift,
   GraduationCap,
-  Phone,
-  SearchCheck,
-  UserCircle,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { trackStudentFunnel } from "@/analytics/studentFunnel";
-import { useAuth } from "@/hooks/useAuth";
+  Search,
+  Sparkles,
+} from 'lucide-react'
+import { AcademicCertificate } from '@/components/student/AcademicCertificate'
+import { CertificateEditorModal } from '@/components/student/CertificateEditorModal'
+import { RankingTrigger } from '@/components/student/RankingTrigger'
+import { StudentBadge } from '@/components/student/StudentBadge'
+import { StudentRankingSheet } from '@/components/student/StudentRankingSheet'
+import { UniversityCard } from '@/components/student/UniversityCard'
+import { Button } from '@/components/ui/Button'
+import { Card, CardTitle } from '@/components/ui/Card'
+import { CardSkeleton } from '@/components/ui/Skeleton'
+import { PageTitle } from '@/components/ui/PageTitle'
+import { trackStudentFunnel } from '@/analytics/studentFunnel'
+import { useAuth } from '@/hooks/useAuth'
+import { getNotifications } from '@/services/notifications'
 import {
-  hasCompletedMacroOnboarding,
-  markMacroOnboardingDone,
-} from "@/components/onboarding/StudentMacroOnboarding";
-import { getTutorialStorageKey } from "@/components/onboarding/OnboardingTutorialModal";
-import { useStudentOnboardingFlowStore } from "@/store/studentOnboardingFlowStore";
-import { shouldShowWelcomeMacroOnboarding } from "@/utils/studentOnboardingEligibility";
-import { updateProfile } from "@/services/auth";
+  getApplications,
+  getCompareUniversities,
+  getOffers,
+  getRecommendations,
+  getStudentProfile,
+  getStudentRanking,
+  updateStudentProfile,
+  type StudentProfileData,
+  type StudentRankingRow,
+} from '@/services/student'
+import { getMyDocuments } from '@/services/studentDocuments'
+import type { Application, Offer } from '@/types/student'
+import type { UniversityListItem } from '@/types/university'
+import { resolveStudentLevel, STUDENT_LEVEL_CRITERIA } from '@/config/studentLevels'
+import { getAcademicCertificateCompletion, type AcademicCertificateFieldId } from '@/utils/academicCertificate'
+import { cn } from '@/utils/cn'
+import { notifySuccess } from '@/utils/notify'
 
-const DASHBOARD_RECOMMENDATIONS = 3;
-
-const statWatermarkClass =
-  "pointer-events-none absolute h-[5.75rem] w-[5.75rem] text-primary-accent/[0.1] dark:text-primary-accent/[0.16] sm:h-[6.25rem] sm:w-[6.25rem]";
-
-function DashboardStatWatermark({ icon: Icon }: { icon: LucideIcon }) {
-  return (
-    <Icon
-      className={cn(
-        statWatermarkClass,
-        "-bottom-2 -right-2 sm:-bottom-2.5 sm:-right-2.5",
-      )}
-      strokeWidth={1.15}
-      aria-hidden
-    />
-  );
-}
-
-function DashboardActionCard({
-  icon: Icon,
-  title,
-  description,
-  to,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  to: string;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-primary-accent/40 hover:shadow-[var(--shadow-card-hover)]"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-accent/12 text-primary-accent">
-            <Icon className="h-5 w-5" aria-hidden />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-[var(--color-text)]">
-              {title}
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
-              {description}
-            </p>
-          </div>
-        </div>
-        <ArrowRight
-          className="mt-1 h-4 w-4 shrink-0 text-[var(--color-text-muted)] transition-transform group-hover:translate-x-1 group-hover:text-primary-accent"
-          aria-hidden
-        />
-      </div>
-    </Link>
-  );
-}
+const DASHBOARD_RECOMMENDATIONS = 3
 
 function recommendationRowToUniversityId(row: unknown): string {
-  const r = row as Record<string, unknown>;
-  const uid = r.universityId;
-  if (typeof uid === "string" && uid.trim()) return uid.trim();
-  if (uid && typeof uid === "object") {
-    const o = uid as { id?: unknown; _id?: unknown };
-    const s = String(o.id ?? o._id ?? "").trim();
-    if (s) return s;
+  const item = row as Record<string, unknown>
+  const value = item.universityId
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  if (value && typeof value === 'object') {
+    const nested = value as { id?: unknown; _id?: unknown }
+    return String(nested.id ?? nested._id ?? '').trim()
   }
-  const uni = r.university;
-  if (uni && typeof uni === "object") {
-    const o = uni as { id?: unknown; _id?: unknown; universityName?: unknown };
-    const s = String(o.id ?? o._id ?? "").trim();
-    if (s) return s;
+  const university = item.university
+  if (university && typeof university === 'object') {
+    const nested = university as { id?: unknown; _id?: unknown }
+    return String(nested.id ?? nested._id ?? '').trim()
   }
-  return "";
+  return ''
 }
 
-function mergeUniversityListsForDashboard(
-  compare: UniversityListItem[],
-  fallback: UniversityListItem[],
-  limit: number,
-): UniversityListItem[] {
-  const out: UniversityListItem[] = [];
-  const seen = new Set<string>();
-  for (const u of compare) {
-    const id = u?.id?.trim();
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    out.push(u);
-    if (out.length >= limit) return out;
-  }
-  for (const u of fallback) {
-    const id = u?.id?.trim();
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    out.push(u);
-    if (out.length >= limit) return out;
-  }
-  return out;
+function mapRecommendation(item: unknown): UniversityListItem | null {
+  const row = item && typeof item === 'object' ? item as Record<string, unknown> : {}
+  const source = row.university && typeof row.university === 'object' ? row.university as Record<string, unknown> : row
+  const id = recommendationRowToUniversityId(row) || String(source.id ?? source._id ?? '').trim()
+  const name = String(source.name ?? source.universityName ?? '').trim()
+  if (!id || !name) return null
+  return {
+    id,
+    name,
+    country: source.country as string | undefined,
+    city: source.city as string | undefined,
+    description: source.description as string | undefined,
+    logo: (source.logo ?? source.logoUrl) as string | undefined,
+    logoUrl: (source.logoUrl ?? source.logo) as string | undefined,
+    matchScore: typeof row.matchScore === 'number' ? row.matchScore : undefined,
+  } as UniversityListItem
 }
+
+async function loadRecommendations(): Promise<UniversityListItem[]> {
+  const recs = await getRecommendations({ limit: 12 })
+  if (!recs.data?.length) return []
+  const fallback = recs.data.map(mapRecommendation).filter((item): item is UniversityListItem => Boolean(item))
+  const ids = [...new Set(recs.data.map(recommendationRowToUniversityId).filter(Boolean))].slice(0, 12)
+  if (!ids.length) return fallback.slice(0, DASHBOARD_RECOMMENDATIONS)
+  try {
+    const compare = await getCompareUniversities(ids)
+    const seen = new Set<string>()
+    return [...compare, ...fallback]
+      .filter((university) => {
+        if (!university.id || seen.has(university.id)) return false
+        seen.add(university.id)
+        return true
+      })
+      .slice(0, DASHBOARD_RECOMMENDATIONS)
+  } catch {
+    return fallback.slice(0, DASHBOARD_RECOMMENDATIONS)
+  }
+}
+
+function nextCertificateField(profile: StudentProfileData | null): AcademicCertificateFieldId {
+  if (!profile?.firstName || !profile.lastName) return 'name'
+  if (!profile.country || !profile.city) return 'location'
+  if (!profile.schoolName && !profile.schoolsAttended?.some((school) => school.institutionName)) return 'school'
+  if (!profile.graduationYear) return 'graduationYear'
+  if (profile.gpa == null && !profile.schoolsAttended?.some((school) => school.gradeAverage != null)) return 'gpa'
+  if (!profile.targetDegreeLevel) return 'degree'
+  if (!profile.languageLevel && !profile.languages?.length) return 'language'
+  if (!profile.interestedFaculties?.length && !profile.interests?.length) return 'academicFocus'
+  return 'destinations'
+}
+
+const JOURNEY_STEPS = [
+  { label: 'Complete certificate', icon: FileCheck2 },
+  { label: 'Get discovered', icon: Search },
+  { label: 'Receive offers', icon: Gift },
+  { label: 'Choose university', icon: GraduationCap },
+]
 
 export function StudentDashboard() {
-  const { t } = useTranslation(["student", "common"]);
-  const { role, user } = useAuth();
-  const [profilePercent, setProfilePercent] = useState(0);
-  const [minimalComplete, setMinimalComplete] = useState(false);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [recommendations, setRecommendations] = useState<UniversityListItem[]>(
-    [],
-  );
-  const [loadingRecs, setLoadingRecs] = useState(true);
-  const [docCount, setDocCount] = useState(0);
-  const [digest, setDigest] = useState<
-    { id: string; title: string; link?: string }[]
-  >([]);
-  const recTracked = useRef(false);
+  const { t } = useTranslation(['student', 'common'])
+  const { role } = useAuth()
+  const [profile, setProfile] = useState<StudentProfileData | null>(null)
+  const [applications, setApplications] = useState<Application[]>([])
+  const [offers, setOffers] = useState<Offer[]>([])
+  const [recommendations, setRecommendations] = useState<UniversityListItem[]>([])
+  const [docCount, setDocCount] = useState(0)
+  const [digest, setDigest] = useState<{ id: string; title: string; link?: string }[]>([])
+  const [rankingRows, setRankingRows] = useState<StudentRankingRow[]>([])
+  const [rankingOpen, setRankingOpen] = useState(false)
+  const [editorField, setEditorField] = useState<AcademicCertificateFieldId | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true)
+  const [profileError, setProfileError] = useState(false)
 
   useEffect(() => {
-    trackStudentFunnel("student_home_view");
-  }, []);
+    trackStudentFunnel('student_home_view')
+  }, [])
 
   useEffect(() => {
-    if (hasCompletedMacroOnboarding()) {
-      useStudentOnboardingFlowStore.getState().setMacroOnboardingDone();
-      return;
-    }
-    let cancelled = false;
-    shouldShowWelcomeMacroOnboarding()
-      .then((showWelcome) => {
-        if (cancelled) return;
-        if (showWelcome) {
-          markMacroOnboardingDone();
-          useStudentOnboardingFlowStore.getState().setMacroOnboardingDone();
-          return;
-        }
-        markMacroOnboardingDone();
-        useStudentOnboardingFlowStore.getState().setMacroOnboardingDone();
-      })
-      .catch(() => {
-        if (cancelled) return;
-        markMacroOnboardingDone();
-        useStudentOnboardingFlowStore.getState().setMacroOnboardingDone();
-      });
+    let cancelled = false
+    setLoading(true)
+    setRecommendationsLoading(true)
+    Promise.allSettled([
+      getStudentProfile(),
+      getApplications({ limit: 100 }),
+      getOffers({ limit: 100 }),
+      getMyDocuments(),
+      getNotifications({ limit: 3 }, role ?? null),
+      loadRecommendations(),
+      getStudentRanking('global', 8),
+    ]).then(([profileResult, applicationsResult, offersResult, docsResult, notificationsResult, recommendationsResult, rankingResult]) => {
+      if (cancelled) return
+      if (profileResult.status === 'fulfilled') setProfile(profileResult.value)
+      else setProfileError(true)
+      if (applicationsResult.status === 'fulfilled') setApplications(applicationsResult.value.data ?? [])
+      if (offersResult.status === 'fulfilled') setOffers(offersResult.value.data ?? [])
+      if (docsResult.status === 'fulfilled') setDocCount(docsResult.value.length)
+      if (notificationsResult.status === 'fulfilled') {
+        setDigest((notificationsResult.value.data ?? []).map((notification) => ({
+          id: notification.id,
+          title: (notification.title || notification.body || '').trim() || t('navNotifications', 'Notifications'),
+          link: notification.link,
+        })))
+      }
+      if (recommendationsResult.status === 'fulfilled') setRecommendations(recommendationsResult.value)
+      if (rankingResult.status === 'fulfilled') setRankingRows(rankingResult.value.rows)
+      setLoading(false)
+      setRecommendationsLoading(false)
+    })
     return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    getApplications({ limit: 100 })
-      .then((r) => setApplications(r.data ?? []))
-      .catch(toastApiError);
-    getOffers({ limit: 100 })
-      .then((r) => setOffers(r.data ?? []))
-      .catch(toastApiError);
-    getMyDocuments()
-      .then((d) => setDocCount(d.length))
-      .catch(toastApiError);
-    getStudentProfile()
-      .then((p) => {
-        setProfilePercent(p.portfolioCompletionPercent ?? 0);
-        setMinimalComplete(p.minimalPortfolioComplete ?? false);
-      })
-      .catch(toastApiError);
-  }, []);
-
-  useEffect(() => {
-    getNotifications({ limit: 3 }, role ?? null)
-      .then((res) => {
-        const rows = (res.data ?? []).map((n) => ({
-          id: n.id,
-          title:
-            (n.title || n.body || "").trim() ||
-            t("navNotifications", "Notifications"),
-          link: n.link,
-        }));
-        setDigest(rows);
-      })
-      .catch(() => setDigest([]));
-  }, [role, t]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoadingRecs(true);
-    const toId = (v: unknown) =>
-      typeof v === "string"
-        ? v
-        : v && typeof v === "object" && ("id" in v || "_id" in v)
-          ? String(
-              (v as { id?: unknown; _id?: unknown }).id ??
-                (v as { _id?: unknown })._id ??
-                "",
-            )
-          : "";
-    const mapRecommendationToUniversity = (
-      item: unknown,
-    ): UniversityListItem | null => {
-      const row =
-        item && typeof item === "object"
-          ? (item as Record<string, unknown>)
-          : {};
-      const source =
-        row.university && typeof row.university === "object"
-          ? (row.university as Record<string, unknown>)
-          : row;
-      const id =
-        recommendationRowToUniversityId(item) ||
-        toId(row.universityId) ||
-        toId(source._id) ||
-        toId(source.id) ||
-        toId(row.id);
-      const name = String(source?.name ?? source?.universityName ?? "").trim();
-      if (!id || !name) return null;
-      return {
-        id,
-        name,
-        country: source?.country,
-        city: source?.city,
-        description: source?.description,
-        logo: source?.logo ?? source?.logoUrl,
-        logoUrl: source?.logoUrl ?? source?.logo,
-        matchScore:
-          typeof row.matchScore === "number" ? row.matchScore : undefined,
-      } as UniversityListItem;
-    };
-    getRecommendations({ limit: 12 })
-      .then((recs) => {
-        if (cancelled || !recs.data?.length)
-          return {
-            compare: [] as UniversityListItem[],
-            fallback: [] as UniversityListItem[],
-          };
-        const fallback = recs.data
-          .map((r) => mapRecommendationToUniversity(r))
-          .filter((u): u is UniversityListItem => Boolean(u));
-        const ids = [
-          ...new Set(
-            recs.data
-              .map((r) => recommendationRowToUniversityId(r))
-              .filter(Boolean),
-          ),
-        ].slice(0, 12);
-        if (ids.length === 0) return { compare: [], fallback };
-        return getCompareUniversities(ids).then((compare) => ({
-          compare,
-          fallback,
-        }));
-      })
-      .then((result) => {
-        if (cancelled || !result) return;
-        const list = mergeUniversityListsForDashboard(
-          result.compare ?? [],
-          result.fallback ?? [],
-          DASHBOARD_RECOMMENDATIONS,
-        );
-        if (!list.length) return;
-        setRecommendations(
-          list.map((u) => ({
-            ...u,
-            name:
-              u.name ??
-              (u as unknown as { universityName?: string }).universityName ??
-              "",
-          })),
-        );
-      })
-      .catch((e) => {
-        toastApiError(e);
-        setRecommendations([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingRecs(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (recTracked.current) return;
-    if (!loadingRecs && minimalComplete && recommendations.length > 0) {
-      recTracked.current = true;
-      trackStudentFunnel("student_first_recommendations_shown", {
-        count: recommendations.length,
-      });
+      cancelled = true
     }
-  }, [loadingRecs, minimalComplete, recommendations.length]);
+  }, [role, t])
 
-  const activeApplications = applications.filter(
-    (a) => !["rejected", "accepted"].includes(a.status),
-  );
-  const acceptedCount = applications.filter(
-    (a) => a.status === "accepted",
-  ).length;
-  const onboardingSteps = useMemo(
-    () => [
-      {
-        label: t("stepMinimalProfile"),
-        to: "/student/profile",
-        done: minimalComplete,
-      },
-      {
-        label: t(
-          "student:stepAddPhone",
-          "Add your phone number for important updates",
-        ),
-        to: "/profile",
-        done: Boolean(user?.phone),
-      },
-      {
-        label: t("stepUploadDocument"),
-        to: "/student/documents",
-        done: docCount > 0,
-      },
-      {
-        label: t(
-          "student:stepConnectTelegram",
-          "Connect Telegram for reminders",
-        ),
-        to: "/profile",
-        done: Boolean(
-          user?.linkedProviders?.telegram || user?.socialLinks?.telegram,
-        ),
-      },
-      {
-        label: t(
-          "student:stepFirstApplication",
-          "Show interest to one university",
-        ),
-        to: "/student/universities",
-        done: applications.length > 0,
-      },
-      {
-        label: t(
-          "student:stepReviewOffers",
-          "Know where offers and scholarships arrive",
-        ),
-        to: "/student/offers",
-        done: offers.length > 0,
-      },
-    ],
-    [
-      t,
-      minimalComplete,
-      docCount,
-      applications.length,
-      offers.length,
-      user?.linkedProviders?.telegram,
-      user?.phone,
-      user?.socialLinks?.telegram,
-    ],
-  );
-  const onboardingDone = onboardingSteps.every((s) => s.done);
-  const nextIncomplete = onboardingSteps.find((s) => !s.done);
-  const showAppsSection = activeApplications.length > 0;
-  const showOffersSection = offers.length > 0;
-  const showAppsOffersGrid = showAppsSection || showOffersSection;
-  const completedOnboardingSteps = onboardingSteps.filter(
-    (step) => step.done,
-  ).length;
-  const setupProgressPercent = onboardingSteps.length
-    ? Math.round((completedOnboardingSteps / onboardingSteps.length) * 100)
-    : 0;
+  const activeApplications = useMemo(() => applications.filter((application) => !['rejected', 'accepted'].includes(application.status)), [applications])
+  const grantsCount = useMemo(() => offers.filter((offer) => (offer.coveragePercent ?? 0) >= STUDENT_LEVEL_CRITERIA.grantCoveragePercent).length, [offers])
+  const certificateCompletion = getAcademicCertificateCompletion(profile)
+  const currentRanking = rankingRows.find((row) => row.isCurrentUser)
+  const fallbackLevel = resolveStudentLevel(profile?.portfolioCompletionPercent ?? certificateCompletion, offers.length, grantsCount)
+  const levelState = currentRanking ?? fallbackLevel
 
-  const primaryCtaTo = "/student/universities";
-  const primaryLabel = minimalComplete
-    ? t("homePrimaryCtaExplore", "Explore universities")
-    : t("homePrimaryCta", "Get my recommendations");
+  const saveCertificateField = async (patch: Partial<StudentProfileData>) => {
+    const updated = await updateStudentProfile(patch)
+    setProfile(updated)
+    notifySuccess('Academic Certificate updated')
+    trackStudentFunnel('student_profile_meter_click', { source: 'academic_certificate' })
+  }
+
+  const handleRankingLoaded = useCallback((rows: StudentRankingRow[]) => {
+    if (rows.some((row) => row.isCurrentUser)) setRankingRows(rows)
+  }, [])
+
+  if (loading && !profile) {
+    return (
+      <div className="space-y-5 pb-page-bottom-cta">
+        <div className="h-12 w-72 animate-pulse rounded-2xl bg-[var(--color-border)]" />
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="aspect-[3/2] animate-pulse rounded-[24px] bg-[var(--color-border)]" />
+          <div className="space-y-4"><CardSkeleton /><CardSkeleton /></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-8 pb-page-bottom-cta">
-      <section
-        className="relative overflow-hidden rounded-card border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(236,252,203,0.55))] p-5 shadow-[var(--shadow-card)] dark:bg-[linear-gradient(135deg,rgba(17,24,39,0.98),rgba(24,39,8,0.96))] sm:p-8"
-        data-onboarding="student-home-mission"
-      >
-        <div
-          className={cn(
-            "relative z-[1] grid gap-5 lg:items-start",
-            onboardingDone
-              ? "lg:grid-cols-1"
-              : "lg:grid-cols-[minmax(0,1.7fr)_minmax(18rem,0.95fr)]",
-          )}
-        >
-          <div className="max-w-2xl space-y-4">
-            <PageTitle
-              title={t("studentDashboardTitle")}
-              icon="LayoutDashboard"
-            />
-            <p className="text-lg font-medium leading-snug text-[var(--color-text)]">
-              <TextGenerateEffect
-                text={t(
-                  "homeMissionTitle",
-                  "Find universities that fit you — show interest in one tap.",
-                )}
-              />
-            </p>
-            <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
-              {t(
-                "homeMissionSubtitle",
-                "We use your profile to suggest matches. Complete the basics to unlock personalized picks.",
-              )}
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <Button
-                to={primaryCtaTo}
-                size="lg"
-                className="min-h-[48px] w-full sm:w-auto"
-                onClick={() => {
-                  trackStudentFunnel("student_home_primary_cta", {
-                    target: primaryCtaTo,
-                  });
-                }}
-              >
-                {primaryLabel}
-              </Button>
-              {nextIncomplete ? (
-                <Button
-                  to={nextIncomplete.to}
-                  variant="secondary"
-                  size="lg"
-                  className="min-h-[48px] w-full sm:w-auto"
-                >
-                  {t("profileMeterNextStep", {
-                    defaultValue: "Next: {{step}}",
-                    step: nextIncomplete.label,
-                  })}
-                </Button>
-              ) : null}
-            </div>
-            <p className="text-xs text-[var(--color-text-muted)]">
-              {t("unlockBetterMatches", "Stronger profile → better matches.")}
-            </p>
-            <div className="flex flex-wrap gap-2 text-xs text-[var(--color-text-muted)]">
-              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/75 px-3 py-1">
-                {t("student:profileCompletion", "Profile completion")}:{" "}
-                {profilePercent}%
-              </span>
-              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/75 px-3 py-1">
-                {t("student:activeApplications", "Active interests")}:{" "}
-                {activeApplications.length}
-              </span>
-              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-card)]/75 px-3 py-1">
-                {t("student:offers", "Offers")}: {offers.length}
-              </span>
-            </div>
+    <div className="space-y-7 pb-page-bottom-cta">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <PageTitle title={t('studentDashboardTitle', 'Student Home')} icon="LayoutDashboard" />
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">
+            Build your academic profile and get discovered by universities.
+          </p>
+        </div>
+        <RankingTrigger rows={rankingRows} onClick={() => setRankingOpen(true)} />
+      </header>
+
+      {profileError ? (
+        <div className="rounded-[20px] border border-amber-500/25 bg-amber-500/8 p-4 text-sm text-[var(--color-text-muted)]" role="status">
+          Your certificate could not refresh. Existing opportunities are still available while we reconnect.
+        </div>
+      ) : null}
+
+      <section className="rounded-[30px] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-card)] sm:p-6" data-onboarding="student-home-mission">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-accent">Your next milestone</p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.025em] text-[var(--color-text)] sm:text-3xl">Complete your Academic Certificate</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">Complete your certificate to unlock university opportunities, scholarships and grants.</p>
           </div>
-          {!onboardingDone ? (
-            <div className="rounded-[28px] border border-white/60 bg-[var(--color-card)]/88 p-5 shadow-[0_24px_60px_-36px_rgba(15,23,42,0.45)] backdrop-blur">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-                {t("student:dashboardFocus", "Focus now")}
-              </p>
-              <p className="mt-2 text-lg font-semibold text-[var(--color-text)]">
-                {t(
-                  "student:dashboardFocusSetup",
-                  "Finish the basics to unlock stronger matches",
-                )}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {t(
-                  "student:dashboardFocusSetupHint",
-                  "Students move faster when profile, documents, and first interest are already prepared.",
-                )}
-              </p>
-              <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/90 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--color-text)]">
-                      {t("student:setupProgress", "Setup progress")}
-                    </p>
-                    <p className="text-xs text-[var(--color-text-muted)]">
-                      {completedOnboardingSteps}/{onboardingSteps.length}{" "}
-                      {t("student:stepsDone", "steps done")}
-                    </p>
-                  </div>
-                  <span className="text-2xl font-semibold text-primary-accent">
-                    {setupProgressPercent}%
-                  </span>
-                </div>
-                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[var(--color-border)]">
-                  <div
-                    className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
-                    style={{ width: `${setupProgressPercent}%` }}
-                  />
-                </div>
+          <div className="shrink-0 text-left sm:text-right">
+            <p className="text-sm font-medium text-[var(--color-text-muted)]">Academic Certificate</p>
+            <p className="mt-1 text-2xl font-semibold text-primary-accent">{certificateCompletion}% complete</p>
+          </div>
+        </div>
+
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_310px]">
+          <AcademicCertificate profile={profile} onFieldClick={setEditorField} />
+          <aside className="flex flex-col gap-4">
+            <StudentBadge
+              level={levelState.level}
+              nextLevel={levelState.nextLevel}
+              progressPercent={levelState.progressPercent}
+              nextMilestone={levelState.nextMilestone}
+            />
+
+            <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg)]/75 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text)]">
+                <Sparkles className="h-4.5 w-4.5 text-primary-accent" aria-hidden /> Why this matters
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)]">Universities use your Academic Certificate to discover you and send relevant offers, scholarships and grants.</p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <Link to="/student/interests" className="rounded-2xl bg-[var(--color-card)] p-3 text-center transition-colors hover:bg-primary-accent/8">
+                  <span className="block text-xl font-semibold text-[var(--color-text)]">{activeApplications.length}</span>
+                  <span className="mt-1 block text-[10px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">Interests</span>
+                </Link>
+                <Link to="/student/offers" className="rounded-2xl bg-[var(--color-card)] p-3 text-center transition-colors hover:bg-primary-accent/8">
+                  <span className="block text-xl font-semibold text-[var(--color-text)]">{offers.length}</span>
+                  <span className="mt-1 block text-[10px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">Offers</span>
+                </Link>
+                <Link to="/student/documents" className="rounded-2xl bg-[var(--color-card)] p-3 text-center transition-colors hover:bg-primary-accent/8">
+                  <span className="block text-xl font-semibold text-[var(--color-text)]">{docCount}</span>
+                  <span className="mt-1 block text-[10px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">Documents</span>
+                </Link>
               </div>
             </div>
-          ) : null}
+
+            <Button type="button" size="lg" className="w-full" onClick={() => setEditorField(nextCertificateField(profile))}>
+              Continue my certificate <ArrowRight className="h-4 w-4" aria-hidden />
+            </Button>
+            <Button to="/student/profile" variant="secondary" className="w-full">Open full academic profile</Button>
+          </aside>
         </div>
-        <div
-          className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary-accent/10 blur-2xl"
-          aria-hidden
-        />
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <DashboardActionCard
-          icon={UserCircle}
-          title={t(
-            "student:dashboardActionProfileTitle",
-            "Complete your profile",
-          )}
-          description={t(
-            "student:dashboardActionProfileHint",
-            "Add details once so recommendations and university replies are more accurate.",
-          )}
-          to="/student/profile"
-        />
-        <DashboardActionCard
-          icon={SearchCheck}
-          title={t(
-            "student:dashboardActionExploreTitle",
-            "Explore universities",
-          )}
-          description={t(
-            "student:dashboardActionExploreHint",
-            "Use filters, compare options, and save your next shortlist quickly.",
-          )}
-          to="/student/universities"
-        />
-        <DashboardActionCard
-          icon={FileText}
-          title={t("student:dashboardActionDocsTitle", "Keep documents ready")}
-          description={t(
-            "student:dashboardActionDocsHint",
-            "Upload key files early so you can respond without delays when a university asks.",
-          )}
-          to="/student/documents"
-        />
-      </div>
-
-      {!user?.phone ? (
-        <Card className="border-primary-accent/25 bg-[var(--color-card)]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-accent/12 text-primary-accent">
-                <Phone className="h-5 w-5" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <CardTitle className="text-base">
-                  {t("student:addPhoneTitle", "Add your phone number")}
-                </CardTitle>
-                <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-muted)]">
-                  {t(
-                    "student:addPhoneHint",
-                    "We can use it for urgent reminders about offers, messages, and documents.",
-                  )}
-                </p>
-              </div>
-            </div>
-            <Button
-              to="/profile"
-              variant="secondary"
-              className="w-full sm:w-auto"
-            >
-              {t("student:addPhoneCta", "Add phone")}
-            </Button>
-          </div>
-        </Card>
-      ) : null}
-
-      <Link
-        to="/student/profile"
-        className="block rounded-card border border-primary-accent/25 bg-[var(--color-card)] p-4 shadow-[var(--shadow-card)] transition-colors hover:border-primary-accent/50"
-        data-onboarding="dashboard-profile-meter"
-        onClick={() => trackStudentFunnel("student_profile_meter_click")}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-[var(--color-text)]">
-              {t("profileCompletion")}
-            </p>
-            <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
-              {t("unlockBetterMatches", "Stronger profile → better matches.")}
-            </p>
-          </div>
-          <span className="text-2xl font-semibold text-primary-accent">
-            {profilePercent}%
-          </span>
-        </div>
-        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[var(--color-border)]">
-          <div
-            className="h-full rounded-full bg-primary-accent transition-[width] duration-500"
-            style={{ width: `${profilePercent}%` }}
-          />
-        </div>
-      </Link>
-
-      {digest.length > 0 ? (
-        <Card className="border-[var(--color-border)]">
-          <div className="flex items-center justify-between gap-2">
-            <CardTitle className="flex items-center gap-2">
-              <Bell
-                className="h-5 w-5 text-primary-accent shrink-0"
-                aria-hidden
-              />
-              {t("notificationDigestTitle", "Recent updates")}
-            </CardTitle>
-            <Link
-              to="/notifications"
-              className="text-sm font-medium text-primary-accent hover:underline"
-            >
-              {t("viewAll", "View all")}
-            </Link>
-          </div>
-          <ul className="mt-3 space-y-2" role="list">
-            {digest.map((n) => (
-              <li key={n.id}>
-                {n.link ? (
-                  <Link
-                    to={n.link}
-                    className="block rounded-input px-2 py-2.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-border)]/25 min-h-[44px]"
-                  >
-                    {n.title}
-                  </Link>
-                ) : (
-                  <span className="block px-2 py-2.5 text-sm text-[var(--color-text-muted)]">
-                    {n.title}
-                  </span>
-                )}
+      <section aria-label="How Edmission works" className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-card)] px-4 py-4 sm:px-6">
+        <ol className="grid gap-2 sm:grid-cols-4">
+          {JOURNEY_STEPS.map((step, index) => {
+            const Icon = step.icon
+            const complete = index === 0 ? certificateCompletion >= 100 : index === 1 ? certificateCompletion >= 75 : index === 2 ? offers.length > 0 : applications.some((application) => application.status === 'accepted')
+            return (
+              <li key={step.label} className="relative flex items-center gap-3 rounded-2xl px-2 py-2.5">
+                <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', complete ? 'bg-green-500/14 text-green-600 dark:text-green-400' : index === 0 ? 'bg-primary-accent/14 text-primary-accent' : 'bg-[var(--color-bg)] text-[var(--color-text-muted)]')}>
+                  {complete ? <CheckCircle2 className="h-4.5 w-4.5" aria-hidden /> : <Icon className="h-4.5 w-4.5" aria-hidden />}
+                </span>
+                <div className="min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Step {index + 1}</span>
+                  <span className="block text-sm font-medium text-[var(--color-text)]">{step.label}</span>
+                </div>
               </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
+            )
+          })}
+        </ol>
+      </section>
 
-      <Card
-        className="border-primary-accent/30"
-        data-onboarding="dashboard-get-started"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <CardTitle>
-              {onboardingDone
-                ? t("onboardingAllSetTitle", "You are on track")
-                : t("getStarted")}
-            </CardTitle>
-            <p className="text-sm text-[var(--color-text-muted)] mt-1">
-              {onboardingDone
-                ? t(
-                    "onboardingAllSetHint",
-                    "Use Home for your next step and Explore to find universities.",
-                  )
-                : t("getStartedHint")}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              try {
-                localStorage.removeItem(getTutorialStorageKey("student"));
-              } catch {
-                /* ignore */
-              }
-              updateProfile({
-                onboardingTutorialSeen: { student: false },
-              }).finally(() => window.location.assign("/student/dashboard"));
-            }}
-            className="text-xs font-medium text-primary-accent hover:underline min-h-[44px] px-1"
-          >
-            {t("onboardingReplayIntro", "Replay introduction")}
-          </button>
-        </div>
-        {!onboardingDone ? (
-          <ul className="mt-3 space-y-2" role="list">
-            {onboardingSteps.map((step, index) => (
-              <li
-                key={`${step.to}-${index}`}
-                className="flex items-center gap-2"
-              >
-                {step.done ? (
-                  <CheckCircle
-                    className="w-5 h-5 text-green-500 shrink-0"
-                    aria-hidden
-                  />
-                ) : (
-                  <Circle
-                    className="w-5 h-5 text-[var(--color-text-muted)] shrink-0"
-                    aria-hidden
-                  />
-                )}
-                <Link
-                  to={step.to}
-                  className="text-sm text-primary-accent hover:underline min-h-[44px] inline-flex items-center"
-                >
-                  {step.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </Card>
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-        <Link to="/student/profile">
-          <Card
-            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter transition-colors"
-            interactive
-          >
-            <DashboardStatWatermark icon={UserCircle} />
-            <div className="relative z-[1]">
-              <CardTitle className="text-sm">
-                {t("profileCompletion")}
-              </CardTitle>
-              <p className="mt-1 text-xl font-semibold text-primary-accent">
-                {profilePercent}%
-              </p>
-            </div>
-          </Card>
-        </Link>
-        <Link to="/student/interests">
-          <Card
-            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-1 transition-colors"
-            interactive
-          >
-            <DashboardStatWatermark icon={Building2} />
-            <div className="relative z-[1]">
-              <CardTitle className="text-sm">
-                {t("activeApplications", "Active interests")}
-              </CardTitle>
-              <p className="text-xl font-semibold">
-                {activeApplications.length}
-              </p>
-            </div>
-          </Card>
-        </Link>
-        <Link to="/student/offers">
-          <Card
-            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-2 transition-colors"
-            interactive
-          >
-            <DashboardStatWatermark icon={Gift} />
-            <div className="relative z-[1]">
-              <CardTitle className="text-sm">{t("offers")}</CardTitle>
-              <p className="text-xl font-semibold">{offers.length}</p>
-            </div>
-          </Card>
-        </Link>
-        <Link to="/student/interests">
-          <Card
-            className="relative h-full min-h-[100px] cursor-pointer overflow-hidden hover:border-primary-accent animate-card-enter animate-stagger-3 transition-colors"
-            interactive
-          >
-            <DashboardStatWatermark icon={GraduationCap} />
-            <div className="relative z-[1]">
-              <CardTitle className="text-sm">{t("accepted")}</CardTitle>
-              <p className="text-xl font-semibold">{acceptedCount}</p>
-            </div>
-          </Card>
-        </Link>
-      </div>
-
-      <div>
+      <section>
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              {t("recommendedUniversities")}
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              {minimalComplete
-                ? t(
-                    "student:dashboardRecommendationsHint",
-                    "Start with these picks, then use Explore to compare details and filters.",
-                  )
-                : t(
-                    "student:dashboardRecommendationsLocked",
-                    "Finish the minimum profile to unlock tailored recommendations.",
-                  )}
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-accent">Matched to your story</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--color-text)]">University opportunities</h2>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">The stronger your certificate becomes, the more relevant these matches can be.</p>
           </div>
-          <Button to="/student/universities" variant="secondary" size="sm">
-            {t("homePrimaryCtaExplore", "Explore universities")}
-          </Button>
+          <Button to="/student/universities" variant="secondary" size="sm">Explore all universities</Button>
         </div>
-        {loadingRecs ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-          </div>
-        ) : minimalComplete && recommendations.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations
-              .slice(0, DASHBOARD_RECOMMENDATIONS)
-              .map((u, index) => (
-                <div
-                  key={u.id}
-                  className="animate-card-enter opacity-0"
-                  style={{
-                    animationDelay: `${Math.min(index, 9) * 0.05}s`,
-                    animationFillMode: "forwards",
-                  }}
-                >
-                  <UniversityCard
-                    university={u}
-                    showRequirements={false}
-                    onInterest={() => {}}
-                  />
-                </div>
-              ))}
+        {recommendationsLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"><CardSkeleton /><CardSkeleton /><CardSkeleton /></div>
+        ) : recommendations.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {recommendations.map((university, index) => (
+              <div key={university.id} className="animate-card-enter opacity-0" style={{ animationDelay: `${index * 0.06}s`, animationFillMode: 'forwards' }}>
+                <UniversityCard university={university} showRequirements={false} onInterest={() => {}} />
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)]">
-            <EmptyState
-              title={
-                minimalComplete
-                  ? t("student:noUniversitiesFound", "No universities found")
-                  : t("emptyRecsTitle", "No recommendations yet")
-              }
-              description={
-                minimalComplete
-                  ? t(
-                      "tryChangingFiltersOrSearch",
-                      "Try changing filters or search to see more results.",
-                    )
-                  : t(
-                      "emptyRecsBody",
-                      "Tell us a bit more about you to see universities picked for your profile.",
-                    )
-              }
-              actionLabel={t("homePrimaryCtaExplore", "Explore universities")}
-              actionTo="/student/universities"
-            />
-            {!minimalComplete ? (
-              <p className="px-4 pb-8 text-center text-sm text-[var(--color-text-muted)]">
-                {t("completeProfileForRecs")}
-              </p>
-            ) : null}
+          <div className="rounded-[24px] border border-dashed border-[var(--color-border)] bg-[var(--color-card)] p-7 text-center">
+            <Building2 className="mx-auto h-7 w-7 text-primary-accent" aria-hidden />
+            <h3 className="mt-3 font-semibold text-[var(--color-text)]">Your matches are getting ready</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-[var(--color-text-muted)]">Add the key certificate details and we’ll use them to find universities that fit your goals.</p>
+            <Button to="/student/universities" className="mt-4">Explore universities</Button>
           </div>
         )}
-      </div>
-
-      <section className="rounded-card border border-[var(--color-border)] bg-[var(--color-card)] p-4 sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              {t("student:dashboardExploreMiniTitle", "Explore")}
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              {t(
-                "student:dashboardExploreMiniHint",
-                "Explore more universities from the full catalog without profile-based filters.",
-              )}
-            </p>
-          </div>
-          <Button to="/student/explore-more" variant="secondary">
-            {t("student:dashboardExploreMiniCta", "Explore more")}
-          </Button>
-        </div>
       </section>
 
-      {showAppsOffersGrid ? (
-        <div
-          className={
-            showAppsSection && showOffersSection
-              ? "grid grid-cols-1 lg:grid-cols-2 gap-6"
-              : "grid grid-cols-1 gap-6"
-          }
-        >
-          {showAppsSection ? (
-            <Link to="/student/interests">
-              <Card
-                className="h-full cursor-pointer hover:border-primary-accent transition-colors"
-                interactive
-              >
-                <CardTitle>
-                  {t("activeApplications", "Active interests")}
-                </CardTitle>
-                <ul className="mt-3 space-y-2">
-                  {activeApplications.slice(0, 5).map((a) => (
-                    <li
-                      key={a.id}
-                      className="grid grid-cols-[minmax(0,1fr)_104px_52px] items-center gap-x-4 rounded-2xl px-1 py-1 min-h-[44px]"
-                    >
-                      <span className="truncate pr-2">
-                        {a.universityName ?? a.universityId}
-                      </span>
-                      <span className="justify-self-start text-sm text-[var(--color-text-muted)]">
-                        {a.status}
-                      </span>
-                      <span className="justify-self-end text-sm text-primary-accent">
-                        {t("view")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
-                  {t("allApplications", "All interests")}
-                </span>
-              </Card>
-            </Link>
+      {(digest.length > 0 || activeApplications.length > 0 || offers.length > 0) ? (
+        <section className="grid gap-4 lg:grid-cols-2">
+          {digest.length > 0 ? (
+            <Card className="p-5">
+              <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5 text-primary-accent" aria-hidden /> Recent updates</CardTitle>
+              <ul className="mt-3 space-y-1">
+                {digest.map((item) => (
+                  <li key={item.id}>
+                    {item.link ? <Link to={item.link} className="group flex min-h-[44px] items-center justify-between rounded-xl px-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-bg)]"><span className="truncate">{item.title}</span><ArrowRight className="h-4 w-4 text-[var(--color-text-muted)] transition-transform group-hover:translate-x-0.5" aria-hidden /></Link> : <span className="block px-2 py-3 text-sm text-[var(--color-text-muted)]">{item.title}</span>}
+                  </li>
+                ))}
+              </ul>
+            </Card>
           ) : null}
-          {showOffersSection ? (
-            <Link to="/student/offers">
-              <Card
-                className="h-full cursor-pointer hover:border-primary-accent transition-colors"
-                interactive
-              >
-                <CardTitle>{t("recentOffers")}</CardTitle>
-                <ul className="mt-3 space-y-2">
-                  {offers.slice(0, 3).map((o) => (
-                    <li
-                      key={o.id}
-                      className="grid grid-cols-[minmax(0,1fr)_52px] items-center gap-x-4 rounded-2xl px-1 py-1 min-h-[44px]"
-                    >
-                      <span className="truncate pr-2">
-                        {o.universityName ?? o.universityId}
-                      </span>
-                      <span className="justify-self-end text-sm text-primary-accent">
-                        {t("view")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <span className="inline-block mt-3 px-3 py-1.5 text-sm font-medium rounded-input border-2 border-[var(--color-border)]">
-                  {t("allOffers")}
-                </span>
-              </Card>
-            </Link>
+          {(activeApplications.length > 0 || offers.length > 0) ? (
+            <Card className="p-5">
+              <CardTitle>Your opportunity momentum</CardTitle>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">You’re one step closer to your first university offer.</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <Link to="/student/interests" className="rounded-[18px] border border-[var(--color-border)] p-4 transition-colors hover:border-primary-accent/40"><p className="text-2xl font-semibold text-[var(--color-text)]">{activeApplications.length}</p><p className="mt-1 text-xs text-[var(--color-text-muted)]">Active interests</p></Link>
+                <Link to="/student/offers" className="rounded-[18px] border border-[var(--color-border)] p-4 transition-colors hover:border-primary-accent/40"><p className="text-2xl font-semibold text-[var(--color-text)]">{offers.length}</p><p className="mt-1 text-xs text-[var(--color-text-muted)]">Offers received</p></Link>
+              </div>
+            </Card>
           ) : null}
-        </div>
+        </section>
       ) : null}
 
-      <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-6">
-        <Button to="/student/chat" variant="secondary">
-          {t("chats")}
-        </Button>
-      </div>
+      <StudentRankingSheet open={rankingOpen} onClose={() => setRankingOpen(false)} onLoaded={handleRankingLoaded} />
+      <CertificateEditorModal field={editorField} profile={profile} onClose={() => setEditorField(null)} onSave={saveCertificateField} />
     </div>
-  );
+  )
 }

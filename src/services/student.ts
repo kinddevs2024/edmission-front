@@ -3,6 +3,7 @@ import { getUniversityHubCountries } from '@/services/options'
 import type { PaginationParams, PaginatedResponse } from '@/types/api'
 import type { Application, Offer, Recommendation } from '@/types/student'
 import type { UniversityListItem } from '@/types/university'
+import type { StudentLevelId } from '@/config/studentLevels'
 
 export interface StudentExperience {
   _id?: string
@@ -81,6 +82,41 @@ export interface StudentProfileData {
 
 export async function getStudentProfile(): Promise<StudentProfileData> {
   const { data } = await api.get<StudentProfileData>('/student/profile')
+  return data
+}
+
+export type StudentRankingScope = 'global' | 'country' | 'level'
+
+export interface StudentRankingRow {
+  id: string
+  userId: string
+  position: number
+  fullName: string
+  country: string
+  avatarUrl: string
+  profileCompletionPercent: number
+  offersCount: number
+  grantsCount: number
+  isCurrentUser: boolean
+  level: StudentLevelId
+  levelRank: number
+  nextLevel: StudentLevelId | null
+  progressPercent: number
+  nextMilestone: string
+}
+
+export interface StudentRankingResponse {
+  scope: StudentRankingScope
+  total: number
+  rows: StudentRankingRow[]
+  currentUser: StudentRankingRow | null
+}
+
+export async function getStudentRanking(
+  scope: StudentRankingScope = 'global',
+  limit = 50,
+): Promise<StudentRankingResponse> {
+  const { data } = await api.get<StudentRankingResponse>('/student/ranking', { params: { scope, limit } })
   return data
 }
 

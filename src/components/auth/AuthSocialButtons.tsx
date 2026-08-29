@@ -39,8 +39,6 @@ export function AuthSocialButtons({
   const showGoogleAuth = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
   const showAppleAuth = Boolean(import.meta.env.VITE_APPLE_CLIENT_ID?.trim());
   const showYandexAuth = Boolean(import.meta.env.VITE_YANDEX_CLIENT_ID?.trim());
-  const googleLogo =
-    "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Search_logo.width-500.format-webp.webp";
   const yandexLogo =
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Yandex_icon.svg/1280px-Yandex_icon.svg.png";
   const telegramLogo =
@@ -76,28 +74,14 @@ export function AuthSocialButtons({
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 py-1">
       {showGoogleAuth && (
-        <div
-          className={`relative inline-flex h-11 w-11 min-w-[44px] items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-card)] p-0 ${loading ? "opacity-50" : ""}`}
-          aria-label={googleLabel}
-          aria-hidden={loading ? "true" : undefined}
+        <GoogleSignInButton
+          disabled={loading}
+          autoPrompt={googleAutoPrompt}
+          compact
           title={googleLabel}
-        >
-          <img
-            src={googleLogo}
-            alt={googleLabel}
-            className="pointer-events-none h-5 w-5 object-contain"
-            loading="lazy"
-            decoding="async"
-          />
-          <GoogleSignInButton
-            disabled={loading}
-            autoPrompt={googleAutoPrompt}
-            compact
-            title={googleLabel}
-            className="absolute inset-0 h-11 w-11 min-w-[44px] rounded-full p-0 opacity-0"
-            onCredential={(c) => void onGoogleCredential(c)}
-          />
-        </div>
+          className="h-11 w-11 min-w-[44px] overflow-hidden rounded-full"
+          onCredential={(c) => void onGoogleCredential(c)}
+        />
       )}
       {showYandexAuth && (
         <div title={yandexLabel} aria-label={yandexLabel}>

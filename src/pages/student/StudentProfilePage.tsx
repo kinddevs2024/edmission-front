@@ -35,13 +35,16 @@ import { getApiError } from '@/services/auth'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
-import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, Circle, ExternalLink, Lock, FileStack, DollarSign, type LucideIcon } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, GraduationCap, FileText, Sparkles, Briefcase, FolderOpen, BookOpen, ChevronDown, ChevronRight, Check, ExternalLink, Lock, FileStack, DollarSign, type LucideIcon } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { FIELD_OF_STUDY } from '@/constants/fieldOfStudy'
 import { getStudentAvatarUrl } from '@/services/upload'
 import { PageTitle } from '@/components/ui/PageTitle'
 import { notifySuccess } from '@/utils/notify'
 import { dedupeNormalizedCountries, mergeCountryOptionLabels, normalizeCountryLabel } from '@/utils/countryLabels'
+import { AcademicCertificate } from '@/components/student/AcademicCertificate'
+import { ProfileSectionCard } from '@/components/student/ProfileSectionCard'
+import { getAcademicCertificateCompletion, type AcademicCertificateFieldId } from '@/utils/academicCertificate'
 
 const schema = z.object({
   firstName: z.string().optional(),
@@ -136,6 +139,31 @@ function mergeProfileWithDraft(base: FormData, storageKey: string | null): FormD
 
 type SectionId = 'personal' | 'location' | 'education' | 'about' | 'budget' | 'skills' | 'faculties' | 'experience' | 'works' | 'documents'
 type ProfileFocusField = 'firstName' | 'lastName' | 'city' | 'schoolName' | 'gradeLevel' | 'graduationYear'
+
+const CERTIFICATE_FIELD_SECTION: Record<AcademicCertificateFieldId, SectionId> = {
+  name: 'personal',
+  location: 'location',
+  school: 'education',
+  graduationYear: 'education',
+  gpa: 'education',
+  degree: 'education',
+  language: 'education',
+  academicFocus: 'faculties',
+  destinations: 'location',
+}
+
+const PROFILE_SECTION_DESCRIPTIONS: Record<SectionId, string> = {
+  personal: 'Help universities recognise you and trust your profile.',
+  location: 'Show where you are now and where you want to study.',
+  education: 'Add your school, grades, degree goal and language level.',
+  about: 'Give universities a concise picture of who you are.',
+  budget: 'Set realistic study expectations and scholarship needs.',
+  skills: 'Highlight strengths, interests and the work you enjoy.',
+  faculties: 'Tell us which academic directions fit your future.',
+  experience: 'Add volunteering, internships and meaningful activity.',
+  works: 'Show projects, achievements and extracurricular work.',
+  documents: 'Keep the files universities may ask for ready.',
+}
 
 const SECTIONS: { id: SectionId; titleKey: string; icon: LucideIcon }[] = [
   { id: 'personal', titleKey: 'stepPersonal', icon: User },
@@ -1164,100 +1192,75 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
   return (
     <div className="w-full space-y-5 min-h-0 pb-page-bottom-cta">
       <PageTitle title={t('portfolioTitle')} icon="User" />
-      <div className="flex flex-wrap items-center gap-4" data-onboarding="student-profile-overview">
-        <FileUpload
-          headless
-          variant="avatar"
-          value={avatarUrl}
-          onChange={onAvatarFileUrlChange}
-          inputRef={headerAvatarInputRef}
-          label={t('student:changeAvatar', 'Change profile photo')}
-        />
-        <button
-          type="button"
-          className="block shrink-0 cursor-pointer rounded-full transition-[box-shadow,transform] hover:scale-[1.02] hover:ring-2 hover:ring-primary-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] disabled:opacity-50 disabled:pointer-events-none"
-          aria-label={t('student:changeAvatar', 'Change profile photo')}
-          title={t('student:changeAvatar', 'Change profile photo')}
-          disabled={saving}
-          onClick={() => headerAvatarInputRef.current?.click()}
-        >
-          <img
-            src={getStudentAvatarUrl(avatarUrl)}
-            alt=""
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-[var(--color-border)] bg-[var(--color-border)]"
-          />
-        </button>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
-            {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || t('portfolioTitle')}
-          </h1>
-          <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
-            {[profile?.firstName, profile?.lastName].filter(Boolean).length > 0 ? t('portfolioTitle') : null}
-          </p>
-          {verified && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-600 dark:text-green-400 mt-1" title={t('common:verified')}>
-              <span aria-hidden>✓</span> {t('common:verified')}
-            </span>
-          )}
-        </div>
-      </div>
-      <p className="text-sm sm:text-base text-[var(--color-text-muted)] leading-relaxed max-w-2xl">
-        {t('portfolioIntro')}
-      </p>
-
-      <Card className="p-4 sm:p-5 animate-card-enter shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-base text-[var(--color-text-muted)]">{t('portfolioCompletion')}</p>
-            <p className="text-xl sm:text-2xl font-semibold text-[var(--color-text)] mt-0.5">
-              {profile?.portfolioCompletionPercent ?? 0}%
-            </p>
-          </div>
-          <div className="flex-1 w-full sm:max-w-[280px] h-4 rounded-full bg-[var(--color-border)] overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[var(--color-primary-accent)] transition-all duration-500 ease-out"
-              style={{ width: `${displayPercent}%` }}
+      <section className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-[var(--shadow-card)] sm:p-6" data-onboarding="student-profile-overview">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <FileUpload
+              headless
+              variant="avatar"
+              value={avatarUrl}
+              onChange={onAvatarFileUrlChange}
+              inputRef={headerAvatarInputRef}
+              label={t('student:changeAvatar', 'Change profile photo')}
             />
+            <button
+              type="button"
+              className="block shrink-0 cursor-pointer rounded-full transition-[box-shadow,transform] hover:scale-[1.02] hover:ring-2 hover:ring-primary-accent/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] disabled:pointer-events-none disabled:opacity-50"
+              aria-label={t('student:changeAvatar', 'Change profile photo')}
+              title={t('student:changeAvatar', 'Change profile photo')}
+              disabled={saving}
+              onClick={() => headerAvatarInputRef.current?.click()}
+            >
+              <img src={getStudentAvatarUrl(avatarUrl)} alt="" className="h-16 w-16 rounded-full border-2 border-[var(--color-border)] bg-[var(--color-border)] object-cover sm:h-20 sm:w-20" />
+            </button>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-accent">Your academic identity</p>
+              <h1 className="mt-1 truncate text-xl font-semibold tracking-[-0.02em] text-[var(--color-text)] sm:text-2xl">
+                {[profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Build your Academic Certificate'}
+              </h1>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">Strengthen your profile and become easier for universities to discover.</p>
+              {verified ? (
+                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-green-500/14 px-2.5 py-1 text-xs font-semibold text-green-600 dark:text-green-400" title={t('common:verified')}>
+                  <Check className="h-3.5 w-3.5" aria-hidden /> {t('common:verified')}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <div className="min-w-[220px] rounded-[20px] bg-[var(--color-bg)] p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div><p className="text-xs font-medium text-[var(--color-text-muted)]">Academic profile</p><p className="mt-1 text-2xl font-semibold text-[var(--color-text)]">{profile?.portfolioCompletionPercent ?? 0}%</p></div>
+              <p className="text-xs font-semibold text-primary-accent">{getAcademicCertificateCompletion(profile)}% certificate</p>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
+              <div className="h-full rounded-full bg-[var(--color-primary-accent)] transition-[width] duration-700 ease-out" style={{ width: `${displayPercent}%` }} />
+            </div>
           </div>
         </div>
-      </Card>
+      </section>
 
-      {profile?.minimalPortfolioComplete === false && (
-        <Card className="p-4 sm:p-5 border-primary-accent/25 bg-[var(--color-card)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text)]">
-                {t('student:minProfileUnlockTitle', 'Complete the minimum profile to unlock universities')}
-              </p>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                {t('student:minProfileUnlockDesc', 'Fill the 3 required parts first: name, location, and education.')}
-              </p>
-            </div>
-            <div className="text-sm font-medium text-primary-accent">
-              {minimalChecklistDone}/{minimalChecklist.length}
-            </div>
+      <section>
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-accent">Live preview</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--color-text)]">Your Academic Certificate</h2>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">Select any field to improve it. The certificate updates as your profile grows.</p>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            {minimalChecklist.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => openEditableSection(item.section)}
-                className="flex min-h-[46px] items-center gap-2 rounded-xl border border-[var(--color-border)] px-3 py-3 text-left transition-colors hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-accent"
-              >
-                {item.done ? (
-                  <Check className="h-4 w-4 shrink-0 text-green-500" />
-                ) : (
-                  <Circle className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]" />
-                )}
-                <span className={cn('text-sm', item.done ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]')}>
-                  {item.label}
-                </span>
-              </button>
-            ))}
+          <span className="rounded-full border border-primary-accent/25 bg-primary-accent/8 px-3 py-1.5 text-xs font-semibold text-primary-accent">{getAcademicCertificateCompletion(profile)}% complete</span>
+        </div>
+        <AcademicCertificate profile={profile} compact onFieldClick={(field) => openEditableSection(CERTIFICATE_FIELD_SECTION[field])} />
+      </section>
+
+      {profile?.minimalPortfolioComplete === false ? (
+        <Card className="border-primary-accent/25 p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">Universities need a little more information about you</p>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">Complete name, location and education to make your profile discoverable.</p>
+            </div>
+            <span className="shrink-0 text-sm font-semibold text-primary-accent">{minimalChecklistDone}/{minimalChecklist.length} essentials ready</span>
           </div>
         </Card>
-      )}
+      ) : null}
 
       {isExternalStudent && profile && studentUserId && (
         <Card className="p-4 sm:p-5 border border-[var(--color-border)]">
@@ -1335,18 +1338,23 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
         </Card>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <section>
+        <div className="mb-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-accent">Strengthen your profile</p>
+          <h2 className="mt-1 text-xl font-semibold text-[var(--color-text)]">Build each part with purpose</h2>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">See what is ready, what needs attention and why each section matters.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {displayedSections.map((sec) => {
-          const isFaculties = sec.id === 'faculties'
           const isDocuments = sec.id === 'documents'
-          const facultiesSelected = (profile?.interestedFaculties?.length ?? 0) > 0
           const pct = getSectionPercent(profile, sec.id)
-          const Icon = sec.icon
           return (
-            <button
+            <ProfileSectionCard
               key={sec.id}
-              type="button"
-              data-onboarding={`student-profile-section-${sec.id}`}
+              icon={sec.icon}
+              title={getSectionTitle(sec)}
+              description={PROFILE_SECTION_DESCRIPTIONS[sec.id]}
+              percent={pct}
               onClick={() => {
                 if (isDocuments && isCounsellorStudent) {
                   navigate(`/school/students/${studentUserId}/documents`)
@@ -1358,66 +1366,11 @@ export function StudentProfilePage({ studentUserId, counsellorMode = false, admi
                 }
                 openEditableSection(sec.id)
               }}
-              className={cn(
-                'flex flex-col items-center gap-2 p-3 sm:p-4 rounded-card border border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-card)] hover:border-[var(--color-primary-accent)] hover:bg-[var(--color-bg)] hover:scale-[1.02] hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99] transition-all duration-200 text-center min-h-[110px]'
-              )}
-            >
-                <div className={cn(
-                  'relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center overflow-hidden bg-[var(--color-border)] shrink-0',
-                isFaculties && facultiesSelected && 'ring-2 ring-green-500/50 !bg-green-500/10'
-              )}>
-                {isFaculties || isDocuments ? (
-                  <>
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
-                      <path
-                        className={isFaculties && facultiesSelected ? 'text-green-500' : 'text-[var(--color-border)]'}
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        fill="none"
-                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                      />
-                    </svg>
-                    <span className="relative flex items-center justify-center">
-                      {isFaculties && facultiesSelected ? (
-                        <Check className="w-8 h-8 text-green-600 dark:text-green-400" strokeWidth={2.5} />
-                      ) : (
-                        <Icon className="w-8 h-8 text-[var(--color-text-muted)]" />
-                      )}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
-                      <path
-                        className="text-[var(--color-border)]"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        fill="none"
-                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                      />
-                      <path
-                        className="text-[var(--color-primary-accent)] transition-all duration-500"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        fill="none"
-                        strokeDasharray={`${(pct / 100) * 97.4}, 97.4`}
-                        d="M18 2.5 a 15.5 15.5 0 0 1 0 31 a 15.5 15.5 0 0 1 0 -31"
-                      />
-                    </svg>
-                    <span className="relative text-sm sm:text-base font-semibold text-[var(--color-text)]">{pct}%</span>
-                  </>
-                )}
-              </div>
-              <div className="flex items-center justify-center gap-1.5 text-[var(--color-text)] w-full min-h-[2rem]">
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[var(--color-text-muted)]" />
-                <span className="text-sm sm:text-base font-medium text-center line-clamp-2">{getSectionTitle(sec)}</span>
-              </div>
-            </button>
+            />
           )
         })}
-      </div>
+        </div>
+      </section>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 

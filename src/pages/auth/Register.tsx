@@ -313,7 +313,7 @@ export function Register() {
           </p>
         </div>
 
-        <div className="space-y-3 p-4">
+        <div className="flex flex-col gap-4 p-4 sm:p-6">
           {roles.map((role) => {
             const selected = selectedRole === role;
             const Icon = roleConfig[role].icon;
@@ -360,7 +360,7 @@ export function Register() {
               ? t("auth:continueAsStudent", "Continue as student")
               : t("auth:continueAsUniversity", "Continue as university")}
           </Button>
-          <Link to="/login" className="block text-center text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+          <Link to="/login" className="block pt-1 text-center text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
             {t("auth:haveAccount")} {t("common:signIn", "Sign in")}
           </Link>
         </div>
@@ -395,7 +395,7 @@ export function Register() {
         </div>
       </div>
 
-      <form onSubmit={handleEmailSubmit(onSubmitEmail)} className="space-y-4">
+      <form onSubmit={handleEmailSubmit(onSubmitEmail)} className="flex flex-col gap-5">
         <Input
           label={t("auth:email")}
           type="email"
