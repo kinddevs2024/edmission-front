@@ -11,7 +11,7 @@ import { LandingHeader } from '@/components/sections/landing/LandingHeader'
 
 export function LandingPage() {
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] pt-16 text-[var(--color-text)] safe-area-pb">
+    <main className="landing-page min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] safe-area-pb">
       <LandingHeader />
       <HeroSection />
       <ExploreSection />

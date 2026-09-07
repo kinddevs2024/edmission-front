@@ -17,6 +17,9 @@ const LANGUAGE_LABELS: Record<SupportedLng, string> = {
   uz: "O'zbek",
 }
 
+// Temporarily hide the header language controls without changing the active locale.
+const SHOW_HEADER_LANGUAGE_SWITCHER = false
+
 const LANGUAGE_FLAG_SRC: Record<SupportedLng, string> = {
   en: 'https://flagcdn.com/w80/us.png',
   ru: 'https://flagcdn.com/w80/ru.png',
@@ -37,9 +40,18 @@ export function LandingHeader() {
   const currentLng = (i18n.language || 'en').split('-')[0].toLowerCase() as SupportedLng
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
+    const onScroll = () => {
+      const track = document.querySelector<HTMLElement>('.campus-hero__track')
+      const revealAt = track ? track.offsetHeight - window.innerHeight : 24
+      setScrolled(track ? -track.getBoundingClientRect().top >= revealAt : window.scrollY > 24)
+    }
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
   const lockScroll = useCallback((lock: boolean) => {
@@ -173,10 +185,10 @@ export function LandingHeader() {
   return (
     <header
       className={clsx(
-        'fixed inset-x-0 top-0 z-50 w-full border-b border-[var(--color-border)] bg-[var(--color-card)]/72 backdrop-blur-md transition-all duration-200',
+        'fixed inset-x-0 top-0 z-50 w-full transition-all duration-200',
         scrolled
-          ? 'shadow-[0_18px_40px_-28px_rgba(15,23,42,0.45)]'
-          : 'shadow-none'
+          ? 'border-b border-[var(--color-border)] bg-[var(--color-card)]/90 backdrop-blur-md shadow-[0_18px_40px_-28px_rgba(15,23,42,0.45)]'
+          : 'border-b border-transparent bg-transparent shadow-none'
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
@@ -199,7 +211,7 @@ export function LandingHeader() {
         <nav className="flex items-center gap-2 sm:gap-3">
           {/* Desktop: Language, Theme, Login, Register */}
           <div className="hidden lg:flex items-center gap-2">
-            <LanguageMenu />
+            {SHOW_HEADER_LANGUAGE_SWITCHER && <LanguageMenu />}
             <Button
               to="/login"
               variant="secondary"
@@ -225,7 +237,7 @@ export function LandingHeader() {
             >
               <span className="truncate">{t('header.register')}</span>
             </Button>
-            <div className="relative" ref={mobileLangRef}>
+            {SHOW_HEADER_LANGUAGE_SWITCHER && <div className="relative" ref={mobileLangRef}>
               <button
                 type="button"
                 onClick={() => setMobileLangOpen((v) => !v)}
@@ -277,7 +289,7 @@ export function LandingHeader() {
                   })}
                 </div>
               )}
-            </div>
+            </div>}
             {menuOpen ? (
               <button
                 type="button"

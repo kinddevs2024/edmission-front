@@ -1,40 +1,75 @@
-import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/Button'
-import { ColourfulText, TextGenerateEffect } from '@/components/ui/TextMotion'
-import { Reveal } from './Reveal'
+import { useEffect, useId, useRef, useState } from 'react'
+import './HeroSection.css'
+
+const BACKGROUND = '/university/поменяй_погоду_на_осень._2K_202609061645.jpeg'
+const FOREGROUND = '/university/University_building_on_field_2K_202609061440.png'
 
 export function HeroSection() {
-  const { t } = useTranslation('landing')
-  return (
-    <section className="relative min-h-[calc(100svh-4rem)] overflow-hidden border-b border-[var(--color-border)] bg-[#dfeeff]">
-      <img
-        src="/preview.png"
-        alt=""
-        className="absolute inset-0 h-screen w-full object-cover object-[center_90%] sm:object-bottom"
-        {...{ fetchpriority: 'high' }}
-      />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,18,38,0.82)_0%,rgba(35,78,150,0.55)_38%,rgba(255,255,255,0.08)_100%)] sm:bg-[linear-gradient(90deg,rgba(9,18,38,0.72)_0%,rgba(35,78,150,0.38)_42%,rgba(255,255,255,0.06)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(0deg,var(--color-bg)_0%,rgba(255,255,255,0)_100%)] sm:h-40" />
+  const filterId = `campus-cutout-${useId().replace(/:/g, '')}`
+  const trackRef = useRef<HTMLDivElement>(null)
+  const wordRef = useRef<SVGGElement>(null)
+  useEffect(() => {
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const track = trackRef.current
+      if (!track || !wordRef.current) return
+      const distance = track.offsetHeight - window.innerHeight
+      const progress = Math.max(0, Math.min(1, -track.getBoundingClientRect().top / Math.max(1, distance)))
+      const scene = track.firstElementChild as HTMLElement | null
+      const mobile = window.innerWidth < 768
+      const coverScale = scene ? Math.max(scene.clientWidth / 1920, scene.clientHeight / 1080) : 1
+      const textScale = mobile && scene ? Math.min(1, scene.clientWidth * 0.9 / (1380 * coverScale)) : 1
+      // Keep the complete word inside the cropped mobile viewport. Start at the
+      // roofline, then lift it above the tower so the final name stays readable.
+      const startBaseline = mobile ? 590 + 215 * textScale : 830
+      const endBaseline = mobile ? 240 : 620
+      const baseline = startBaseline + (endBaseline - startBaseline) * progress
+      const transform = `translate(960px, ${baseline}px) scale(${textScale}) translate(-960px, -620px)`
+      wordRef.current.style.transform = transform
+      wordRef.current.style.setProperty('--word-rest-transform', `translate(960px, ${endBaseline}px) scale(${textScale}) translate(-960px, -620px)`)
+    }
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
+  }, [])
+  const [backgroundReady, setBackgroundReady] = useState(false)
+  const [foregroundReady, setForegroundReady] = useState(false)
+  useEffect(() => {
+    let active = true
+    const background = new Image()
+    const foreground = new Image()
+    background.onload = () => { if (active) setBackgroundReady(true) }
+    foreground.onload = () => { if (active) setForegroundReady(true) }
+    background.src = BACKGROUND
+    foreground.src = FOREGROUND
+    return () => { active = false }
+  }, [])
 
-      <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-7xl items-end px-4 pb-10 pt-16 sm:items-end sm:pb-16 sm:pt-20 md:px-6 lg:px-8">
-        <Reveal>
-          <div className="w-full max-w-2xl pb-2 text-white drop-shadow-[0_16px_36px_rgba(15,23,42,0.45)] sm:pb-4">
-            <h1 className="text-[2rem] font-semibold leading-[1.1] sm:text-5xl md:text-6xl">
-              <TextGenerateEffect text={t('hero.title')} delay={0.12} />
-            </h1>
-            <p className="mt-3 text-base font-semibold text-white sm:mt-4 sm:text-lg md:text-xl">
-              <ColourfulText text={t('hero.valueLine')} />
-            </p>
-            <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
-              <Button to="/register" size="lg" className="w-full sm:w-auto">
-                {t('hero.primaryCta')}
-              </Button>
-              <Button to="/register?role=university" variant="secondary" size="lg" className="w-full sm:w-auto">
-                {t('hero.secondaryCta')}
-              </Button>
-            </div>
-          </div>
-        </Reveal>
+  return (
+    <section className="campus-hero" aria-label="Edmission">
+      <div className="campus-hero__track" ref={trackRef}>
+      <div className="campus-hero__scene" data-ready={backgroundReady && foregroundReady}>
+        <svg className="campus-hero__art" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            {/* The supplied PNG has a real alpha channel; no colour-key filter is needed. */}
+            <mask id={`${filterId}-mask`} maskUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080" style={{ maskType: 'alpha' }}>
+              <image href={FOREGROUND} width="1920" height="1080" preserveAspectRatio="none" />
+            </mask>
+          </defs>
+          <image href={BACKGROUND} width="1920" height="1080" preserveAspectRatio="none" onLoad={() => setBackgroundReady(true)} />
+          <g className="campus-hero__word" ref={wordRef}>
+            <text x="960" y="620" textAnchor="middle" textLength="1380" lengthAdjust="spacingAndGlyphs">EDMISSION</text>
+          </g>
+          <image href={BACKGROUND} width="1920" height="1080" preserveAspectRatio="none" mask={`url(#${filterId}-mask)`} />
+        </svg>
+      </div>
       </div>
     </section>
   )

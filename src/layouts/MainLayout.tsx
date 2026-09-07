@@ -26,6 +26,7 @@ export function MainLayout() {
   const { t } = useTranslation(['student', 'university', 'admin', 'common'])
   const { t: tSchool } = useTranslation('school')
   const location = useLocation()
+  const isLandingPage = location.pathname === '/'
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const collapsed = useUIStore((s) => s.sidebarCollapsed)
 
@@ -260,13 +261,13 @@ export function MainLayout() {
   }, [isAuthenticated])
 
   return (
-    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
+    <div className={cn('flex min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent', !isLandingPage && 'overflow-hidden')}>
       {isAuthenticated && !isStudentOnboarding && <TopBar />}
       <div
         ref={scrollContainerRef}
         className={cn(
           'flex min-h-0 flex-1 flex-col bg-transparent',
-          isChatPage ? 'overflow-hidden' : 'overflow-auto'
+          isLandingPage ? 'overflow-visible' : isChatPage ? 'overflow-hidden' : 'overflow-auto'
         )}
       >
         {showSidebar && navItems.length > 0 ? (
@@ -291,7 +292,8 @@ export function MainLayout() {
         ) : (
           <main
             className={cn(
-              'flex h-full min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent px-2 pb-mobile-nav pt-3 sm:px-2 sm:pt-4 md:pb-12',
+              'flex h-full min-h-0 w-full min-w-0 flex-1 flex-col bg-transparent',
+              !isLandingPage && 'px-2 pb-mobile-nav pt-3 sm:px-2 sm:pt-4 md:pb-12',
               isChatPage && 'overflow-hidden'
             )}
           >
