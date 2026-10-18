@@ -1,7 +1,7 @@
 import { api } from './api'
 
 export interface AdmissionLead {
-  _id: string; name?: string; username?: string; phone?: string; language?: string; status: string
+  _id: string; channel?: 'website' | 'telegram'; chatId?: string; name?: string; username?: string; phone?: string; language?: string; status: string
   profile?: Record<string, unknown>; studyFacts?: Record<string, unknown>; summary?: string; notes?: string
 }
 export interface AdmissionMessage {
