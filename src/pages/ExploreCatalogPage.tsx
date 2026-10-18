@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Building2 } from 'lucide-react'
@@ -31,6 +31,7 @@ function mergeUniqueUniversities(
 export function ExploreCatalogPage() {
   const { t } = useTranslation(['landing', 'common', 'student'])
   const navigate = useNavigate()
+  const sentinel = useRef<HTMLDivElement>(null)
 
   const {
     data,
@@ -39,6 +40,8 @@ export function ExploreCatalogPage() {
     isLoading,
     isError,
     isFetchingNextPage,
+    isFetching,
+    isFetchNextPageError,
   } = useInfiniteQuery({
     queryKey: ['public', 'explore-catalog', PAGE_SIZE],
     queryFn: ({ pageParam }) => getPublicUniversities({ page: pageParam, limit: PAGE_SIZE }),
@@ -46,7 +49,7 @@ export function ExploreCatalogPage() {
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.reduce((sum, page) => sum + (page.data?.length ?? 0), 0)
       const total = typeof lastPage.total === 'number' ? lastPage.total : 0
-      return loaded < total ? allPages.length + 1 : undefined
+      return lastPage.data?.length && loaded < total ? allPages.length + 1 : undefined
     },
     staleTime: 60_000,
   })
@@ -56,6 +59,18 @@ export function ExploreCatalogPage() {
     [data?.pages]
   )
   const total = data?.pages?.[0]?.total ?? universities.length
+  useEffect(() => {
+    const target = sentinel.current
+    if (!target || !hasNextPage || isFetching || isFetchNextPageError) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        observer.disconnect()
+        void fetchNextPage({ cancelRefetch: false })
+      }
+    }, { rootMargin: '0px 0px 400px 0px' })
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetching, isFetchNextPageError, fetchNextPage, universities.length])
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--color-bg)] pt-16 text-[var(--color-text)] safe-area-pb">
@@ -72,12 +87,6 @@ export function ExploreCatalogPage() {
         <h1 className="mt-3 text-3xl font-semibold leading-tight md:text-4xl">
           {t('landing:explore.title', 'See more universities')}
         </h1>
-        <p className="mt-3 max-w-2xl text-[var(--color-text-muted)]">
-          {t(
-            'landing:explore.description',
-            'Open the full university catalog with no profile filters.'
-          )}
-        </p>
         {!isLoading && !isError ? (
           <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             {t('student:universitiesFound', {
@@ -96,7 +105,7 @@ export function ExploreCatalogPage() {
             <CardSkeleton />
             <CardSkeleton />
           </div>
-        ) : isError ? (
+        ) : isError && universities.length === 0 ? (
           <div className="mt-8">
             <EmptyState
               icon={<Building2 className="h-10 w-10 text-[var(--color-text-muted)]" />}
@@ -135,15 +144,15 @@ export function ExploreCatalogPage() {
             </div>
 
             {hasNextPage ? (
-              <div className="mt-8 flex justify-center">
-                <Button
+              <div ref={sentinel} className="mt-8 flex min-h-12 justify-center" aria-live="polite" aria-busy={isFetchingNextPage}>
+                {isFetchNextPageError ? <Button
                   variant="secondary"
-                  onClick={() => fetchNextPage()}
+                  onClick={() => fetchNextPage({ cancelRefetch: false })}
                   loading={isFetchingNextPage}
                   disabled={isFetchingNextPage}
                 >
-                  {t('common:loadMoreUniversities', 'Show more')}
-                </Button>
+                  {t('common:retry', 'Try again')}
+                </Button> : isFetchingNextPage ? <span>{t('common:loading', 'Loading...')}</span> : null}
               </div>
             ) : null}
           </>

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import './HeroSection.css'
 
-const BACKGROUND = '/university/поменяй_погоду_на_осень._2K_202609061645.jpeg'
+const BACKGROUND = '/landing/hero-world-campus-20261015.png'
 const FOREGROUND = '/university/University_building_on_field_2K_202609061440.png'
 
 export function HeroSection() {
@@ -65,7 +65,7 @@ export function HeroSection() {
           </defs>
           <image href={BACKGROUND} width="1920" height="1080" preserveAspectRatio="none" onLoad={() => setBackgroundReady(true)} />
           <g className="campus-hero__word" ref={wordRef}>
-            <text x="960" y="620" textAnchor="middle" textLength="1380" lengthAdjust="spacingAndGlyphs">EDMISSION</text>
+            <text x="960" y="620" textAnchor="middle" textLength="1380" lengthAdjust="spacingAndGlyphs" />
           </g>
           <image href={BACKGROUND} width="1920" height="1080" preserveAspectRatio="none" mask={`url(#${filterId}-mask)`} />
         </svg>

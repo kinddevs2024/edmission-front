@@ -17,7 +17,7 @@ const LANGUAGE_LABELS: Record<SupportedLng, string> = {
   uz: "O'zbek",
 }
 
-// Temporarily hide the header language controls without changing the active locale.
+// The shared LanguageMenu replaces the legacy custom mobile language control.
 const SHOW_HEADER_LANGUAGE_SWITCHER = false
 
 const LANGUAGE_FLAG_SRC: Record<SupportedLng, string> = {
@@ -211,7 +211,7 @@ export function LandingHeader() {
         <nav className="flex items-center gap-2 sm:gap-3">
           {/* Desktop: Language, Theme, Login, Register */}
           <div className="hidden lg:flex items-center gap-2">
-            {SHOW_HEADER_LANGUAGE_SWITCHER && <LanguageMenu />}
+            <LanguageMenu />
             <Button
               to="/login"
               variant="secondary"
@@ -237,6 +237,7 @@ export function LandingHeader() {
             >
               <span className="truncate">{t('header.register')}</span>
             </Button>
+            <LanguageMenu />
             {SHOW_HEADER_LANGUAGE_SWITCHER && <div className="relative" ref={mobileLangRef}>
               <button
                 type="button"
