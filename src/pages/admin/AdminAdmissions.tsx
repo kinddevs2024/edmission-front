@@ -33,6 +33,7 @@ export function AdminAdmissions() {
   const [section, setSection] = useState<Section>('bookings')
   const [search, setSearch] = useState(''); const [query, setQuery] = useState('')
   const [status, setStatus] = useState('all'); const [page, setPage] = useState(1)
+  const [listSection, setListSection] = useState<Section>('bookings')
   const [items, setItems] = useState<(AdmissionBooking | AdmissionLead | AdmissionQuestion)[]>([])
   const [total, setTotal] = useState(0); const [limit, setLimit] = useState(50)
   const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [reload, setReload] = useState(0)
@@ -41,14 +42,14 @@ export function AdminAdmissions() {
   useEffect(() => {
     const controller = new AbortController(); setLoading(true); setError(''); setItems([])
     const request = section === 'bookings' ? admissions.bookings({ page, q: query, status }, controller.signal) : section === 'profiles' ? admissions.leads({ page, q: query }, controller.signal) : admissions.questions({ page, q: query }, controller.signal)
-    request.then(data => { if (!controller.signal.aborted) { setItems(data.items); setTotal(data.total); setLimit(data.limit ?? 50) } }).catch(e => { if (!controller.signal.aborted) setError(e.response?.status === 403 ? 'forbidden' : 'error') }).finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    request.then(data => { if (!controller.signal.aborted) { setItems(data.items); setListSection(section); setTotal(data.total); setLimit(data.limit ?? 50) } }).catch(e => { if (!controller.signal.aborted) setError(e.response?.status === 403 ? 'forbidden' : 'error') }).finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [section, query, status, page, reload])
   return <div className="space-y-4 pb-6">
     <div className="flex items-center justify-between gap-3"><h1 className="text-2xl font-semibold">{l.title}</h1><Button variant="secondary" size="sm" onClick={() => setReload(v => v + 1)}>{l.refresh}</Button></div>
     <nav aria-label={l.title} className="flex flex-wrap gap-2">{(['bookings', 'profiles', 'questions'] as const).map(tab => <Button key={tab} variant={section === tab ? 'primary' : 'secondary'} aria-pressed={section === tab} onClick={() => { setSection(tab); setPage(1); setSelected(null) }}>{l[tab]}</Button>)}</nav>
     <Card><div className="grid gap-3 sm:grid-cols-[1fr_220px]"><Input aria-label={l.search} placeholder={l.search} value={search} onChange={e => setSearch(e.target.value)} />{section === 'bookings' && <Select aria-label={l.status} value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} options={['all', 'active', 'cancelled'].map(value => ({ value, label: l[value as 'all' | 'active' | 'cancelled'] }))} />}</div><p className="mt-2 text-xs text-[var(--color-text-muted)]">{l.time}</p></Card>
-    {error ? <Card><p role="alert">{l[error as 'error' | 'forbidden']}</p><Button variant="secondary" className="mt-3" onClick={() => setReload(v => v + 1)}>{l.retry}</Button></Card> : loading ? <Card><p role="status">{l.loading}</p></Card> : !items.length ? <Card><p>{l.empty}</p></Card> : <div className="grid gap-3">{items.map(item => {
+    {error ? <Card><p role="alert">{l[error as 'error' | 'forbidden']}</p><Button variant="secondary" className="mt-3" onClick={() => setReload(v => v + 1)}>{l.retry}</Button></Card> : loading || listSection !== section ? <Card><p role="status">{l.loading}</p></Card> : !items.length ? <Card><p>{l.empty}</p></Card> : <div className="grid gap-3">{items.map(item => {
       const booking = section === 'bookings' ? item as AdmissionBooking : null
       const question = section === 'questions' ? item as AdmissionQuestion : null
       const lead = section === 'profiles' ? item as AdmissionLead : booking?.leadId ?? question?.leadId
