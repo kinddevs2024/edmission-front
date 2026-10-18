@@ -128,7 +128,7 @@ export function MainLayout() {
               { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
               { to: '/admin/documents', label: t('admin:documentReviewNav', 'Certificates'), icon: 'FileCheck' },
-              { to: '/admin/admissions', label: t('admin:admissionsAssistant', 'AI Assistant'), icon: 'CalendarDays' },
+              { to: '/admin/admissions', label: t('admin:admissionsAssistant', 'AI Assistant'), icon: 'Bot' },
               { to: '/admin/consulting', label: t('common:consultingChat', 'Consulting chat'), icon: 'MessageCircle' },
               { to: '/admin/universities', label: t('admin:universityCatalog', 'Universities'), icon: 'Building2' },
               { to: '/admin/chats', label: t('admin:chats', 'Chats'), icon: 'MessageCircle' },
@@ -156,7 +156,7 @@ export function MainLayout() {
           : [
               { to: '/admin/dashboard', label: t('admin:dashboard'), icon: 'LayoutDashboard' },
               { to: '/admin/users', label: t('admin:users'), icon: 'Users' },
-              { to: '/admin/admissions', label: t('admin:admissionsAssistant', 'AI Assistant'), icon: 'CalendarDays' },
+              { to: '/admin/admissions', label: t('admin:admissionsAssistant', 'AI Assistant'), icon: 'Bot' },
               { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
         ],
         navBottomItems: [],
