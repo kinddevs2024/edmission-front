@@ -27,7 +27,7 @@ export function WebsiteAssistantPanel({
 }) {
   const storageKey = `edmission-assistant-pending:${userId}`;
   const [session, setSession] = useState<AssistantSession | null>(null);
-  const language = session?.lead?.language || session?.language || locale;
+  const language = locale;
   const chosenLanguage =
     language === "ru" || language === "uz" || language === "en"
       ? language
@@ -91,7 +91,7 @@ export function WebsiteAssistantPanel({
       });
     input.current?.focus();
     return () => controller.abort();
-  }, [open, apply]);
+  }, [open, apply, locale]);
   useEffect(() => {
     if (!open || (!sending && !session?.processing && !session?.typing)) return;
     let active = true;
@@ -208,7 +208,7 @@ export function WebsiteAssistantPanel({
       setOlderBusy(false);
     }
   };
-  const menu = assistantReplyKeyboard(session?.messages || []);
+  const menu = assistantReplyKeyboard(session?.messages || [])?.map(row => row.filter(button => !['Language', 'Язык', 'Til'].includes(typeof button === 'string' ? button : button.text))).filter(row => row.length);
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-[var(--color-border)] p-2">
