@@ -5,11 +5,11 @@ export interface AdmissionLead {
   profile?: Record<string, unknown>; studyFacts?: Record<string, unknown>; summary?: string; notes?: string
 }
 export interface AdmissionMessage {
-  _id: string; text: string; direction: 'in' | 'out' | 'staff'; createdAt: string
+  _id: string; text: string; direction: 'in' | 'out' | 'staff'; createdAt?: string
   provider?: string; delivered?: boolean; isCallback?: boolean; originalText?: string; edits?: { text: string; at: string }[]
 }
 export interface AdmissionBooking {
-  _id: string; leadId: AdmissionLead | null; start: string; end: string; status: string
+  _id: string; leadId: AdmissionLead | null; start?: string; end?: string; status: string
   attendance?: string; consultantName?: string; mode?: string; location?: string
   slot?: { consultantName?: string; mode?: string; location?: string }; slotId?: { consultantName?: string; mode?: string; location?: string } | string
 }
