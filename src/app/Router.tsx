@@ -83,7 +83,6 @@ const AdminInterests = lazy(() => import('@/pages/admin/AdminInterests').then((m
 const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ default: m.AdminChats })))
 const AdminAdmissions = lazy(() => import('@/pages/admin/AdminAdmissions').then((m) => ({ default: m.AdminAdmissions })))
 const AdminConsultingChats = lazy(() => import('@/pages/admin/AdminConsultingChats').then((m) => ({ default: m.AdminConsultingChats })))
-const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
 const AdminFaculties = lazy(() => import('@/pages/admin/AdminFaculties').then((m) => ({ default: m.AdminFaculties })))
 const AdminInvestors = lazy(() => import('@/pages/admin/AdminInvestors').then((m) => ({ default: m.AdminInvestors })))
@@ -379,8 +378,8 @@ export function Router() {
               <Route path="consulting" element={<AdminOnly><AdminConsultingChats /></AdminOnly>} />
               <Route path="chats" element={<AdminOnly><AdminChats /></AdminOnly>} />
               <Route path="scholarships" element={<AdminOnly><AdminScholarships /></AdminOnly>} />
-              <Route path="support" element={<AdminOnly><AdminSupport /></AdminOnly>} />
-              <Route path="support/:id" element={<AdminOnly><AdminSupport /></AdminOnly>} />
+              <Route path="support" element={<Navigate to="/admin/consulting" replace />} />
+              <Route path="support/:id" element={<Navigate to="/admin/consulting" replace />} />
               <Route path="logs" element={<AdminOnly><AdminLogs /></AdminOnly>} />
               <Route path="health" element={<AdminOnly><SystemHealth /></AdminOnly>} />
               <Route path="settings" element={<AdminOnly><AdminSettings /></AdminOnly>} />

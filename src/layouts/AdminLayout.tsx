@@ -48,7 +48,6 @@ export function AdminLayout() {
                 { to: '/admin/offers', label: t('offers'), icon: 'Gift' as const },
                 { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
                 { to: '/admin/scholarships', label: t('scholarships'), icon: 'Wallet' as const },
-                { to: '/admin/support', label: t('support'), icon: 'HelpCircle' as const },
                 { to: '/admin/logs', label: t('logs'), icon: 'Logs' as const },
                 { to: '/admin/health', label: t('systemHealth'), icon: 'Activity' as const },
                 { to: '/admin/settings', label: t('settings.title', 'Settings'), icon: 'Settings' as const },

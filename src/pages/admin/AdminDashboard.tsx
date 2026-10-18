@@ -148,7 +148,6 @@ export function AdminDashboard() {
           <div className="flex flex-wrap gap-2 mt-2">
             <Button to="/admin/users" variant="secondary" size="sm">{t('users')}</Button>
             <Button to="/admin/verification" variant="secondary" size="sm">{t('universitiesVerify', 'Universities (verify)')}</Button>
-            <Button to="/admin/support" variant="secondary" size="sm">{t('common:support', 'Support')}</Button>
             <Button to="/admin/logs" variant="secondary" size="sm">{t('auditLogs')}</Button>
             <Button to="/admin/health" variant="secondary" size="sm">{t('systemHealth')}</Button>
             <Button to="/admin/scholarships" variant="secondary" size="sm">{t('scholarships')}</Button>

@@ -146,7 +146,6 @@ export function MainLayout() {
                   { to: '/admin/offers', label: t('admin:offers'), icon: 'Gift' },
                   { to: '/admin/interests', label: t('admin:interests', 'Interests'), icon: 'Heart' },
                   { to: '/admin/scholarships', label: t('admin:scholarships', 'Scholarships'), icon: 'Wallet' },
-                  { to: '/admin/support', label: t('admin:support'), icon: 'HelpCircle' as const },
                   { to: '/admin/logs', label: t('admin:logs'), icon: 'Logs' },
                   { to: '/admin/health', label: t('admin:systemHealth', 'System health'), icon: 'Activity' },
                   { to: '/admin/settings', label: t('admin:settings.title', 'Settings'), icon: 'Settings' as const },
