@@ -19,7 +19,7 @@ export interface AssistantMessage {
   };
 }
 export interface AssistantSession {
-  lead: { id: string; language: "ru" | "en" | "uz"; name?: string };
+  lead: { id: string; language: "ru" | "en" | "uz"; name?: string } | null;
   language?: string;
   messages: AssistantMessage[];
   typing?: boolean;

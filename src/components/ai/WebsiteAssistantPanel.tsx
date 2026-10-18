@@ -197,8 +197,11 @@ export function WebsiteAssistantPanel({
     if (!session?.nextCursor || olderBusy) return;
     setOlderBusy(true);
     preserveScroll.current = true;
+    const current = generation.current;
     try {
-      apply(await websiteAssistant.session(session.nextCursor), true);
+      const snapshot = await websiteAssistant.session(session.nextCursor);
+      if (mounted.current && current === generation.current) apply(snapshot, true);
+      else preserveScroll.current = false;
     } catch {
       setError(true);
     } finally {
