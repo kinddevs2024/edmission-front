@@ -200,5 +200,6 @@
   "resetPasswordConfirm": "Yangi parol o‘rnating",
   "createUser": "Foydalanuvchi yaratish",
   "createUserHint": "Admin tomonidan yaratilgan foydalanuvchilar standart bo‘yicha tasdiqlanadi.",
-  "createUserInviteHint": "Foydalanuvchi parolni o‘rnatish uchun havola bilan xat oladi."
+  "createUserInviteHint": "Foydalanuvchi parolni o‘rnatish uchun havola bilan xat oladi.",
+  "admissionsAssistant": "AI yordamchi"
 }

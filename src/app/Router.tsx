@@ -81,6 +81,7 @@ const SystemHealth = lazy(() => import('@/pages/admin/SystemHealth').then((m) =>
 const AdminOffers = lazy(() => import('@/pages/admin/AdminOffers').then((m) => ({ default: m.AdminOffers })))
 const AdminInterests = lazy(() => import('@/pages/admin/AdminInterests').then((m) => ({ default: m.AdminInterests })))
 const AdminChats = lazy(() => import('@/pages/admin/AdminChats').then((m) => ({ default: m.AdminChats })))
+const AdminAdmissions = lazy(() => import('@/pages/admin/AdminAdmissions').then((m) => ({ default: m.AdminAdmissions })))
 const AdminConsultingChats = lazy(() => import('@/pages/admin/AdminConsultingChats').then((m) => ({ default: m.AdminConsultingChats })))
 const AdminSupport = lazy(() => import('@/pages/admin/AdminSupport').then((m) => ({ default: m.AdminSupport })))
 const AdminUniversities = lazy(() => import('@/pages/admin/AdminUniversities').then((m) => ({ default: m.AdminUniversities })))
@@ -356,6 +357,7 @@ export function Router() {
               <Route index element={<AdminIndexRedirect />} />
               <Route path="dashboard" element={<AdminDashboardGate />} />
               <Route path="analytics" element={<AdminOnly><AdminAnalytics /></AdminOnly>} />
+              <Route path="admissions" element={<ProtectedRoute allowedRoles={['admin', 'manager', 'counsellor_coordinator']}><AdminAdmissions /></ProtectedRoute>} />
               <Route path="users" element={<UserManagement />} />
               <Route path="users/:userId/student-profile" element={<ProtectedRoute allowedRoles={['admin', 'student_admin']}><AdminStudentProfile /></ProtectedRoute>} />
               <Route path="users/:userId/university-profile" element={<AdminOnly><AdminUniversityProfile /></AdminOnly>} />

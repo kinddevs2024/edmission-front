@@ -200,5 +200,6 @@
     "submittedAt": "Submitted",
     "reviewedAt": "Reviewed",
     "rejectionReasonLabel": "Reason",
-    "documentStatusApproved": "Approved"
+    "documentStatusApproved": "Approved",
+  "admissionsAssistant": "AI Assistant"
 }

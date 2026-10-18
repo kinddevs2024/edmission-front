@@ -30,6 +30,7 @@ export function AdminLayout() {
             { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
             { to: '/admin/users', label: t('users'), icon: 'Users' as const },
             { to: '/admin/documents', label: t('documentReviewNav', 'Certificates'), icon: 'FileCheck' as const },
+            { to: '/admin/admissions', label: t('admissionsAssistant', 'AI Assistant'), icon: 'CalendarDays' as const },
             { to: '/admin/consulting', label: t('common:consultingChat', 'Consulting chat'), icon: 'MessageCircle' as const },
             { to: '/admin/universities', label: t('universityCatalog', 'Universities'), icon: 'Building2' as const },
             { to: '/admin/chats', label: t('chats'), icon: 'MessageCircle' as const },
@@ -57,6 +58,7 @@ export function AdminLayout() {
         : [
             { to: '/admin/dashboard', label: t('dashboard'), icon: 'LayoutDashboard' as const },
             { to: '/admin/users', label: t('users'), icon: 'Users' as const },
+            { to: '/admin/admissions', label: t('admissionsAssistant', 'AI Assistant'), icon: 'CalendarDays' as const },
             { to: '/admin/interests', label: t('interests'), icon: 'Heart' as const },
           ]
     ),
