@@ -19,6 +19,7 @@ import { getActAsUniversityUserId } from '@/constants/actAsUniversity'
 import { useNotificationStore } from '@/store/notificationStore'
 import { ChatList } from './ChatList'
 import { MessageThread } from './MessageThread'
+import { mergeMessageHistory } from './messageHistory'
 import { cn } from '@/utils/cn'
 import { toastApiError } from '@/utils/toastError'
 import type { Chat, Message } from '@/types/chat'
@@ -69,6 +70,9 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
   const [chats, setChats] = useState<Chat[]>([])
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
+  const activeChatIdRef = useRef<string | null>(null)
+  activeChatIdRef.current = selectedChat?.id ?? null
+  const deletedMessageIdsRef = useRef(new Map<string, Set<string>>())
   const [chatsLoading, setChatsLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list')
@@ -81,7 +85,7 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
   const lastTypingEmitRef = useRef(0)
 
   const normalizeMessage = useCallback((message: Message | Record<string, unknown>) => {
-    const raw = message as Message & { sender?: { id?: string; _id?: unknown }; senderId?: string | { _id?: unknown } }
+    const raw = message as Message & { _id?: unknown; sender?: { id?: string; _id?: unknown }; senderId?: string | { _id?: unknown } }
     const senderIdObject =
       raw.senderId && typeof raw.senderId === 'object'
         ? (raw.senderId as { _id?: unknown })
@@ -97,7 +101,7 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
 
     return {
       ...raw,
-      id: String(raw.id ?? ''),
+      id: String(raw.id ?? raw._id ?? ''),
       text: String(raw.text ?? raw.message ?? ''),
       type: raw.type ?? 'text',
       createdAt: coerceIsoDateString(raw.createdAt),
@@ -273,18 +277,25 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
       return
     }
 
+    let cancelled = false
+    const chatId = selectedChat.id
+    setMessages([])
     setMessagesLoading(true)
-    joinChat(selectedChat.id)
+    joinChat(chatId)
 
     getMessages(selectedChat.id)
       .then((list) => {
-        setMessages(list.map(normalizeMessage))
+        if (cancelled || activeChatIdRef.current !== chatId) return
+        setMessages((prev) => activeChatIdRef.current === chatId
+          ? mergeMessageHistory(prev, list.map(normalizeMessage), deletedMessageIdsRef.current.get(chatId))
+          : prev)
       })
-      .catch((e) => { toastApiError(e); setMessages([]) })
-      .finally(() => setMessagesLoading(false))
+      .catch((e) => { if (!cancelled) toastApiError(e) })
+      .finally(() => { if (!cancelled) setMessagesLoading(false) })
 
     return () => {
-      leaveChat(selectedChat.id)
+      cancelled = true
+      leaveChat(chatId)
     }
   }, [selectedChat?.id, joinChat, leaveChat, normalizeMessage])
 
@@ -296,7 +307,8 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
       }
 
       setMessages((prev) => {
-        if (chatId !== selectedChat?.id) return prev
+        if (chatId !== activeChatIdRef.current) return prev
+        if (deletedMessageIdsRef.current.get(chatId)?.has(normalized.id)) return prev
         if (prev.some((item) => item.id === normalized.id)) return prev
         const next = [...prev, normalized]
         syncChatPreview(chatId, next)
@@ -370,6 +382,9 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
 
   useEffect(() => {
     const unsub = onMessageDeleted(({ chatId, messageId }) => {
+      const deleted = deletedMessageIdsRef.current.get(chatId) ?? new Set<string>()
+      deleted.add(messageId)
+      deletedMessageIdsRef.current.set(chatId, deleted)
       setMessages((prev) => {
         if (chatId !== selectedChat?.id) return prev
         const next = prev.filter((message) => message.id !== messageId)
@@ -400,7 +415,10 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
       if (chatId === selectedChat?.id) {
         getMessages(chatId)
           .then((list) => {
-            setMessages(list.map(normalizeMessage))
+            if (activeChatIdRef.current !== chatId) return
+            setMessages((prev) => activeChatIdRef.current === chatId
+              ? mergeMessageHistory(prev, list.map(normalizeMessage), deletedMessageIdsRef.current.get(chatId))
+              : prev)
           })
           .catch(() => {})
       }
@@ -416,7 +434,8 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
         .then((message) => {
           const normalized = normalizeMessage({ ...message, isFromMe: true })
           setMessages((prev) => {
-            const next = [...prev, normalized]
+            if (activeChatIdRef.current !== selectedChat.id) return prev
+            const next = mergeMessageHistory(prev, [normalized], deletedMessageIdsRef.current.get(selectedChat.id))
             syncChatPreview(selectedChat.id, next)
             return next
           })
@@ -467,7 +486,11 @@ export function ChatView({ supportOnly = false, autoOpenSupport = false, compact
 
       return deleteChatMessage(selectedChat.id, messageId, scope)
         .then(() => {
+          const deleted = deletedMessageIdsRef.current.get(selectedChat.id) ?? new Set<string>()
+          deleted.add(messageId)
+          deletedMessageIdsRef.current.set(selectedChat.id, deleted)
           setMessages((prev) => {
+            if (activeChatIdRef.current !== selectedChat.id) return prev
             const next = prev.filter((message) => message.id !== messageId)
             syncChatPreview(selectedChat.id, next)
             return next
