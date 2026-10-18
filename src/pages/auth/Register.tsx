@@ -304,7 +304,7 @@ export function Register() {
 
     return (
       <AuthStepTransition stepKey="role">
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden border-white/30 bg-[rgba(255,252,247,0.94)] p-0 shadow-2xl backdrop-blur-xl dark:bg-[rgba(24,18,14,0.92)]">
         <div className="border-b border-[var(--color-border)] p-6 text-center">
           <BrandMark className="mx-auto h-12 w-12" />
           <CardTitle className="mt-4">{t("auth:signupTitle", "Sign up to Edmission")}</CardTitle>
@@ -371,7 +371,7 @@ export function Register() {
 
   return (
     <AuthStepTransition stepKey="form">
-    <Card className="p-6">
+    <Card className="border-white/30 bg-[rgba(255,252,247,0.94)] p-6 shadow-2xl backdrop-blur-xl dark:bg-[rgba(24,18,14,0.92)]">
       <div className="mb-5 flex items-center gap-3">
         <button
           type="button"

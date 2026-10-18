@@ -82,7 +82,7 @@ export function Login() {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="border-white/30 bg-[rgba(255,252,247,0.94)] p-6 shadow-2xl backdrop-blur-xl dark:bg-[rgba(24,18,14,0.92)]">
       <div className="mb-4 flex flex-col items-center gap-2 text-center">
         <BrandMark className="h-14 w-14" />
         <CardTitle>{t("auth:signinTitle", "Sign in to Edmission")}</CardTitle>
@@ -156,6 +156,7 @@ export function Login() {
           mode="login"
           loading={loading}
           role="student"
+          googleAutoPrompt
           yandexAcceptTerms
           setLoading={setLoading}
           setSubmitError={setSubmitError}
