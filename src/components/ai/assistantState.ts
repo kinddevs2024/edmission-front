@@ -2,6 +2,7 @@ import type {
   AssistantButton,
   AssistantMessage,
   AssistantRequest,
+  AssistantSession,
 } from "@/services/websiteAssistant";
 /** Hide transport commands and feedback controls; callback payloads never become visible copy. */
 export function assistantButtons(
@@ -85,4 +86,24 @@ export function assistantReplyKeyboard(messages: AssistantMessage[]) {
     else if (markup?.keyboard) keyboard = markup.keyboard;
   }
   return keyboard;
+}
+
+export function mergeAssistantSession(
+  old: AssistantSession | null,
+  snapshot: AssistantSession,
+  prepend = false,
+): AssistantSession {
+  if (!snapshot.lead) return { ...snapshot, messages: [], nextCursor: null };
+  if (!old?.lead || old.lead.id !== snapshot.lead.id) return snapshot;
+  return {
+    ...snapshot,
+    messages: prepend
+      ? mergeAssistantMessages(snapshot.messages, old.messages)
+      : mergeAssistantMessages(old.messages, snapshot.messages),
+    nextCursor: prepend
+      ? snapshot.nextCursor
+      : old.nextCursor === undefined
+        ? snapshot.nextCursor
+        : old.nextCursor,
+  };
 }

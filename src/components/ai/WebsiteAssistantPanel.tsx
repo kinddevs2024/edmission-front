@@ -10,7 +10,7 @@ import {
 import {
   assistantButtons,
   assistantReplyKeyboard,
-  mergeAssistantMessages,
+  mergeAssistantSession,
   readAssistantPending,
 } from "./assistantState";
 import { assistantWords } from "./assistantCopy";
@@ -27,7 +27,7 @@ export function WebsiteAssistantPanel({
 }) {
   const storageKey = `edmission-assistant-pending:${userId}`;
   const [session, setSession] = useState<AssistantSession | null>(null);
-  const language = session?.lead.language || session?.language || locale;
+  const language = session?.lead?.language || session?.language || locale;
   const chosenLanguage =
     language === "ru" || language === "uz" || language === "en"
       ? language
@@ -59,19 +59,7 @@ export function WebsiteAssistantPanel({
   const apply = useCallback(
     (snapshot: AssistantSession, prepend = false) =>
       setSession((old) => {
-        const result = {
-          ...snapshot,
-          messages: old
-            ? prepend
-              ? mergeAssistantMessages(snapshot.messages, old.messages)
-              : mergeAssistantMessages(old.messages, snapshot.messages)
-            : snapshot.messages,
-          nextCursor: prepend
-            ? snapshot.nextCursor
-            : old?.nextCursor === undefined
-              ? snapshot.nextCursor
-              : old.nextCursor,
-        };
+        const result = mergeAssistantSession(old, snapshot, prepend);
         sessionRef.current = result;
         return result;
       }),
@@ -162,7 +150,7 @@ export function WebsiteAssistantPanel({
       generation.current++;
       apply(snapshot);
       savePending(null);
-      if ("text" in request) setText("");
+      if ("text" in request || !snapshot.lead) setText("");
     } catch (failure) {
       if (mounted.current) {
         const status = isAxiosError(failure)
