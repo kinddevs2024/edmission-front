@@ -220,7 +220,7 @@ export function TelegramAuth() {
       <p className="mb-4 text-sm text-[var(--color-text-muted)]">
         {t(
           'auth:telegramNoCodeHint',
-          'Open the Telegram bot, choose a language, send your name and phone number. You will be signed in automatically.'
+          'Open the Telegram bot and share your own contact using the button. Your name is taken from Telegram. Then return to the website to continue.'
         )}
       </p>
 
